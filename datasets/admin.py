@@ -1,0 +1,57 @@
+from django.contrib import admin
+from .models import Dataset, DataFile
+import requests
+import tempfile
+import re
+
+from django.core import files
+
+
+class DatasetAdmin(admin.ModelAdmin):
+    def download_file(self, request, queryset):
+        for object in queryset:
+            if object.download_endpoint:
+                file_request = requests.get(object.download_endpoint, stream=True)
+                # Was the request OK?
+                if file_request.status_code != requests.codes.ok:
+                    # Nope, error handling, skip file etc etc etc
+                    continue
+
+                # get filename
+                if 'content-disposition' in file_request.headers:
+                    file_name = re.findall("filename=(.+)", file_request.headers['content-disposition'])[0]
+                else:
+                    file_name = object.download_endpoint.split('/')[-1]
+                print(file_name)
+
+                # Create a temporary file
+                lf = tempfile.NamedTemporaryFile()
+
+                # Read the streamed file in sections
+                downloaded = 0
+                for block in file_request.iter_content(1024 * 8):
+                    downloaded += len(block)
+                    print("{0} MB".format(downloaded / 1000000))
+                    # If no more file then stop
+                    if not block:
+                        break
+
+                    # Write file block to temporary file
+                    lf.write(block)
+
+                data_file = DataFile(dataset=object)
+                data_file.file.save(file_name, files.File(lf))
+
+                self.message_user(request, "All data successfully downloaded.")
+            else:
+                raise Exception("No download endpoint set. Cannot download.")
+
+    download_file.short_description = "Download the latest data"
+
+    list_display = ['name', 'download_endpoint']
+    ordering = ['name']
+    actions = [download_file]
+
+
+admin.site.register(Dataset, DatasetAdmin)
+admin.site.register(DataFile)
