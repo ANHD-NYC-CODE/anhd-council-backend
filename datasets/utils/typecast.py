@@ -6,7 +6,8 @@ being passed to psycopg2 to be inserted into postgres.
 See http://initd.org/psycopg/docs/usage.html#adaptation-of-python-values-to-sql-types
 for how psycopg2 converts python types into postgres types
 """
-
+from django.db import models
+from django.contrib.postgres.fields import ArrayField
 import copy
 import re
 import datetime
@@ -14,7 +15,7 @@ from decimal import Decimal, InvalidOperation
 
 YES_VALUES = [1, True, 'T', 't', 'true', 'True', 'TRUE', '1', 'y', 'Y', "YES", 'Yes']
 NO_VALUES = ['0', 0, False, 'False', 'f', 'F', 'false', 'FALSE', 'N', 'n', 'NO', 'No', 'no']
-INTEGER_TYPES = ['integer', 'smallint', 'bigint', 'int']
+INTEGER_TYPES = (models.fields.IntegerField, models.fields.SmallIntegerField, models.fields.BigIntegerField)
 
 
 def downcase_fields_and_values(d):
@@ -123,6 +124,7 @@ def text_array(x, sep=","):
 
 
 def char_cast(n):
+    # convert to string char
     n = copy.copy(n)
 
     def to_char(x):
@@ -132,8 +134,8 @@ def char_cast(n):
 
 
 class Typecast():
-    def __init__(self, schema):
-        self.fields = downcase_fields_and_values(schema['fields'])
+    def __init__(self, model):
+        self.fields = model.get_model_fields()
         self.cast = self.generate_cast()
 
     def cast_rows(self, rows):
@@ -166,26 +168,24 @@ class Typecast():
         Generates conversation table for dataset schema
         """
         d = {}
-        for k, v in self.fields.items():
-            if 'serial' in v:
-                continue
-            elif v[0:4] == 'char':
-                n = int(re.match(r'char\((\d+)\)', v).group(1))
-                d[k] = char_cast(n)
-            elif v in INTEGER_TYPES:
-                d[k] = lambda x: integer(x)
-            elif v == 'text':
-                d[k] = lambda x: text(x)
-            elif v == 'boolean':
-                d[k] = lambda x: boolean(x)
-            elif v == 'date':
-                d[k] = lambda x: date(x)
-            elif 'time' in v:
-                d[k] = lambda x: time(x)
-            elif v == 'numeric':
-                d[k] = lambda x: numeric(x)
-            elif v == 'text[]':
-                d[k] = lambda x: text_array(x)
+        for field in self.fields:
+            if isinstance(field, models.fields.CharField):
+                n = int(field.max_length)
+                d[field.name] = char_cast(n)
+            elif isinstance(field, INTEGER_TYPES):
+                d[field.name] = lambda x: integer(x)
+            elif isinstance(field, models.fields.TextField):
+                d[field.name] = lambda x: text(x)
+            elif isinstance(field, models.fields.BooleanField):
+                d[field.name] = lambda x: boolean(x)
+            elif isinstance(field, models.fields.DateTimeField):
+                d[field.name] = lambda x: date(x)
+            elif isinstance(field, models.fields.TimeField):
+                d[field.name] = lambda x: time(x)
+            elif isinstance(field, models.fields.DecimalField):
+                d[field.name] = lambda x: numeric(x)
+            elif isinstance(field, ArrayField):
+                d[field.name] = lambda x: text_array(x)
             else:
-                d[k] = lambda x: x
+                d[field.name] = lambda x: x
         return d
