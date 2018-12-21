@@ -6,6 +6,7 @@ import time
 class Dataset(models.Model):
     name = models.CharField(max_length=255, blank=False, null=False)
     class_name = models.CharField(max_length=255, blank=False, null=False)
+    primary_table_name = models.CharField(max_length=255, blank=False, null=False)
     download_endpoint = models.TextField(blank=True, null=True)
     uploaded_date = models.DateTimeField(default=timezone.now)
 

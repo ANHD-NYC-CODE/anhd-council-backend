@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.db.models import Count
 from .models import Dataset, DataFile
 import requests
 import tempfile
@@ -8,6 +9,13 @@ from django.core import files
 
 
 class DatasetAdmin(admin.ModelAdmin):
+    def get_queryset(self, request):
+        qs = super(DatasetAdmin, self).get_queryset(request)
+        return qs.annotate(data_files_count=Count('datafile'))
+
+    def data_files_count(self, inst):
+        return inst.data_files_count
+
     def download_file(self, request, queryset):
         for object in queryset:
             if object.download_endpoint:
@@ -48,9 +56,9 @@ class DatasetAdmin(admin.ModelAdmin):
 
     download_file.short_description = "Download the latest data"
 
-    list_display = ['name', 'download_endpoint']
+    list_display = ['name', 'download_endpoint', 'data_files_count']
     ordering = ['name']
-    actions = [download_file]
+    actions = []
 
 
 admin.site.register(Dataset, DatasetAdmin)
