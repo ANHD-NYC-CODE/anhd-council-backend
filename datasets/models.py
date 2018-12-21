@@ -1,9 +1,13 @@
 from django.utils import timezone
 from django.db import models
 from django.dispatch import receiver
+from .utils.transform import to_csv
 
 import time
 import os
+import itertools
+
+BATCH_SIZE = 1000
 
 
 class Dataset(models.Model):
@@ -11,6 +15,22 @@ class Dataset(models.Model):
     model_name = models.CharField(max_length=255, blank=False, null=False)
     download_endpoint = models.TextField(blank=True, null=True)
     uploaded_date = models.DateTimeField(default=timezone.now)
+
+    def transform_dataset(self, file):
+        return eval(self.model_name).transform_self(file)
+
+    def latest_file(self):
+        return self.datafile_set.all()[0]
+
+    def seed_file(self, file):
+        rows = self.transform_dataset(file)
+
+        while True:
+            batch = list(itertools.islice(rows, 0, BATCH_SIZE))
+            if len(batch) == 0:
+                break
+            else:
+                self.db.insert_rows(batch, table_name=schema['table_name'])
 
     def __str__(self):
         return self.name
@@ -89,6 +109,10 @@ class HPDViolation(models.Model):
     bin = models.IntegerField()
     bbl = models.CharField(max_length=10, null=False)
     nta = models.TextField()
+
+    @classmethod
+    def transform_self(self, file):
+        return to_csv(file)
 
     @classmethod
     def get_model_fields(self):

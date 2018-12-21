@@ -9,6 +9,8 @@ verify_ssl = true
 django = "==2.1"
 requests = "*"
 clint = "*"
+psycopg2 = "*"
+pyproj = "*"
 
 [requires]
 python_version = "3.5"
