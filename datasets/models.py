@@ -5,8 +5,7 @@ import time
 
 class Dataset(models.Model):
     name = models.CharField(max_length=255, blank=False, null=False)
-    class_name = models.CharField(max_length=255, blank=False, null=False)
-    primary_table_name = models.CharField(max_length=255, blank=False, null=False)
+    model_name = models.CharField(max_length=255, blank=False, null=False)
     download_endpoint = models.TextField(blank=True, null=True)
     uploaded_date = models.DateTimeField(default=timezone.now)
 
@@ -15,7 +14,7 @@ class Dataset(models.Model):
 
 
 def construct_directory_path(instance, filename):
-    return '{0}/{1}'.format(instance.dataset.class_name, "{0}-{1}".format(time.time(), filename))
+    return '{0}/{1}'.format('./', "{0}-{1}".format(time.time(), filename))
 
 
 class DataFile(models.Model):
@@ -26,3 +25,16 @@ class DataFile(models.Model):
 
     def __str__(self):
         return self.file.name
+
+
+class Update(models.Model):
+    file = models.ForeignKey(DataFile, on_delete=models.SET_NULL, null=True)
+    dataset = models.ForeignKey(Dataset, on_delete=models.SET_NULL, null=True)
+    model_name = models.CharField(max_length=255, blank=False, null=False)
+    update_date = models.DateTimeField(default=timezone.now)
+
+#
+# class HPDViolation(models.Model):
+#
+#     def __str__(self):
+#         return self.file.name

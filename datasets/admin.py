@@ -56,7 +56,7 @@ class DatasetAdmin(admin.ModelAdmin):
 
     download_file.short_description = "Download the latest data"
 
-    list_display = ['name', 'download_endpoint', 'data_files_count']
+    list_display = ['name', 'model_name', 'download_endpoint', 'data_files_count']
     ordering = ['name']
     actions = []
 
