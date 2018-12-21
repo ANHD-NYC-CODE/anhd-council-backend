@@ -1,6 +1,9 @@
 from django.utils import timezone
 from django.db import models
+from django.dispatch import receiver
+
 import time
+import os
 
 
 class Dataset(models.Model):
@@ -25,6 +28,17 @@ class DataFile(models.Model):
 
     def __str__(self):
         return self.file.name
+
+
+@receiver(models.signals.post_delete, sender=DataFile)
+def auto_delete_file_on_delete(sender, instance, **kwargs):
+    """
+    Deletes file from filesystem
+    when corresponding `MediaFile` object is deleted.
+    """
+    if instance.file:
+        if os.path.isfile(instance.file.path):
+            os.remove(instance.file.path)
 
 
 class Update(models.Model):

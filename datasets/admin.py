@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.db.models import Count
-from .models import Dataset, DataFile
+from .models import Dataset, DataFile, Update
 import requests
 import tempfile
 import re
@@ -63,3 +63,4 @@ class DatasetAdmin(admin.ModelAdmin):
 
 admin.site.register(Dataset, DatasetAdmin)
 admin.site.register(DataFile)
+admin.site.register(Update)
