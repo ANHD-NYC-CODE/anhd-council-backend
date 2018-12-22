@@ -30,3 +30,7 @@ def merge(x, y):
     z = x.copy()
     z.update(y)
     return z
+
+
+def dict_to_model(model, dict):
+    return model(**dict)

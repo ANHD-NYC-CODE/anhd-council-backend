@@ -12,6 +12,7 @@ from .utility import merge
 
 invalid_header_chars = ["\n", "\r", ' ', '-', '#', '.', "'", '"', '_', '/', '(', ')', ':']
 replace_header_chars = [('%', 'pct')]
+invalid_header_names = ["class"]
 starts_with_numbers = re.compile(r'^(\d+)(.*)$')
 only_numbers = re.compile(r'^\d+$')
 
@@ -46,6 +47,8 @@ def clean_headers(headers):
         s = s.replace(char, '')
     for old, new in replace_header_chars:
         s = s.replace(old, new)
+    for name in invalid_header_names:
+        s = re.sub(re.escape(name), name + '_name', s, 1)
     return [flip_numbers(x) for x in s.split(',')]
 
 
