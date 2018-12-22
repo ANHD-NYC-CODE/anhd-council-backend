@@ -2,11 +2,12 @@ from django.utils import timezone
 from django.db import models
 from django.dispatch import receiver
 from .utils.transform import to_csv
+from .utils.utility import dict_to_model
+
 
 import time
 import os
 import itertools
-
 BATCH_SIZE = 1000
 
 
@@ -16,21 +17,24 @@ class Dataset(models.Model):
     download_endpoint = models.TextField(blank=True, null=True)
     uploaded_date = models.DateTimeField(default=timezone.now)
 
-    def transform_dataset(self, file):
-        return eval(self.model_name).transform_self(file)
+    def transform_dataset(self, file_path):
+        return eval(self.model_name).transform_self(file_path)
 
     def latest_file(self):
         return self.datafile_set.all()[0]
 
-    def seed_file(self, file):
-        rows = self.transform_dataset(file)
+    def seed_file(self, file_path):
+        rows = self.transform_dataset(file_path)
 
+        import pdb
+        pdb.set_trace()
         while True:
             batch = list(itertools.islice(rows, 0, BATCH_SIZE))
             if len(batch) == 0:
                 break
             else:
-                self.db.insert_rows(batch, table_name=schema['table_name'])
+                # eval(self.model_name).objects.create_bulk(batch)
+                self.db.insert_rows(batch, table_name=eval(self.model_name)._meta.db_table)
 
     def __str__(self):
         return self.name
@@ -69,50 +73,50 @@ class Update(models.Model):
 
 
 class HPDViolation(models.Model):
-    violation_id = models.IntegerField(blank=False, null=False)
-    building_id = models.IntegerField(blank=False, null=False)
-    registration_id = models.IntegerField(blank=True, null=True)
-    boro_id = models.CharField(blank=False, null=False, max_length=1)
+    violationid = models.IntegerField(blank=False, null=False)
+    buildingid = models.IntegerField(blank=False, null=False)
+    registrationid = models.IntegerField(blank=True, null=True)
+    boroid = models.CharField(blank=False, null=False, max_length=1)
     borough = models.TextField()
-    house_number = models.TextField()
-    low_house_number = models.TextField()
-    high_house_number = models.TextField()
-    street_name = models.TextField()
-    street_code = models.TextField()
-    post_code = models.CharField(max_length=5)
+    housenumber = models.TextField()
+    lowhousenumber = models.TextField()
+    highhousenumber = models.TextField()
+    streetname = models.TextField()
+    streetcode = models.TextField()
+    postcode = models.CharField(max_length=5)
     apartment = models.TextField()
     story = models.TextField()
     block = models.TextField()
     lot = models.TextField()
-    class_code = models.CharField(max_length=1)
-    inspection_date = models.DateTimeField()
-    approved_date = models.DateTimeField()
-    original_certify_by_date = models.DateTimeField()
-    original_correct_by_date = models.DateTimeField()
-    new_certify_by_date = models.DateTimeField()
-    new_correct_by_date = models.DateTimeField()
-    certified_date = models.DateTimeField()
-    order_number = models.TextField()
-    nov_id = models.IntegerField()
-    nov_description = models.TextField()
-    nov_issued_date = models.DateTimeField()
-    current_status_id = models.SmallIntegerField()
-    current_status = models.TextField()
-    current_status_date = models.DateTimeField()
-    nov_type = models.TextField()
-    violation_status = models.TextField()
+    class_name = models.CharField(db_column='class', max_length=1)
+    inspectiondate = models.DateTimeField()
+    approveddate = models.DateTimeField()
+    originalcertifybydate = models.DateTimeField()
+    originalcorrectbydate = models.DateTimeField()
+    newcertifybydate = models.DateTimeField()
+    newcorrectbydate = models.DateTimeField()
+    certifieddate = models.DateTimeField()
+    ordernumber = models.TextField()
+    novid = models.IntegerField()
+    novdescription = models.TextField()
+    novissueddate = models.DateTimeField()
+    currentstatusid = models.SmallIntegerField()
+    currentstatus = models.TextField()
+    currentstatusdate = models.DateTimeField()
+    novtype = models.TextField()
+    violationstatus = models.TextField()
     latitude = models.DecimalField(decimal_places=16, max_digits=100)
     longitude = models.DecimalField(decimal_places=16, max_digits=100)
-    community_board = models.TextField()
-    council_district = models.SmallIntegerField()
-    census_tract = models.TextField()
+    communityboard = models.TextField()
+    councildistrict = models.SmallIntegerField()
+    censustract = models.TextField()
     bin = models.IntegerField()
     bbl = models.CharField(max_length=10, null=False)
     nta = models.TextField()
 
     @classmethod
-    def transform_self(self, file):
-        return to_csv(file)
+    def transform_self(self, file_path):
+        return to_csv(file_path)
 
     @classmethod
     def get_model_fields(self):
