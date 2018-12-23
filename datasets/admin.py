@@ -86,8 +86,8 @@ class UpdateAdmin(admin.ModelAdmin):
     def has_change_permission(self, request, obj=None):
         return False
 
-    list_display = ['dataset', 'update_date', 'model_name', 'file']
-    ordering = ['update_date']
+    list_display = ['dataset', 'created_date', 'model_name', 'file', 'completed_date', 'rows_updated', 'rows_created']
+    ordering = ['created_date']
     actions = []
 
 

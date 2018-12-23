@@ -23,6 +23,5 @@ def insert_rows(rows, table_name):
                 print(e)
             except utils.DataError as e:
                 print(e)
-        curs.execute("SELECT COUNT(id) FROM {}".format(table_name))
+        curs.execute("SELECT COUNT(*) FROM {}".format(table_name))
         print(curs.fetchone())
-        transaction.commit()

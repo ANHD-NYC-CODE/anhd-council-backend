@@ -12,7 +12,7 @@ import os
 import itertools
 
 BATCH_SIZE = 1000
-ACTIVE_MODELS = ['HPDViolation', 'Pluto18v1']
+ACTIVE_MODELS = ['HPDViolation', 'Building']
 ACTIVE_MODELS_CHOICES = list(map(lambda model: (model, model), ACTIVE_MODELS))
 
 
@@ -71,15 +71,46 @@ class Update(models.Model):
     dataset = models.ForeignKey(Dataset, on_delete=models.SET_NULL, null=True)
     model_name = models.CharField(max_length=255, blank=False, null=False,
                                   choices=ACTIVE_MODELS_CHOICES)
-    update_date = models.DateTimeField(default=timezone.now)
+    rows_updated = models.IntegerField(blank=True, null=True)
+    rows_created = models.IntegerField(blank=True, null=True)
+    created_date = models.DateTimeField(default=timezone.now)
+    completed_date = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return self.dataset.name
 
 
-class Pluto18v1(models.Model):
-    # from datasets import models; ds = models.Dataset.objects.filter(model_name='Plutov18v1'); ds.seed_file(ds.latest_file().file.path);
+@receiver(models.signals.post_save, sender=Update)
+def auto_seed_file_on_create(sender, instance, **kwargs):
+    """
+    Seeds file in DB
+    when corresponding `Update` object is created.
+    """
+    if instance.file and os.path.isfile(instance.file.file.path):
+        instance.dataset.seed_file(instance.file.file.path)
 
+
+class Council(models.Model):
+    def __str__(self):
+        return self
+
+
+class Building(models.Model):
+    # 763178 +- records for residential buildings.
+    # Current version: Pluto18v1
+    # To update to latest Pluto version,
+    # Compare the columns between the next Pluto version and this.
+    # Add, but do not delete any columns if different.
+    # Create a django migration to add new columns.
+    # Update the database with the latest pluto version.
+    # Existing buildings will be overritten with latest values.
+    # New buildings will be added.
+    # Old buildings will not be removed.
+
+    # from datasets import models; ds = models.Dataset.objects.get(model_name='Pluto18v1'); ds.seed_file(ds.latest_file().file.path);
+    bbl = models.CharField(primary_key=True, max_length=10, blank=False, null=False)
+    council = models.ForeignKey('Council', on_delete=models.SET_NULL, null=True,
+                                db_column='council', db_constraint=False)
     borough = models.TextField(blank=False, null=False)
     block = models.TextField(blank=False, null=False)
     lot = models.TextField(blank=False, null=False)
@@ -87,8 +118,7 @@ class Pluto18v1(models.Model):
     ct2010 = models.TextField(blank=True, null=True)
     cb2010 = models.TextField(blank=True, null=True)
     schooldist = models.SmallIntegerField(blank=True, null=True)
-    council = models.SmallIntegerField(db_index=True, blank=False, null=False)
-    zipcode = models.CharField(max_length=5, blank=False, null=False)
+    zipcode = models.CharField(max_length=5, blank=True, null=True)
     firecomp = models.TextField(blank=True, null=True)
     policeprct = models.TextField(blank=True, null=True)
     healthcenterdistrict = models.SmallIntegerField(blank=True, null=True)
@@ -152,7 +182,6 @@ class Pluto18v1(models.Model):
     commfar = models.DecimalField(db_index=True, decimal_places=2, max_digits=8, blank=True, null=True)
     facilfar = models.DecimalField(db_index=True, decimal_places=2, max_digits=8, blank=True, null=True)
     borocode = models.CharField(db_index=True, max_length=1, blank=False, null=False)
-    bbl = models.CharField(db_index=True, unique=True, max_length=10, blank=False, null=False)
     condono = models.TextField(blank=True, null=True)
     tract2010 = models.TextField(blank=True, null=True)
     xcoord = models.IntegerField(blank=True, null=True)
@@ -167,7 +196,8 @@ class Pluto18v1(models.Model):
     plutomapid = models.CharField(max_length=1, blank=True, null=True)
     firm07flag = models.CharField(max_length=1, blank=True, null=True)
     pfirm15flag = models.CharField(max_length=1, blank=True, null=True)
-    version = models.TextField(blank=True, null=True)
+    version = models.TextField(db_index=True, blank=True, null=True)
+    # allow null lng / lat - will display building information in tables, not map
     lng = models.DecimalField(decimal_places=16, max_digits=32, blank=True, null=True)
     lat = models.DecimalField(decimal_places=16, max_digits=32, blank=True, null=True)
 
@@ -179,12 +209,9 @@ class Pluto18v1(models.Model):
         return self.bbl
 
 
-class Building:
-    x = eval(Dataset.objects.get(name="Buildings").model_name)
-
-
 # class HPDViolation(models.Model):
 #     # from datasets import models; ds = models.Dataset.objects.first(); ds.seed_file(ds.latest_file().file.path);
+#     building = models.ForeignKey(self.building_model, on_delete=models.SET_NULL, null=True, default=set_building_id)
 #     violationid = models.IntegerField(unique=True, blank=False, null=False)
 #     buildingid = models.IntegerField(blank=False, null=False)
 #     registrationid = models.IntegerField(blank=True, null=True)
@@ -232,3 +259,28 @@ class Building:
 #
 #     def __str__(self):
 #         return self.name
+
+
+# Testing
+
+# 1) query buildings with > 5 HPD violations total
+
+# OR
+
+# https://docs.djangoproject.com/en/dev/topics/db/queries/#complex-lookups-with-q-objects
+# https://stackoverflow.com/questions/739776/django-filters-or
+
+# Custom managers (Model.objects)
+# https://docs.djangoproject.com/en/dev/topics/db/managers/#custom-managers
+
+# foreign key that can reference different tables
+
+# Creating a new foreign key with default value from the record
+
+# https://stackoverflow.com/questions/29787853/django-migrations-add-field-with-default-as-function-of-model
+# - create migration with nullable foreign key
+# - migrate then create migration with default + reverse function and alter to make non-nullable. migrate
+
+# TODO
+
+# 1) Cutoff year?
