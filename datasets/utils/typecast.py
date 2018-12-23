@@ -178,6 +178,8 @@ class Typecast():
                 d[field.name] = lambda x: text(x)
             elif isinstance(field, models.fields.BooleanField):
                 d[field.name] = lambda x: boolean(x)
+            elif isinstance(field, models.fields.DateField):
+                d[field.name] = lambda x: date(x)
             elif isinstance(field, models.fields.DateTimeField):
                 d[field.name] = lambda x: date(x)
             elif isinstance(field, models.fields.TimeField):
