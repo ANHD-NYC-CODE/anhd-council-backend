@@ -176,7 +176,11 @@ class Pluto18v1(models.Model):
         return with_geo(remove_non_residential(to_csv(extract_csvs_from_zip(file_path))))
 
     def __str__(self):
-        return self.dataset.bbl
+        return self.bbl
+
+
+class Building:
+    x = eval(Dataset.objects.get(name="Buildings").model_name)
 
 
 # class HPDViolation(models.Model):
