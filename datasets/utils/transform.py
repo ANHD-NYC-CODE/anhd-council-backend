@@ -48,7 +48,7 @@ def clean_headers(headers):
     for old, new in replace_header_chars:
         s = s.replace(old, new)
     for name in invalid_header_names:
-        s = re.sub(re.escape(name), name + '_name', s, 1)
+        s = re.sub(r"\" + re.escape(name) + \"", name + '_name', s, 1)
     return [flip_numbers(x) for x in s.split(',')]
 
 
@@ -115,6 +115,17 @@ def with_geo(table):
             yield merge(row, {'lng': lng, 'lat': lat})
         except:
             yield merge(row, {'lng': None, 'lat': None})
+
+
+def remove_non_residential(rows):
+    for row in rows:
+        try:
+            if int(row['unitsres']) > 0:
+                yield row
+            else:
+                pass
+        except:
+            pass
 
 
 def skip_fields(table, fields_to_skip):
