@@ -56,11 +56,41 @@ class DatasetAdmin(admin.ModelAdmin):
 
     download_file.short_description = "Download the latest data"
 
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
     list_display = ['name', 'model_name', 'download_endpoint', 'data_files_count']
     ordering = ['name']
     actions = []
 
 
+class DataFileAdmin(admin.ModelAdmin):
+    def has_delete_permission(self, request, obj=None):
+        return True
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    list_display = ['dataset', 'uploaded_date', 'file']
+    ordering = ['uploaded_date']
+    actions = []
+
+
+class UpdateAdmin(admin.ModelAdmin):
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    list_display = ['dataset', 'update_date', 'model_name', 'file']
+    ordering = ['update_date']
+    actions = []
+
+
 admin.site.register(Dataset, DatasetAdmin)
-admin.site.register(DataFile)
-admin.site.register(Update)
+admin.site.register(DataFile, DataFileAdmin)
+admin.site.register(Update, UpdateAdmin)
