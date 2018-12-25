@@ -14,6 +14,16 @@ services:
   #     - '5000:5000'
   #   networks:
   #     - network1
+  rabbit:
+    hostname: rabbit
+    image: rabbitmq:latest
+    environment:
+        - RABBITMQ_DEFAULT_USER=anhd
+        # - RABBITMQ_DEFAULT_PASS=mypass
+    ports:
+        - "5673:5672"
+    networks:
+      - network1
   postgres:
     image: postgres:11
     environment:
