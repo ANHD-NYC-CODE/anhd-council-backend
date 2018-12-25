@@ -77,9 +77,10 @@ WSGI_APPLICATION = 'app.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'dap_council',
+        'NAME': 'anhd',
         'HOST': 'localhost',
-        'PORT': '5432'
+        'USER': 'anhd',
+        'PORT': '5678'
     }
 }
 
