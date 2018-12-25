@@ -1,0 +1,28 @@
+version: '2'
+services:
+  # app:
+  #   build: .
+  #   container_name: "app"
+  #   image: debian/latest
+  #   environment:
+  #       - ENVIRONMENT=production
+  #   links:
+  #       - postgres
+  #   depends_on:
+  #       - postgres
+  #   ports:
+  #     - '5000:5000'
+  #   networks:
+  #     - network1
+  postgres:
+    image: postgres:11
+    environment:
+      - POSTGRES_DB=anhd_council
+    ports:
+      - 5678:5432
+    networks:
+      - network1
+volumes:
+  pg_vol1:
+networks:
+  network1:
