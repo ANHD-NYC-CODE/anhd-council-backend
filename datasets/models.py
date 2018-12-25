@@ -107,7 +107,7 @@ class Building(models.Model):
     # New buildings will be added.
     # Old buildings will not be removed.
 
-    # from datasets import models; ds = models.Dataset.objects.get(model_name='Pluto18v1'); ds.seed_file(ds.latest_file().file.path);
+    # from datasets import models; ds = models.Dataset.objects.get(model_name='Building'); file = ds.datafile_set.first(); ds.seed_file(file.file.path);
     bbl = models.CharField(primary_key=True, max_length=10, blank=False, null=False)
     council = models.ForeignKey('Council', on_delete=models.SET_NULL, null=True,
                                 db_column='council', db_constraint=False)
