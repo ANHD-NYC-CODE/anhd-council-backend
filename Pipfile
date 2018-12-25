@@ -11,6 +11,8 @@ requests = "*"
 clint = "*"
 psycopg2 = "*"
 pyproj = "*"
+celery = "*"
+django-celery-results = "*"
 
 [requires]
 python_version = "3.5"

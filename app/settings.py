@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_celery_results',
     'datasets'
 ]
 
@@ -124,3 +125,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 MEDIA_URL = '/data/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'data')
+
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_BROKER = 'amqp://anhd@localhost:5673'
+CELERY_BACKEND = 'rpc://'
