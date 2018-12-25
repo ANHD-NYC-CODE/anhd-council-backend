@@ -17,7 +17,8 @@ services:
   postgres:
     image: postgres:11
     environment:
-      - POSTGRES_DB=anhd_council
+      - POSTGRES_DB=anhd
+      - POSTGRES_USER=anhd
     ports:
       - 5678:5432
     networks:
