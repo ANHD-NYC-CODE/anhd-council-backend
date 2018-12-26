@@ -1,17 +1,17 @@
 from django.utils import timezone
-from django.db import models
+from django.db import models, transaction
 from django.dispatch import receiver
 from django.apps import apps
 
 from .utils.transform import to_csv, extract_csvs_from_zip, with_geo, remove_non_residential
 from .utils.utility import dict_to_model
 from .utils.database import insert_rows
+from django_celery_results.models import TaskResult
 
 import time
 import os
 import itertools
 
-BATCH_SIZE = 1000
 ACTIVE_MODELS = ['HPDViolation', 'Building']
 ACTIVE_MODELS_CHOICES = list(map(lambda model: (model, model), ACTIVE_MODELS))
 
@@ -28,15 +28,6 @@ class Dataset(models.Model):
     def latest_file(self):
         return self.datafile_set.latest('uploaded_date')
 
-    def seed_file(self, file_path):
-        rows = self.transform_dataset(file_path)
-        while True:
-            batch = list(itertools.islice(rows, 0, BATCH_SIZE))
-            if len(batch) == 0:
-                break
-            else:
-                insert_rows(batch, table_name=eval(self.model_name)._meta.db_table)
-
     def __str__(self):
         return self.name
 
@@ -48,7 +39,6 @@ def construct_directory_path(instance, filename):
 class DataFile(models.Model):
     file = models.FileField(upload_to=construct_directory_path)
     dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
-    seed_date = models.DateTimeField(blank=True, null=True)
     uploaded_date = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
@@ -71,10 +61,11 @@ class Update(models.Model):
     dataset = models.ForeignKey(Dataset, on_delete=models.SET_NULL, null=True)
     model_name = models.CharField(max_length=255, blank=False, null=False,
                                   choices=ACTIVE_MODELS_CHOICES)
-    rows_updated = models.IntegerField(blank=True, null=True)
-    rows_created = models.IntegerField(blank=True, null=True)
+    rows_updated = models.IntegerField(blank=True, null=True, default=0)
+    rows_created = models.IntegerField(blank=True, null=True, default=0)
     created_date = models.DateTimeField(default=timezone.now)
     completed_date = models.DateTimeField(blank=True, null=True)
+    task_result = models.ForeignKey(TaskResult, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return self.dataset.name
@@ -86,8 +77,24 @@ def auto_seed_file_on_create(sender, instance, **kwargs):
     Seeds file in DB
     when corresponding `Update` object is created.
     """
-    if instance.file and os.path.isfile(instance.file.file.path):
-        instance.dataset.seed_file(instance.file.file.path)
+
+    def on_commit():
+        if instance.file and os.path.isfile(instance.file.file.path):
+            from datasets.tasks import async_seed_file
+            async_seed_file.delay(instance.dataset.id, instance.file.file.path, instance.id)
+
+    transaction.on_commit(lambda: on_commit())
+
+
+@receiver(models.signals.post_save, sender=TaskResult)
+def add_task_result_to_update(sender, instance, **kwargs):
+    def on_commit():
+        if instance.task_name == 'datasets.tasks.async_seed_file':
+            u = Update.objects.last()
+            u.task_result = instance
+            u.save()
+
+    transaction.on_commit(lambda: on_commit())
 
 
 class Council(models.Model):

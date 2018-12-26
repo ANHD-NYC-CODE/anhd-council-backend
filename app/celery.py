@@ -1,13 +1,14 @@
 from __future__ import absolute_import, unicode_literals
 import os
+import sys
 from celery import Celery
-from .settings import CELERY_BROKER, CELERY_BACKEND
+from app import settings
 
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'app.settings')
 
-app = Celery('app', broker=CELERY_BROKER,
-             backend=CELERY_BACKEND, include=['app.tasks'])
+app = Celery('app', broker=settings.CELERY_BROKER,
+             backend=settings.CELERY_BACKEND, include=['app.tasks'])
 
 # Using a string here means the worker doesn't have to serialize
 # the configuration object to child processes.
@@ -16,7 +17,7 @@ app = Celery('app', broker=CELERY_BROKER,
 app.config_from_object('django.conf:settings', namespace='CELERY')
 
 # Load task modules from all registered Django app configs.
-app.autodiscover_tasks()
+app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 
 
 @app.task(bind=True)

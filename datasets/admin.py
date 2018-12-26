@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.db.models import Count
-from .models import Dataset, DataFile, Update
+from .models import Dataset, DataFile, Update, Building
 import requests
 import tempfile
 import re
@@ -86,7 +86,8 @@ class UpdateAdmin(admin.ModelAdmin):
     def has_change_permission(self, request, obj=None):
         return False
 
-    list_display = ['dataset', 'created_date', 'model_name', 'file', 'completed_date', 'rows_updated', 'rows_created']
+    list_display = ['dataset', 'created_date', 'model_name', 'file',
+                    'completed_date', 'rows_updated', 'rows_created', 'task_result']
     ordering = ['created_date']
     actions = []
 
@@ -94,3 +95,4 @@ class UpdateAdmin(admin.ModelAdmin):
 admin.site.register(Dataset, DatasetAdmin)
 admin.site.register(DataFile, DataFileAdmin)
 admin.site.register(Update, UpdateAdmin)
+admin.site.register(Building)
