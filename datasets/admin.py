@@ -75,7 +75,7 @@ class DataFileAdmin(admin.ModelAdmin):
         return False
 
     list_display = ['dataset', 'uploaded_date', 'file']
-    ordering = ['uploaded_date']
+    ordering = ['-uploaded_date']
     actions = []
 
 
@@ -88,7 +88,7 @@ class UpdateAdmin(admin.ModelAdmin):
 
     list_display = ['dataset', 'created_date', 'model_name', 'file',
                     'completed_date', 'rows_updated', 'rows_created', 'task_result']
-    ordering = ['created_date']
+    ordering = ['-created_date']
     actions = []
 
 
