@@ -9,6 +9,8 @@ from django.db import transaction
 from core.utils.database import seed_csv_file
 # Create your tests here.
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+
 
 def get_file(name):
     base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
@@ -28,12 +30,9 @@ class UpdateTests(TestCase):
 class DatabaseTests(TestCase):
     def test_seed_csv_file(self):
         dataset = Dataset.objects.create(name="mock", model_name="Building")
-        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-        test_file = os.path.join(base_dir, "DAP-Council/core/tests/mock_csv.csv")
-
         file = DataFile.objects.create(file=get_file('mock_csv.csv'), dataset=dataset)
         update = Update.objects.create(model_name='Building', file=file)
-        rows = dataset.transform_dataset(os.path.join(base_dir, "DAP-Council/core/tests/test_pluto_17v1.zip"))
+        rows = dataset.transform_dataset(os.path.join(BASE_DIR, "DAP-Council/core/tests/test_pluto_17v1.zip"))
 
         seed_csv_file(dataset, rows, update)
         self.assertEqual(Building.objects.count(), 2)
