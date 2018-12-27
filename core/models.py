@@ -3,11 +3,10 @@ from django.db import models, transaction
 from django.dispatch import receiver
 from django.apps import apps
 
-from .utils.transform import to_csv, extract_csvs_from_zip, with_geo, remove_non_residential
 from .utils.utility import dict_to_model
 from .utils.database import insert_rows
 from django_celery_results.models import TaskResult
-
+from datasets.models import Building
 import time
 import os
 import itertools
@@ -80,18 +79,21 @@ def auto_seed_file_on_create(sender, instance, created, **kwargs):
     """
 
     def on_commit():
+        print("commit")
         if created and instance.file and os.path.isfile(instance.file.file.path):
-            from core.tasks import async_seed_file
-            worker = async_seed_file.delay(instance.dataset.id, instance.file.file.path, instance.id)
+            from core.tasks import async_seed_csv_file
+            worker = async_seed_csv_file.delay(instance.dataset.id, instance.file.id, instance.id)
             instance.task_id = worker.idea
             instance.save()
+        elif created:
+            raise Exception("File not present")
     transaction.on_commit(lambda: on_commit())
 
 
 @receiver(models.signals.post_save, sender=TaskResult)
 def add_task_result_to_update(sender, instance, created, **kwargs):
     def on_commit():
-        if created and instance.task_name == 'core.tasks.async_seed_file':
+        if created and instance.task_name == 'core.tasks.async_seed_csv_file':
             u = Update.objects.get(task_id=instance.task_id)
             u.task_result = instance
             u.save()
