@@ -1,4 +1,8 @@
 from django.db import connection, transaction, utils
+from datasets.models import Building
+import itertools
+
+BATCH_SIZE = 1000
 
 
 def query(table_name, row):
@@ -13,7 +17,16 @@ def build_row_values(row):
     return tuple(None if x == '' else x for x in t_row)
 
 
-def insert_rows(rows, table_name, update):
+def seed_csv_file(dataset, rows, update=None):
+    while True:
+        batch = list(itertools.islice(rows, 0, BATCH_SIZE))
+        if len(batch) == 0:
+            break
+        else:
+            insert_rows(batch, eval(dataset.model_name)._meta.db_table, update)
+
+
+def insert_rows(rows, table_name, update=None):
     """ Inserts many row, all in the same transaction"""
     rows_created = 0
     rows_updated = 0
@@ -30,6 +43,7 @@ def insert_rows(rows, table_name, update):
         curs.execute("SELECT COUNT(*) FROM {}".format(table_name))
         print(curs.fetchone())
 
-        update.rows_created = update.rows_created + rows_created
-        update.rows_updated = update.rows_updated + rows_updated
-        update.save()
+        if update:
+            update.rows_created = update.rows_created + rows_created
+            update.rows_updated = update.rows_updated + rows_updated
+            update.save()
