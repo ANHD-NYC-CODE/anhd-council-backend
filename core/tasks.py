@@ -1,8 +1,8 @@
 from __future__ import absolute_import, unicode_literals
 import itertools
 from app.celery import app
-from datasets.utils.database import insert_rows
-from datasets.models import Dataset, Update, Building
+from core.utils.database import insert_rows
+from core.models import Dataset, Update, Building
 from django_celery_results.models import TaskResult
 
 BATCH_SIZE = 1000
