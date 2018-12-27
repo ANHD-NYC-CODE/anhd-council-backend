@@ -72,14 +72,14 @@ class Update(models.Model):
 
 
 @receiver(models.signals.post_save, sender=Update)
-def auto_seed_file_on_create(sender, instance, **kwargs):
+def auto_seed_file_on_create(sender, instance, created, **kwargs):
     """
     Seeds file in DB
     when corresponding `Update` object is created.
     """
 
     def on_commit():
-        if instance.file and os.path.isfile(instance.file.file.path):
+        if created and instance.file and os.path.isfile(instance.file.file.path):
             from datasets.tasks import async_seed_file
             async_seed_file.delay(instance.dataset.id, instance.file.file.path, instance.id)
 
@@ -87,9 +87,9 @@ def auto_seed_file_on_create(sender, instance, **kwargs):
 
 
 @receiver(models.signals.post_save, sender=TaskResult)
-def add_task_result_to_update(sender, instance, **kwargs):
+def add_task_result_to_update(sender, instance, created, **kwargs):
     def on_commit():
-        if instance.task_name == 'datasets.tasks.async_seed_file':
+        if created and instance.task_name == 'datasets.tasks.async_seed_file':
             u = Update.objects.last()
             u.task_result = instance
             u.save()
