@@ -13,3 +13,8 @@ def async_seed_generator_rows(self, dataset_id, file_id, update_id):
     rows = dataset.transform_dataset(file.file.path)
 
     seed_generator_rows(dataset.model_name, rows, update)
+
+
+@app.task(bind=True)
+def async_download_file(self):
+    print("******")
