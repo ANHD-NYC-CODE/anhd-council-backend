@@ -6,7 +6,7 @@ from django.apps import apps
 from .utils.utility import dict_to_model
 from .utils.database import insert_rows
 from django_celery_results.models import TaskResult
-from datasets.models import Building
+from datasets.models import Building, Council
 import time
 import os
 import itertools
@@ -83,7 +83,7 @@ def auto_seed_file_on_create(sender, instance, created, **kwargs):
         if created and instance.file and os.path.isfile(instance.file.file.path):
             from core.tasks import async_seed_csv_file
             worker = async_seed_csv_file.delay(instance.dataset.id, instance.file.id, instance.id)
-            instance.task_id = worker.idea
+            instance.task_id = worker.id
             instance.save()
         elif created:
             raise Exception("File not present")

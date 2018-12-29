@@ -1,4 +1,5 @@
 import csv
+import json
 import io
 import re
 import types
@@ -71,6 +72,38 @@ def extract_csvs_from_zip(file_path):
                     yield firstline
                 for line in f:
                     yield line.decode('UTF-8', 'ignore')
+
+
+def from_council_geojson(file_path):
+    if isinstance(file_path, str):
+        f = open(file_path, mode='r', encoding='utf-8', errors='replace')
+    else:
+        raise ValueError("to_csv accepts Strings or Generators")
+
+    with f:
+        js = json.load(f)
+        rows = js['features']
+
+        for row in rows:
+            for key, value in row['properties'].items():
+                row[key] = value
+            del row['properties']
+
+            row.pop('id')
+            row.pop('OBJECTID')
+            row.pop('type')
+
+            row['geometry'] = json.dumps(row['geometry'])
+
+            row['coundist'] = row['CounDist']
+            row.pop('CounDist')
+
+            row['shapearea'] = row['Shape__Area']
+            row.pop('Shape__Area')
+
+            row['shapelength'] = row['Shape__Length']
+            row.pop('Shape__Length')
+            yield row
 
 
 def to_csv(file_path_or_generator):
