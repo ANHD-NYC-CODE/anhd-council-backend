@@ -1,17 +1,23 @@
 from django.db import models
-from core.utils.transform import to_csv, extract_csvs_from_zip, with_geo, remove_non_residential
+from core.utils.transform import to_csv, from_council_geojson, extract_csvs_from_zip, with_geo, remove_non_residential
 from django.contrib.postgres.fields import JSONField
+
+# from core import models; from datasets.models import Council; from core.utils import database; ds = models.Dataset.objects.get(model_name='Council'); file = ds.datafile_set.first(); rows = ds.transform_dataset(file.file.path); database.seed_csv_file(ds, rows);
 
 
 class Council(models.Model):
-    district_number = models.IntegerField(primary_key=True, blank=False, null=False)
-    shape_area = models.DecimalField(decimal_places=10, max_digits=24, blank=True, null=True)
-    shape_length = models.DecimalField(decimal_places=10, max_digits=24, blank=True, null=True)
+    coundist = models.IntegerField(primary_key=True, blank=False, null=False)
+    shapearea = models.DecimalField(decimal_places=10, max_digits=24, blank=True, null=True)
+    shapelength = models.DecimalField(decimal_places=10, max_digits=24, blank=True, null=True)
     geometry = JSONField(blank=False, null=False)
     council_member_name = models.TextField(blank=True, null=True)
 
+    @classmethod
+    def transform_self(self, file_path):
+        return from_council_geojson(file_path)
+
     def __str__(self):
-        return self
+        return str(self.coundist)
 
 
 class Building(models.Model):

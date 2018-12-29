@@ -12,6 +12,10 @@ from core.utils.database import seed_csv_file
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
 
+def clean_tests():
+    DataFile.objects.all().delete()
+
+
 def get_file(name):
     base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
     test_file = os.path.join(base_dir, "DAP-Council/core/tests/" + name)
@@ -20,6 +24,9 @@ def get_file(name):
 
 
 class UpdateTests(TestCase):
+    def tearDown(self):
+        clean_tests()
+
     def test_create_update(self):
         dataset = Dataset.objects.create(name="mock", model_name="Building")
         file = DataFile.objects.create(file=get_file('mock_csv.csv'), dataset=dataset)
@@ -28,6 +35,9 @@ class UpdateTests(TestCase):
 
 
 class DatabaseTests(TestCase):
+    def tearDown(self):
+        clean_tests()
+
     def test_seed_csv_file(self):
         dataset = Dataset.objects.create(name="mock", model_name="Building")
         file = DataFile.objects.create(file=get_file('mock_csv.csv'), dataset=dataset)
@@ -41,7 +51,7 @@ class DatabaseTests(TestCase):
     def test_seed_csv_file_with_overwrite(self):
         dataset = Dataset.objects.create(name="mock", model_name="Building")
         file = DataFile.objects.create(file=get_file('mock_csv.csv'), dataset=dataset)
-        council = Council.objects.create()
+        council = Council.objects.create(district_number=1, geometry={})
         Building.objects.create(bbl="2022600001", version="17v1", council=council,
                                 unitsres=1, unitstotal=1, yearbuilt=1900)
         Building.objects.create(bbl="2022600004", version="17v1", council=council,

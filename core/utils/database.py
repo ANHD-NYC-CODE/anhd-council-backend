@@ -1,5 +1,5 @@
 from django.db import connection, transaction, utils
-from datasets.models import Building
+from datasets.models import Building, Council
 import itertools
 
 BATCH_SIZE = 1000
@@ -26,6 +26,7 @@ def build_row_values(row):
 def seed_csv_file(dataset, rows, update=None):
     while True:
         batch = list(itertools.islice(rows, 0, BATCH_SIZE))
+
         if len(batch) == 0:
             break
         else:
@@ -37,6 +38,7 @@ def insert_rows(rows, table_name, update=None):
     rows_created = 0
     rows_updated = 0
     with connection.cursor() as curs:
+
         for row in rows:
             try:
                 with transaction.atomic():
