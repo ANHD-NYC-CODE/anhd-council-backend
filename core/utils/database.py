@@ -12,10 +12,15 @@ def query(table_name, row):
     return sql.format(table_name=table_name, fields=fields, values=placeholders)
 
 
-def update_query(table_name, row):
+# def update_query(table_name, row):
+#     fields = ', '.join(['{key} = %s'.format(key=key) for key in row.keys()])
+#     sql = 'UPDATE {table_name} SET {fields} WHERE(bbl=%s);'
+#     return sql.format(table_name=table_name, fields=fields, bbl=row['bbl'])
+
+def update_query(table_name, row, primary_key):
     fields = ', '.join(['{key} = %s'.format(key=key) for key in row.keys()])
-    sql = 'UPDATE {table_name} SET {fields} WHERE(bbl=%s);'
-    return sql.format(table_name=table_name, fields=fields, bbl=row['bbl'])
+    sql = 'UPDATE {table_name} SET {fields} WHERE({pk}=%s);'
+    return sql.format(table_name=table_name, fields=fields, pk=primary_key)
 
 
 def build_row_values(row):
@@ -30,10 +35,12 @@ def seed_generator_rows(model_name, rows, update=None):
         if len(batch) == 0:
             break
         else:
-            insert_rows(batch, eval(model_name)._meta.db_table, update)
+            insert_rows(batch, eval(model_name), update)
 
 
-def insert_rows(rows, table_name, update=None):
+def insert_rows(rows, model, update=None):
+    table_name = model._meta.db_table
+    primary_key = model._meta.pk.name
     """ Inserts many row, all in the same transaction"""
     rows_created = 0
     rows_updated = 0
@@ -47,9 +54,10 @@ def insert_rows(rows, table_name, update=None):
             except utils.IntegrityError as e:
                 if 'unique constraint' in str(e):
                     with transaction.atomic():
-                        curs.execute(update_query(table_name, row), build_row_values(row) + (row['bbl'],))
+                        curs.execute(update_query(table_name, row, primary_key),
+                                     build_row_values(row) + (row[primary_key],))
                         rows_updated = rows_updated + 1
-                        print("Updating row with BBL: " + row['bbl'])
+                        print("Updating {} row with {}: {}".format(table_name, primary_key, row[primary_key]))
                 print(e)
                 pass
             except utils.DataError as e:

@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from core.utils.transform import to_csv, from_council_geojson, extract_csvs_from_zip, with_geo, remove_non_residential
 from django.contrib.postgres.fields import JSONField
 
@@ -20,6 +21,16 @@ class Council(models.Model):
         return str(self.coundist)
 
 
+class CurrentBuildingManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(version=self.model.current_version)
+
+
+class ObsoleteBuildingManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(~Q(version=self.model.current_version))
+
+
 class Building(models.Model):
     # 763178 +- records for residential buildings.
     # Current version: Pluto18v1
@@ -27,12 +38,19 @@ class Building(models.Model):
     # Compare the columns between the next Pluto version and this.
     # Add, but do not delete any columns if different.
     # Create a django migration to add new columns.
-    # Update the database with the latest pluto version.
+    # Create an Update with the latest pluto zip file in admin panel.
     # Existing buildings will be overritten with latest values.
     # New buildings will be added.
-    # Old buildings will not be removed.
+    # Old buildings will not be removed automatically, need manual removal.
+    # Building.obsolete.all().delete()
 
-    # from core import models; ds = models.Dataset.objects.get(model_name='Building'); file = ds.datafile_set.first(); ds.seed_file(file.file.path);
+    # 17v1.1
+    # 18V1
+    current_version = '18V1'
+    objects = models.Manager()
+    current = CurrentBuildingManager()
+    obsolete = ObsoleteBuildingManager()
+
     bbl = models.CharField(primary_key=True, max_length=10, blank=False, null=False)
     council = models.ForeignKey('Council', on_delete=models.SET_NULL, null=True,
                                 db_column='council', db_constraint=False)
