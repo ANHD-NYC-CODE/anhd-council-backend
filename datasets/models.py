@@ -26,7 +26,7 @@ class Building(models.Model):
     borough = models.TextField(blank=False, null=False)
     block = models.TextField(blank=False, null=False)
     lot = models.TextField(blank=False, null=False)
-    cd = models.SmallIntegerField(blank=False, null=False)
+    cd = models.SmallIntegerField(blank=True, null=True)
     ct2010 = models.TextField(blank=True, null=True)
     cb2010 = models.TextField(blank=True, null=True)
     schooldist = models.SmallIntegerField(blank=True, null=True)
