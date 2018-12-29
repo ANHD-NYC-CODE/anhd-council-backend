@@ -68,7 +68,7 @@ class Update(models.Model):
     task_result = models.ForeignKey(TaskResult, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
-        return self.dataset.name
+        return str(self.id)
 
 
 @receiver(models.signals.post_save, sender=Update)
