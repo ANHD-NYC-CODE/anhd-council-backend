@@ -11,7 +11,7 @@ import time
 import os
 import itertools
 
-ACTIVE_MODELS = ['HPDViolation', 'Building']
+ACTIVE_MODELS = ['HPDViolation', 'Building', 'Council']
 ACTIVE_MODELS_CHOICES = list(map(lambda model: (model, model), ACTIVE_MODELS))
 
 
