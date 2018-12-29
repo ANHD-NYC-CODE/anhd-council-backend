@@ -114,8 +114,8 @@ class UpdateAdmin(admin.ModelAdmin):
     def task_result_link(self, task_result):
         return task_result.status
 
-    list_display = ['id', 'dataset_link', 'created_date', 'model_name', 'file_link',
-                    'rows_updated', 'rows_created', 'task_id', 'task_result_link']
+    list_display = ['id', 'dataset_link', 'model_name', 'file_link',
+                    'rows_updated', 'rows_created', 'created_date', 'completed_date',  'task_id', 'task_result_link']
 
     list_select_related = (
         'task_result',
