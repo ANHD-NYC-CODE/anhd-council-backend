@@ -81,8 +81,8 @@ def auto_seed_file_on_create(sender, instance, created, **kwargs):
     def on_commit():
         print("commit")
         if created and instance.file and os.path.isfile(instance.file.file.path):
-            from core.tasks import async_seed_csv_file
-            worker = async_seed_csv_file.delay(instance.dataset.id, instance.file.id, instance.id)
+            from core.tasks import async_seed_generator_rows
+            worker = async_seed_generator_rows.delay(instance.dataset.id, instance.file.id, instance.id)
             instance.task_id = worker.id
             instance.save()
         elif created:
@@ -93,7 +93,7 @@ def auto_seed_file_on_create(sender, instance, created, **kwargs):
 @receiver(models.signals.post_save, sender=TaskResult)
 def add_task_result_to_update(sender, instance, created, **kwargs):
     def on_commit():
-        if created and instance.task_name == 'core.tasks.async_seed_csv_file':
+        if created and instance.task_name == 'core.tasks.async_seed_generator_rows':
             u = Update.objects.get(task_id=instance.task_id)
             u.task_result = instance
             u.save()

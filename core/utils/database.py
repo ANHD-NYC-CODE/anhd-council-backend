@@ -23,14 +23,14 @@ def build_row_values(row):
     return tuple(None if x == '' else x for x in t_row)
 
 
-def seed_csv_file(dataset, rows, update=None):
+def seed_generator_rows(model_name, rows, update=None):
     while True:
         batch = list(itertools.islice(rows, 0, BATCH_SIZE))
 
         if len(batch) == 0:
             break
         else:
-            insert_rows(batch, eval(dataset.model_name)._meta.db_table, update)
+            insert_rows(batch, eval(model_name)._meta.db_table, update)
 
 
 def insert_rows(rows, table_name, update=None):
