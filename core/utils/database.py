@@ -12,6 +12,12 @@ def query(table_name, row):
     return sql.format(table_name=table_name, fields=fields, values=placeholders)
 
 
+def update_query(table_name, row):
+    fields = ', '.join(['{key} = %s'.format(key=key) for key in row.keys()])
+    sql = 'UPDATE {table_name} SET {fields} WHERE(bbl=%s);'
+    return sql.format(table_name=table_name, fields=fields, bbl=row['bbl'])
+
+
 def build_row_values(row):
     t_row = tuple(row.values())
     return tuple(None if x == '' else x for x in t_row)
@@ -33,13 +39,21 @@ def insert_rows(rows, table_name, update=None):
     with connection.cursor() as curs:
         for row in rows:
             try:
-                curs.execute(query(table_name, row), build_row_values(row))
-                rows_created = rows_created + 1
+                with transaction.atomic():
+                    curs.execute(query(table_name, row), build_row_values(row))
+                    rows_created = rows_created + 1
             except utils.IntegrityError as e:
-                # rows_update = rows_updated + 1
+                if 'unique constraint' in str(e):
+                    with transaction.atomic():
+                        curs.execute(update_query(table_name, row), build_row_values(row) + (row['bbl'],))
+                        rows_updated = rows_updated + 1
+                        print("Updating row with BBL: " + row['bbl'])
                 print(e)
+                pass
             except utils.DataError as e:
                 print(e)
+                pass
+
         curs.execute("SELECT COUNT(*) FROM {}".format(table_name))
         print(curs.fetchone())
 
