@@ -90,14 +90,13 @@ def auto_seed_file_on_create(sender, instance, created, **kwargs):
     transaction.on_commit(lambda: on_commit())
 
 
-# Does not work - TaskResult models don't send post_save signals
-# https://github.com/celery/django-celery-results/issues/41
 @receiver(models.signals.post_save, sender=TaskResult)
 def add_task_result_to_update(sender, instance, created, **kwargs):
     def on_commit():
         if created:
             u = Update.objects.filter(task_id=instance.task_id).first()
             if u:
+                u.completed_date = time.time()
                 u.task_result = instance
                 u.save()
 
