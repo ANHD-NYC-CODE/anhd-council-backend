@@ -1,8 +1,15 @@
 from django.db import models
 from core.utils.transform import to_csv, extract_csvs_from_zip, with_geo, remove_non_residential
+from django.contrib.postgres.fields import JSONField
 
 
 class Council(models.Model):
+    district_number = models.IntegerField(primary_key=True, blank=False, null=False)
+    shape_area = models.DecimalField(decimal_places=10, max_digits=24, blank=True, null=True)
+    shape_length = models.DecimalField(decimal_places=10, max_digits=24, blank=True, null=True)
+    geometry = JSONField(blank=False, null=False)
+    council_member_name = models.TextField(blank=True, null=True)
+
     def __str__(self):
         return self
 
