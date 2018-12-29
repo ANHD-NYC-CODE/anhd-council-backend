@@ -1,36 +1,31 @@
 import os
 from django.test import TestCase
 from core.utils.database import seed_csv_file
-from core.models import Dataset, DataFile
+from core.models import Dataset
 from datasets.models import Council, Building
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-
+from app.tests.base_test import BaseTest
 # Create your tests here.
 
 
-def clean_tests():
-    DataFile.objects.all().delete()
-
-
-class BuildingTests(TestCase):
+class BuildingTests(BaseTest, TestCase):
     def tearDown(self):
-        clean_tests()
+        self.clean_tests()
 
     def test_seed_buildings(self):
         dataset = Dataset.objects.create(name="mock", model_name="Building")
-        rows = dataset.transform_dataset(os.path.join(BASE_DIR, "DAP-Council/core/tests/test_pluto_17v1.zip"))
+        rows = dataset.transform_dataset(self.get_file_path('test_pluto_17v1.zip'))
 
         seed_csv_file(dataset, rows)
         self.assertEqual(Building.objects.count(), 2)
 
 
-class CouncilTests(TestCase):
+class CouncilTests(BaseTest, TestCase):
     def tearDown(self):
-        clean_tests()
+        self.clean_tests()
 
     def test_seed_councils(self):
         dataset = Dataset.objects.create(name="mock", model_name="Council")
-        rows = dataset.transform_dataset(os.path.join(BASE_DIR, "DAP-Council/core/tests/mock_council_json.geojson"))
+        rows = dataset.transform_dataset(self.get_file_path("mock_council_json.geojson"))
 
         seed_csv_file(dataset, rows)
         self.assertEqual(Council.objects.count(), 1)
