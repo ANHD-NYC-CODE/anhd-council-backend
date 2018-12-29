@@ -1,7 +1,10 @@
 from django.contrib import admin
 from django.db.models import Count
+from django.http import HttpResponseRedirect
 from .models import Dataset, DataFile, Update
 from app.admin.mixins import admin_changelist_link, admin_link
+from core.tasks import async_download_file
+
 import requests
 import tempfile
 import re
@@ -10,6 +13,12 @@ from django.core import files
 
 
 class DatasetAdmin(admin.ModelAdmin):
+    def response_change(self, request, obj):
+        if "_download-file" in request.POST:
+            async_download_file()
+            self.message_user(request, "This file is now downloading.")
+            return HttpResponseRedirect(".")
+        return super().response_change(request, obj)
 
     @admin_changelist_link('datafile_set', ('DataFiles'), query_string=lambda c: 'dataset={}'.format(c.pk))
     def datafiles_link(self, updates):
