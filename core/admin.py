@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.db.models import Count
 from .models import Dataset, DataFile, Update
+from app.admin.mixins import admin_changelist_link, admin_link
 import requests
 import tempfile
 import re
@@ -9,12 +10,20 @@ from django.core import files
 
 
 class DatasetAdmin(admin.ModelAdmin):
-    def get_queryset(self, request):
-        qs = super(DatasetAdmin, self).get_queryset(request)
-        return qs.annotate(data_files_count=Count('datafile'))
+
+    @admin_changelist_link('datafile_set', ('DataFiles'), query_string=lambda c: 'dataset={}'.format(c.pk))
+    def datafiles_link(self, updates):
+        return ('View DateFiles')
+
+    @admin_changelist_link('update_set', ('Updates'), query_string=lambda c: 'dataset={}'.format(c.pk))
+    def updates_link(self, updates):
+        return ('View Updates')
 
     def data_files_count(self, inst):
-        return inst.data_files_count
+        return inst.datafile_set.count()
+
+    def updates_count(self, inst):
+        return inst.update_set.count()
 
     def download_file(self, request, queryset):
         for object in queryset:
@@ -62,19 +71,26 @@ class DatasetAdmin(admin.ModelAdmin):
     def has_change_permission(self, request, obj=None):
         return False
 
-    list_display = ['name', 'model_name', 'download_endpoint', 'data_files_count']
+    list_display = ['name', 'model_name', 'download_endpoint',
+                    'updates_count', 'updates_link', 'data_files_count', 'datafiles_link']
+    Dataset.objects.prefetch_related('update')
+    Dataset.objects.prefetch_related('datafile')
     ordering = ['name']
     actions = []
 
 
 class DataFileAdmin(admin.ModelAdmin):
+    @admin_link('dataset', ('Dataset'), query_string=lambda c: 'id={}'.format(c.dataset.pk))
+    def dataset_link(self, dataset):
+        return dataset
+
     def has_delete_permission(self, request, obj=None):
         return True
 
     def has_change_permission(self, request, obj=None):
         return False
 
-    list_display = ['dataset', 'uploaded_date', 'file']
+    list_display = ['id', 'dataset_link', 'uploaded_date', 'file']
     ordering = ['-uploaded_date']
     actions = []
 
@@ -86,8 +102,25 @@ class UpdateAdmin(admin.ModelAdmin):
     def has_change_permission(self, request, obj=None):
         return False
 
-    list_display = ['dataset', 'created_date', 'model_name', 'file',
-                    'completed_date', 'rows_updated', 'rows_created', 'task_result']
+    @admin_link('dataset', ('Dataset'), query_string=lambda c: 'id={}'.format(c.dataset.pk))
+    def dataset_link(self, dataset):
+        return dataset
+
+    @admin_link('file', ('File'), query_string=lambda c: 'id={}'.format(c.file.pk))
+    def file_link(self, datafile):
+        return datafile.file.name
+
+    @admin_link('task_result', ('Task Result'))
+    def task_result_link(self, task_result):
+        return task_result.status
+
+    list_display = ['id', 'dataset_link', 'created_date', 'model_name', 'file_link',
+                    'rows_updated', 'rows_created', 'task_id', 'task_result_link']
+
+    list_select_related = (
+        'task_result',
+    )
+
     ordering = ['-created_date']
     actions = []
 
