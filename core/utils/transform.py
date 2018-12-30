@@ -49,7 +49,7 @@ def clean_headers(headers):
     for old, new in replace_header_chars:
         s = s.replace(old, new)
     for name in invalid_header_names:
-        s = re.sub(r',{},'.format(re.escape(name)), ',' + name + '_name,', s, 1)
+        s = re.sub(r'\b{}\b'.format(re.escape(name)), name + '_name', s, 1)
     return [flip_numbers(x) for x in s.split(',')]
 
 
@@ -104,6 +104,23 @@ def from_council_geojson(file_path):
             row['shapelength'] = row['Shape__Length']
             row.pop('Shape__Length')
             yield row
+
+
+def to_gen(list_rows):
+    for row in list_rows:
+        headers = clean_headers(','.join(row.keys()))
+        values = list(row.values())
+        yield dict((headers[i], values[i]) for i in range(0, len(headers)))
+
+
+def transform_diff_changed(model, list_rows):
+    for i in range(0, len(list_rows)):
+        for field in list_rows[i]['fields']:
+            list_rows[i]['fields'][field] = list_rows[i]['fields'][field]['to']
+
+        list_rows[i]['fields'][model.unformatted_pk] = list_rows[i]['key'][0]
+        list_rows[i] = list_rows[i]['fields']
+    return to_gen(list_rows)
 
 
 def to_csv(file_path_or_generator):

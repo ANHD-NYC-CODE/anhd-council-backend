@@ -2,9 +2,10 @@ from django.db import models
 from django.db.models import Q
 from core.utils.transform import to_csv, from_council_geojson, extract_csvs_from_zip, with_geo, with_bbl, remove_non_residential
 from django.contrib.postgres.fields import JSONField
-from core.utils.database import seed_whole_file_from_rows, get_csv_diff
+from core.utils.database import insert_rows, seed_whole_file_from_rows, seed_from_csv_diff
 from core import models as c_models
 # from core import models; from datasets.models import Council; from core.utils import database; ds = models.Dataset.objects.get(model_name='Council'); file = ds.datafile_set.first(); rows = ds.transform_dataset(file.file.path); database.seed_whole_file_from_rows(ds.model_name, rows);
+import csvdiff
 
 
 class Council(models.Model):
@@ -159,6 +160,8 @@ class Building(models.Model):
 
 
 class HPDViolation(models.Model):
+    unformatted_pk = 'ViolationID'
+
     violationid = models.IntegerField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Building', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
@@ -210,8 +213,8 @@ class HPDViolation(models.Model):
         dataset = c_models.Dataset.objects.filter(model_name=self._meta.model.__name__).first()
         latest_update = dataset.latest_update()
         if (latest_update):
-            # get_csv_diff()
-            return
+            diff = csvdiff.diff_files(latest_update.file.file.path, kwargs['file'].file.path, [self.unformatted_pk])
+            seed_from_csv_diff(self, diff, kwargs['update'])
         else:
             return seed_whole_file_from_rows(self, **kwargs)
 

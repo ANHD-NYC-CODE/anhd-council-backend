@@ -16,7 +16,5 @@ class BaseTest():
         return os.path.join(self.BASE_DIR, "app/tests/mocks/" + name)
 
     def get_file(self, name):
-
         file_path = os.path.join(self.BASE_DIR, "app/tests/mocks/" + name)
-
         return File(open(file_path, 'rb'))
