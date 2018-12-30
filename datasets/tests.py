@@ -2,7 +2,7 @@ import os
 from django.test import TestCase
 from core.utils.database import seed_generator_rows
 from core.models import Dataset
-from datasets.models import Council, Building
+from datasets.models import Council, Building, HPDViolation
 from app.tests.base_test import BaseTest
 # Create your tests here.
 
@@ -29,3 +29,15 @@ class CouncilTests(BaseTest, TestCase):
 
         seed_generator_rows(dataset.model_name, rows)
         self.assertEqual(Council.objects.count(), 1)
+
+
+class HPDViolationTests(BaseTest, TestCase):
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_seed_councils(self):
+        dataset = Dataset.objects.create(name="mock", model_name="HPDViolation")
+        rows = dataset.transform_dataset(self.get_file_path("test_hpd_violations.csv"))
+
+        seed_generator_rows(dataset.model_name, rows)
+        self.assertEqual(HPDViolation.objects.count(), 4)
