@@ -1,6 +1,6 @@
 from django.db import models
 from django.db.models import Q
-from core.utils.transform import to_csv, from_council_geojson, extract_csvs_from_zip, with_geo, remove_non_residential
+from core.utils.transform import to_csv, from_council_geojson, extract_csvs_from_zip, with_geo, with_bbl, remove_non_residential
 from django.contrib.postgres.fields import JSONField
 
 # from core import models; from datasets.models import Council; from core.utils import database; ds = models.Dataset.objects.get(model_name='Council'); file = ds.datafile_set.first(); rows = ds.transform_dataset(file.file.path); database.seed_generator_rows(ds.model_name, rows);
@@ -150,9 +150,9 @@ class Building(models.Model):
 
 
 class HPDViolation(models.Model):
+    violationid = models.IntegerField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Building', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
-    violationid = models.IntegerField(primary_key=True, blank=False, null=False)
     buildingid = models.IntegerField(blank=False, null=False)
     registrationid = models.IntegerField(blank=True, null=True)
     boroid = models.CharField(blank=False, null=False, max_length=1)
@@ -199,6 +199,22 @@ class HPDViolation(models.Model):
     def __str__(self):
         return self.name
 
+# ACRIS
+# combines Real Properties Master (has mortages)
+# Real Properties Legal (has bbl)
+# Real Properties Parties (has names)
+# into 1 table
+# joined on document_id
+# and linked to buildings with FK bbl
+
+
+# class PropertyRecord(models.Model):
+#     @classmethod
+#     def transform_self(self, file_path):
+#         return with_bbl(to_csv(file_path))
+#
+#     def __str__(self):
+#         return self.document_id
 
 # Testing
 

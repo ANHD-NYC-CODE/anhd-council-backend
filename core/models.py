@@ -24,6 +24,13 @@ class Dataset(models.Model):
     def transform_dataset(self, file_path):
         return eval(self.model_name).transform_self(file_path)
 
+    def last_update(self):
+        try:
+            latest = self.update_set.filter(task_result__status="SUCCESS").latest('created_date')
+        except Exception as e:
+            latest = None
+        return latest
+
     def latest_file(self):
         return self.datafile_set.latest('uploaded_date')
 
@@ -32,7 +39,10 @@ class Dataset(models.Model):
 
 
 def construct_directory_path(instance, filename):
-    return '{0}/{1}'.format('./', "{0}-{1}".format(time.time(), filename))
+    split_filename = filename.split('.')
+    name = split_filename[0]
+    extension = split_filename[1]
+    return '{0}/{1}'.format('./', "{0}__{1}.{2}".format(name, time.time(), extension))
 
 
 class DataFile(models.Model):
@@ -96,7 +106,7 @@ def add_task_result_to_update(sender, instance, created, **kwargs):
         if created:
             u = Update.objects.filter(task_id=instance.task_id).first()
             if u:
-                u.completed_date = time.time()
+                u.completed_date = timezone.now
                 u.task_result = instance
                 u.save()
 
