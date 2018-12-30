@@ -14,11 +14,25 @@ services:
   #     - '5000:5000'
   #   networks:
   #     - network1
+
+  # celery:
+  #   build: .
+  #   command: celery -A app worker -l info
+  # https://www.distributedpython.com/2018/10/13/flower-docker/
+  flower:
+    image: mher/flower
+    environment:
+    - CELERY_BROKER_URL=redis://redis
+    - FLOWER_PORT=8888
+    ports:
+      - 8888:8888
+    networks:
+      - network1
   redis:
     hostname: redis
     image: redis:latest
     ports:
-        - 1235:3000
+        - 6378:6379
     networks:
       - network1
   postgres:

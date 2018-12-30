@@ -129,5 +129,5 @@ MEDIA_URL = '/data/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'data')
 
 CELERY_RESULT_BACKEND = 'django-db'
-CELERY_BROKER = 'redis://localhost'
+CELERY_BROKER_URL = 'redis://localhost:6378'
 CELERY_BACKEND = 'rpc://'

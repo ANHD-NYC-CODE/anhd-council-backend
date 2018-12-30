@@ -7,7 +7,7 @@ from app import settings
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'app.settings')
 
-app = Celery('app', broker=settings.CELERY_BROKER,
+app = Celery('app', broker=settings.CELERY_BROKER_URL,
              backend=settings.CELERY_BACKEND, include=['app.tasks'])
 
 # Using a string here means the worker doesn't have to serialize
