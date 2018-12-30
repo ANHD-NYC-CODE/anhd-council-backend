@@ -1,13 +1,15 @@
 from django.db import connection, transaction, utils
+from core.utils.transform import to_gen, transform_diff_changed
 import itertools
-import csvdiff
 
 BATCH_SIZE = 1000
 
 
-def get_csv_diff(file1, file2):
-    import pdb
-    pdb.set_trace()
+def seed_from_csv_diff(model, diff, update=None):
+    added_rows = to_gen(diff['added'])
+    changed_rows = transform_diff_changed(model, diff['changed'])
+    all_rows = itertools.chain(added_rows, changed_rows)
+    insert_rows(all_rows, model, update)
 
 
 def query(table_name, row):
@@ -54,13 +56,18 @@ def insert_rows(rows, model, update=None):
                     curs.execute(query(table_name, row), build_row_values(row))
                     rows_created = rows_created + 1
             except utils.IntegrityError as e:
-                # If unique value already exists, overrite with the new entry
-                if 'unique constraint' in str(e):
+                # If unique value already exists,
+                # or if the query is missing columns -
+                # overrite with the new entry and with whatever columns exist
+                if 'unique constraint' in str(e) or 'not-null constraint' in str(e):
                     with transaction.atomic():
-                        curs.execute(update_query(table_name, row, primary_key),
-                                     build_row_values(row) + (row[primary_key],))
-                        rows_updated = rows_updated + 1
-                        print("Updating {} row with {}: {}".format(table_name, primary_key, row[primary_key]))
+                        try:
+                            curs.execute(update_query(table_name, row, primary_key),
+                                         build_row_values(row) + (row[primary_key],))
+                            rows_updated = rows_updated + 1
+                            print("Updating {} row with {}: {}".format(table_name, primary_key, row[primary_key]))
+                        except Exception as e:
+                            print(e)
                 if 'foreign key constraint' in str(e):
                     print("No matching foreign key record.")
                 print(e)
