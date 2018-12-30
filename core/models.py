@@ -3,10 +3,9 @@ from django.db import models, transaction
 from django.dispatch import receiver
 from django.apps import apps
 
-from .utils.utility import dict_to_model
-from .utils.database import insert_rows
 from django_celery_results.models import TaskResult
-from datasets.models import Building, Council, HPDViolation
+from datasets import models as dataset_models
+
 import time
 import os
 import itertools
@@ -22,9 +21,12 @@ class Dataset(models.Model):
     uploaded_date = models.DateTimeField(default=timezone.now)
 
     def transform_dataset(self, file_path):
-        return eval(self.model_name).transform_self(file_path)
+        return getattr(dataset_models, self.model_name).transform_self(file_path)
 
-    def last_update(self):
+    def seed_dataset(self, *args):
+        return getattr(dataset_models, self.model_name).seed_self(*args)
+
+    def latest_update(self):
         try:
             latest = self.update_set.filter(task_result__status="SUCCESS").latest('created_date')
         except Exception as e:
@@ -82,7 +84,7 @@ class Update(models.Model):
 
 
 @receiver(models.signals.post_save, sender=Update)
-def auto_seed_file_on_create(sender, instance, created, **kwargs):
+def auto_seed_whole_file_from_rows_on_create(sender, instance, created, **kwargs):
     """
     Seeds file in DB
     when corresponding `Update` object is created.
@@ -91,8 +93,8 @@ def auto_seed_file_on_create(sender, instance, created, **kwargs):
     def on_commit():
         print("commit")
         if created and instance.file and os.path.isfile(instance.file.file.path):
-            from core.tasks import async_seed_generator_rows
-            worker = async_seed_generator_rows.delay(instance.dataset.id, instance.file.id, instance.id)
+            from core.tasks import async_seed_file
+            worker = async_seed_file.delay(instance.dataset.id, instance.file.id, instance.id)
             instance.task_id = worker.id
             instance.save()
         elif created:
