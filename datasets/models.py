@@ -219,7 +219,7 @@ class HPDViolation(models.Model):
             return seed_whole_file_from_rows(self, **kwargs)
 
     def __str__(self):
-        return self.name
+        return str(self.violationid)
 
 # ACRIS
 # combines Real Properties Master (has mortages)
