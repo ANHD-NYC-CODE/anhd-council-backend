@@ -2,7 +2,8 @@ from django.db import models
 from django.db.models import Q
 from core.utils.transform import to_csv, from_council_geojson, extract_csvs_from_zip, with_geo, with_bbl, remove_non_residential
 from django.contrib.postgres.fields import JSONField
-from core.utils.database import seed_whole_file_from_rows
+from core.utils.database import seed_whole_file_from_rows, get_csv_diff
+from core import models as c_models
 # from core import models; from datasets.models import Council; from core.utils import database; ds = models.Dataset.objects.get(model_name='Council'); file = ds.datafile_set.first(); rows = ds.transform_dataset(file.file.path); database.seed_whole_file_from_rows(ds.model_name, rows);
 
 
@@ -18,8 +19,8 @@ class Council(models.Model):
         return from_council_geojson(file_path)
 
     @classmethod
-    def seed_self(self, *args):
-        return seed_whole_file_from_rows(self, *args)
+    def seed_or_update_self(self, **kwargs):
+        return seed_whole_file_from_rows(self, **kwargs)
 
     def __str__(self):
         return str(self.coundist)
@@ -150,8 +151,8 @@ class Building(models.Model):
         return with_geo(remove_non_residential(to_csv(extract_csvs_from_zip(file_path))))
 
     @classmethod
-    def seed_self(self, *args):
-        return seed_whole_file_from_rows(self, *args)
+    def seed_or_update_self(self, **kwargs):
+        return seed_whole_file_from_rows(self, **kwargs)
 
     def __str__(self):
         return self.bbl
@@ -203,6 +204,16 @@ class HPDViolation(models.Model):
     @classmethod
     def transform_self(self, file_path):
         return to_csv(file_path)
+
+    @classmethod
+    def seed_or_update_self(self, **kwargs):
+        dataset = c_models.Dataset.objects.filter(model_name=self._meta.model.__name__).first()
+        latest_update = dataset.latest_update()
+        if (latest_update):
+            # get_csv_diff()
+            return
+        else:
+            return seed_whole_file_from_rows(self, **kwargs)
 
     def __str__(self):
         return self.name

@@ -1,7 +1,9 @@
 from core.models import DataFile
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.files import File
 
 import os
+import zipfile
 
 
 class BaseTest():
@@ -14,5 +16,7 @@ class BaseTest():
         return os.path.join(self.BASE_DIR, "app/tests/mocks/" + name)
 
     def get_file(self, name):
-        test_file = os.path.join(self.BASE_DIR, "app/tests/mocks/" + name)
-        return SimpleUploadedFile(name, open(test_file, 'r').read().encode('utf-8'))
+
+        file_path = os.path.join(self.BASE_DIR, "app/tests/mocks/" + name)
+
+        return File(open(file_path, 'rb'))

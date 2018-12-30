@@ -1,7 +1,13 @@
 from django.db import connection, transaction, utils
 import itertools
+import csvdiff
 
 BATCH_SIZE = 1000
+
+
+def get_csv_diff(file1, file2):
+    import pdb
+    pdb.set_trace()
 
 
 def query(table_name, row):
@@ -22,7 +28,9 @@ def build_row_values(row):
     return tuple(None if x == '' else x for x in t_row)
 
 
-def seed_whole_file_from_rows(model_class, rows, update=None):
+def seed_whole_file_from_rows(model_class, file, update=None):
+    rows = model_class.transform_self(file.file.path)
+
     while True:
         batch = list(itertools.islice(rows, 0, BATCH_SIZE))
 

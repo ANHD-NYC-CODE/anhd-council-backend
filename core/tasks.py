@@ -18,9 +18,8 @@ def async_seed_file(self, dataset_id, file_id, update_id):
     dataset = Dataset.objects.get(id=dataset_id)
     file = DataFile.objects.get(id=file_id)
     update = Update.objects.get(id=update_id)
-    rows = dataset.transform_dataset(file.file.path)
 
-    dataset.seed_dataset(rows, update)
+    dataset.seed_dataset(file=file, update=update)
 
 
 @app.task(bind=True)

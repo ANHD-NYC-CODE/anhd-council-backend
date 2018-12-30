@@ -23,8 +23,8 @@ class Dataset(models.Model):
     def transform_dataset(self, file_path):
         return getattr(dataset_models, self.model_name).transform_self(file_path)
 
-    def seed_dataset(self, *args):
-        return getattr(dataset_models, self.model_name).seed_self(*args)
+    def seed_dataset(self, **kwargs):
+        return getattr(dataset_models, self.model_name).seed_or_update_self(**kwargs)
 
     def latest_update(self):
         try:
