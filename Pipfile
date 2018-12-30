@@ -14,6 +14,7 @@ pyproj = "*"
 celery = "*"
 django-celery-results = "*"
 redis = "*"
+csvdiff = "*"
 
 [requires]
 python_version = "3.5"
