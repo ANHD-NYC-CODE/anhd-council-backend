@@ -1,5 +1,4 @@
 from django.db import connection, transaction, utils
-from datasets.models import Building, Council, HPDViolation
 import itertools
 
 BATCH_SIZE = 1000
@@ -23,14 +22,14 @@ def build_row_values(row):
     return tuple(None if x == '' else x for x in t_row)
 
 
-def seed_generator_rows(model_name, rows, update=None):
+def seed_whole_file_from_rows(model_class, rows, update=None):
     while True:
         batch = list(itertools.islice(rows, 0, BATCH_SIZE))
 
         if len(batch) == 0:
             break
         else:
-            insert_rows(batch, eval(model_name), update)
+            insert_rows(batch, model_class, update)
 
 
 def insert_rows(rows, model, update=None):

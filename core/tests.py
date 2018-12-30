@@ -4,7 +4,7 @@ from core.models import Update, Dataset, DataFile
 from datasets.models import Council, Building
 from django.core.files import File
 from django.db import transaction, connection
-from core.utils.database import seed_generator_rows
+from core.utils.database import seed_whole_file_from_rows
 from app.tests.base_test import BaseTest
 
 
@@ -26,17 +26,17 @@ class DatabaseTests(BaseTest, TestCase):
     def tearDown(self):
         self.clean_tests()
 
-    def test_seed_generator_rows(self):
+    def test_seed_whole_file_from_rows(self):
         dataset = Dataset.objects.create(name="mock", model_name="Building")
         file = DataFile.objects.create(file=self.get_file('mock_csv.csv'), dataset=dataset)
         update = Update.objects.create(model_name='Building', file=file)
         rows = dataset.transform_dataset(self.get_file_path("test_pluto_17v1.zip"))
 
-        seed_generator_rows(dataset.model_name, rows, update)
+        seed_whole_file_from_rows(Building, rows, update)
         self.assertEqual(Building.objects.count(), 2)
         self.assertEqual(update.rows_created, 2)
 
-    def test_seed_generator_rows_with_overwrite(self):
+    def test_seed_whole_file_from_rows_with_overwrite(self):
         dataset = Dataset.objects.create(name="mock", model_name="Building")
         file = DataFile.objects.create(file=self.get_file('mock_csv.csv'), dataset=dataset)
         council = Council.objects.create(coundist=1, geometry={})
@@ -47,7 +47,7 @@ class DatabaseTests(BaseTest, TestCase):
 
         update = Update.objects.create(model_name='Building', file=file)
         rows_18 = dataset.transform_dataset(self.get_file_path("test_pluto_18v1.zip"))
-        seed_generator_rows(dataset.model_name, rows_18, update)
+        seed_whole_file_from_rows(Building, rows_18, update)
 
         self.assertEqual(update.rows_created, 1)
         self.assertEqual(update.rows_updated, 1)
