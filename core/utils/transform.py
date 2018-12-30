@@ -49,7 +49,7 @@ def clean_headers(headers):
     for old, new in replace_header_chars:
         s = s.replace(old, new)
     for name in invalid_header_names:
-        s = re.sub(r"\" + re.escape(name) + \"", name + '_name', s, 1)
+        s = re.sub(r',{},'.format(re.escape(name)), ',' + name + '_name,', s, 1)
     return [flip_numbers(x) for x in s.split(',')]
 
 

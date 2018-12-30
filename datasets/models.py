@@ -32,6 +32,11 @@ class ObsoleteBuildingManager(models.Manager):
 
 
 class Building(models.Model):
+    current_version = '18V1'
+    objects = models.Manager()
+    current = CurrentBuildingManager()
+    obsolete = ObsoleteBuildingManager()
+
     # 763178 +- records for residential buildings.
     # Current version: Pluto18v1
     # To update to latest Pluto version,
@@ -43,14 +48,6 @@ class Building(models.Model):
     # New buildings will be added.
     # Old buildings will not be removed automatically, need manual removal.
     # Building.obsolete.all().delete()
-
-    # 17v1.1
-    # 18V1
-    current_version = '18V1'
-    objects = models.Manager()
-    current = CurrentBuildingManager()
-    obsolete = ObsoleteBuildingManager()
-
     bbl = models.CharField(primary_key=True, max_length=10, blank=False, null=False)
     council = models.ForeignKey('Council', on_delete=models.SET_NULL, null=True,
                                 db_column='council', db_constraint=False)
@@ -152,56 +149,55 @@ class Building(models.Model):
         return self.bbl
 
 
-# class HPDViolation(models.Model):
-#     # from core import models; ds = models.Dataset.objects.first(); ds.seed_file(ds.latest_file().file.path);
-#     building = models.ForeignKey(self.building_model, on_delete=models.SET_NULL, null=True, default=set_building_id)
-#     violationid = models.IntegerField(unique=True, blank=False, null=False)
-#     buildingid = models.IntegerField(blank=False, null=False)
-#     registrationid = models.IntegerField(blank=True, null=True)
-#     boroid = models.CharField(blank=False, null=False, max_length=1)
-#     borough = models.TextField(db_index=True)
-#     housenumber = models.TextField()
-#     lowhousenumber = models.TextField(blank=True, null=True)
-#     highhousenumber = models.TextField(blank=True, null=True)
-#     streetname = models.TextField()
-#     streetcode = models.TextField(blank=True, null=True)
-#     postcode = models.CharField(max_length=5, blank=True, null=True)
-#     apartment = models.TextField(blank=True, null=True)
-#     story = models.TextField(blank=True, null=True)
-#     block = models.TextField(blank=True, null=True)
-#     lot = models.TextField(blank=True, null=True)
-#     class_name = models.CharField(max_length=1)
-#     inspectiondate = models.DateTimeField(db_index=True, blank=True, null=True)
-#     approveddate = models.DateTimeField(blank=True, null=True)
-#     originalcertifybydate = models.DateTimeField(blank=True, null=True)
-#     originalcorrectbydate = models.DateTimeField(blank=True, null=True)
-#     newcertifybydate = models.DateTimeField(blank=True, null=True)
-#     newcorrectbydate = models.DateTimeField(blank=True, null=True)
-#     certifieddate = models.DateTimeField(blank=True, null=True)
-#     ordernumber = models.TextField(blank=True, null=True)
-#     novid = models.IntegerField(blank=True, null=True)
-#     novdescription = models.TextField(blank=True, null=True)
-#     novissueddate = models.DateTimeField(blank=True, null=True)
-#     currentstatusid = models.SmallIntegerField(db_index=True)
-#     currentstatus = models.TextField(db_index=True)
-#     currentstatusdate = models.DateTimeField(db_index=True, blank=True, null=True)
-#     novtype = models.TextField(blank=True, null=True)
-#     violationstatus = models.TextField(db_index=True)
-#     latitude = models.DecimalField(decimal_places=8, max_digits=32, blank=True, null=True)
-#     longitude = models.DecimalField(decimal_places=8, max_digits=32, blank=True, null=True)
-#     communityboard = models.TextField(blank=True, null=True)
-#     councildistrict = models.SmallIntegerField(blank=True, null=True)
-#     censustract = models.TextField(blank=True, null=True)
-#     bin = models.IntegerField(db_index=True, blank=True, null=True)
-#     bbl = models.CharField(db_index=True, max_length=10, null=False)
-#     nta = models.TextField(blank=True, null=True)
-#
-#     @classmethod
-#     def transform_self(self, file_path):
-#         return to_csv(file_path)
-#
-#     def __str__(self):
-#         return self.name
+class HPDViolation(models.Model):
+    bbl = models.ForeignKey('Building', db_column='bbl', db_constraint=False,
+                            on_delete=models.SET_NULL, null=True, blank=False)
+    violationid = models.IntegerField(primary_key=True, blank=False, null=False)
+    buildingid = models.IntegerField(blank=False, null=False)
+    registrationid = models.IntegerField(blank=True, null=True)
+    boroid = models.CharField(blank=False, null=False, max_length=1)
+    borough = models.TextField(db_index=True)
+    housenumber = models.TextField()
+    lowhousenumber = models.TextField(blank=True, null=True)
+    highhousenumber = models.TextField(blank=True, null=True)
+    streetname = models.TextField()
+    streetcode = models.TextField(blank=True, null=True)
+    postcode = models.CharField(max_length=5, blank=True, null=True)
+    apartment = models.TextField(blank=True, null=True)
+    story = models.TextField(blank=True, null=True)
+    block = models.TextField(blank=True, null=True)
+    lot = models.TextField(blank=True, null=True)
+    class_name = models.CharField(max_length=1)
+    inspectiondate = models.DateTimeField(db_index=True, blank=True, null=True)
+    approveddate = models.DateTimeField(blank=True, null=True)
+    originalcertifybydate = models.DateTimeField(blank=True, null=True)
+    originalcorrectbydate = models.DateTimeField(blank=True, null=True)
+    newcertifybydate = models.DateTimeField(blank=True, null=True)
+    newcorrectbydate = models.DateTimeField(blank=True, null=True)
+    certifieddate = models.DateTimeField(blank=True, null=True)
+    ordernumber = models.TextField(blank=True, null=True)
+    novid = models.IntegerField(blank=True, null=True)
+    novdescription = models.TextField(blank=True, null=True)
+    novissueddate = models.DateTimeField(blank=True, null=True)
+    currentstatusid = models.SmallIntegerField(db_index=True)
+    currentstatus = models.TextField(db_index=True)
+    currentstatusdate = models.DateTimeField(db_index=True, blank=True, null=True)
+    novtype = models.TextField(blank=True, null=True)
+    violationstatus = models.TextField(db_index=True)
+    latitude = models.DecimalField(decimal_places=8, max_digits=32, blank=True, null=True)
+    longitude = models.DecimalField(decimal_places=8, max_digits=32, blank=True, null=True)
+    communityboard = models.TextField(blank=True, null=True)
+    councildistrict = models.SmallIntegerField(blank=True, null=True)
+    censustract = models.TextField(blank=True, null=True)
+    bin = models.IntegerField(db_index=True, blank=True, null=True)
+    nta = models.TextField(blank=True, null=True)
+
+    @classmethod
+    def transform_self(self, file_path):
+        return to_csv(file_path)
+
+    def __str__(self):
+        return self.name
 
 
 # Testing

@@ -6,7 +6,7 @@ from django.apps import apps
 from .utils.utility import dict_to_model
 from .utils.database import insert_rows
 from django_celery_results.models import TaskResult
-from datasets.models import Building, Council
+from datasets.models import Building, Council, HPDViolation
 import time
 import os
 import itertools
