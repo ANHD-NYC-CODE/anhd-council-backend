@@ -2,13 +2,14 @@ from django.utils import timezone
 from django.db import models, transaction
 from django.dispatch import receiver
 from django.apps import apps
-
+from django.conf import settings
 from django_celery_results.models import TaskResult
 from datasets import models as dataset_models
 
 import time
 import os
 import itertools
+
 
 ACTIVE_MODELS = ['HPDViolation', 'Building', 'Council']
 ACTIVE_MODELS_CHOICES = list(map(lambda model: (model, model), ACTIVE_MODELS))
@@ -44,7 +45,7 @@ def construct_directory_path(instance, filename):
     split_filename = filename.split('.')
     name = split_filename[0]
     extension = split_filename[1]
-    return '{0}/{1}'.format('./', "{0}__{1}.{2}".format(name, time.time(), extension))
+    return '{0}/{1}'.format(settings.MEDIA_ROOT, "{0}__{1}.{2}".format(name, time.time(), extension))
 
 
 class DataFile(models.Model):
