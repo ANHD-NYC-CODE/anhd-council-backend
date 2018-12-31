@@ -205,6 +205,10 @@ class HPDViolation(models.Model):
     nta = models.TextField(blank=True, null=True)
 
     @classmethod
+    def get_dataset(self):
+        return c_models.Dataset.objects.filter(model_name=self.__name__).first()
+
+    @classmethod
     def transform_self(self, file_path):
         return to_csv(file_path)
 
@@ -212,7 +216,12 @@ class HPDViolation(models.Model):
     def seed_or_update_self(self, **kwargs):
         dataset = c_models.Dataset.objects.filter(model_name=self._meta.model.__name__).first()
         latest_update = dataset.latest_update()
-        if (latest_update):
+        try:
+            previous_file = latest_update.file.file.file
+        except Exception as e:
+            raise Exception("Missing file - {}".format(e))
+
+        if (latest_update and previous_file):
             diff = csvdiff.diff_files(latest_update.file.file.path, kwargs['file'].file.path, [self.unformatted_pk])
             seed_from_csv_diff(self, diff, kwargs['update'])
         else:
