@@ -216,10 +216,11 @@ class HPDViolation(models.Model):
     def seed_or_update_self(self, **kwargs):
         dataset = c_models.Dataset.objects.filter(model_name=self._meta.model.__name__).first()
         latest_update = dataset.latest_update()
+        previous_file = None
         try:
             previous_file = latest_update.file.file.file
         except Exception as e:
-            raise Exception("Missing file - {}".format(e))
+            print("Missing file - {}".format(e))
 
         if (latest_update and previous_file):
             diff = csvdiff.diff_files(latest_update.file.file.path, kwargs['file'].file.path, [self.unformatted_pk])
