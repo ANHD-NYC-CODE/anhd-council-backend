@@ -2,10 +2,10 @@ from __future__ import absolute_import, unicode_literals
 import os
 import sys
 from celery import Celery
-from app import settings
+from django.conf import settings
 
 # set the default Django settings module for the 'celery' program.
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'app.settings')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "app.settings.development")
 
 app = Celery('app', broker=settings.CELERY_BROKER_URL,
              backend=settings.CELERY_BACKEND, include=['app.tasks'])
