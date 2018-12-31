@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.conf import settings
 from django.db.models import Count
 from django.http import HttpResponseRedirect
 from .models import Dataset, DataFile, Update
@@ -11,7 +12,7 @@ class DatasetAdmin(admin.ModelAdmin):
         if "_download-file" in request.POST:
             worker = async_download_file.delay(obj.id)
             self.message_user(
-                request, "This file is now downloading with worker {}. Please view status in Flower.".format(worker.id))
+                request, "This file is now downloading with worker {}. Please view monitor the status in Flower. {}".format(worker.id, settings.FLOWER_URL))
             return HttpResponseRedirect(".")
         return super().response_change(request, obj)
 
