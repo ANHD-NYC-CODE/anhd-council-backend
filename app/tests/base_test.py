@@ -8,7 +8,6 @@ import zipfile
 
 class BaseTest():
     def clean_tests(self):
-        return
         DataFile.objects.all().delete()
 
     def get_file_path(self, name):
