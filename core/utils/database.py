@@ -1,6 +1,6 @@
 from django.db import connection, transaction, utils
-from core.utils.transform import to_gen, transform_diff_changed
-from core.utils.transform import to_csv
+from core.utils.transform import from_dict_list_to_gen
+from core.utils.transform import from_csv_file_to_gen
 from django.conf import settings
 from postgres_copy import CopyManager
 
@@ -36,7 +36,7 @@ def create_set_from_csvs(original_file_path, new_file_path, model, update):
         for row in diff:
             writer.writerow(json.loads(row))
 
-    diff_gen = to_csv(temp_file_path)
+    diff_gen = from_csv_file_to_gen(temp_file_path)
     while True:
         batch = list(itertools.islice(diff_gen, 0, BATCH_SIZE))
 
@@ -46,20 +46,7 @@ def create_set_from_csvs(original_file_path, new_file_path, model, update):
             insert_rows(batch, model, update)
 
 
-def create_copy_csv_file(original_file_path, new_file_path):
-    with open(new_file_path, 'w') as csv_file:
-        writer = csv.writer(csv_file, delimiter=',')
-        gen = to_csv(original_file_path)
-        first_row = next(gen)
-        headers = [*first_row.keys()]
-        first_values = [*first_row.values()]
-        writer.writerow(headers)
-        writer.writerow(first_values)
-        for line in gen:
-            writer.writerow([*line.values()])
-
-
-def copy_from_csv_file(file_path, model):
+def bulk_insert_from_csv(file_path, model):
     table_name = model._meta.db_table
     with open(file_path, 'r') as file:
         columns = file.readline().replace('"', '').replace('\n', '')
@@ -70,16 +57,6 @@ def copy_from_csv_file(file_path, model):
                 curs.copy_expert(sql, file)
             except Exception as e:
                 pass
-
-
-def seed_from_csv_diff(model, diff, update=None):
-    added_rows = to_gen(diff['added'])
-    changed_rows = transform_diff_changed(model, diff['changed'])
-    print("Diff results - Rows added: " + str(len(diff['added'])))
-    print("Diff results - Rows changed: " + str(len(diff['changed'])))
-
-    all_rows = itertools.chain(added_rows, changed_rows)
-    insert_rows(all_rows, model, update)
 
 
 def query(table_name, row):
@@ -104,7 +81,7 @@ def build_row_values(row):
     return tuple(None if x == '' else x for x in t_row)
 
 
-def seed_whole_file_from_rows(model_class, file, update=None):
+def batch_insert_from_file(model_class, file, update=None):
     rows = model_class.transform_self(file.file.path)
 
     while True:

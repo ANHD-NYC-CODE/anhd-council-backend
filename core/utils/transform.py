@@ -78,7 +78,7 @@ def from_council_geojson(file_path):
     if isinstance(file_path, str):
         f = open(file_path, mode='r', encoding='utf-8', errors='replace')
     else:
-        raise ValueError("to_csv accepts Strings or Generators")
+        raise ValueError("from_csv_file_to_gen accepts Strings or Generators")
 
     with f:
         js = json.load(f)
@@ -106,24 +106,17 @@ def from_council_geojson(file_path):
             yield row
 
 
-def to_gen(list_rows):
+def from_dict_list_to_gen(list_rows):
+    """
+     from raw dict list [{header: value},...] to cleaned gen
+    """
     for row in list_rows:
         headers = clean_headers(','.join(row.keys()))
         values = list(row.values())
         yield dict((headers[i], values[i]) for i in range(0, len(headers)))
 
 
-def transform_diff_changed(model, list_rows):
-    for i in range(0, len(list_rows)):
-        for field in list_rows[i]['fields']:
-            list_rows[i]['fields'][field] = list_rows[i]['fields'][field]['to']
-
-        list_rows[i]['fields'][model.unformatted_pk] = list_rows[i]['key'][0]
-        list_rows[i] = list_rows[i]['fields']
-    return to_gen(list_rows)
-
-
-def to_csv(file_path_or_generator):
+def from_csv_file_to_gen(file_path_or_generator):
     """
     input: String | Generator
     outs: Generator
@@ -135,7 +128,7 @@ def to_csv(file_path_or_generator):
     elif isinstance(file_path_or_generator, str):
         f = open(file_path_or_generator, mode='r', encoding='utf-8', errors='replace')
     else:
-        raise ValueError("to_csv accepts Strings or Generators")
+        raise ValueError("from_csv_file_to_gen accepts Strings or Generators")
 
     with f:
         headers = clean_headers(f.readline())

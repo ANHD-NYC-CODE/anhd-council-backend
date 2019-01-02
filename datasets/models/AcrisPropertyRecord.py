@@ -1,6 +1,6 @@
 from django.db import models
 from datasets.models.Base import Base as BaseDataset
-from core.utils.transform import to_csv, with_bbl
+from core.utils.transform import from_csv_file_to_gen, with_bbl
 
 # ACRIS
 # combines Real Properties Master (has mortages)
@@ -63,7 +63,7 @@ from core.utils.transform import to_csv, with_bbl
 
 #     @classmethod
 #     def transform_self(self, file_path):
-#         return with_bbl(to_csv(file_path))
+#         return with_bbl(from_csv_file_to_gen(file_path))
 #
 #     def __str__(self):
 #         return self.document_id

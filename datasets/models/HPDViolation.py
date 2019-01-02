@@ -1,6 +1,6 @@
 from django.db import models
 from datasets.models.Base import Base as BaseDataset
-from core.utils.transform import to_csv
+from core.utils.transform import from_csv_file_to_gen
 
 
 class HPDViolation(BaseDataset, models.Model):
@@ -50,7 +50,7 @@ class HPDViolation(BaseDataset, models.Model):
 
     @classmethod
     def transform_self(self, file_path):
-        return to_csv(file_path)
+        return from_csv_file_to_gen(file_path)
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
