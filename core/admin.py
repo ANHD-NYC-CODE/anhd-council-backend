@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.conf import settings
 from django.db.models import Count
 from django.http import HttpResponseRedirect
-from .models import Dataset, DataFile, Update
+from core.models import Dataset, DataFile, Update
 from app.admin.mixins import admin_changelist_link, admin_link
 from core.tasks import async_download_file
 
