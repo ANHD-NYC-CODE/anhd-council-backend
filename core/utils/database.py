@@ -8,6 +8,7 @@ import itertools
 import csv
 import uuid
 import os
+import json
 BATCH_SIZE = 10000
 
 
@@ -20,33 +21,29 @@ def create_set_from_csvs(original_file_path, new_file_path, model, update):
     temp_file_path = os.path.join(settings.MEDIA_TEMP_ROOT, str(uuid.uuid4().hex) + '.csv')
 
     for row in new_reader:
-        new_diff_set.add(','.join(row))
+        new_diff_set.add(json.dumps(row))
 
     original_file = open(original_file_path, 'r')
     original_reader = csv.reader(original_file)
     next(original_reader, None)
     for row in original_reader:
-        original_diff_set.add(','.join(row))
+        original_diff_set.add(json.dumps(row))
 
     diff = new_diff_set - original_diff_set
-
-    with open(temp_file, 'w') as temp_file:
+    with open(temp_file_path, 'w') as temp_file:
         writer = csv.writer(temp_file, delimiter=',')
         writer.writerow(headers)
         for row in diff:
-            writer.writerow(row)
+            writer.writerow(json.loads(row))
 
-    gen = to_csv(temp_file_path)
+    diff_gen = to_csv(temp_file_path)
+    while True:
+        batch = list(itertools.islice(diff_gen, 0, BATCH_SIZE))
 
-    import pdb
-    pdb.set_trace()
-
-    new_file = open(new_file_path, 'r')
-    # new_gen = to_csv(new_file_path)
-    # diff_set = set()
-
-    import pdb
-    pdb.set_trace()
+        if len(batch) == 0:
+            break
+        else:
+            insert_rows(batch, model, update)
 
 
 def create_copy_csv_file(original_file_path, new_file_path):
@@ -72,8 +69,6 @@ def copy_from_csv_file(file_path, model):
             try:
                 curs.copy_expert(sql, file)
             except Exception as e:
-                import pdb
-                pdb.set_trace()
                 pass
 
 
