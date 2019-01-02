@@ -54,7 +54,7 @@ class HPDViolation(BaseDataset, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        return self.seed_from_diff(**kwargs)
+        return self.seed_from_set_diff(**kwargs)
 
     def __str__(self):
         return str(self.violationid)
