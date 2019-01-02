@@ -78,3 +78,5 @@ class Base():
         if (latest_update and previous_file and os.path.isfile(previous_file.path)):
             new_file_path = kwargs['update'].file.file.path
             create_set_from_csvs(previous_file.path, new_file_path, self, kwargs["update"])
+        else:
+            return seed_whole_file_from_rows(self, **kwargs)
