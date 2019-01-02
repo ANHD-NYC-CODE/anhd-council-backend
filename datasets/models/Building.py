@@ -1,7 +1,7 @@
 from django.db import models
 from django.db.models import Q
 from datasets.models.Base import Base as BaseDataset
-from core.utils.transform import to_csv, extract_csvs_from_zip, with_geo, remove_non_residential
+from core.utils.transform import from_csv_file_to_gen, extract_csvs_from_zip, with_geo, remove_non_residential
 
 
 class CurrentBuildingManager(models.Manager):
@@ -126,7 +126,7 @@ class Building(BaseDataset, models.Model):
 
     @classmethod
     def transform_self(self, file_path):
-        return with_geo(remove_non_residential(to_csv(extract_csvs_from_zip(file_path))))
+        return with_geo(remove_non_residential(from_csv_file_to_gen(extract_csvs_from_zip(file_path))))
 
     @classmethod
     def seed_or_update_self(self, **kwargs):

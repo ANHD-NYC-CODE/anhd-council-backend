@@ -4,7 +4,7 @@ from core.models import Update, Dataset, DataFile
 from datasets import models as ds_models
 from django.core.files import File
 from django.db import transaction, connection
-from core.utils.database import seed_whole_file_from_rows
+from core.utils.database import batch_insert_from_file
 from app.tests.base_test import BaseTest
 
 
@@ -26,7 +26,7 @@ class DatabaseTests(BaseTest, TestCase):
     def tearDown(self):
         self.clean_tests()
 
-    def test_seed_whole_file_from_rows(self):
+    def test_batch_insert_from_file(self):
         dataset = Dataset.objects.create(name="mock", model_name="Building")
         file = DataFile.objects.create(file=self.get_file('test_pluto_17v1.zip'), dataset=dataset)
         update = Update.objects.create(model_name='Building', file=file)
@@ -35,7 +35,7 @@ class DatabaseTests(BaseTest, TestCase):
         self.assertEqual(ds_models.Building.objects.count(), 2)
         self.assertEqual(update.rows_created, 2)
 
-    def test_seed_whole_file_from_rows_with_overwrite(self):
+    def test_batch_insert_from_file_with_overwrite(self):
         dataset = Dataset.objects.create(name="mock", model_name="Building")
         file = DataFile.objects.create(file=self.get_file('test_pluto_18v1.zip'), dataset=dataset)
         council = ds_models.Council.objects.create(coundist=1, geometry={})

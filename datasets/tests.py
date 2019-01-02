@@ -1,6 +1,6 @@
 import os
 from django.test import TestCase
-from core.utils.database import seed_whole_file_from_rows
+from core.utils.database import batch_insert_from_file
 from core.models import Dataset, Update, DataFile
 from django_celery_results.models import TaskResult
 from datasets import models as ds_models

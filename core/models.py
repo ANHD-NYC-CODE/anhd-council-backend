@@ -7,6 +7,7 @@ from django_celery_results.models import TaskResult
 from datasets import models as dataset_models
 
 import time
+import datetime
 import os
 import itertools
 
@@ -45,7 +46,7 @@ def construct_directory_path(instance, filename):
     split_filename = filename.split('.')
     name = split_filename[0]
     extension = split_filename[1]
-    return '{0}/{1}'.format(settings.MEDIA_ROOT, "{0}__{1}.{2}".format(name, time.time(), extension))
+    return '{0}/{1}'.format(settings.MEDIA_ROOT, "{0}__{1}.{2}".format(name, datetime.datetime.now().strftime("%m%d%Y%H%M%S"), extension))
 
 
 class DataFile(models.Model):
@@ -85,7 +86,7 @@ class Update(models.Model):
 
 
 @receiver(models.signals.post_save, sender=Update)
-def auto_seed_whole_file_from_rows_on_create(sender, instance, created, **kwargs):
+def auto_batch_insert_from_file_on_create(sender, instance, created, **kwargs):
     """
     Seeds file in DB
     when corresponding `Update` object is created.
