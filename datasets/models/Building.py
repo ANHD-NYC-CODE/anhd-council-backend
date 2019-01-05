@@ -1,6 +1,6 @@
 from django.db import models
 from django.db.models import Q
-from datasets.utils.Base import Base as BaseDataset
+from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from datasets.utils.validation_filters import is_null, exceeds_char_length
 from core.utils.transform import from_csv_file_to_gen, with_geo
 from core.utils.csv_helpers import extract_csvs_from_zip
@@ -16,7 +16,7 @@ class ObsoleteBuildingManager(models.Manager):
         return super().get_queryset().filter(~Q(version=self.model.current_version))
 
 
-class Building(BaseDataset, models.Model):
+class Building(BaseDatasetModel, models.Model):
     current_version = '18V1'
     objects = models.Manager()
     current = CurrentBuildingManager()

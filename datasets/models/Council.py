@@ -1,10 +1,10 @@
 from django.db import models
 from django.contrib.postgres.fields import JSONField
-from datasets.utils.Base import Base as BaseDataset
+from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.transform import from_council_geojson
 
 
-class Council(BaseDataset, models.Model):
+class Council(BaseDatasetModel, models.Model):
     coundist = models.IntegerField(primary_key=True, blank=False, null=False)
     shapearea = models.DecimalField(decimal_places=10, max_digits=24, blank=True, null=True)
     shapelength = models.DecimalField(decimal_places=10, max_digits=24, blank=True, null=True)

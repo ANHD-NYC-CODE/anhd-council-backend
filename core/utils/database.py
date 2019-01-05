@@ -51,6 +51,7 @@ def seed_from_csv_diff(original_file_path, new_file_path, model, update):
             writer.writerow(json.loads(row))
 
     diff_gen = from_csv_file_to_gen(temp_file_path)
+
     while True:
         batch = list(itertools.islice(diff_gen, 0, BATCH_SIZE))
 

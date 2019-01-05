@@ -1,10 +1,10 @@
 from django.db import models
-from datasets.utils.Base import Base as BaseDataset
+from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.transform import from_csv_file_to_gen
 from datasets.utils.validation_filters import is_null, is_older_than
 
 
-class HPDViolation(BaseDataset, models.Model):
+class HPDViolation(BaseDatasetModel, models.Model):
     violationid = models.IntegerField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Building', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
