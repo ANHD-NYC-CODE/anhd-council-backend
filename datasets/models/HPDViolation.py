@@ -38,7 +38,7 @@ class HPDViolation(BaseDataset, models.Model):
     currentstatus = models.TextField(db_index=True)
     currentstatusdate = models.DateTimeField(db_index=True, blank=True, null=True)
     novtype = models.TextField(blank=True, null=True)
-    violationstatus = models.TextField(db_index=True)
+    violationstatus = models.TextField(db_index=True, blank=True, null=True)
     latitude = models.DecimalField(decimal_places=8, max_digits=32, blank=True, null=True)
     longitude = models.DecimalField(decimal_places=8, max_digits=32, blank=True, null=True)
     communityboard = models.TextField(blank=True, null=True)
@@ -61,7 +61,7 @@ class HPDViolation(BaseDataset, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        return self.seed_from_set_diff(**kwargs)
+        return self.seed_or_update_from_set_diff(**kwargs)
 
     def __str__(self):
         return str(self.violationid)

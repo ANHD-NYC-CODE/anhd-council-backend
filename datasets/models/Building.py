@@ -131,11 +131,11 @@ class Building(BaseDataset, models.Model):
         for row in gen_rows:
             if is_null(row['bbl']) or exceeds_char_length(row['bbl'], 10):
                 pass
-            if is_null(row['unitsres']):
-                pass
             if is_null(row['unitstotal']):
                 pass
-            if int(row['unitsres']) <= 0:
+            if is_null(row['unitsres']):
+                pass
+            elif int(row['unitsres']) <= 0:
                 pass
             yield row
 

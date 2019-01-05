@@ -10,7 +10,7 @@ import csv
 import uuid
 import os
 import json
-BATCH_SIZE = 10000
+BATCH_SIZE = 1000
 
 
 def create_set_from_csvs(original_file_path, new_file_path, model, update):
@@ -57,16 +57,21 @@ def bulk_insert_from_csv(model, file, update=None):
     rows = model.transform_self_from_file(file_path)
     gen_to_csv(rows, temp_file_path)
 
-    with open(temp_file_path, 'r') as file:
-        columns = file.readline().replace('"', '').replace('\n', '')
+    with open(temp_file_path, 'r') as temp_file:
+        columns = temp_file.readline().replace('"', '').replace('\n', '')
         sql = copy_query(table_name, columns)
 
         try:
             with transaction.atomic():
-                connection.cursor().copy_expert(sql, file)
+                connection.cursor().copy_expert(sql, temp_file)
+
+            if update:
+                reader = csv.reader(open(temp_file_path, 'r'))
+                update.rows_created = sum(1 for row in reader)
+                update.save()
         except Exception as e:
             print(e)
-            batch_insert_from_file(model, file, update, rows)
+            batch_insert_from_file(model, file, update)
 
     os.remove(temp_file_path)
 
@@ -93,9 +98,8 @@ def build_row_values(row):
     return tuple(None if x == '' else x for x in t_row)
 
 
-def batch_insert_from_file(model_class, file, update=None, rows=None):
-    if not rows:
-        rows = model_class.transform_self_from_file(file.file.path)
+def batch_insert_from_file(model_class, file, update=None):
+    rows = model_class.transform_self_from_file(file.file.path)
     while True:
         batch = list(itertools.islice(rows, 0, BATCH_SIZE))
 
