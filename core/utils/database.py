@@ -13,7 +13,19 @@ import json
 BATCH_SIZE = 1000
 
 
-def create_set_from_csvs(original_file_path, new_file_path, model, update):
+def seed_from_csv_diff(original_file_path, new_file_path, model, update):
+    """
+    takes new file, filters it down in size to reduce memory usage, adds to Set()
+    takes old file, adds to Set()
+
+    Diff Set() = New file Set() - Old file Set()
+     - preserves new records
+     - preserves altered/updated records
+     - removes duplicate, non updated records
+
+    seeds Diff Set() in batches
+
+    """
     original_diff_set = set()
     new_diff_set = set()
     new_file = open(new_file_path, 'r')

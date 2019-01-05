@@ -1,5 +1,5 @@
 from core import models as c_models
-from core.utils.database import batch_insert_from_file, bulk_insert_from_csv, create_set_from_csvs
+from core.utils.database import batch_insert_from_file, bulk_insert_from_csv, seed_from_csv_diff
 from core.utils.typecast import Typecast
 
 import os
@@ -52,9 +52,8 @@ class Base():
         dataset = c_models.Dataset.objects.filter(model_name=self._meta.model.__name__).first()
         latest_update = dataset.latest_update()
         previous_file = latest_update.file.file if latest_update else None
-
         if (latest_update and previous_file and os.path.isfile(previous_file.path)):
             new_file_path = kwargs['update'].file.file.path
-            create_set_from_csvs(previous_file.path, new_file_path, self, kwargs["update"])
+            seed_from_csv_diff(previous_file.path, new_file_path, self, kwargs["update"])
         else:
             return self.bulk_seed(**kwargs)
