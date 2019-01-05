@@ -1,7 +1,7 @@
 from django.db import models
 from django.db.models import Q
 from datasets.utils.Base import Base as BaseDataset
-from datasets.utils.pre_validation_filters import is_null, exceeds_char_length
+from datasets.utils.validation_filters import is_null, exceeds_char_length
 from core.utils.transform import from_csv_file_to_gen, with_geo
 from core.utils.csv_helpers import extract_csvs_from_zip
 
