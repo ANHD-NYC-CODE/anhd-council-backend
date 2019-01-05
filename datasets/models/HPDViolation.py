@@ -1,13 +1,14 @@
 from django.db import models
 from datasets.utils.Base import Base as BaseDataset
 from core.utils.transform import from_csv_file_to_gen
+from datasets.utils.pre_validation_filters import is_null
 
 
 class HPDViolation(BaseDataset, models.Model):
     violationid = models.IntegerField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Building', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
-    buildingid = models.IntegerField(blank=False, null=False)
+    buildingid = models.IntegerField(blank=True, null=True)
     registrationid = models.IntegerField(blank=True, null=True)
     boroid = models.TextField(blank=True, null=True)
     borough = models.TextField(db_index=True)
@@ -47,8 +48,16 @@ class HPDViolation(BaseDataset, models.Model):
     nta = models.TextField(blank=True, null=True)
 
     @classmethod
+    def pre_validation_filters(self, gen_rows):
+        for row in gen_rows:
+            if is_null(row['violationid']):
+                pass
+            row['bbl'] = str(row['bbl'])
+            yield row
+
+    @classmethod
     def transform_self(self, file_path):
-        return from_csv_file_to_gen(file_path)
+        return self.pre_validation_filters(from_csv_file_to_gen(file_path))
 
     @classmethod
     def seed_or_update_self(self, **kwargs):

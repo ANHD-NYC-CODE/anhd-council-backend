@@ -2,7 +2,7 @@ from django.db import models
 from django.db.models import Q
 from datasets.utils.Base import Base as BaseDataset
 from datasets.utils.pre_validation_filters import is_null, exceeds_char_length
-from core.utils.transform import from_csv_file_to_gen, with_geo, remove_non_residential
+from core.utils.transform import from_csv_file_to_gen, with_geo
 from core.utils.csv_helpers import extract_csvs_from_zip
 
 
@@ -135,11 +135,13 @@ class Building(BaseDataset, models.Model):
                 pass
             if is_null(row['unitstotal']):
                 pass
+            if int(row['unitsres']) <= 0:
+                pass
             yield row
 
     @classmethod
     def transform_self(self, file_path):
-        return self.pre_validation_filters(with_geo(remove_non_residential(from_csv_file_to_gen(extract_csvs_from_zip(file_path)))))
+        return self.pre_validation_filters(with_geo(from_csv_file_to_gen(extract_csvs_from_zip(file_path))))
 
     @classmethod
     def seed_or_update_self(self, **kwargs):

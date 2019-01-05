@@ -98,7 +98,7 @@ def auto_batch_insert_from_file_on_create(sender, instance, created, **kwargs):
             from core.tasks import async_seed_file
             # worker = async_seed_file.delay(instance.dataset.id, instance.file.id, instance.id)
             # instance.task_id = worker.id
-            async_seed_file(instance.dataset.id, instance.file.id, instance.id)
+            async_seed_file.delay(instance.dataset.id, instance.file.id, instance.id)
             instance.save()
         elif created:
             raise Exception("File not present")
