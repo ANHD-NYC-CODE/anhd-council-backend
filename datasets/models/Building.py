@@ -1,7 +1,10 @@
 from django.db import models
 from django.db.models import Q
-from datasets.models.Base import Base as BaseDataset
-from core.utils.transform import from_csv_file_to_gen, extract_csvs_from_zip, with_geo, remove_non_residential
+from datasets.utils.Base import Base as BaseDataset
+from datasets.utils.pre_validation_filters import is_null, exceeds_char_length
+from core.utils.transform import from_csv_file_to_gen, with_geo, remove_non_residential
+from core.utils.csv_helpers import extract_csvs_from_zip
+from core.utils.typecast import Typecast
 
 
 class CurrentBuildingManager(models.Manager):
@@ -34,21 +37,21 @@ class Building(BaseDataset, models.Model):
     bbl = models.CharField(primary_key=True, max_length=10, blank=False, null=False)
     council = models.ForeignKey('Council', on_delete=models.SET_NULL, null=True,
                                 db_column='council', db_constraint=False)
-    borough = models.TextField(blank=False, null=False)
-    block = models.TextField(blank=False, null=False)
-    lot = models.TextField(blank=False, null=False)
+    borough = models.TextField(blank=True, null=True)
+    block = models.TextField(blank=True, null=True)
+    lot = models.TextField(blank=True, null=True)
     cd = models.SmallIntegerField(blank=True, null=True)
     ct2010 = models.TextField(blank=True, null=True)
     cb2010 = models.TextField(blank=True, null=True)
     schooldist = models.SmallIntegerField(blank=True, null=True)
-    zipcode = models.CharField(max_length=5, blank=True, null=True)
+    zipcode = models.TextField(blank=True, null=True)
     firecomp = models.TextField(blank=True, null=True)
     policeprct = models.TextField(blank=True, null=True)
     healthcenterdistrict = models.SmallIntegerField(blank=True, null=True)
     healtharea = models.TextField(blank=True, null=True)
-    sanitboro = models.CharField(max_length=1, blank=True, null=True)
+    sanitboro = models.TextField(blank=True, null=True)
     sanitdistrict = models.SmallIntegerField(blank=True, null=True)
-    sanitsub = models.CharField(max_length=2, blank=True, null=True)
+    sanitsub = models.TextField(blank=True, null=True)
     address = models.TextField(blank=True, null=True)
     original_address = models.TextField(blank=True, null=True)
     zonedist1 = models.TextField(blank=True, null=True)
@@ -62,10 +65,10 @@ class Building(BaseDataset, models.Model):
     spdist3 = models.TextField(blank=True, null=True)
     ltdheight = models.TextField(blank=True, null=True)
     splitzone = models.BooleanField(blank=True, null=True)
-    bldgclass = models.CharField(db_index=True, max_length=2, blank=False, null=False)
+    bldgclass = models.TextField(db_index=True, blank=True, null=True)
     landuse = models.SmallIntegerField(blank=True, null=True)
     easements = models.TextField(blank=True, null=True)
-    ownertype = models.CharField(max_length=1, blank=True, null=True)
+    ownertype = models.TextField(blank=True, null=True)
     ownername = models.TextField(blank=True, null=True)
     lotarea = models.BigIntegerField(blank=True, null=True)
     bldgarea = models.BigIntegerField(blank=True, null=True)
@@ -87,15 +90,15 @@ class Building(BaseDataset, models.Model):
     bldgfront = models.DecimalField(decimal_places=3, max_digits=32, blank=True, null=True)
     bldgdepth = models.DecimalField(decimal_places=3, max_digits=32, blank=True, null=True)
     ext = models.TextField(blank=True, null=True)
-    proxcode = models.CharField(max_length=1, blank=True, null=True)
+    proxcode = models.TextField(blank=True, null=True)
     irrlotcode = models.BooleanField(blank=True, null=True)
-    lottype = models.CharField(max_length=1, blank=True, null=True)
-    bsmtcode = models.CharField(max_length=1, blank=True, null=True)
+    lottype = models.TextField(blank=True, null=True)
+    bsmtcode = models.TextField(blank=True, null=True)
     assessland = models.BigIntegerField(blank=True, null=True)
     assesstot = models.BigIntegerField(blank=True, null=True)
     exemptland = models.BigIntegerField(blank=True, null=True)
     exempttot = models.BigIntegerField(blank=True, null=True)
-    yearbuilt = models.SmallIntegerField(db_index=True, blank=False, null=False)
+    yearbuilt = models.SmallIntegerField(db_index=True, blank=True, null=True)
     yearalter1 = models.SmallIntegerField(blank=True, null=True)
     yearalter2 = models.SmallIntegerField(blank=True, null=True)
     histdist = models.TextField(blank=True, null=True)
@@ -104,33 +107,44 @@ class Building(BaseDataset, models.Model):
     residfar = models.DecimalField(db_index=True, decimal_places=2, max_digits=8, blank=True, null=True)
     commfar = models.DecimalField(db_index=True, decimal_places=2, max_digits=8, blank=True, null=True)
     facilfar = models.DecimalField(db_index=True, decimal_places=2, max_digits=8, blank=True, null=True)
-    borocode = models.CharField(db_index=True, max_length=1, blank=False, null=False)
+    borocode = models.TextField(db_index=True, blank=True, null=True)
     condono = models.TextField(blank=True, null=True)
     tract2010 = models.TextField(blank=True, null=True)
     xcoord = models.IntegerField(blank=True, null=True)
     ycoord = models.IntegerField(blank=True, null=True)
     zonemap = models.TextField(blank=True, null=True)
-    zmcode = models.CharField(max_length=1, blank=True, null=True)
+    zmcode = models.TextField(blank=True, null=True)
     sanborn = models.TextField(blank=True, null=True)
     taxmap = models.TextField(blank=True, null=True)
     edesignum = models.TextField(blank=True, null=True)
-    appbbl = models.CharField(db_index=True, max_length=10, blank=True, null=True)
+    appbbl = models.TextField(db_index=True,  blank=True, null=True)
     appdate = models.DateTimeField(blank=True, null=True)
-    plutomapid = models.CharField(max_length=1, blank=True, null=True)
-    firm07flag = models.CharField(max_length=1, blank=True, null=True)
-    pfirm15flag = models.CharField(max_length=1, blank=True, null=True)
+    plutomapid = models.TextField(blank=True, null=True)
+    firm07flag = models.TextField(blank=True, null=True)
+    pfirm15flag = models.TextField(blank=True, null=True)
     version = models.TextField(db_index=True, blank=True, null=True)
     # allow null lng / lat - will display building information in tables, not map
     lng = models.DecimalField(decimal_places=16, max_digits=32, blank=True, null=True)
     lat = models.DecimalField(decimal_places=16, max_digits=32, blank=True, null=True)
 
     @classmethod
+    def pre_validation_filters(self, gen_rows):
+        for row in gen_rows:
+            if is_null(row['bbl']) or exceeds_char_length(row['bbl'], 10):
+                pass
+            if is_null(row['unitsres']):
+                pass
+            if is_null(row['unitstotal']):
+                pass
+            yield row
+
+    @classmethod
     def transform_self(self, file_path):
-        return with_geo(remove_non_residential(from_csv_file_to_gen(extract_csvs_from_zip(file_path))))
+        return Typecast(self).cast_rows(self.pre_validation_filters(with_geo(remove_non_residential(from_csv_file_to_gen(extract_csvs_from_zip(file_path))))))
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        return self.seed_with_overwrite(**kwargs)
+        return self.bulk_seed(**kwargs)
 
     def __str__(self):
         return self.bbl

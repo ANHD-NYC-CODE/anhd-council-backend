@@ -1,29 +1,27 @@
 from django.db import models
-from datasets.models.Base import Base as BaseDataset
+from datasets.utils.Base import Base as BaseDataset
 from core.utils.transform import from_csv_file_to_gen
 
 
 class HPDViolation(BaseDataset, models.Model):
-    unformatted_pk = 'ViolationID'
-
     violationid = models.IntegerField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Building', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
     buildingid = models.IntegerField(blank=False, null=False)
     registrationid = models.IntegerField(blank=True, null=True)
-    boroid = models.CharField(blank=False, null=False, max_length=1)
+    boroid = models.TextField(blank=True, null=True)
     borough = models.TextField(db_index=True)
     housenumber = models.TextField()
     lowhousenumber = models.TextField(blank=True, null=True)
     highhousenumber = models.TextField(blank=True, null=True)
     streetname = models.TextField()
     streetcode = models.TextField(blank=True, null=True)
-    postcode = models.CharField(max_length=5, blank=True, null=True)
+    postcode = models.TextField(blank=True, null=True)
     apartment = models.TextField(blank=True, null=True)
     story = models.TextField(blank=True, null=True)
     block = models.TextField(blank=True, null=True)
     lot = models.TextField(blank=True, null=True)
-    class_name = models.CharField(max_length=1)
+    class_name = models.TextField(blank=True, null=True)
     inspectiondate = models.DateTimeField(db_index=True, blank=True, null=True)
     approveddate = models.DateTimeField(blank=True, null=True)
     originalcertifybydate = models.DateTimeField(blank=True, null=True)

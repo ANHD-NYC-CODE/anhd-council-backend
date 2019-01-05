@@ -62,7 +62,7 @@ def char(x, n):
 
 def numeric(x):
     try:
-        return Decimal(x)
+        return float(Decimal(x))
     except (InvalidOperation, TypeError):
         return None
 
@@ -135,7 +135,7 @@ def char_cast(n):
 
 class Typecast():
     def __init__(self, model):
-        self.fields = model.get_model_fields()
+        self.fields = model._meta.fields
         self.cast = self.generate_cast()
 
     def cast_rows(self, rows):
@@ -188,6 +188,8 @@ class Typecast():
                 d[field.name] = lambda x: numeric(x)
             elif isinstance(field, ArrayField):
                 d[field.name] = lambda x: text_array(x)
+            elif isinstance(field, models.ForeignKey):
+                d[field.name] = lambda x: integer(x)
             else:
                 d[field.name] = lambda x: x
         return d

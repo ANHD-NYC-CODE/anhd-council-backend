@@ -39,6 +39,10 @@ class Base():
         return batch_insert_from_file(self, **kwargs)
 
     @classmethod
+    def bulk_seed(self, **kwargs):
+        bulk_insert_from_csv(self, **kwargs)
+
+    @classmethod
     def seed_from_set_diff(self, **kwargs):
         dataset = c_models.Dataset.objects.filter(model_name=self._meta.model.__name__).first()
         latest_update = dataset.latest_update()

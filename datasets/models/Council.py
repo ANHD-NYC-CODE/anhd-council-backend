@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.postgres.fields import JSONField
-from datasets.models import Base as BaseDataset
+from datasets.utils.Base import Base as BaseDataset
 from core.utils.transform import from_council_geojson
 
 

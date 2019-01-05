@@ -1,6 +1,7 @@
 from django.db import connection, transaction, utils
 from core.utils.transform import from_dict_list_to_gen
 from core.utils.transform import from_csv_file_to_gen
+from core.utils.csv_helpers import gen_to_csv
 from django.conf import settings
 from postgres_copy import CopyManager
 
@@ -46,17 +47,25 @@ def create_set_from_csvs(original_file_path, new_file_path, model, update):
             insert_rows(batch, model, update)
 
 
-def bulk_insert_from_csv(file_path, model):
+def bulk_insert_from_csv(model, file, update=None):
     table_name = model._meta.db_table
-    with open(file_path, 'r') as file:
+    file_path = file.file.path
+
+    # create new csv with cleaned rows
+    temp_file_path = os.path.join(settings.MEDIA_TEMP_ROOT, str(uuid.uuid4().hex) + '.csv')
+    rows = model.transform_self(file_path)
+    gen_to_csv(rows, temp_file_path)
+
+    with open(temp_file_path, 'r') as file:
         columns = file.readline().replace('"', '').replace('\n', '')
         sql = copy_query(table_name, columns)
 
-        with connection.cursor() as curs:
-            try:
-                curs.copy_expert(sql, file)
-            except Exception as e:
-                pass
+        try:
+            with transaction.atomic():
+                connection.cursor().copy_expert(sql, file)
+        except Exception as e:
+            print(e)
+            batch_insert_from_file(model, file, update, rows)
 
 
 def query(table_name, row):
@@ -81,9 +90,9 @@ def build_row_values(row):
     return tuple(None if x == '' else x for x in t_row)
 
 
-def batch_insert_from_file(model_class, file, update=None):
-    rows = model_class.transform_self(file.file.path)
-
+def batch_insert_from_file(model_class, file, update=None, rows=None):
+    if not rows:
+        rows = model_class.transform_self(file.file.path)
     while True:
         batch = list(itertools.islice(rows, 0, BATCH_SIZE))
 
