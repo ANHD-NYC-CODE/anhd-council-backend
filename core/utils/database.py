@@ -67,6 +67,7 @@ def bulk_insert_from_csv(model, file, update=None):
 
             if update:
                 reader = csv.reader(open(temp_file_path, 'r'))
+                next(reader, None)  # skip headers
                 update.rows_created = sum(1 for row in reader)
                 update.save()
         except Exception as e:

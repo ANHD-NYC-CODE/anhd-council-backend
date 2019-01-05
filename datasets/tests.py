@@ -18,7 +18,7 @@ class BuildingTests(BaseTest, TestCase):
         update = Update.objects.create(dataset=dataset, file=file)
         ds_models.Building.seed_or_update_self(file=file, update=update)
         self.assertEqual(ds_models.Building.objects.count(), 2)
-        self.assertEqual(update.rows_created, 3)
+        self.assertEqual(update.rows_created, 2)
 
 
 class CouncilTests(BaseTest, TestCase):
