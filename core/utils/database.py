@@ -45,6 +45,7 @@ def create_set_from_csvs(original_file_path, new_file_path, model, update):
             break
         else:
             insert_rows(batch, model, update)
+    os.remove(temp_file_path)
 
 
 def bulk_insert_from_csv(model, file, update=None):
@@ -66,6 +67,8 @@ def bulk_insert_from_csv(model, file, update=None):
         except Exception as e:
             print(e)
             batch_insert_from_file(model, file, update, rows)
+
+    os.remove(temp_file_path)
 
 
 def query(table_name, row):

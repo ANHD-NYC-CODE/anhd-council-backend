@@ -139,17 +139,6 @@ def with_geo(table):
             yield merge(row, {'lng': None, 'lat': None})
 
 
-def remove_non_residential(rows):
-    for row in rows:
-        try:
-            if int(row['unitsres']) > 0:
-                yield row
-            else:
-                pass
-        except:
-            pass
-
-
 def skip_fields(table, fields_to_skip):
     for row in table:
         for f in fields_to_skip:
