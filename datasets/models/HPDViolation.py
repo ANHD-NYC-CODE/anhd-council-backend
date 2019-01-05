@@ -1,7 +1,7 @@
 from django.db import models
 from datasets.utils.Base import Base as BaseDataset
 from core.utils.transform import from_csv_file_to_gen
-from datasets.utils.pre_validation_filters import is_null
+from datasets.utils.validation_filters import is_null, is_older_than
 
 
 class HPDViolation(BaseDataset, models.Model):
@@ -53,6 +53,16 @@ class HPDViolation(BaseDataset, models.Model):
             if is_null(row['violationid']):
                 pass
             row['bbl'] = str(row['bbl'])
+            yield row
+
+    # trims down new update files to preserve memory
+    # uses original header values
+    @classmethod
+    def update_set_filter(self, csv_reader):
+        for row in csv_reader:
+            # 16 = InspectionDate
+            if is_older_than(row[16], 2):
+                pass
             yield row
 
     @classmethod
