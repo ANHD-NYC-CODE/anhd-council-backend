@@ -30,7 +30,7 @@ import csv
 # 1) Cutoff year?
 
 
-class Base():
+class BaseDatasetModel():
     @classmethod
     def get_dataset(self):
         return c_models.Dataset.objects.filter(model_name=self.__name__).first()
@@ -49,11 +49,10 @@ class Base():
 
     @classmethod
     def seed_or_update_from_set_diff(self, **kwargs):
-        dataset = c_models.Dataset.objects.filter(model_name=self._meta.model.__name__).first()
-        latest_update = dataset.latest_update()
-        previous_file = latest_update.file.file if latest_update else None
-        if (latest_update and previous_file and os.path.isfile(previous_file.path)):
-            new_file_path = kwargs['update'].file.file.path
-            seed_from_csv_diff(previous_file.path, new_file_path, self, kwargs["update"])
+        new_file_path = kwargs['update'].file.file.path
+        previous_file = kwargs['update'].previous_file
+
+        if (previous_file and os.path.isfile(previous_file.file.path)):
+            seed_from_csv_diff(previous_file.file.path, new_file_path, self, kwargs["update"])
         else:
             return self.bulk_seed(**kwargs)

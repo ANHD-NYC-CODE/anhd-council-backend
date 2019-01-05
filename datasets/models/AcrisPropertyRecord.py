@@ -1,5 +1,5 @@
 from django.db import models
-from datasets.utils.Base import Base as BaseDataset
+from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.transform import from_csv_file_to_gen, with_bbl
 
 # ACRIS
@@ -11,7 +11,7 @@ from core.utils.transform import from_csv_file_to_gen, with_bbl
 # and linked to buildings with FK bbl
 
 
-# class AcrisPropertyRecord(BaseDataset, models.Model):
+# class AcrisPropertyRecord(BaseDatasetModel, models.Model):
 # table_name: real_property_legals
 #   fields:
 #     DOCUMENTID: text

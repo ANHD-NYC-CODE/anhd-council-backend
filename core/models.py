@@ -70,7 +70,10 @@ def auto_delete_file_on_delete(sender, instance, **kwargs):
 
 
 class Update(models.Model):
-    file = models.ForeignKey(DataFile, on_delete=models.SET_NULL, null=True)
+    file = models.ForeignKey(DataFile, related_name='current_file',
+                             on_delete=models.SET_NULL, null=True)
+    previous_file = models.ForeignKey(DataFile, related_name='previous_file',
+                                      on_delete=models.SET_NULL, null=True)
     dataset = models.ForeignKey(Dataset, on_delete=models.SET_NULL, null=True)
     model_name = models.CharField(max_length=255, blank=False, null=False,
                                   choices=ACTIVE_MODELS_CHOICES)

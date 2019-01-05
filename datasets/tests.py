@@ -20,6 +20,21 @@ class BuildingTests(BaseTest, TestCase):
         self.assertEqual(ds_models.Building.objects.count(), 2)
         self.assertEqual(update.rows_created, 2)
 
+    def test_seed_buildings_update(self):
+        dataset = Dataset.objects.create(name="mock", model_name="Building")
+        file = DataFile.objects.create(file=self.get_file('test_pluto_17v1.zip'), dataset=dataset)
+        update = Update.objects.create(dataset=dataset, file=file)
+        ds_models.Building.seed_or_update_self(file=file, update=update)
+
+        new_file = DataFile.objects.create(file=self.get_file('test_pluto_18v1.zip'), dataset=dataset)
+        new_update = Update.objects.create(dataset=dataset, model_name='Building',
+                                           file=new_file, previous_file=file)
+        ds_models.Building.seed_or_update_self(file=new_file, update=new_update)
+
+        self.assertEqual(ds_models.Building.objects.count(), 3)
+        self.assertEqual(new_update.rows_created, 1)
+        self.assertEqual(new_update.rows_updated, 1)
+
 
 class CouncilTests(BaseTest, TestCase):
     def tearDown(self):
@@ -51,14 +66,12 @@ class HPDViolationTests(BaseTest, TestCase):
     def test_seed_hpdviolation_after_update(self):
         dataset = Dataset.objects.create(name="mock", model_name="HPDViolation")
         file = DataFile.objects.create(file=self.get_file('test_hpd_violations.csv'), dataset=dataset)
-        task_result = TaskResult.objects.create(status="SUCCESS", task_id="1")
         update = Update.objects.create(dataset=dataset, model_name='HPDViolation', file=file)
         ds_models.HPDViolation.seed_or_update_self(file=file, update=update)
-        update.task_result = task_result
-        update.save()
 
         new_file = DataFile.objects.create(file=self.get_file('test_hpd_violations_diff.csv'), dataset=dataset)
-        new_update = Update.objects.create(dataset=dataset, model_name='HPDViolation', file=new_file)
+        new_update = Update.objects.create(dataset=dataset, model_name='HPDViolation',
+                                           file=new_file, previous_file=file)
         ds_models.HPDViolation.seed_or_update_self(file=new_file, update=new_update)
         self.assertEqual(ds_models.HPDViolation.objects.count(), 6)
         self.assertEqual(new_update.rows_created, 2)
