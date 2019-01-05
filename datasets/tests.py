@@ -15,9 +15,10 @@ class BuildingTests(BaseTest, TestCase):
     def test_seed_buildings(self):
         dataset = Dataset.objects.create(name="mock", model_name="Building")
         file = DataFile.objects.create(file=self.get_file('test_pluto_17v1.zip'), dataset=dataset)
-
-        ds_models.Building.seed_or_update_self(file=file)
+        update = Update.objects.create(dataset=dataset, file=file)
+        ds_models.Building.seed_or_update_self(file=file, update=update)
         self.assertEqual(ds_models.Building.objects.count(), 2)
+        self.assertEqual(update.rows_created, 3)
 
 
 class CouncilTests(BaseTest, TestCase):
@@ -27,9 +28,11 @@ class CouncilTests(BaseTest, TestCase):
     def test_seed_councils(self):
         dataset = Dataset.objects.create(name="mock", model_name="Council")
         file = DataFile.objects.create(file=self.get_file("mock_council_json.geojson"), dataset=dataset)
+        update = Update.objects.create(dataset=dataset, file=file)
 
-        ds_models.Council.seed_or_update_self(file=file)
+        ds_models.Council.seed_or_update_self(file=file, update=update)
         self.assertEqual(ds_models.Council.objects.count(), 1)
+        self.assertEqual(update.rows_created, 1)
 
 
 class HPDViolationTests(BaseTest, TestCase):
@@ -39,11 +42,13 @@ class HPDViolationTests(BaseTest, TestCase):
     def test_seed_hpdviolation_first(self):
         dataset = Dataset.objects.create(name="mock", model_name="HPDViolation")
         file = DataFile.objects.create(file=self.get_file('test_hpd_violations.csv'), dataset=dataset)
+        update = Update.objects.create(dataset=dataset, file=file)
 
-        ds_models.HPDViolation.seed_or_update_self(file=file)
+        ds_models.HPDViolation.seed_or_update_self(file=file, update=update)
         self.assertEqual(ds_models.HPDViolation.objects.count(), 4)
+        self.assertEqual(update.rows_created, 4)
 
-    def test_seed_hpdviolation_with_update(self):
+    def test_seed_hpdviolation_after_update(self):
         dataset = Dataset.objects.create(name="mock", model_name="HPDViolation")
         file = DataFile.objects.create(file=self.get_file('test_hpd_violations.csv'), dataset=dataset)
         task_result = TaskResult.objects.create(status="SUCCESS", task_id="1")

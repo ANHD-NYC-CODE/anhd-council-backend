@@ -48,7 +48,7 @@ class Base():
         bulk_insert_from_csv(self, **kwargs)
 
     @classmethod
-    def seed_from_set_diff(self, **kwargs):
+    def seed_or_update_from_set_diff(self, **kwargs):
         dataset = c_models.Dataset.objects.filter(model_name=self._meta.model.__name__).first()
         latest_update = dataset.latest_update()
         previous_file = latest_update.file.file if latest_update else None
@@ -57,4 +57,4 @@ class Base():
             new_file_path = kwargs['update'].file.file.path
             create_set_from_csvs(previous_file.path, new_file_path, self, kwargs["update"])
         else:
-            return batch_insert_from_file(self, **kwargs)
+            return self.bulk_seed(**kwargs)
