@@ -1,6 +1,7 @@
-import csvdiff
 from core import models as c_models
 from core.utils.database import batch_insert_from_file, bulk_insert_from_csv, create_set_from_csvs
+from core.utils.typecast import Typecast
+
 import os
 import csv
 
@@ -33,6 +34,10 @@ class Base():
     @classmethod
     def get_dataset(self):
         return c_models.Dataset.objects.filter(model_name=self.__name__).first()
+
+    @classmethod
+    def transform_self_from_file(self, file_path):
+        return Typecast(self).cast_rows(self.transform_self(file_path))
 
     @classmethod
     def seed_with_overwrite(self, **kwargs):

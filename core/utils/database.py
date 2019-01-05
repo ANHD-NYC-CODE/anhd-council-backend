@@ -53,7 +53,7 @@ def bulk_insert_from_csv(model, file, update=None):
 
     # create new csv with cleaned rows
     temp_file_path = os.path.join(settings.MEDIA_TEMP_ROOT, str(uuid.uuid4().hex) + '.csv')
-    rows = model.transform_self(file_path)
+    rows = model.transform_self_from_file(file_path)
     gen_to_csv(rows, temp_file_path)
 
     with open(temp_file_path, 'r') as file:
@@ -92,7 +92,7 @@ def build_row_values(row):
 
 def batch_insert_from_file(model_class, file, update=None, rows=None):
     if not rows:
-        rows = model_class.transform_self(file.file.path)
+        rows = model_class.transform_self_from_file(file.file.path)
     while True:
         batch = list(itertools.islice(rows, 0, BATCH_SIZE))
 

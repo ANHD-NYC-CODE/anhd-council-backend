@@ -62,7 +62,7 @@ def char(x, n):
 
 def numeric(x):
     try:
-        return float(Decimal(x))
+        return Decimal(x)
     except (InvalidOperation, TypeError):
         return None
 
