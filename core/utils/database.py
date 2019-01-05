@@ -19,18 +19,21 @@ def create_set_from_csvs(original_file_path, new_file_path, model, update):
     new_file = open(new_file_path, 'r')
     new_reader = csv.reader(new_file)
     headers = next(new_reader, None)
-    temp_file_path = os.path.join(settings.MEDIA_TEMP_ROOT, str(uuid.uuid4().hex) + '.csv')
-
-    for row in new_reader:
-        new_diff_set.add(json.dumps(row))
 
     original_file = open(original_file_path, 'r')
     original_reader = csv.reader(original_file)
     next(original_reader, None)
+
+    for row in new_reader:
+        import pdb
+        pdb.set_trace()
+        new_diff_set.add(json.dumps(row))
+
     for row in original_reader:
         original_diff_set.add(json.dumps(row))
 
     diff = new_diff_set - original_diff_set
+    temp_file_path = os.path.join(settings.MEDIA_TEMP_ROOT, str(uuid.uuid4().hex) + '.csv')
     with open(temp_file_path, 'w') as temp_file:
         writer = csv.writer(temp_file, delimiter=',')
         writer.writerow(headers)
