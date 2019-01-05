@@ -1,5 +1,5 @@
 from django.db import models
-from datasets.models.Base import Base as BaseDataset
+from datasets.utils.Base import Base as BaseDataset
 from core.utils.transform import from_csv_file_to_gen, with_bbl
 
 # ACRIS
