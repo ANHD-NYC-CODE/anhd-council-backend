@@ -5,6 +5,8 @@ from datasets.utils.validation_filters import is_null, is_older_than
 
 
 class HPDViolation(BaseDatasetModel, models.Model):
+    download_endpoint = "https://data.cityofnewyork.us/api/views/wvxf-dwi5/rows.csv?accessType=DOWNLOAD"
+
     violationid = models.IntegerField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Building', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
@@ -46,6 +48,10 @@ class HPDViolation(BaseDatasetModel, models.Model):
     censustract = models.TextField(blank=True, null=True)
     bin = models.IntegerField(db_index=True, blank=True, null=True)
     nta = models.TextField(blank=True, null=True)
+
+    @classmethod
+    def download(self):
+        return self.download_file(self.download_endpoint)
 
     @classmethod
     def pre_validation_filters(self, gen_rows):
