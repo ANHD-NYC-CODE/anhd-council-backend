@@ -74,10 +74,6 @@ class AcrisPropertyRecord(BaseDatasetModel, models.Model):
     @classmethod
     def update_set_filter(self, csv_reader):
         for row in csv_reader:
-            import pdb
-            pdb.set_trace()
-            if is_older_than(row[16], 2):
-                pass
             yield row
 
     @classmethod
