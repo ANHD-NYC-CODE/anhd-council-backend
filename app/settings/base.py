@@ -128,7 +128,55 @@ STATIC_URL = '/static/'
 MEDIA_URL = '/data/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'data')
 MEDIA_TEMP_ROOT = os.path.join(MEDIA_ROOT, 'temp')
+LOG_ROOT = os.path.join(BASE_DIR, 'logs')
 
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_BROKER_URL = 'redis://localhost:6378'
 CELERY_BACKEND = 'rpc://'
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'
+        }
+    },
+    'handlers': {
+        'mail_admins': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'class': 'django.utils.log.AdminEmailHandler'
+        },
+        'applogfile': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(LOG_ROOT, 'dap-council.log'),
+            'maxBytes': 1024 * 1024 * 15,  # 15MB
+            'backupCount': 10,
+        },
+        'apperrorfile': {
+            'level': 'ERROR',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(LOG_ROOT, 'dap-council.error.log'),
+            'maxBytes': 1024 * 1024 * 15,  # 15MB
+            'backupCount': 10,
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+        'DAP-Council-log': {
+            'handlers': ['applogfile'],
+            'level': 'DEBUG',
+        },
+        'DAP-Council-error': {
+            'handlers': ['apperrorfile'],
+            'level': 'ERROR',
+        },
+    },
+}
