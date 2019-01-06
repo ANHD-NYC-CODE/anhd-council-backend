@@ -39,6 +39,7 @@ def seed_from_csv_diff(original_file_path, new_file_path, model, update):
     original_file = open(original_file_path, 'r')
     original_reader = csv.reader(original_file)
     next(original_reader, None)
+    logger.debug(" * Beginning CSV diff process.")
 
     for row in new_reader:
         new_diff_set.add(json.dumps(row))
@@ -55,7 +56,7 @@ def seed_from_csv_diff(original_file_path, new_file_path, model, update):
             writer.writerow(json.loads(row))
 
     diff_gen = from_csv_file_to_gen(temp_file_path)
-
+    logger.debug(" * Csv diff completed, beginning batch upsert.")
     while True:
         batch = list(itertools.islice(diff_gen, 0, BATCH_SIZE))
 
@@ -82,6 +83,7 @@ def bulk_insert_from_csv(model, file, update=None):
 
         try:
             with transaction.atomic():
+                logger.debug("* Beginning Bulk CSV copy.")
                 connection.cursor().copy_expert(sql, temp_file)
 
             if update:
@@ -93,7 +95,7 @@ def bulk_insert_from_csv(model, file, update=None):
             print(e)
             logger.warning("Database - Bulk Import Error - beginning Batch seeding. Error: {}".format(e))
             rows = model.transform_self_from_file(file.file.path)
-            batch_insert_with_gen(model, rows, update)
+            batch_upsert_from_gen(model, rows, update)
 
     os.remove(temp_file_path)
 
@@ -121,7 +123,7 @@ def build_row_values(row):
     return tuple(None if x == '' else x for x in t_row)
 
 
-def batch_insert_with_gen(model_class, rows, update=None):
+def batch_upsert_from_gen(model_class, rows, update=None):
     while True:
         batch = list(itertools.islice(rows, 0, BATCH_SIZE))
 

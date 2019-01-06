@@ -1,5 +1,5 @@
 from core import models as c_models
-from core.utils.database import batch_insert_with_gen, bulk_insert_from_csv, seed_from_csv_diff
+from core.utils.database import batch_upsert_from_gen, bulk_insert_from_csv, seed_from_csv_diff
 from core.utils.typecast import Typecast
 from django.core import files
 
@@ -78,7 +78,7 @@ class BaseDatasetModel():
     @classmethod
     def seed_with_overwrite(self, **kwargs):
         rows = self.transform_self_from_file(kwargs['file'].file.path)
-        return batch_insert_with_gen(self, rows, kwargs['update'])
+        return batch_upsert_from_gen(self, rows, kwargs['update'])
 
     @classmethod
     def bulk_seed(self, **kwargs):
