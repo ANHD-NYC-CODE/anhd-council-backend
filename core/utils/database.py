@@ -97,11 +97,12 @@ def bulk_insert_from_csv(model, file, update=None):
     os.remove(temp_file_path)
 
 
-def query(table_name, row):
+def upsert_query(table_name, row, primary_key):
     fields = ', '.join(row.keys())
+    upsert_fields = ', '.join([k + "= EXCLUDED." + k for k in row.keys()])
     placeholders = ', '.join(["%s" for v in row.values()])
-    sql = "INSERT INTO {table_name} ({fields}) VALUES ({values});"
-    return sql.format(table_name=table_name, fields=fields, values=placeholders)
+    sql = "INSERT INTO {table_name} ({fields}) VALUES ({values}) ON CONFLICT ({primary_key}) DO UPDATE SET {upsert_fields};"
+    return sql.format(table_name=table_name, fields=fields, values=placeholders, primary_key=primary_key, upsert_fields=upsert_fields)
 
 
 def update_query(table_name, row, primary_key):
@@ -140,24 +141,26 @@ def insert_rows(rows, model, update=None):
     with connection.cursor() as curs:
 
         for row in rows:
+            rows_to_update = []
             try:
                 with transaction.atomic():
-                    curs.execute(query(table_name, row), build_row_values(row))
+                    curs.execute(upsert_query(table_name, row, primary_key), build_row_values(row))
                     rows_created = rows_created + 1
             except utils.IntegrityError as e:
                 # If unique value already exists,
                 # or if the query is missing columns -
                 # overrite with the new entry and with whatever columns exist
                 if 'unique constraint' in str(e) or 'not-null constraint' in str(e):
-                    with transaction.atomic():
-                        try:
-                            curs.execute(update_query(table_name, row, primary_key),
-                                         build_row_values(row) + (row[primary_key],))
-                            rows_updated = rows_updated + 1
-                            print("Updating {} row with {}: {}".format(table_name, primary_key, row[primary_key]))
-                        except Exception as e:
-                            logger.error("Database - unable to update unique record. Error: {}".format(e))
-                            print(e)
+                    try:
+                        # rows_to_update.append(row)
+                        curs.execute(update_query(table_name, row, primary_key),
+                                     build_row_values(row) + (row[primary_key],))
+                        rows_updated = rows_updated + 1
+
+                        print("Updating {} row with {}: {}".format(table_name, primary_key, row[primary_key]))
+                    except Exception as e:
+                        logger.error("Database - unable to update unique record. Error: {}".format(e))
+                        print(e)
                 if 'foreign key constraint' in str(e):
                     print("No matching foreign key record.")
                 print(e)
@@ -166,6 +169,7 @@ def insert_rows(rows, model, update=None):
                 logger.error("Database - unable to create record. Error: {}".format(e))
                 print(e)
                 pass
+            # curs.executemany()
 
         curs.execute("SELECT COUNT(*) FROM {}".format(table_name))
         print(curs.fetchone())
