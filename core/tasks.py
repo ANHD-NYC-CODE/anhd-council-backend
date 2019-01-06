@@ -3,7 +3,6 @@ from app.celery import app
 from core.models import Dataset, Update, DataFile
 from django_celery_results.models import TaskResult
 
-from django.core import files
 # TODO - setup auth for flower
 # https://stackoverflow.com/questions/19689510/celery-flower-security-in-production
 
