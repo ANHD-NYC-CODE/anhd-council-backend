@@ -92,8 +92,8 @@ class AcrisPropertyRecord(BaseTest, TestCase):
         update = Update.objects.create(dataset=dataset, file=file)
 
         ds_models.AcrisPropertyRecord.seed_or_update_self(file=file, update=update)
-        self.assertEqual(ds_models.AcrisPropertyRecord.objects.count(), 100)
-        self.assertEqual(update.rows_created, 100)
+        self.assertEqual(ds_models.AcrisPropertyRecord.objects.count(), 10)
+        self.assertEqual(update.rows_created, 10)
 
     def test_seed_master(self):
         dataset = Dataset.objects.create(name="mock", model_name="AcrisPropertyRecord")
@@ -101,8 +101,9 @@ class AcrisPropertyRecord(BaseTest, TestCase):
         update = Update.objects.create(dataset=dataset, file=file)
 
         ds_models.AcrisPropertyRecord.seed_or_update_self(file=file, update=update)
-        self.assertEqual(ds_models.AcrisPropertyRecord.objects.count(), 100)
-        self.assertEqual(update.rows_created, 100)
+        record = ds_models.AcrisPropertyRecord.objects.all()[0]
+        self.assertEqual(ds_models.AcrisPropertyRecord.objects.count(), 10)
+        self.assertEqual(update.rows_created, 10)
 
     def test_seed_parties(self):
         dataset = Dataset.objects.create(name="mock", model_name="AcrisPropertyRecord")
@@ -110,5 +111,32 @@ class AcrisPropertyRecord(BaseTest, TestCase):
         update = Update.objects.create(dataset=dataset, file=file)
 
         ds_models.AcrisPropertyRecord.seed_or_update_self(file=file, update=update)
-        self.assertEqual(ds_models.AcrisPropertyRecord.objects.count(), 100)
-        self.assertEqual(update.rows_created, 100)
+        self.assertEqual(ds_models.AcrisPropertyRecord.objects.count(), 10)
+        self.assertEqual(update.rows_created, 10)
+
+    def test_combined_tables(self):
+        dataset = Dataset.objects.create(name="mock", model_name="AcrisPropertyRecord")
+        party_file = DataFile.objects.create(file=self.get_file("acris_real_property_parties.csv"), dataset=dataset)
+        party_update = Update.objects.create(dataset=dataset, file=party_file)
+        master_file = DataFile.objects.create(file=self.get_file("acris_real_property_master.csv"), dataset=dataset)
+        master_update = Update.objects.create(dataset=dataset, file=master_file)
+        legals_file = DataFile.objects.create(file=self.get_file("acris_real_property_legals.csv"), dataset=dataset)
+        legals_update = Update.objects.create(dataset=dataset, file=legals_file)
+
+        ds_models.AcrisPropertyRecord.seed_or_update_self(file=party_file, update=party_update)
+        ds_models.AcrisPropertyRecord.seed_or_update_self(file=master_file, update=master_update)
+        ds_models.AcrisPropertyRecord.seed_or_update_self(file=legals_file, update=legals_update)
+
+        self.assertEqual(ds_models.AcrisPropertyRecord.objects.count(), 10)
+
+        record = ds_models.AcrisPropertyRecord.objects.all()[0]
+        self.assertEqual(record.documentid, '2006020802474003')
+        self.assertEqual(record.recordtype, 'L')
+        self.assertEqual(record.propertytype, 'CR')
+        self.assertEqual(record.doctype, 'MTGE')
+        self.assertEqual(record.docdate.year, 2009)
+        self.assertEqual(record.docamount, 395000)
+        self.assertEqual(record.recordedfiled.year, 2010)
+        self.assertEqual(record.partytype, 2)
+        self.assertEqual(record.name, 'ABACUS FEDERAL SAVINGS BANK')
+        self.assertEqual(record.address1, '6 BOWERY')

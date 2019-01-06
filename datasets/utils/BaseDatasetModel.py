@@ -1,6 +1,7 @@
 from core import models as c_models
 from core.utils.database import batch_insert_from_file, bulk_insert_from_csv, seed_from_csv_diff
 from core.utils.typecast import Typecast
+from django.core import files
 
 import os
 import csv
