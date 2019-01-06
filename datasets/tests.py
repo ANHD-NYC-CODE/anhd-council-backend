@@ -32,8 +32,8 @@ class BuildingTests(BaseTest, TestCase):
         ds_models.Building.seed_or_update_self(file=new_file, update=new_update)
 
         self.assertEqual(ds_models.Building.objects.count(), 3)
-        self.assertEqual(new_update.rows_created, 1)
-        self.assertEqual(new_update.rows_updated, 1)
+        self.assertEqual(new_update.rows_created, 2)
+        self.assertEqual(new_update.rows_updated, 0)
 
 
 class CouncilTests(BaseTest, TestCase):
@@ -74,9 +74,9 @@ class HPDViolationTests(BaseTest, TestCase):
                                            file=new_file, previous_file=file)
         ds_models.HPDViolation.seed_or_update_self(file=new_file, update=new_update)
         self.assertEqual(ds_models.HPDViolation.objects.count(), 6)
-        self.assertEqual(new_update.rows_created, 2)
-        self.assertEqual(new_update.rows_updated, 2)
-
+        self.assertEqual(new_update.rows_created, 4)
+        self.assertEqual(new_update.rows_updated, 0)
+        self.assertEqual(ds_models.HPDViolation.objects.get(violationid=10000011).currentstatus, "VIOLATION CLOSED")
         changed_record = ds_models.HPDViolation.objects.get(violationid=10000014)
         self.assertEqual(changed_record.currentstatus, 'VIOLATION CLOSED')
         self.assertEqual(changed_record.currentstatusdate.year, 2017)
@@ -166,24 +166,25 @@ class AcrisPropertyRecord(BaseTest, TestCase):
 
         ds_models.AcrisPropertyRecord.seed_or_update_self(
             file=party_file_diff, update=party_update_diff)
-        self.assertEqual(party_update_diff.rows_created, 1)
-        self.assertEqual(party_update_diff.rows_updated, 1)
+        self.assertEqual(party_update_diff.rows_created, 2)
+        self.assertEqual(party_update_diff.rows_updated, 0)
 
         master_file_diff = DataFile.objects.create(file=self.get_file(
             "mock_acris_real_property_master_diff.csv"), dataset=dataset)
         master_update_diff = Update.objects.create(dataset=dataset, file=master_file_diff, previous_file=master_file)
 
         ds_models.AcrisPropertyRecord.seed_or_update_self(file=master_file_diff, update=master_update_diff)
-        self.assertEqual(master_update_diff.rows_created, 0)
-        self.assertEqual(master_update_diff.rows_updated, 1)
+        self.assertEqual(master_update_diff.rows_created, 1)
+        self.assertEqual(master_update_diff.rows_updated, 0)
 
         legals_file_diff = DataFile.objects.create(file=self.get_file(
             "mock_acris_real_property_legals_diff.csv"), dataset=dataset)
         legals_update_diff = Update.objects.create(dataset=dataset, file=legals_file_diff, previous_file=legals_file)
 
         ds_models.AcrisPropertyRecord.seed_or_update_self(file=legals_file_diff, update=legals_update_diff)
-        self.assertEqual(legals_update_diff.rows_created, 1)
-        self.assertEqual(legals_update_diff.rows_updated, 2)
+        self.assertEqual(legals_update_diff.rows_created, 3)
+        self.assertEqual(legals_update_diff.rows_updated, 0)
+        self.assertEqual(ds_models.AcrisPropertyRecord.objects.get(documentid="FT_3380001321238").recordtype, "A")
 
         self.assertEqual(ds_models.AcrisPropertyRecord.objects.count(), 12)
 
@@ -257,15 +258,16 @@ class HPDComplaint(BaseTest, TestCase):
 
         ds_models.HPDComplaint.seed_or_update_self(
             file=complaint_file_diff, update=complaint_update_diff)
-        self.assertEqual(complaint_update_diff.rows_created, 1)
-        self.assertEqual(complaint_update_diff.rows_updated, 1)
+        self.assertEqual(complaint_update_diff.rows_created, 2)
+        self.assertEqual(complaint_update_diff.rows_updated, 0)
+        self.assertEqual(ds_models.HPDComplaint.objects.get(complaintid=6961276).unittypeid, 91)
 
         problem_file_diff = DataFile.objects.create(file=self.get_file(
             "mock_hpd_problems_diff.csv"), dataset=dataset)
         problem_update_diff = Update.objects.create(dataset=dataset, file=problem_file_diff, previous_file=problem_file)
 
         ds_models.HPDComplaint.seed_or_update_self(file=problem_file_diff, update=problem_update_diff)
-        self.assertEqual(problem_update_diff.rows_created, 1)
-        self.assertEqual(problem_update_diff.rows_updated, 1)
+        self.assertEqual(problem_update_diff.rows_created, 3)
+        self.assertEqual(problem_update_diff.rows_updated, 0)
 
         self.assertEqual(ds_models.HPDComplaint.objects.count(), 11)
