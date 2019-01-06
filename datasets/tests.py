@@ -186,3 +186,86 @@ class AcrisPropertyRecord(BaseTest, TestCase):
         self.assertEqual(legals_update_diff.rows_updated, 2)
 
         self.assertEqual(ds_models.AcrisPropertyRecord.objects.count(), 12)
+
+
+class HPDComplaint(BaseTest, TestCase):
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_seed_complants(self):
+        dataset = Dataset.objects.create(name="mock", model_name="HPDComplaint")
+        file = DataFile.objects.create(file=self.get_file("mock_hpd_complaints.csv"), dataset=dataset)
+        update = Update.objects.create(dataset=dataset, file=file)
+
+        ds_models.HPDComplaint.seed_or_update_self(file=file, update=update)
+        self.assertEqual(ds_models.HPDComplaint.objects.count(), 9)
+        self.assertEqual(update.rows_created, 9)
+
+    def test_seed_problems(self):
+        dataset = Dataset.objects.create(name="mock", model_name="HPDComplaint")
+        file = DataFile.objects.create(file=self.get_file("mock_hpd_problems.csv"), dataset=dataset)
+        update = Update.objects.create(dataset=dataset, file=file)
+
+        ds_models.HPDComplaint.seed_or_update_self(file=file, update=update)
+        record = ds_models.HPDComplaint.objects.all()[0]
+        self.assertEqual(ds_models.HPDComplaint.objects.count(), 9)
+        self.assertEqual(update.rows_created, 9)
+
+    def test_combined_tables(self):
+        dataset = Dataset.objects.create(name="mock", model_name="HPDComplaint")
+        complaint_file = DataFile.objects.create(file=self.get_file(
+            "mock_hpd_complaints.csv"), dataset=dataset)
+        complaint_update = Update.objects.create(dataset=dataset, file=complaint_file)
+        problem_file = DataFile.objects.create(file=self.get_file(
+            "mock_hpd_problems.csv"), dataset=dataset)
+        problem_update = Update.objects.create(dataset=dataset, file=problem_file)
+
+        ds_models.HPDComplaint.seed_or_update_self(file=complaint_file, update=complaint_update)
+        ds_models.HPDComplaint.seed_or_update_self(file=problem_file, update=problem_update)
+
+        self.assertEqual(ds_models.HPDComplaint.objects.count(), 9)
+
+        record = ds_models.HPDComplaint.objects.all()[0]
+        self.assertEqual(record.complaintid, 6960137)
+        self.assertEqual(record.buildingid, 3418)
+        self.assertEqual(record.streetname, 'ADAM C POWELL BOULEVARD')
+        self.assertEqual(record.apartment, '12D')
+        self.assertEqual(record.receiveddate.year, 2014)
+        self.assertEqual(record.status, 'CLOSE')
+        self.assertEqual(record.statusdate.year, 2017)
+        self.assertEqual(record.problemid, 17307278)
+        self.assertEqual(record.majorcategory, 'DOOR/WINDOW')
+        self.assertEqual(record.statusdescription,
+                         'The Department of Housing Preservation and Development inspected the following conditions. No violations were issued. The complaint has been closed.')
+
+    def test_combined_tables_with_update(self):
+        dataset = Dataset.objects.create(name="mock", model_name="HPDComplaint")
+        complaint_file = DataFile.objects.create(file=self.get_file(
+            "mock_hpd_complaints.csv"), dataset=dataset)
+        complaint_update = Update.objects.create(dataset=dataset, file=complaint_file)
+        problem_file = DataFile.objects.create(file=self.get_file(
+            "mock_hpd_problems.csv"), dataset=dataset)
+        problem_update = Update.objects.create(dataset=dataset, file=problem_file)
+
+        ds_models.HPDComplaint.seed_or_update_self(file=complaint_file, update=complaint_update)
+        ds_models.HPDComplaint.seed_or_update_self(file=problem_file, update=problem_update)
+
+        complaint_file_diff = DataFile.objects.create(file=self.get_file(
+            "mock_hpd_complaints_diff.csv"), dataset=dataset)
+        complaint_update_diff = Update.objects.create(
+            dataset=dataset, file=complaint_file_diff, previous_file=complaint_file)
+
+        ds_models.HPDComplaint.seed_or_update_self(
+            file=complaint_file_diff, update=complaint_update_diff)
+        self.assertEqual(complaint_update_diff.rows_created, 1)
+        self.assertEqual(complaint_update_diff.rows_updated, 1)
+
+        problem_file_diff = DataFile.objects.create(file=self.get_file(
+            "mock_hpd_problems_diff.csv"), dataset=dataset)
+        problem_update_diff = Update.objects.create(dataset=dataset, file=problem_file_diff, previous_file=problem_file)
+
+        ds_models.HPDComplaint.seed_or_update_self(file=problem_file_diff, update=problem_update_diff)
+        self.assertEqual(problem_update_diff.rows_created, 1)
+        self.assertEqual(problem_update_diff.rows_updated, 1)
+
+        self.assertEqual(ds_models.HPDComplaint.objects.count(), 11)
