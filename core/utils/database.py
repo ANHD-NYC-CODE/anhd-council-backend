@@ -63,7 +63,7 @@ def seed_from_csv_diff(original_file_path, new_file_path, model, update):
             logger.info("Database - Batch seeding completed.")
             break
         else:
-            insert_rows(batch, model, update)
+            batch_upsert_rows(batch, model, update)
     os.remove(temp_file_path)
 
 
@@ -129,52 +129,42 @@ def batch_insert_from_file(model_class, file, update=None):
             logger.info("Database - Batch seeding completed.")
             break
         else:
-            insert_rows(batch, model_class, update)
+            batch_upsert_rows(batch, model_class, update)
 
 
-def insert_rows(rows, model, update=None):
+def batch_upsert_rows(rows, model, update=None):
     table_name = model._meta.db_table
     primary_key = model._meta.pk.name
     """ Inserts many row, all in the same transaction"""
     rows_created = 0
-    rows_updated = 0
+
     with connection.cursor() as curs:
-
-        for row in rows:
-            rows_to_update = []
-            try:
-                with transaction.atomic():
-                    curs.execute(upsert_query(table_name, row, primary_key), build_row_values(row))
-                    rows_created = rows_created + 1
-            except utils.IntegrityError as e:
-                # If unique value already exists,
-                # or if the query is missing columns -
-                # overrite with the new entry and with whatever columns exist
-                if 'unique constraint' in str(e) or 'not-null constraint' in str(e):
-                    try:
-                        # rows_to_update.append(row)
-                        curs.execute(update_query(table_name, row, primary_key),
-                                     build_row_values(row) + (row[primary_key],))
-                        rows_updated = rows_updated + 1
-
-                        print("Updating {} row with {}: {}".format(table_name, primary_key, row[primary_key]))
-                    except Exception as e:
-                        logger.error("Database - unable to update unique record. Error: {}".format(e))
-                        print(e)
-                if 'foreign key constraint' in str(e):
-                    print("No matching foreign key record.")
-                print(e)
-                pass
-            except utils.DataError as e:
-                logger.error("Database - unable to create record. Error: {}".format(e))
-                print(e)
-                pass
-            # curs.executemany()
-
-        curs.execute("SELECT COUNT(*) FROM {}".format(table_name))
-        print(curs.fetchone())
+        try:
+            with transaction.atomic():
+                curs.executemany(upsert_query(table_name, rows[0], primary_key), tuple(
+                    build_row_values(row) for row in rows))
+                rows_created = rows_created + len(rows)
+        except Exception as e:
+            logger.warning('Database - error upserting rows. Switching to single row upsert.')
+            print(e)
+            single_upsert_row(rows, model, update)
 
         if update:
             update.rows_created = update.rows_created + rows_created
-            update.rows_updated = update.rows_updated + rows_updated
             update.save()
+
+
+def single_upsert_row(rows, model, update=None):
+    for row in rows:
+        try:
+            with transaction.atomic():
+                curs.execute(upsert_query(table_name, row, primary_key), build_row_values(row))
+                rows_created = rows_created + 1
+        except utils.DataError as e:
+            logger.error("Database Error * - unable to upsert single record. Error: {}".format(e))
+            print(e)
+            pass
+
+    if update:
+        update.rows_created = update.rows_created + rows_created
+        update.save()
