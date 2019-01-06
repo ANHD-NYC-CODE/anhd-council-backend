@@ -12,7 +12,7 @@ import os
 import itertools
 
 
-ACTIVE_MODELS = ['HPDViolation', 'Building', 'Council', 'AcrisPropertyRecord']
+ACTIVE_MODELS = ['HPDViolation', 'Building', 'Council', 'AcrisPropertyRecord', 'HPDComplaint']
 ACTIVE_MODELS_CHOICES = list(map(lambda model: (model, model), ACTIVE_MODELS))
 
 
@@ -76,7 +76,7 @@ class Update(models.Model):
     file = models.ForeignKey(DataFile, related_name='current_file',
                              on_delete=models.SET_NULL, null=True)
     previous_file = models.ForeignKey(DataFile, related_name='previous_file',
-                                      on_delete=models.SET_NULL, null=True)
+                                      on_delete=models.SET_NULL, null=True, blank=True)
     dataset = models.ForeignKey(Dataset, on_delete=models.SET_NULL, null=True)
     model_name = models.CharField(max_length=255, blank=False, null=False,
                                   choices=ACTIVE_MODELS_CHOICES)
