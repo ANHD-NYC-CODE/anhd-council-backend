@@ -4,13 +4,15 @@ from django.db.models import Count
 from django.http import HttpResponseRedirect
 from core.models import Dataset, DataFile, Update
 from app.admin.mixins import admin_changelist_link, admin_link
-from core.tasks import async_download_file
+from core.tasks import async_download_start
+
+import os
 
 
 class DatasetAdmin(admin.ModelAdmin):
     def response_change(self, request, obj):
         if "_download-file" in request.POST:
-            worker = async_download_file.delay(obj.id)
+            worker = async_download_start.delay(obj.id)
             self.message_user(
                 request, "This file is now downloading with worker {}. Please view monitor the status in Flower. {}".format(worker.id, settings.FLOWER_URL))
             return HttpResponseRedirect(".")
@@ -49,13 +51,16 @@ class DataFileAdmin(admin.ModelAdmin):
     def dataset_link(self, dataset):
         return dataset
 
+    def file_name(self, file):
+        return os.path.basename(file.file.name)
+
     def has_delete_permission(self, request, obj=None):
         return True
 
     def has_change_permission(self, request, obj=None):
         return False
 
-    list_display = ['id', 'dataset_link', 'uploaded_date', 'file']
+    list_display = ['id', 'dataset_link', 'uploaded_date', 'file_name']
     ordering = ['-uploaded_date']
     actions = []
 
@@ -73,7 +78,7 @@ class UpdateAdmin(admin.ModelAdmin):
 
     @admin_link('file', ('File'), query_string=lambda c: 'id={}'.format(c.file.pk))
     def file_link(self, datafile):
-        return datafile.file.name
+        return os.path.basename(datafile.file.name)
 
     @admin_link('task_result', ('Task Result'))
     def task_result_link(self, task_result):
