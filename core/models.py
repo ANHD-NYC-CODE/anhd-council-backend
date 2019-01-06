@@ -92,7 +92,7 @@ class Update(models.Model):
 
 
 @receiver(models.signals.post_save, sender=Update)
-def auto_batch_insert_from_file_on_create(sender, instance, created, **kwargs):
+def auto_seed_on_create(sender, instance, created, **kwargs):
     """
     Seeds file in DB
     when corresponding `Update` object is created.

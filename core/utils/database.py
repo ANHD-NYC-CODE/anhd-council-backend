@@ -92,7 +92,8 @@ def bulk_insert_from_csv(model, file, update=None):
         except Exception as e:
             print(e)
             logger.warning("Database - Bulk Import Error - beginning Batch seeding. Error: {}".format(e))
-            batch_insert_from_file(model, file, update)
+            rows = model.transform_self_from_file(file.file.path)
+            batch_insert_with_gen(model, rows, update)
 
     os.remove(temp_file_path)
 
@@ -120,8 +121,7 @@ def build_row_values(row):
     return tuple(None if x == '' else x for x in t_row)
 
 
-def batch_insert_from_file(model_class, file, update=None):
-    rows = model_class.transform_self_from_file(file.file.path)
+def batch_insert_with_gen(model_class, rows, update=None):
     while True:
         batch = list(itertools.islice(rows, 0, BATCH_SIZE))
 

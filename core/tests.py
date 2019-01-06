@@ -4,7 +4,6 @@ from core.models import Update, Dataset, DataFile
 from datasets import models as ds_models
 from django.core.files import File
 from django.db import transaction, connection
-from core.utils.database import batch_insert_from_file
 from app.tests.base_test import BaseTest
 
 
