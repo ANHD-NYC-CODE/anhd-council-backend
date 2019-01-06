@@ -20,7 +20,7 @@ class AcrisPropertyRecord(BaseDatasetModel, models.Model):
     download_endpoints = [
         'https://data.cityofnewyork.us/api/views/8h5j-fqxa/rows.csv?accessType=DOWNLOAD',
         'https://data.cityofnewyork.us/api/views/bnx9-e6tj/rows.csv?accessType=DOWNLOAD',
-        'htt`ps://data.cityofnewyork.us/api/views/636b-3b5g/rows.csv?accessType=DOWNLOAD'
+        'https://data.cityofnewyork.us/api/views/636b-3b5g/rows.csv?accessType=DOWNLOAD'
     ]
     documentid = models.TextField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Building', db_column='bbl', db_constraint=False,
