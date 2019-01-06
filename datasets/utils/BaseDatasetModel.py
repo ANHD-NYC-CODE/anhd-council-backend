@@ -40,6 +40,7 @@ class BaseDatasetModel():
 
     @classmethod
     def download_file(self, endpoint):
+        dataset = self.get_dataset()
         file_request = requests.get(endpoint, stream=True)
         # Was the request OK?
         if file_request.status_code != requests.codes.ok:
@@ -66,7 +67,6 @@ class BaseDatasetModel():
 
             # Write file block to temporary file
             lf.write(block)
-
         data_file = c_models.DataFile(dataset=dataset)
         data_file.file.save(file_name, files.File(lf))
 

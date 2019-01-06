@@ -80,3 +80,35 @@ class HPDViolationTests(BaseTest, TestCase):
         changed_record = ds_models.HPDViolation.objects.get(violationid=10000014)
         self.assertEqual(changed_record.currentstatus, 'VIOLATION CLOSED')
         self.assertEqual(changed_record.currentstatusdate.year, 2017)
+
+
+class AcrisPropertyRecord(BaseTest, TestCase):
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_seed_legals(self):
+        dataset = Dataset.objects.create(name="mock", model_name="AcrisPropertyRecord")
+        file = DataFile.objects.create(file=self.get_file("acris_real_property_legals.csv"), dataset=dataset)
+        update = Update.objects.create(dataset=dataset, file=file)
+
+        ds_models.AcrisPropertyRecord.seed_or_update_self(file=file, update=update)
+        self.assertEqual(ds_models.AcrisPropertyRecord.objects.count(), 100)
+        self.assertEqual(update.rows_created, 100)
+
+    def test_seed_master(self):
+        dataset = Dataset.objects.create(name="mock", model_name="AcrisPropertyRecord")
+        file = DataFile.objects.create(file=self.get_file("acris_real_property_master.csv"), dataset=dataset)
+        update = Update.objects.create(dataset=dataset, file=file)
+
+        ds_models.AcrisPropertyRecord.seed_or_update_self(file=file, update=update)
+        self.assertEqual(ds_models.AcrisPropertyRecord.objects.count(), 100)
+        self.assertEqual(update.rows_created, 100)
+
+    def test_seed_parties(self):
+        dataset = Dataset.objects.create(name="mock", model_name="AcrisPropertyRecord")
+        file = DataFile.objects.create(file=self.get_file("acris_real_property_parties.csv"), dataset=dataset)
+        update = Update.objects.create(dataset=dataset, file=file)
+
+        ds_models.AcrisPropertyRecord.seed_or_update_self(file=file, update=update)
+        self.assertEqual(ds_models.AcrisPropertyRecord.objects.count(), 100)
+        self.assertEqual(update.rows_created, 100)
