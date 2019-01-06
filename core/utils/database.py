@@ -34,7 +34,7 @@ def seed_from_csv_diff(original_file_path, new_file_path, model, update):
     new_diff_set = set()
     new_file = open(new_file_path, 'r')
     headers = new_file.readline().replace('\n', '').split(',')
-    new_reader = model.update_set_filter(csv.reader(new_file))
+    new_reader = model.update_set_filter(csv.reader(new_file), headers)
 
     original_file = open(original_file_path, 'r')
     original_reader = csv.reader(original_file)

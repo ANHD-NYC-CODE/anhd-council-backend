@@ -67,10 +67,9 @@ class HPDViolation(BaseDatasetModel, models.Model):
     # trims down new update files to preserve memory
     # uses original header values
     @classmethod
-    def update_set_filter(self, csv_reader):
+    def update_set_filter(self, csv_reader, headers):
         for row in csv_reader:
-            # 16 = InspectionDate
-            if is_older_than(row[16], 2):
+            if is_older_than(row[headers.index('InspectionDate')], 2):
                 pass
             yield row
 

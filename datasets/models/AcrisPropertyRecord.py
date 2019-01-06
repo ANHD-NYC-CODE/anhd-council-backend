@@ -2,7 +2,7 @@ from django.db import models
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.tasks import async_download_file
-from datasets.utils.validation_filters import is_null
+from datasets.utils.validation_filters import is_null, is_older_than
 
 # ACRIS
 # combines Real Properties Master (has mortages)
@@ -72,8 +72,10 @@ class AcrisPropertyRecord(BaseDatasetModel, models.Model):
     # trims down new update files to preserve memory
     # uses original header values
     @classmethod
-    def update_set_filter(self, csv_reader):
+    def update_set_filter(self, csv_reader, headers):
         for row in csv_reader:
+            if is_older_than(row[headers.index('GOOD THROUGH DATE')], 8):
+                pass
             yield row
 
     @classmethod
