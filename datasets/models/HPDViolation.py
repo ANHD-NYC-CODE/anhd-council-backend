@@ -2,6 +2,9 @@ from django.db import models
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.transform import from_csv_file_to_gen
 from datasets.utils.validation_filters import is_null, is_older_than
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class HPDViolation(BaseDatasetModel, models.Model):
@@ -77,6 +80,7 @@ class HPDViolation(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
+        logger.info("Seeding/Updating {}", self.__name__)
         return self.seed_or_update_from_set_diff(**kwargs)
 
     def __str__(self):

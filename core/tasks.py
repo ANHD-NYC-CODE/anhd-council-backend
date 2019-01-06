@@ -7,6 +7,10 @@ from django.core import files
 # TODO - setup auth for flower
 # https://stackoverflow.com/questions/19689510/celery-flower-security-in-production
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 @app.task(bind=True)
 def async_seed_file(self, dataset_id, file_id, update_id):
@@ -14,6 +18,7 @@ def async_seed_file(self, dataset_id, file_id, update_id):
     file = DataFile.objects.get(id=file_id)
     update = Update.objects.get(id=update_id)
 
+    logger.info("Beginning async seeding - {} - Update: {}".format(dataset.name, update.id))
     dataset.seed_dataset(file=file, update=update)
 
 
@@ -23,4 +28,5 @@ def async_download_start(self, dataset_id):
     if dataset:
         dataset.download()
     else:
+        logger.error("Task Failure - No dataset found in async_download_start")
         raise Exception("No dataset.")

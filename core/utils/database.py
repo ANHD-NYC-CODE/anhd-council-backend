@@ -10,6 +10,10 @@ import csv
 import uuid
 import os
 import json
+import logging
+
+logger = logging.getLogger(__name__)
+
 BATCH_SIZE = 1000
 
 
@@ -56,6 +60,7 @@ def seed_from_csv_diff(original_file_path, new_file_path, model, update):
         batch = list(itertools.islice(diff_gen, 0, BATCH_SIZE))
 
         if len(batch) == 0:
+            logger.info("Database - Batch seeding completed.")
             break
         else:
             insert_rows(batch, model, update)
@@ -86,6 +91,7 @@ def bulk_insert_from_csv(model, file, update=None):
                 update.save()
         except Exception as e:
             print(e)
+            logger.warning("Database - Bulk Import Error - beginning Batch seeding. Error: {}".format(e))
             batch_insert_from_file(model, file, update)
 
     os.remove(temp_file_path)
@@ -119,6 +125,7 @@ def batch_insert_from_file(model_class, file, update=None):
         batch = list(itertools.islice(rows, 0, BATCH_SIZE))
 
         if len(batch) == 0:
+            logger.info("Database - Batch seeding completed.")
             break
         else:
             insert_rows(batch, model_class, update)
@@ -149,12 +156,14 @@ def insert_rows(rows, model, update=None):
                             rows_updated = rows_updated + 1
                             print("Updating {} row with {}: {}".format(table_name, primary_key, row[primary_key]))
                         except Exception as e:
+                            logger.error("Database - unable to update unique record. Error: {}".format(e))
                             print(e)
                 if 'foreign key constraint' in str(e):
                     print("No matching foreign key record.")
                 print(e)
                 pass
             except utils.DataError as e:
+                logger.error("Database - unable to create record. Error: {}".format(e))
                 print(e)
                 pass
 
