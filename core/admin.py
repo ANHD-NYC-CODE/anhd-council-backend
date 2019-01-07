@@ -12,6 +12,8 @@ import os
 class DatasetAdmin(admin.ModelAdmin):
     def response_change(self, request, obj):
         if "_download-file" in request.POST:
+            logger.info("User requested download for dataset: {}".format(obj.name))
+
             worker = async_download_start.delay(obj.id)
             self.message_user(
                 request, "This file is now downloading with worker {}. Please view monitor the status in Flower. {}".format(worker.id, settings.FLOWER_URL))

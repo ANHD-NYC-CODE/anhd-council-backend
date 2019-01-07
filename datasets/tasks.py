@@ -4,7 +4,7 @@ from django_celery_results.models import TaskResult
 from datasets import models as dataset_models
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('app')
 
 
 @app.task(bind=True)

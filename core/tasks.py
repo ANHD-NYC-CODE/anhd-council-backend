@@ -8,7 +8,7 @@ from django_celery_results.models import TaskResult
 
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('app')
 
 
 @app.task(bind=True)
@@ -24,6 +24,7 @@ def async_seed_file(self, dataset_id, file_id, update_id):
 @app.task(bind=True)
 def async_download_start(self, dataset_id):
     dataset = Dataset.objects.filter(id=dataset_id).first()
+    logger.info("Starting async download for dataset: {}".format(dataset.name))
     if dataset:
         dataset.download()
     else:

@@ -12,7 +12,7 @@ import os
 import json
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('app')
 
 BATCH_SIZE = 1000
 
@@ -128,7 +128,7 @@ def batch_upsert_from_gen(model_class, rows, update=None):
         batch = list(itertools.islice(rows, 0, BATCH_SIZE))
 
         if len(batch) == 0:
-            logger.info("Database - Batch seeding completed.")
+            logger.info("Database - Batch upserts completed.")
             break
         else:
             batch_upsert_rows(batch, model_class, update)
@@ -138,30 +138,30 @@ def batch_upsert_rows(rows, model, update=None):
     table_name = model._meta.db_table
     primary_key = model._meta.pk.name
     """ Inserts many row, all in the same transaction"""
-    rows_created = 0
-
     with connection.cursor() as curs:
         try:
             with transaction.atomic():
                 curs.executemany(upsert_query(table_name, rows[0], primary_key), tuple(
                     build_row_values(row) for row in rows))
-                rows_created = rows_created + len(rows)
+
+            if update:
+                update.rows_created = update.rows_created + len(rows)
+                update.save()
+
         except Exception as e:
-            logger.warning('Database - error upserting rows. Switching to single row upsert.')
+            logger.warning('Database - error upserting rows. Switching to single row upsert. - Error: {}'.format(e))
             print(e)
             single_upsert_row(rows, model, update)
 
-        if update:
-            update.rows_created = update.rows_created + rows_created
-            update.save()
-
 
 def single_upsert_row(rows, model, update=None):
+    rows_created = 0
     for row in rows:
         try:
             with transaction.atomic():
                 curs.execute(upsert_query(table_name, row, primary_key), build_row_values(row))
                 rows_created = rows_created + 1
+
         except utils.DataError as e:
             logger.error("Database Error * - unable to upsert single record. Error: {}".format(e))
             print(e)

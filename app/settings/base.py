@@ -137,46 +137,65 @@ CELERY_BACKEND = 'rpc://'
 
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': False,
+    'disable_existing_loggers': True,
     'filters': {
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse'
         }
     },
-    'handlers': {
-        'mail_admins': {
-            'level': 'ERROR',
-            'filters': ['require_debug_false'],
-            'class': 'django.utils.log.AdminEmailHandler'
+    'formatters': {
+        'standard': {
+            'format': "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+            'datefmt': "%d/%b/%Y %H:%M:%S"
         },
-        'applogfile': {
+    },
+    'handlers': {
+        'logfile': {
             'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(LOG_ROOT, 'dap-council.log'),
+            'filename': os.path.join(LOG_ROOT, "dap-council.log"),
             'maxBytes': 1024 * 1024 * 15,  # 15MB
             'backupCount': 10,
+            'formatter': 'standard',
         },
-        'apperrorfile': {
-            'level': 'ERROR',
+        'errorfile': {
+            'level': 'WARNING',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(LOG_ROOT, 'dap-council.error.log'),
+            'filename': os.path.join(LOG_ROOT, "dap-council.error.log"),
             'maxBytes': 1024 * 1024 * 15,  # 15MB
             'backupCount': 10,
+            'formatter': 'standard',
+        },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'standard'
         },
     },
     'loggers': {
-        'django.request': {
-            'handlers': ['mail_admins'],
-            'level': 'ERROR',
+        'django': {
+            'handlers': ['console'],
+            'level': 'WARN',
             'propagate': True,
         },
-        'DAP-Council-log': {
-            'handlers': ['applogfile'],
+        'django.db.backends': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'app': {
+            'handlers': ['console', 'logfile', 'errorfile'],
             'level': 'DEBUG',
         },
-        'DAP-Council-error': {
-            'handlers': ['apperrorfile'],
-            'level': 'ERROR',
-        },
-    },
+    }
 }
+
+# Use exact model names from datasets/models
+ACTIVE_MODELS = [
+    'HPDViolation',
+    'Building',
+    'Council',
+    'AcrisPropertyRecord',
+    'HPDComplaint',
+    'DOBViolation'
+]

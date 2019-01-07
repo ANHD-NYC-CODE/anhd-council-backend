@@ -4,7 +4,7 @@ from core.utils.transform import from_csv_file_to_gen
 from datasets.utils.validation_filters import is_null, is_older_than
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('app')
 
 
 class HPDViolation(BaseDatasetModel, models.Model):
