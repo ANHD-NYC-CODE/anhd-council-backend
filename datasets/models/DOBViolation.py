@@ -48,13 +48,13 @@ class DOBViolation(BaseDatasetModel, models.Model):
     @classmethod
     def update_set_filter(self, csv_reader, headers):
         for row in csv_reader:
-            if is_older_than(row[headers.index('IssueDate')], 4):
+            if is_older_than(row[headers.index('ISSUE_DATE')], 4):
                 pass
             yield row
 
     @classmethod
     def transform_self(self, file_path):
-        return self.pre_validation_filters(with_bbl(from_csv_file_to_gen(file_path)))
+        return self.pre_validation_filters(with_bbl(from_csv_file_to_gen(file_path), borough='boro'))
 
     @classmethod
     def seed_or_update_self(self, **kwargs):

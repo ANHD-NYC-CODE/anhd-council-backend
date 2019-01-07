@@ -6,6 +6,8 @@ from django.core.files import File
 from django.db import transaction, connection
 from app.tests.base_test import BaseTest
 
+import logging
+logging.disable(logging.CRITICAL)
 
 # Create your tests here.
 
