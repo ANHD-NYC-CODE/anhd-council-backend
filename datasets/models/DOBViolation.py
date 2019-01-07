@@ -4,7 +4,7 @@ from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.utils.validation_filters import is_null, is_older_than
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('app')
 
 
 class DOBViolation(BaseDatasetModel, models.Model):
@@ -14,7 +14,7 @@ class DOBViolation(BaseDatasetModel, models.Model):
     bbl = models.ForeignKey('Building', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
     boro = models.TextField(blank=True, null=True)
-    bin = models.TextField(blank=True, null=True)
+    bin = models.TextField(db_index=True, blank=True, null=True)
     block = models.TextField(blank=True, null=True)
     lot = models.TextField(blank=True, null=True)
     issuedate = models.DateTimeField(db_index=True, blank=True, null=True)

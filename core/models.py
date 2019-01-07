@@ -10,10 +10,11 @@ import time
 import datetime
 import os
 import itertools
+import logging
 
+logger = logging.getLogger('app')
 
-ACTIVE_MODELS = ['HPDViolation', 'Building', 'Council', 'AcrisPropertyRecord', 'HPDComplaint']
-ACTIVE_MODELS_CHOICES = list(map(lambda model: (model, model), ACTIVE_MODELS))
+ACTIVE_MODELS_CHOICES = list(map(lambda model: (model, model), settings.ACTIVE_MODELS))
 
 
 class Dataset(models.Model):
