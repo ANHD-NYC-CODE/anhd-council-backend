@@ -84,57 +84,44 @@ class HPDViolationTests(BaseTest, TestCase):
         self.assertEqual(changed_record.currentstatusdate.year, 2017)
 
 
-class AcrisPropertyRecord(BaseTest, TestCase):
+class AcrisRealMasterLegalTests(BaseTest, TestCase):
     def tearDown(self):
         self.clean_tests()
 
     def test_seed_legals(self):
-        dataset = Dataset.objects.create(name="mock", model_name="AcrisPropertyRecord")
+        dataset = Dataset.objects.create(name="mock", model_name="AcrisRealMasterLegal")
         file = DataFile.objects.create(file=self.get_file("mock_acris_real_property_legals.csv"), dataset=dataset)
-        update = Update.objects.create(dataset=dataset, file=file, model_name="AcrisPropertyRecord")
+        update = Update.objects.create(dataset=dataset, file=file, model_name="AcrisRealMasterLegal")
 
-        ds_models.AcrisPropertyRecord.seed_or_update_self(file=file, update=update)
-        self.assertEqual(ds_models.AcrisPropertyRecord.objects.count(), 10)
+        ds_models.AcrisRealMasterLegal.seed_or_update_self(file=file, update=update)
+        self.assertEqual(ds_models.AcrisRealMasterLegal.objects.count(), 10)
         self.assertEqual(update.rows_created, 10)
 
     def test_seed_master(self):
-        dataset = Dataset.objects.create(name="mock", model_name="AcrisPropertyRecord")
+        dataset = Dataset.objects.create(name="mock", model_name="AcrisRealMasterLegal")
         file = DataFile.objects.create(file=self.get_file("mock_acris_real_property_master.csv"), dataset=dataset)
-        update = Update.objects.create(dataset=dataset, file=file, model_name="AcrisPropertyRecord")
+        update = Update.objects.create(dataset=dataset, file=file, model_name="AcrisRealMasterLegal")
 
-        ds_models.AcrisPropertyRecord.seed_or_update_self(file=file, update=update)
-        record = ds_models.AcrisPropertyRecord.objects.all()[0]
-        self.assertEqual(ds_models.AcrisPropertyRecord.objects.count(), 10)
+        ds_models.AcrisRealMasterLegal.seed_or_update_self(file=file, update=update)
+        record = ds_models.AcrisRealMasterLegal.objects.all()[0]
+        self.assertEqual(ds_models.AcrisRealMasterLegal.objects.count(), 10)
         self.assertEqual(update.rows_created, 10)
 
-    def test_seed_parties(self):
-        dataset = Dataset.objects.create(name="mock", model_name="AcrisPropertyRecord")
-        file = DataFile.objects.create(file=self.get_file("mock_acris_real_property_parties.csv"), dataset=dataset)
-        update = Update.objects.create(dataset=dataset, file=file, model_name="AcrisPropertyRecord")
+    def test_combined_table(self):
+        dataset = Dataset.objects.create(name="mock", model_name="AcrisRealMasterLegal")
 
-        ds_models.AcrisPropertyRecord.seed_or_update_self(file=file, update=update)
-        self.assertEqual(ds_models.AcrisPropertyRecord.objects.count(), 10)
-        self.assertEqual(update.rows_created, 10)
-
-    def test_combined_tables(self):
-        dataset = Dataset.objects.create(name="mock", model_name="AcrisPropertyRecord")
-        party_file = DataFile.objects.create(file=self.get_file(
-            "mock_acris_real_property_parties.csv"), dataset=dataset)
-        party_update = Update.objects.create(dataset=dataset, file=party_file, model_name="AcrisPropertyRecord")
         master_file = DataFile.objects.create(file=self.get_file(
             "mock_acris_real_property_master.csv"), dataset=dataset)
-        master_update = Update.objects.create(dataset=dataset, file=master_file, model_name="AcrisPropertyRecord")
+        master_update = Update.objects.create(dataset=dataset, file=master_file, model_name="AcrisRealMasterLegal")
         legals_file = DataFile.objects.create(file=self.get_file(
             "mock_acris_real_property_legals.csv"), dataset=dataset)
-        legals_update = Update.objects.create(dataset=dataset, file=legals_file, model_name="AcrisPropertyRecord")
+        legals_update = Update.objects.create(dataset=dataset, file=legals_file, model_name="AcrisRealMasterLegal")
 
-        ds_models.AcrisPropertyRecord.seed_or_update_self(file=party_file, update=party_update)
-        ds_models.AcrisPropertyRecord.seed_or_update_self(file=master_file, update=master_update)
-        ds_models.AcrisPropertyRecord.seed_or_update_self(file=legals_file, update=legals_update)
+        ds_models.AcrisRealMasterLegal.seed_or_update_self(file=master_file, update=master_update)
+        ds_models.AcrisRealMasterLegal.seed_or_update_self(file=legals_file, update=legals_update)
 
-        self.assertEqual(ds_models.AcrisPropertyRecord.objects.count(), 10)
-
-        record = ds_models.AcrisPropertyRecord.objects.all()[0]
+        self.assertEqual(ds_models.AcrisRealMasterLegal.objects.count(), 10)
+        record = ds_models.AcrisRealMasterLegal.objects.all()[0]
         self.assertEqual(record.documentid, '2006020802474003')
         self.assertEqual(record.recordtype, 'L')
         self.assertEqual(record.propertytype, 'CR')
@@ -142,169 +129,199 @@ class AcrisPropertyRecord(BaseTest, TestCase):
         self.assertEqual(record.docdate.year, 2009)
         self.assertEqual(record.docamount, 395000)
         self.assertEqual(record.recordedfiled.year, 2010)
-        self.assertEqual(record.partytype, 2)
-        self.assertEqual(record.name, 'ABACUS FEDERAL SAVINGS BANK')
-        self.assertEqual(record.address1, '6 BOWERY')
 
     def test_combined_tables_with_update(self):
-        dataset = Dataset.objects.create(name="mock", model_name="AcrisPropertyRecord")
-        party_file = DataFile.objects.create(file=self.get_file(
-            "mock_acris_real_property_parties.csv"), dataset=dataset)
-        party_update = Update.objects.create(dataset=dataset, file=party_file, model_name="AcrisPropertyRecord")
+        dataset = Dataset.objects.create(name="mock", model_name="AcrisRealMasterLegal")
         master_file = DataFile.objects.create(file=self.get_file(
             "mock_acris_real_property_master.csv"), dataset=dataset)
-        master_update = Update.objects.create(dataset=dataset, file=master_file, model_name="AcrisPropertyRecord")
+        master_update = Update.objects.create(dataset=dataset, file=master_file, model_name="AcrisRealMasterLegal")
         legals_file = DataFile.objects.create(file=self.get_file(
             "mock_acris_real_property_legals.csv"), dataset=dataset)
-        legals_update = Update.objects.create(dataset=dataset, file=legals_file, model_name="AcrisPropertyRecord")
+        legals_update = Update.objects.create(dataset=dataset, file=legals_file, model_name="AcrisRealMasterLegal")
 
-        ds_models.AcrisPropertyRecord.seed_or_update_self(file=party_file, update=party_update)
-        ds_models.AcrisPropertyRecord.seed_or_update_self(file=master_file, update=master_update)
-        ds_models.AcrisPropertyRecord.seed_or_update_self(file=legals_file, update=legals_update)
-
-        party_file_diff = DataFile.objects.create(file=self.get_file(
-            "mock_acris_real_property_parties_diff.csv"), dataset=dataset)
-        party_update_diff = Update.objects.create(
-            dataset=dataset, file=party_file_diff, previous_file=party_file, model_name="AcrisPropertyRecord")
-
-        ds_models.AcrisPropertyRecord.seed_or_update_self(
-            file=party_file_diff, update=party_update_diff)
-        self.assertEqual(party_update_diff.rows_created, 2)
-        self.assertEqual(party_update_diff.rows_updated, 0)
+        ds_models.AcrisRealMasterLegal.seed_or_update_self(file=master_file, update=master_update)
+        ds_models.AcrisRealMasterLegal.seed_or_update_self(file=legals_file, update=legals_update)
 
         master_file_diff = DataFile.objects.create(file=self.get_file(
             "mock_acris_real_property_master_diff.csv"), dataset=dataset)
         master_update_diff = Update.objects.create(
-            dataset=dataset, file=master_file_diff, previous_file=master_file, model_name="AcrisPropertyRecord")
+            dataset=dataset, file=master_file_diff, previous_file=master_file, model_name="AcrisRealMasterLegal")
 
-        ds_models.AcrisPropertyRecord.seed_or_update_self(file=master_file_diff, update=master_update_diff)
+        ds_models.AcrisRealMasterLegal.seed_or_update_self(file=master_file_diff, update=master_update_diff)
         self.assertEqual(master_update_diff.rows_created, 1)
         self.assertEqual(master_update_diff.rows_updated, 0)
 
         legals_file_diff = DataFile.objects.create(file=self.get_file(
             "mock_acris_real_property_legals_diff.csv"), dataset=dataset)
         legals_update_diff = Update.objects.create(
-            dataset=dataset, file=legals_file_diff, previous_file=legals_file, model_name="AcrisPropertyRecord")
+            dataset=dataset, file=legals_file_diff, previous_file=legals_file, model_name="AcrisRealMasterLegal")
 
-        ds_models.AcrisPropertyRecord.seed_or_update_self(file=legals_file_diff, update=legals_update_diff)
+        ds_models.AcrisRealMasterLegal.seed_or_update_self(file=legals_file_diff, update=legals_update_diff)
         self.assertEqual(legals_update_diff.rows_created, 3)
         self.assertEqual(legals_update_diff.rows_updated, 0)
-        self.assertEqual(ds_models.AcrisPropertyRecord.objects.get(documentid="FT_3380001321238").recordtype, "A")
+        self.assertEqual(ds_models.AcrisRealMasterLegal.objects.get(documentid="2006020802474003").recordtype, "M")
 
-        self.assertEqual(ds_models.AcrisPropertyRecord.objects.count(), 12)
+        self.assertEqual(ds_models.AcrisRealMasterLegal.objects.count(), 12)
 
 
-class HPDComplaint(BaseTest, TestCase):
+class AcrisRealPartyTests(BaseTest, TestCase):
     def tearDown(self):
         self.clean_tests()
 
-    def test_seed_complaints(self):
-        dataset = Dataset.objects.create(name="mock", model_name="HPDComplaint")
-        file = DataFile.objects.create(file=self.get_file("mock_hpd_complaints.csv"), dataset=dataset)
-        update = Update.objects.create(dataset=dataset, file=file, model_name="HPDComplaint")
+    def test_seed_parties(self):
+        dataset = Dataset.objects.create(name="mock", model_name="AcrisRealParty")
+        file = DataFile.objects.create(file=self.get_file("mock_acris_real_property_parties.csv"), dataset=dataset)
+        update = Update.objects.create(dataset=dataset, file=file, model_name="AcrisRealParty")
 
-        ds_models.HPDComplaint.seed_or_update_self(file=file, update=update)
-        self.assertEqual(ds_models.HPDComplaint.objects.count(), 9)
-        self.assertEqual(update.rows_created, 9)
-
-    def test_seed_problems(self):
-        dataset = Dataset.objects.create(name="mock", model_name="HPDComplaint")
-        file = DataFile.objects.create(file=self.get_file("mock_hpd_problems.csv"), dataset=dataset)
-        update = Update.objects.create(dataset=dataset, file=file, model_name="HPDComplaint")
-
-        ds_models.HPDComplaint.seed_or_update_self(file=file, update=update)
-        record = ds_models.HPDComplaint.objects.all()[0]
-        self.assertEqual(ds_models.HPDComplaint.objects.count(), 9)
-        self.assertEqual(update.rows_created, 9)
-
-    def test_combined_tables(self):
-        dataset = Dataset.objects.create(name="mock", model_name="HPDComplaint")
-        complaint_file = DataFile.objects.create(file=self.get_file(
-            "mock_hpd_complaints.csv"), dataset=dataset)
-        complaint_update = Update.objects.create(dataset=dataset, file=complaint_file, model_name="HPDComplaint")
-        problem_file = DataFile.objects.create(file=self.get_file(
-            "mock_hpd_problems.csv"), dataset=dataset)
-        problem_update = Update.objects.create(dataset=dataset, file=problem_file, model_name="HPDComplaint")
-
-        ds_models.HPDComplaint.seed_or_update_self(file=complaint_file, update=complaint_update)
-        ds_models.HPDComplaint.seed_or_update_self(file=problem_file, update=problem_update)
-
-        self.assertEqual(ds_models.HPDComplaint.objects.count(), 9)
-
-        record = ds_models.HPDComplaint.objects.all()[0]
-        self.assertEqual(record.complaintid, 6960137)
-        self.assertEqual(record.buildingid, 3418)
-        self.assertEqual(record.streetname, 'ADAM C POWELL BOULEVARD')
-        self.assertEqual(record.apartment, '12D')
-        self.assertEqual(record.receiveddate.year, 2014)
-        self.assertEqual(record.status, 'CLOSE')
-        self.assertEqual(record.statusdate.year, 2017)
-        self.assertEqual(record.problemid, 17307278)
-        self.assertEqual(record.majorcategory, 'DOOR/WINDOW')
-        self.assertEqual(record.statusdescription,
-                         'The Department of Housing Preservation and Development inspected the following conditions. No violations were issued. The complaint has been closed.')
-
-    def test_combined_tables_with_update(self):
-        dataset = Dataset.objects.create(name="mock", model_name="HPDComplaint")
-        complaint_file = DataFile.objects.create(file=self.get_file(
-            "mock_hpd_complaints.csv"), dataset=dataset)
-        complaint_update = Update.objects.create(dataset=dataset, file=complaint_file, model_name="HPDComplaint")
-        problem_file = DataFile.objects.create(file=self.get_file(
-            "mock_hpd_problems.csv"), dataset=dataset)
-        problem_update = Update.objects.create(dataset=dataset, file=problem_file, model_name="HPDComplaint")
-
-        ds_models.HPDComplaint.seed_or_update_self(file=complaint_file, update=complaint_update)
-        ds_models.HPDComplaint.seed_or_update_self(file=problem_file, update=problem_update)
-
-        complaint_file_diff = DataFile.objects.create(file=self.get_file(
-            "mock_hpd_complaints_diff.csv"), dataset=dataset)
-        complaint_update_diff = Update.objects.create(
-            dataset=dataset, file=complaint_file_diff, previous_file=complaint_file)
-
-        ds_models.HPDComplaint.seed_or_update_self(
-            file=complaint_file_diff, update=complaint_update_diff)
-        self.assertEqual(complaint_update_diff.rows_created, 2)
-        self.assertEqual(complaint_update_diff.rows_updated, 0)
-        self.assertEqual(ds_models.HPDComplaint.objects.get(complaintid=6961276).unittypeid, 91)
-
-        problem_file_diff = DataFile.objects.create(file=self.get_file(
-            "mock_hpd_problems_diff.csv"), dataset=dataset)
-        problem_update_diff = Update.objects.create(dataset=dataset, file=problem_file_diff, previous_file=problem_file)
-
-        ds_models.HPDComplaint.seed_or_update_self(file=problem_file_diff, update=problem_update_diff)
-        self.assertEqual(problem_update_diff.rows_created, 3)
-        self.assertEqual(problem_update_diff.rows_updated, 0)
-
-        self.assertEqual(ds_models.HPDComplaint.objects.count(), 11)
-
-
-class DOBViolationTests(BaseTest, TestCase):
-    def tearDown(self):
-        self.clean_tests()
-
-    def test_seed_dobviolation_first(self):
-        dataset = Dataset.objects.create(name="mock", model_name="DOBViolation")
-        file = DataFile.objects.create(file=self.get_file('mock_dob_violations.csv'), dataset=dataset)
-        update = Update.objects.create(dataset=dataset, file=file, model_name="DOBViolation")
-
-        ds_models.DOBViolation.seed_or_update_self(file=file, update=update)
-        self.assertEqual(ds_models.DOBViolation.objects.count(), 10)
+        ds_models.AcrisRealParty.seed_or_update_self(file=file, update=update)
+        self.assertEqual(ds_models.AcrisRealParty.objects.count(), 10)
         self.assertEqual(update.rows_created, 10)
 
-    def test_seed_dobviolation_after_update(self):
-        dataset = Dataset.objects.create(name="mock", model_name="DOBViolation")
-        file = DataFile.objects.create(file=self.get_file('mock_dob_violations.csv'), dataset=dataset)
-        update = Update.objects.create(dataset=dataset, model_name='DOBViolation', file=file)
-        ds_models.DOBViolation.seed_or_update_self(file=file, update=update)
+    def test_combined_tables(self):
+        dataset = Dataset.objects.create(name="mock", model_name="AcrisRealParty")
 
-        new_file = DataFile.objects.create(file=self.get_file('mock_dob_violations_diff.csv'), dataset=dataset)
-        new_update = Update.objects.create(dataset=dataset, model_name='DOBViolation',
-                                           file=new_file, previous_file=file)
-        ds_models.DOBViolation.seed_or_update_self(file=new_file, update=new_update)
-        self.assertEqual(ds_models.DOBViolation.objects.count(), 11)
-        self.assertEqual(new_update.rows_created, 2)
-        self.assertEqual(new_update.rows_updated, 0)
-        self.assertEqual(ds_models.DOBViolation.objects.get(
-            isndobbisviol=544483).violationcategory, "V*-DOB VIOLATION - DISMISSED")
-        changed_record = ds_models.DOBViolation.objects.get(isndobbisviol=1347329)
-        self.assertEqual(changed_record.violationcategory, 'V*-DOB VIOLATION - Resolved')
+        party_file = DataFile.objects.create(file=self.get_file(
+            "mock_acris_real_property_parties.csv"), dataset=dataset)
+        party_update = Update.objects.create(dataset=dataset, file=party_file, model_name="AcrisRealParty")
+
+        ds_models.AcrisRealParty.seed_or_update_self(file=party_file, update=party_update)
+
+        record = ds_models.AcrisRealParty.objects.all()[0]
+        self.assertEqual(record.partytype, 2)
+        self.assertEqual(record.name, 'ABACUS FEDERAL SAVINGS BANK')
+        self.assertEqual(record.address1, '6 BOWERY')
+
+    def test_combined_tables_with_update(self):
+        dataset = Dataset.objects.create(name="mock", model_name="AcrisRealParty")
+
+        party_file = DataFile.objects.create(file=self.get_file(
+            "mock_acris_real_property_parties.csv"), dataset=dataset)
+        party_update = Update.objects.create(dataset=dataset, file=party_file, model_name="AcrisRealParty")
+
+        ds_models.AcrisRealParty.seed_or_update_self(file=party_file, update=party_update)
+
+        party_file_diff = DataFile.objects.create(file=self.get_file(
+            "mock_acris_real_property_parties_diff.csv"), dataset=dataset)
+        party_update_diff = Update.objects.create(
+            dataset=dataset, file=party_file_diff, previous_file=party_file, model_name="AcrisRealParty")
+
+        ds_models.AcrisRealParty.seed_or_update_self(
+            file=party_file_diff, update=party_update_diff)
+        self.assertEqual(party_update_diff.rows_created, 2)
+        self.assertEqual(party_update_diff.rows_updated, 0)
+
+
+# class HPDComplaint(BaseTest, TestCase):
+#     def tearDown(self):
+#         self.clean_tests()
+#
+#     def test_seed_complaints(self):
+#         dataset = Dataset.objects.create(name="mock", model_name="HPDComplaint")
+#         file = DataFile.objects.create(file=self.get_file("mock_hpd_complaints.csv"), dataset=dataset)
+#         update = Update.objects.create(dataset=dataset, file=file, model_name="HPDComplaint")
+#
+#         ds_models.HPDComplaint.seed_or_update_self(file=file, update=update)
+#         self.assertEqual(ds_models.HPDComplaint.objects.count(), 9)
+#         self.assertEqual(update.rows_created, 9)
+#
+#     def test_seed_problems(self):
+#         dataset = Dataset.objects.create(name="mock", model_name="HPDComplaint")
+#         file = DataFile.objects.create(file=self.get_file("mock_hpd_problems.csv"), dataset=dataset)
+#         update = Update.objects.create(dataset=dataset, file=file, model_name="HPDComplaint")
+#
+#         ds_models.HPDComplaint.seed_or_update_self(file=file, update=update)
+#         record = ds_models.HPDComplaint.objects.all()[0]
+#         self.assertEqual(ds_models.HPDComplaint.objects.count(), 9)
+#         self.assertEqual(update.rows_created, 9)
+#
+#     def test_combined_tables(self):
+#         dataset = Dataset.objects.create(name="mock", model_name="HPDComplaint")
+#         complaint_file = DataFile.objects.create(file=self.get_file(
+#             "mock_hpd_complaints.csv"), dataset=dataset)
+#         complaint_update = Update.objects.create(dataset=dataset, file=complaint_file, model_name="HPDComplaint")
+#         problem_file = DataFile.objects.create(file=self.get_file(
+#             "mock_hpd_problems.csv"), dataset=dataset)
+#         problem_update = Update.objects.create(dataset=dataset, file=problem_file, model_name="HPDComplaint")
+#
+#         ds_models.HPDComplaint.seed_or_update_self(file=complaint_file, update=complaint_update)
+#         ds_models.HPDComplaint.seed_or_update_self(file=problem_file, update=problem_update)
+#
+#         self.assertEqual(ds_models.HPDComplaint.objects.count(), 9)
+#
+#         record = ds_models.HPDComplaint.objects.all()[0]
+#         self.assertEqual(record.complaintid, 6960137)
+#         self.assertEqual(record.buildingid, 3418)
+#         self.assertEqual(record.streetname, 'ADAM C POWELL BOULEVARD')
+#         self.assertEqual(record.apartment, '12D')
+#         self.assertEqual(record.receiveddate.year, 2014)
+#         self.assertEqual(record.status, 'CLOSE')
+#         self.assertEqual(record.statusdate.year, 2017)
+#         self.assertEqual(record.problemid, 17307278)
+#         self.assertEqual(record.majorcategory, 'DOOR/WINDOW')
+#         self.assertEqual(record.statusdescription,
+#                          'The Department of Housing Preservation and Development inspected the following conditions. No violations were issued. The complaint has been closed.')
+#
+#     def test_combined_tables_with_update(self):
+#         dataset = Dataset.objects.create(name="mock", model_name="HPDComplaint")
+#         complaint_file = DataFile.objects.create(file=self.get_file(
+#             "mock_hpd_complaints.csv"), dataset=dataset)
+#         complaint_update = Update.objects.create(dataset=dataset, file=complaint_file, model_name="HPDComplaint")
+#         problem_file = DataFile.objects.create(file=self.get_file(
+#             "mock_hpd_problems.csv"), dataset=dataset)
+#         problem_update = Update.objects.create(dataset=dataset, file=problem_file, model_name="HPDComplaint")
+#
+#         ds_models.HPDComplaint.seed_or_update_self(file=complaint_file, update=complaint_update)
+#         ds_models.HPDComplaint.seed_or_update_self(file=problem_file, update=problem_update)
+#
+#         complaint_file_diff = DataFile.objects.create(file=self.get_file(
+#             "mock_hpd_complaints_diff.csv"), dataset=dataset)
+#         complaint_update_diff = Update.objects.create(
+#             dataset=dataset, file=complaint_file_diff, previous_file=complaint_file)
+#
+#         ds_models.HPDComplaint.seed_or_update_self(
+#             file=complaint_file_diff, update=complaint_update_diff)
+#         self.assertEqual(complaint_update_diff.rows_created, 2)
+#         self.assertEqual(complaint_update_diff.rows_updated, 0)
+#         self.assertEqual(ds_models.HPDComplaint.objects.get(complaintid=6961276).unittypeid, 91)
+#
+#         problem_file_diff = DataFile.objects.create(file=self.get_file(
+#             "mock_hpd_problems_diff.csv"), dataset=dataset)
+#         problem_update_diff = Update.objects.create(dataset=dataset, file=problem_file_diff, previous_file=problem_file)
+#
+#         ds_models.HPDComplaint.seed_or_update_self(file=problem_file_diff, update=problem_update_diff)
+#         self.assertEqual(problem_update_diff.rows_created, 3)
+#         self.assertEqual(problem_update_diff.rows_updated, 0)
+#
+#         self.assertEqual(ds_models.HPDComplaint.objects.count(), 11)
+#
+#
+# class DOBViolationTests(BaseTest, TestCase):
+#     def tearDown(self):
+#         self.clean_tests()
+#
+#     def test_seed_dobviolation_first(self):
+#         dataset = Dataset.objects.create(name="mock", model_name="DOBViolation")
+#         file = DataFile.objects.create(file=self.get_file('mock_dob_violations.csv'), dataset=dataset)
+#         update = Update.objects.create(dataset=dataset, file=file, model_name="DOBViolation")
+#
+#         ds_models.DOBViolation.seed_or_update_self(file=file, update=update)
+#         self.assertEqual(ds_models.DOBViolation.objects.count(), 10)
+#         self.assertEqual(update.rows_created, 10)
+#
+#     def test_seed_dobviolation_after_update(self):
+#         dataset = Dataset.objects.create(name="mock", model_name="DOBViolation")
+#         file = DataFile.objects.create(file=self.get_file('mock_dob_violations.csv'), dataset=dataset)
+#         update = Update.objects.create(dataset=dataset, model_name='DOBViolation', file=file)
+#         ds_models.DOBViolation.seed_or_update_self(file=file, update=update)
+#
+#         new_file = DataFile.objects.create(file=self.get_file('mock_dob_violations_diff.csv'), dataset=dataset)
+#         new_update = Update.objects.create(dataset=dataset, model_name='DOBViolation',
+#                                            file=new_file, previous_file=file)
+#         ds_models.DOBViolation.seed_or_update_self(file=new_file, update=new_update)
+#         self.assertEqual(ds_models.DOBViolation.objects.count(), 11)
+#         self.assertEqual(new_update.rows_created, 2)
+#         self.assertEqual(new_update.rows_updated, 0)
+#         self.assertEqual(ds_models.DOBViolation.objects.get(
+#             isndobbisviol=544483).violationcategory, "V*-DOB VIOLATION - DISMISSED")
+#         changed_record = ds_models.DOBViolation.objects.get(isndobbisviol=1347329)
+#         self.assertEqual(changed_record.violationcategory, 'V*-DOB VIOLATION - Resolved')
