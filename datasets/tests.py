@@ -6,6 +6,9 @@ from datasets import models as ds_models
 from app.tests.base_test import BaseTest
 # Create your tests here.
 
+import logging
+logging.disable(logging.CRITICAL)
+
 
 class BuildingTests(BaseTest, TestCase):
     def tearDown(self):
@@ -195,7 +198,7 @@ class HPDComplaint(BaseTest, TestCase):
     def tearDown(self):
         self.clean_tests()
 
-    def test_seed_complants(self):
+    def test_seed_complaints(self):
         dataset = Dataset.objects.create(name="mock", model_name="HPDComplaint")
         file = DataFile.objects.create(file=self.get_file("mock_hpd_complaints.csv"), dataset=dataset)
         update = Update.objects.create(dataset=dataset, file=file, model_name="HPDComplaint")
@@ -273,3 +276,35 @@ class HPDComplaint(BaseTest, TestCase):
         self.assertEqual(problem_update_diff.rows_updated, 0)
 
         self.assertEqual(ds_models.HPDComplaint.objects.count(), 11)
+
+
+class DOBViolationTests(BaseTest, TestCase):
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_seed_dobviolation_first(self):
+        dataset = Dataset.objects.create(name="mock", model_name="DOBViolation")
+        file = DataFile.objects.create(file=self.get_file('mock_dob_violations.csv'), dataset=dataset)
+        update = Update.objects.create(dataset=dataset, file=file, model_name="DOBViolation")
+
+        ds_models.DOBViolation.seed_or_update_self(file=file, update=update)
+        self.assertEqual(ds_models.DOBViolation.objects.count(), 10)
+        self.assertEqual(update.rows_created, 10)
+
+    def test_seed_dobviolation_after_update(self):
+        dataset = Dataset.objects.create(name="mock", model_name="DOBViolation")
+        file = DataFile.objects.create(file=self.get_file('mock_dob_violations.csv'), dataset=dataset)
+        update = Update.objects.create(dataset=dataset, model_name='DOBViolation', file=file)
+        ds_models.DOBViolation.seed_or_update_self(file=file, update=update)
+
+        new_file = DataFile.objects.create(file=self.get_file('mock_dob_violations_diff.csv'), dataset=dataset)
+        new_update = Update.objects.create(dataset=dataset, model_name='DOBViolation',
+                                           file=new_file, previous_file=file)
+        ds_models.DOBViolation.seed_or_update_self(file=new_file, update=new_update)
+        self.assertEqual(ds_models.DOBViolation.objects.count(), 11)
+        self.assertEqual(new_update.rows_created, 2)
+        self.assertEqual(new_update.rows_updated, 0)
+        self.assertEqual(ds_models.DOBViolation.objects.get(
+            isndobbisviol=544483).violationcategory, "V*-DOB VIOLATION - DISMISSED")
+        changed_record = ds_models.DOBViolation.objects.get(isndobbisviol=1347329)
+        self.assertEqual(changed_record.violationcategory, 'V*-DOB VIOLATION - Resolved')
