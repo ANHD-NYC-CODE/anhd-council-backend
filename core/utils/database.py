@@ -14,7 +14,9 @@ import logging
 
 logger = logging.getLogger('app')
 
-BATCH_SIZE = 1000
+# 100000 = 30 seconds + (1sec * n)
+# 1000000 = 5 minutes + (1min * n)
+BATCH_SIZE = 1000000
 
 
 def seed_from_csv_diff(original_file_path, new_file_path, model, update):
