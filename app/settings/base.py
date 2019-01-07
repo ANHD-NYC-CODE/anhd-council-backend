@@ -195,7 +195,8 @@ ACTIVE_MODELS = [
     'HPDViolation',
     'Building',
     'Council',
-    'AcrisPropertyRecord',
+    'AcrisRealMasterLegal',
+    'AcrisRealParty',
     'HPDComplaint',
     'DOBViolation'
 ]

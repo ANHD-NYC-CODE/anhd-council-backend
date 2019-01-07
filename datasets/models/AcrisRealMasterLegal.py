@@ -6,22 +6,23 @@ from datasets.utils.validation_filters import is_null, is_older_than
 
 # ACRIS
 # combines Real Properties Master (has mortages)
-# Real Properties Legal (has bbl)
-# Real Properties Parties (has names)
+# and Real Properties Legal (has bbl)
 # into 1 table
 # joined on document_id
 # and linked to buildings with FK bbl
+# Duplicate document IDs are removed
+# ####
+# Optimal seed method is Master first, legals second.
 
 
-class AcrisPropertyRecord(BaseDatasetModel, models.Model):
+class AcrisRealMasterLegal(BaseDatasetModel, models.Model):
     # Real property legals,
     # Real property master,
-    # Real property parties
     download_endpoints = [
         'https://data.cityofnewyork.us/api/views/8h5j-fqxa/rows.csv?accessType=DOWNLOAD',
         'https://data.cityofnewyork.us/api/views/bnx9-e6tj/rows.csv?accessType=DOWNLOAD',
-        'https://data.cityofnewyork.us/api/views/636b-3b5g/rows.csv?accessType=DOWNLOAD'
     ]
+
     documentid = models.TextField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Building', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
@@ -48,14 +49,6 @@ class AcrisPropertyRecord(BaseDatasetModel, models.Model):
     reelnbr = models.IntegerField(blank=True, null=True)
     reelpage = models.IntegerField(blank=True, null=True)
     pcttransferred = models.DecimalField(decimal_places=2, max_digits=5, blank=True, null=True)
-    partytype = models.SmallIntegerField(blank=True, null=True)
-    name = models.TextField(blank=True, null=True)
-    address1 = models.TextField(blank=True, null=True)
-    address2 = models.TextField(blank=True, null=True)
-    country = models.TextField(blank=True, null=True)
-    city = models.TextField(blank=True, null=True)
-    state = models.TextField(blank=True, null=True)
-    zip = models.TextField(blank=True, null=True)
 
     @classmethod
     def download(self):
