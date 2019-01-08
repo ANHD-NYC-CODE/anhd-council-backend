@@ -11,7 +11,7 @@ class DOBViolation(BaseDatasetModel, models.Model):
     download_endpoint = "https://data.cityofnewyork.us/api/views/3h2n-5cm9/rows.csv?accessType=DOWNLOAD"
 
     isndobbisviol = models.TextField(primary_key=True, blank=False, null=False)
-    bbl = models.ForeignKey('Building', db_column='bbl', db_constraint=False,
+    bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
     boro = models.TextField(blank=True, null=True)
     bin = models.TextField(db_index=True, blank=True, null=True)

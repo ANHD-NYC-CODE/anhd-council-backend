@@ -193,7 +193,7 @@ LOGGING = {
 # Use exact model names from datasets/models
 ACTIVE_MODELS = [
     'HPDViolation',
-    'Building',
+    'Property',
     'Council',
     'AcrisRealMasterLegal',
     'AcrisRealParty',

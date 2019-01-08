@@ -13,7 +13,7 @@ class ECBViolation(BaseDatasetModel, models.Model):
     ecbviolationnumber = models.TextField(primary_key=True, blank=False, null=False)
     isndobbisextract = models.ForeignKey('DOBViolation', db_column='isndobbisextract', db_constraint=False,
                                          on_delete=models.SET_NULL, null=True, blank=False)
-    bbl = models.ForeignKey('Building', db_column='bbl', db_constraint=False,
+    bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
 
     ecbviolationstatus = models.TextField(db_index=True, blank=True, null=True)

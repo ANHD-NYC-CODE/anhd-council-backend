@@ -6,33 +6,33 @@ from core.utils.transform import from_csv_file_to_gen, with_geo
 from core.utils.csv_helpers import extract_csvs_from_zip
 
 
-class CurrentBuildingManager(models.Manager):
+class CurrentPropertyManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(version=self.model.current_version)
 
 
-class ObsoleteBuildingManager(models.Manager):
+class ObsoletePropertyManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(~Q(version=self.model.current_version))
 
 
-class Building(BaseDatasetModel, models.Model):
+class Property(BaseDatasetModel, models.Model):
     current_version = '18V1'
     objects = models.Manager()
-    current = CurrentBuildingManager()
-    obsolete = ObsoleteBuildingManager()
+    current = CurrentPropertyManager()
+    obsolete = ObsoletePropertyManager()
 
-    # 763178 +- records for residential buildings.
+    # 763178 +- records for residential properties.
     # Current version: Pluto18v1
     # To update to latest Pluto version,
     # Compare the columns between the next Pluto version and this.
     # Add, but do not delete any columns if different.
     # Create a django migration to add new columns.
     # Create an Update with the latest pluto zip file in admin panel.
-    # Existing buildings will be overritten with latest values.
-    # New buildings will be added.
-    # Old buildings will not be removed automatically, need manual removal.
-    # Building.obsolete.all().delete()
+    # Existing properties will be overritten with latest values.
+    # New properties will be added.
+    # Old properties will not be removed automatically, need manual removal.
+    # Property.obsolete.all().delete()
     bbl = models.CharField(primary_key=True, max_length=10, blank=False, null=False)
     council = models.ForeignKey('Council', on_delete=models.SET_NULL, null=True,
                                 db_column='council', db_constraint=False)
@@ -122,7 +122,6 @@ class Building(BaseDatasetModel, models.Model):
     firm07flag = models.TextField(blank=True, null=True)
     pfirm15flag = models.TextField(blank=True, null=True)
     version = models.TextField(db_index=True, blank=True, null=True)
-    # allow null lng / lat - will display building information in tables, not map
     lng = models.DecimalField(decimal_places=16, max_digits=32, blank=True, null=True)
     lat = models.DecimalField(decimal_places=16, max_digits=32, blank=True, null=True)
 
