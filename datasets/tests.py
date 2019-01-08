@@ -357,3 +357,35 @@ class ECBViolationTests(BaseTest, TestCase):
             ecbviolationnumber="34830294Z").ecbviolationstatus, "RESOLVE")
         changed_record = ds_models.ECBViolation.objects.get(ecbviolationnumber="38087901Z")
         self.assertEqual(changed_record.ecbviolationstatus, 'RESOLVE')
+
+
+class DOBComplaintTests(BaseTest, TestCase):
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_seed_dobcomplaint_first(self):
+        dataset = Dataset.objects.create(name="mock", model_name="DOBComplaint")
+        file = DataFile.objects.create(file=self.get_file('mock_dob_complaints.csv'), dataset=dataset)
+        update = Update.objects.create(dataset=dataset, file=file, model_name="DOBComplaint")
+
+        ds_models.DOBComplaint.seed_or_update_self(file=file, update=update)
+        self.assertEqual(ds_models.DOBComplaint.objects.count(), 10)
+        self.assertEqual(update.rows_created, 10)
+
+    def test_seed_dobcomplaint_after_update(self):
+        dataset = Dataset.objects.create(name="mock", model_name="DOBComplaint")
+        file = DataFile.objects.create(file=self.get_file('mock_dob_complaints.csv'), dataset=dataset)
+        update = Update.objects.create(dataset=dataset, model_name='DOBComplaint', file=file)
+        ds_models.DOBComplaint.seed_or_update_self(file=file, update=update)
+
+        new_file = DataFile.objects.create(file=self.get_file('mock_dob_complaints_diff.csv'), dataset=dataset)
+        new_update = Update.objects.create(dataset=dataset, model_name='DOBComplaint',
+                                           file=new_file, previous_file=file)
+        ds_models.DOBComplaint.seed_or_update_self(file=new_file, update=new_update)
+        self.assertEqual(ds_models.DOBComplaint.objects.count(), 11)
+        self.assertEqual(new_update.rows_created, 2)
+        self.assertEqual(new_update.rows_updated, 0)
+        self.assertEqual(ds_models.DOBComplaint.objects.get(
+            complaintnumber="4483428").status, "CLOSED")
+        changed_record = ds_models.DOBComplaint.objects.get(complaintnumber="1347612")
+        self.assertEqual(changed_record.status, 'CLOSED')

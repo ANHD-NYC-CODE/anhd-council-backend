@@ -198,5 +198,7 @@ ACTIVE_MODELS = [
     'AcrisRealMasterLegal',
     'AcrisRealParty',
     'HPDComplaint',
-    'DOBViolation'
+    'DOBViolation',
+    'ECBViolation',
+    'DOBComplaint'
 ]
