@@ -16,7 +16,7 @@ class HPDComplaint(BaseDatasetModel, models.Model):
     ]
 
     complaintid = models.IntegerField(primary_key=True, blank=False, null=False)
-    bbl = models.ForeignKey('Building', db_column='bbl', db_constraint=False,
+    bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
     buildingid = models.IntegerField(db_index=True, blank=True, null=True)
     boroughid = models.IntegerField(blank=True, null=True)

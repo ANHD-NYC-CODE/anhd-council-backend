@@ -24,7 +24,7 @@ class AcrisRealMasterLegal(BaseDatasetModel, models.Model):
     ]
 
     documentid = models.TextField(primary_key=True, blank=False, null=False)
-    bbl = models.ForeignKey('Building', db_column='bbl', db_constraint=False,
+    bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
     recordtype = models.TextField(db_index=True, blank=True, null=True)
     borough = models.IntegerField(blank=True, null=True)
