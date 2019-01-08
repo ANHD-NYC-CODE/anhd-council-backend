@@ -87,7 +87,7 @@ def bulk_insert_from_csv(model, file, update=None):
             with transaction.atomic():
                 logger.debug("* Beginning Bulk CSV copy.")
                 connection.cursor().copy_expert(sql, temp_file)
-
+                logger.debug(" * Bulk CSV copy completed successfully.")
             if update:
                 reader = csv.reader(open(temp_file_path, 'r'))
                 next(reader, None)  # skip headers
