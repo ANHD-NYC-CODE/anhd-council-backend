@@ -516,3 +516,35 @@ class HPDContactTests(BaseTest, TestCase):
             registrationcontactid="33193103").type, "CorporateOwner")
         changed_record = ds_models.HPDContact.objects.get(registrationcontactid="33193106")
         self.assertEqual(changed_record.type, 'Agent')
+
+
+class HPDBuildingRecordTests(BaseTest, TestCase):
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_seed_building(self):
+        dataset = Dataset.objects.create(name="mock", model_name="HPDBuildingRecord")
+        file = DataFile.objects.create(file=self.get_file('mock_hpd_building_records.csv'), dataset=dataset)
+        update = Update.objects.create(dataset=dataset, file=file, model_name="HPDBuildingRecord")
+
+        ds_models.HPDBuildingRecord.seed_or_update_self(file=file, update=update)
+        self.assertEqual(ds_models.HPDBuildingRecord.objects.count(), 6)
+        self.assertEqual(update.rows_created, 6)
+
+    def test_seed_building_after_update(self):
+        dataset = Dataset.objects.create(name="mock", model_name="HPDBuildingRecord")
+        file = DataFile.objects.create(file=self.get_file('mock_hpd_building_records.csv'), dataset=dataset)
+        update = Update.objects.create(dataset=dataset, model_name='HPDBuildingRecord', file=file)
+        ds_models.HPDBuildingRecord.seed_or_update_self(file=file, update=update)
+
+        new_file = DataFile.objects.create(file=self.get_file('mock_hpd_building_records_diff.csv'), dataset=dataset)
+        new_update = Update.objects.create(dataset=dataset, model_name='HPDBuildingRecord',
+                                           file=new_file, previous_file=file)
+        ds_models.HPDBuildingRecord.seed_or_update_self(file=new_file, update=new_update)
+        self.assertEqual(ds_models.HPDBuildingRecord.objects.count(), 6)
+        self.assertEqual(new_update.rows_created, 0)
+        self.assertEqual(new_update.rows_updated, 0)
+        self.assertEqual(ds_models.HPDBuildingRecord.objects.get(
+            buildingid="859129").housenumber, "0")
+        changed_record = ds_models.HPDBuildingRecord.objects.get(buildingid="510673")
+        self.assertEqual(changed_record.housenumber, '193-17')
