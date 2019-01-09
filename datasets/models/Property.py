@@ -138,13 +138,13 @@ class Property(BaseDatasetModel, models.Model):
     def pre_validation_filters(self, gen_rows):
         for row in gen_rows:
             if is_null(row['bbl']) or exceeds_char_length(row['bbl'], 10):
-                pass
+                continue
             if is_null(row['unitstotal']):
-                pass
+                continue
             if is_null(row['unitsres']):
-                pass
+                continue
             elif int(row['unitsres']) <= 0:
-                pass
+                continue
             yield row
 
     @classmethod

@@ -8,6 +8,8 @@ import logging
 
 logger = logging.getLogger('app')
 
+# use bobaadr.csv file
+
 
 class Building(BaseDatasetModel, models.Model):
     bin = models.TextField(primary_key=True, blank=False, null=False)

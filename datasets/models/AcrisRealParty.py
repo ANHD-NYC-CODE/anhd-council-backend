@@ -32,7 +32,7 @@ class AcrisRealParty(BaseDatasetModel, models.Model):
     def pre_validation_filters(self, gen_rows):
         for row in gen_rows:
             if is_null(row['documentid']):
-                pass
+                continue
             yield row
 
     # trims down new update files to preserve memory
@@ -41,7 +41,7 @@ class AcrisRealParty(BaseDatasetModel, models.Model):
     def update_set_filter(self, csv_reader, headers):
         for row in csv_reader:
             if is_older_than(row[headers.index('GOOD THROUGH DATE')], 8):
-                pass
+                continue
             yield row
 
     @classmethod
