@@ -26,7 +26,6 @@ def extract_csvs_from_zip(file_path):
 def gen_to_csv(rows, new_path):
     with(open(new_path, 'w')) as new_csv:
         writer = csv.writer(new_csv, delimiter=',')
-
         first_row = next(rows)
         # write headers and first row
         writer.writerow([*first_row.keys()])

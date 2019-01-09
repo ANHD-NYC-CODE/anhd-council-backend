@@ -10,6 +10,20 @@ import logging
 logging.disable(logging.CRITICAL)
 
 
+class CouncilTests(BaseTest, TestCase):
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_seed_councils(self):
+        dataset = Dataset.objects.create(name="mock", model_name="Council")
+        file = DataFile.objects.create(file=self.get_file("mock_council_json.geojson"), dataset=dataset)
+        update = Update.objects.create(dataset=dataset, file=file, model_name="Council")
+
+        ds_models.Council.seed_or_update_self(file=file, update=update)
+        self.assertEqual(ds_models.Council.objects.count(), 1)
+        self.assertEqual(update.rows_created, 1)
+
+
 class PropertyTests(BaseTest, TestCase):
     def tearDown(self):
         self.clean_tests()
@@ -38,18 +52,36 @@ class PropertyTests(BaseTest, TestCase):
         self.assertEqual(new_update.rows_updated, 1)
 
 
-class CouncilTests(BaseTest, TestCase):
+class BuildingTests(BaseTest, TestCase):
     def tearDown(self):
         self.clean_tests()
 
-    def test_seed_councils(self):
-        dataset = Dataset.objects.create(name="mock", model_name="Council")
-        file = DataFile.objects.create(file=self.get_file("mock_council_json.geojson"), dataset=dataset)
-        update = Update.objects.create(dataset=dataset, file=file, model_name="Council")
+    def test_seed_building(self):
+        dataset = Dataset.objects.create(name="mock", model_name="Building")
+        file = DataFile.objects.create(file=self.get_file('mock_propertymap_bobaadr.csv'), dataset=dataset)
+        update = Update.objects.create(dataset=dataset, file=file, model_name="Building")
 
-        ds_models.Council.seed_or_update_self(file=file, update=update)
-        self.assertEqual(ds_models.Council.objects.count(), 1)
-        self.assertEqual(update.rows_created, 1)
+        ds_models.Building.seed_or_update_self(file=file, update=update)
+        self.assertEqual(ds_models.Building.objects.count(), 9)
+        self.assertEqual(update.rows_created, 9)
+
+    def test_seed_building_after_update(self):
+        dataset = Dataset.objects.create(name="mock", model_name="Building")
+        file = DataFile.objects.create(file=self.get_file('mock_propertymap_bobaadr.csv'), dataset=dataset)
+        update = Update.objects.create(dataset=dataset, model_name='Building', file=file)
+        ds_models.Building.seed_or_update_self(file=file, update=update)
+
+        new_file = DataFile.objects.create(file=self.get_file('mock_propertymap_bobaadr_diff.csv'), dataset=dataset)
+        new_update = Update.objects.create(dataset=dataset, model_name='Building',
+                                           file=new_file, previous_file=file)
+        ds_models.Building.seed_or_update_self(file=new_file, update=new_update)
+        self.assertEqual(ds_models.Building.objects.count(), 10)
+        self.assertEqual(new_update.rows_created, 1)
+        self.assertEqual(new_update.rows_updated, 1)
+        self.assertEqual(ds_models.Building.objects.get(
+            bin="1086410").hhnd, "25")
+        changed_record = ds_models.Building.objects.get(bin="1086412")
+        self.assertEqual(changed_record.hhnd, '104')
 
 
 class HPDViolationTests(BaseTest, TestCase):
@@ -390,38 +422,6 @@ class DOBComplaintTests(BaseTest, TestCase):
         self.assertEqual(changed_record.status, 'CLOSED')
 
 
-class BuildingTests(BaseTest, TestCase):
-    def tearDown(self):
-        self.clean_tests()
-
-    def test_seed_building(self):
-        dataset = Dataset.objects.create(name="mock", model_name="Building")
-        file = DataFile.objects.create(file=self.get_file('mock_propertymap_bobaadr.csv'), dataset=dataset)
-        update = Update.objects.create(dataset=dataset, file=file, model_name="Building")
-
-        ds_models.Building.seed_or_update_self(file=file, update=update)
-        self.assertEqual(ds_models.Building.objects.count(), 9)
-        self.assertEqual(update.rows_created, 9)
-
-    def test_seed_building_after_update(self):
-        dataset = Dataset.objects.create(name="mock", model_name="Building")
-        file = DataFile.objects.create(file=self.get_file('mock_propertymap_bobaadr.csv'), dataset=dataset)
-        update = Update.objects.create(dataset=dataset, model_name='Building', file=file)
-        ds_models.Building.seed_or_update_self(file=file, update=update)
-
-        new_file = DataFile.objects.create(file=self.get_file('mock_propertymap_bobaadr_diff.csv'), dataset=dataset)
-        new_update = Update.objects.create(dataset=dataset, model_name='Building',
-                                           file=new_file, previous_file=file)
-        ds_models.Building.seed_or_update_self(file=new_file, update=new_update)
-        self.assertEqual(ds_models.Building.objects.count(), 10)
-        self.assertEqual(new_update.rows_created, 1)
-        self.assertEqual(new_update.rows_updated, 1)
-        self.assertEqual(ds_models.Building.objects.get(
-            bin="1086410").hhnd, "25")
-        changed_record = ds_models.Building.objects.get(bin="1086412")
-        self.assertEqual(changed_record.hhnd, '104')
-
-
 class HousingLitigationTests(BaseTest, TestCase):
     def tearDown(self):
         self.clean_tests()
@@ -452,3 +452,67 @@ class HousingLitigationTests(BaseTest, TestCase):
             litigationid="281964").casestatus, "CLOSED")
         changed_record = ds_models.HousingLitigation.objects.get(litigationid="270054")
         self.assertEqual(changed_record.casestatus, 'CLOSED')
+
+
+class HPDRegistrationTests(BaseTest, TestCase):
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_seed_building(self):
+        dataset = Dataset.objects.create(name="mock", model_name="HPDRegistration")
+        file = DataFile.objects.create(file=self.get_file('mock_hpd_registrations.csv'), dataset=dataset)
+        update = Update.objects.create(dataset=dataset, file=file, model_name="HPDRegistration")
+
+        ds_models.HPDRegistration.seed_or_update_self(file=file, update=update)
+        self.assertEqual(ds_models.HPDRegistration.objects.count(), 4)
+        self.assertEqual(update.rows_created, 4)
+
+    def test_seed_building_after_update(self):
+        dataset = Dataset.objects.create(name="mock", model_name="HPDRegistration")
+        file = DataFile.objects.create(file=self.get_file('mock_hpd_registrations.csv'), dataset=dataset)
+        update = Update.objects.create(dataset=dataset, model_name='HPDRegistration', file=file)
+        ds_models.HPDRegistration.seed_or_update_self(file=file, update=update)
+
+        new_file = DataFile.objects.create(file=self.get_file('mock_hpd_registrations_diff.csv'), dataset=dataset)
+        new_update = Update.objects.create(dataset=dataset, model_name='HPDRegistration',
+                                           file=new_file, previous_file=file)
+        ds_models.HPDRegistration.seed_or_update_self(file=new_file, update=new_update)
+        self.assertEqual(ds_models.HPDRegistration.objects.count(), 5)
+        self.assertEqual(new_update.rows_created, 1)
+        self.assertEqual(new_update.rows_updated, 1)
+        self.assertEqual(ds_models.HPDRegistration.objects.get(
+            registrationid="336228").boro, "BROOKLYN")
+        changed_record = ds_models.HPDRegistration.objects.get(registrationid="325524")
+        self.assertEqual(changed_record.boro, 'QUEENS')
+
+
+class HPDContactTests(BaseTest, TestCase):
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_seed_building(self):
+        dataset = Dataset.objects.create(name="mock", model_name="HPDContact")
+        file = DataFile.objects.create(file=self.get_file('mock_hpd_contacts.csv'), dataset=dataset)
+        update = Update.objects.create(dataset=dataset, file=file, model_name="HPDContact")
+
+        ds_models.HPDContact.seed_or_update_self(file=file, update=update)
+        self.assertEqual(ds_models.HPDContact.objects.count(), 4)
+        self.assertEqual(update.rows_created, 4)
+
+    def test_seed_building_after_update(self):
+        dataset = Dataset.objects.create(name="mock", model_name="HPDContact")
+        file = DataFile.objects.create(file=self.get_file('mock_hpd_contacts.csv'), dataset=dataset)
+        update = Update.objects.create(dataset=dataset, model_name='HPDContact', file=file)
+        ds_models.HPDContact.seed_or_update_self(file=file, update=update)
+
+        new_file = DataFile.objects.create(file=self.get_file('mock_hpd_contacts_diff.csv'), dataset=dataset)
+        new_update = Update.objects.create(dataset=dataset, model_name='HPDContact',
+                                           file=new_file, previous_file=file)
+        ds_models.HPDContact.seed_or_update_self(file=new_file, update=new_update)
+        self.assertEqual(ds_models.HPDContact.objects.count(), 5)
+        self.assertEqual(new_update.rows_created, 1)
+        self.assertEqual(new_update.rows_updated, 1)
+        self.assertEqual(ds_models.HPDContact.objects.get(
+            registrationcontactid="33193103").type, "CorporateOwner")
+        changed_record = ds_models.HPDContact.objects.get(registrationcontactid="33193106")
+        self.assertEqual(changed_record.type, 'Agent')
