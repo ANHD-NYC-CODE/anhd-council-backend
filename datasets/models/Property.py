@@ -4,6 +4,9 @@ from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from datasets.utils.validation_filters import is_null, exceeds_char_length
 from core.utils.transform import from_csv_file_to_gen, with_geo
 from core.utils.csv_helpers import extract_csvs_from_zip
+import logging
+
+logger = logging.getLogger('app')
 
 
 class CurrentPropertyManager(models.Manager):
@@ -124,6 +127,12 @@ class Property(BaseDatasetModel, models.Model):
     version = models.TextField(db_index=True, blank=True, null=True)
     lng = models.DecimalField(decimal_places=16, max_digits=32, blank=True, null=True)
     lat = models.DecimalField(decimal_places=16, max_digits=32, blank=True, null=True)
+
+    # trims down new update files to preserve memory
+    # uses original header values
+    @classmethod
+    def update_set_filter(self, csv_reader, headers):
+        return csv_reader
 
     @classmethod
     def pre_validation_filters(self, gen_rows):

@@ -142,12 +142,15 @@ def batch_upsert_rows(rows, model, update=None):
     """ Inserts many row, all in the same transaction"""
     with connection.cursor() as curs:
         try:
+            starting_count = model.objects.count()
             with transaction.atomic():
                 curs.executemany(upsert_query(table_name, rows[0], primary_key), tuple(
                     build_row_values(row) for row in rows))
 
             if update:
-                update.rows_created = update.rows_created + len(rows)
+                rows_created = model.objects.count() - starting_count
+                update.rows_created = update.rows_created + rows_created
+                update.rows_updated = update.rows_updated + (len(rows) - rows_created)
                 update.save()
 
         except Exception as e:

@@ -36,7 +36,7 @@ def integer(i):
         else:
             return int(int_str)
 
-    except ValueError:
+    except Exception:
         return None
 
 
