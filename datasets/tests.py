@@ -427,28 +427,28 @@ class HousingLitigationTests(BaseTest, TestCase):
         self.clean_tests()
 
     def test_seed_building(self):
-        dataset = Dataset.objects.create(name="mock", model_name="Building")
-        file = DataFile.objects.create(file=self.get_file('mock_propertymap_bobaadr.csv'), dataset=dataset)
-        update = Update.objects.create(dataset=dataset, file=file, model_name="Building")
+        dataset = Dataset.objects.create(name="mock", model_name="HousingLitigation")
+        file = DataFile.objects.create(file=self.get_file('mock_housing_litigations.csv'), dataset=dataset)
+        update = Update.objects.create(dataset=dataset, file=file, model_name="HousingLitigation")
 
-        ds_models.Building.seed_or_update_self(file=file, update=update)
-        self.assertEqual(ds_models.Building.objects.count(), 9)
-        self.assertEqual(update.rows_created, 9)
+        ds_models.HousingLitigation.seed_or_update_self(file=file, update=update)
+        self.assertEqual(ds_models.HousingLitigation.objects.count(), 10)
+        self.assertEqual(update.rows_created, 10)
 
     def test_seed_building_after_update(self):
-        dataset = Dataset.objects.create(name="mock", model_name="Building")
-        file = DataFile.objects.create(file=self.get_file('mock_propertymap_bobaadr.csv'), dataset=dataset)
-        update = Update.objects.create(dataset=dataset, model_name='Building', file=file)
-        ds_models.Building.seed_or_update_self(file=file, update=update)
+        dataset = Dataset.objects.create(name="mock", model_name="HousingLitigation")
+        file = DataFile.objects.create(file=self.get_file('mock_housing_litigations.csv'), dataset=dataset)
+        update = Update.objects.create(dataset=dataset, model_name='HousingLitigation', file=file)
+        ds_models.HousingLitigation.seed_or_update_self(file=file, update=update)
 
-        new_file = DataFile.objects.create(file=self.get_file('mock_propertymap_bobaadr_diff.csv'), dataset=dataset)
-        new_update = Update.objects.create(dataset=dataset, model_name='Building',
+        new_file = DataFile.objects.create(file=self.get_file('mock_housing_litigations_diff.csv'), dataset=dataset)
+        new_update = Update.objects.create(dataset=dataset, model_name='HousingLitigation',
                                            file=new_file, previous_file=file)
-        ds_models.Building.seed_or_update_self(file=new_file, update=new_update)
-        self.assertEqual(ds_models.Building.objects.count(), 10)
+        ds_models.HousingLitigation.seed_or_update_self(file=new_file, update=new_update)
+        self.assertEqual(ds_models.HousingLitigation.objects.count(), 11)
         self.assertEqual(new_update.rows_created, 1)
         self.assertEqual(new_update.rows_updated, 1)
-        self.assertEqual(ds_models.Building.objects.get(
-            bin="1086410").hhnd, "25")
-        changed_record = ds_models.Building.objects.get(bin="1086412")
-        self.assertEqual(changed_record.hhnd, '104')
+        self.assertEqual(ds_models.HousingLitigation.objects.get(
+            litigationid="281964").casestatus, "CLOSED")
+        changed_record = ds_models.HousingLitigation.objects.get(litigationid="270054")
+        self.assertEqual(changed_record.casestatus, 'CLOSED')
