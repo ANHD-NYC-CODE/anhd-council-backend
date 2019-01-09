@@ -18,7 +18,8 @@ class HPDComplaint(BaseDatasetModel, models.Model):
     complaintid = models.IntegerField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
-    buildingid = models.IntegerField(db_index=True, blank=True, null=True)
+    buildingid = models.ForeignKey('Building', db_column='buildingid', db_constraint=False,
+                                   on_delete=models.SET_NULL, null=True, blank=True)
     boroughid = models.IntegerField(blank=True, null=True)
     borough = models.TextField(blank=True, null=True)
     housenumber = models.TextField(blank=True, null=True)
@@ -77,4 +78,4 @@ class HPDComplaint(BaseDatasetModel, models.Model):
         return self.seed_or_update_from_set_diff(**kwargs)
 
     def __str__(self):
-        return self.documentid
+        return str(self.complaintid)

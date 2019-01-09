@@ -13,8 +13,9 @@ class DOBViolation(BaseDatasetModel, models.Model):
     isndobbisviol = models.TextField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
+    bin = models.ForeignKey('Building', db_column='bin', db_constraint=False,
+                            on_delete=models.SET_NULL, null=True, blank=True)
     boro = models.TextField(blank=True, null=True)
-    bin = models.TextField(db_index=True, blank=True, null=True)
     block = models.TextField(blank=True, null=True)
     lot = models.TextField(blank=True, null=True)
     issuedate = models.DateTimeField(db_index=True, blank=True, null=True)

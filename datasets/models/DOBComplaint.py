@@ -11,12 +11,13 @@ class DOBComplaint(BaseDatasetModel, models.Model):
     download_endpoint = "https://nycopendata.socrata.com/api/views/eabe-havv/rows.csv?accessType=DOWNLOAD"
 
     complaintnumber = models.IntegerField(primary_key=True, blank=False, null=False)
+    bin = models.ForeignKey('Building', db_column='bin', db_constraint=False,
+                            on_delete=models.SET_NULL, null=True, blank=True)
     status = models.TextField(db_index=True, blank=True, null=True)
     dateentered = models.DateTimeField(db_index=True, blank=True, null=True)
     housenumber = models.TextField(blank=True, null=True)
     zipcode = models.TextField(blank=True, null=True)
     housestreet = models.TextField(blank=True, null=True)
-    bin = models.IntegerField(blank=True, null=True)
     communityboard = models.IntegerField(blank=True, null=True)
     specialdistrict = models.TextField(blank=True, null=True)
     complaintcategory = models.TextField(blank=True, null=True)

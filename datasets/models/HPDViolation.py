@@ -13,7 +13,8 @@ class HPDViolation(BaseDatasetModel, models.Model):
     violationid = models.IntegerField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
-    buildingid = models.IntegerField(blank=True, null=True)
+    buildingid = models.ForeignKey('Building', db_column='buildingid', db_constraint=False,
+                                   on_delete=models.SET_NULL, null=True, blank=True)
     registrationid = models.IntegerField(blank=True, null=True)
     boroid = models.TextField(blank=True, null=True)
     borough = models.TextField(db_index=True)

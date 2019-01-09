@@ -15,10 +15,10 @@ class ECBViolation(BaseDatasetModel, models.Model):
                                          on_delete=models.SET_NULL, null=True, blank=False)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
-
+    bin = models.ForeignKey('Building', db_column='bin', db_constraint=False,
+                            on_delete=models.SET_NULL, null=True, blank=True)
     ecbviolationstatus = models.TextField(db_index=True, blank=True, null=True)
     dobviolationnumber = models.TextField(blank=True, null=True)  # not reliable FK
-    bin = models.TextField(db_index=True, blank=True, null=True)
     boro = models.TextField(blank=True, null=True)
     block = models.TextField(blank=True, null=True)
     lot = models.TextField(blank=True, null=True)

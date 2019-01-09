@@ -34,8 +34,8 @@ class PropertyTests(BaseTest, TestCase):
         ds_models.Property.seed_or_update_self(file=new_file, update=new_update)
 
         self.assertEqual(ds_models.Property.objects.count(), 3)
-        self.assertEqual(new_update.rows_created, 2)
-        self.assertEqual(new_update.rows_updated, 0)
+        self.assertEqual(new_update.rows_created, 1)
+        self.assertEqual(new_update.rows_updated, 1)
 
 
 class CouncilTests(BaseTest, TestCase):
@@ -76,8 +76,8 @@ class HPDViolationTests(BaseTest, TestCase):
                                            file=new_file, previous_file=file)
         ds_models.HPDViolation.seed_or_update_self(file=new_file, update=new_update)
         self.assertEqual(ds_models.HPDViolation.objects.count(), 6)
-        self.assertEqual(new_update.rows_created, 4)
-        self.assertEqual(new_update.rows_updated, 0)
+        self.assertEqual(new_update.rows_created, 2)
+        self.assertEqual(new_update.rows_updated, 2)
         self.assertEqual(ds_models.HPDViolation.objects.get(violationid=10000011).currentstatus, "VIOLATION CLOSED")
         changed_record = ds_models.HPDViolation.objects.get(violationid=10000014)
         self.assertEqual(changed_record.currentstatus, 'VIOLATION CLOSED')
@@ -157,8 +157,8 @@ class AcrisRealMasterLegalTests(BaseTest, TestCase):
             dataset=dataset, file=legals_file_diff, previous_file=legals_file, model_name="AcrisRealMasterLegal")
 
         ds_models.AcrisRealMasterLegal.seed_or_update_self(file=legals_file_diff, update=legals_update_diff)
-        self.assertEqual(legals_update_diff.rows_created, 3)
-        self.assertEqual(legals_update_diff.rows_updated, 0)
+        self.assertEqual(legals_update_diff.rows_created, 1)
+        self.assertEqual(legals_update_diff.rows_updated, 2)
         self.assertEqual(ds_models.AcrisRealMasterLegal.objects.get(documentid="2006020802474003").recordtype, "M")
 
         self.assertEqual(ds_models.AcrisRealMasterLegal.objects.count(), 12)
@@ -250,7 +250,6 @@ class HPDComplaint(BaseTest, TestCase):
 
         record = ds_models.HPDComplaint.objects.all()[0]
         self.assertEqual(record.complaintid, 6960137)
-        self.assertEqual(record.buildingid, 3418)
         self.assertEqual(record.streetname, 'ADAM C POWELL BOULEVARD')
         self.assertEqual(record.apartment, '12D')
         self.assertEqual(record.receiveddate.year, 2014)
@@ -280,8 +279,8 @@ class HPDComplaint(BaseTest, TestCase):
 
         ds_models.HPDComplaint.seed_or_update_self(
             file=complaint_file_diff, update=complaint_update_diff)
-        self.assertEqual(complaint_update_diff.rows_created, 2)
-        self.assertEqual(complaint_update_diff.rows_updated, 0)
+        self.assertEqual(complaint_update_diff.rows_created, 1)
+        self.assertEqual(complaint_update_diff.rows_updated, 1)
         self.assertEqual(ds_models.HPDComplaint.objects.get(complaintid=6961276).unittypeid, 91)
 
         problem_file_diff = DataFile.objects.create(file=self.get_file(
@@ -289,8 +288,8 @@ class HPDComplaint(BaseTest, TestCase):
         problem_update_diff = Update.objects.create(dataset=dataset, file=problem_file_diff, previous_file=problem_file)
 
         ds_models.HPDComplaint.seed_or_update_self(file=problem_file_diff, update=problem_update_diff)
-        self.assertEqual(problem_update_diff.rows_created, 3)
-        self.assertEqual(problem_update_diff.rows_updated, 0)
+        self.assertEqual(problem_update_diff.rows_created, 1)
+        self.assertEqual(problem_update_diff.rows_updated, 2)
 
         self.assertEqual(ds_models.HPDComplaint.objects.count(), 11)
 
@@ -319,8 +318,8 @@ class DOBViolationTests(BaseTest, TestCase):
                                            file=new_file, previous_file=file)
         ds_models.DOBViolation.seed_or_update_self(file=new_file, update=new_update)
         self.assertEqual(ds_models.DOBViolation.objects.count(), 11)
-        self.assertEqual(new_update.rows_created, 2)
-        self.assertEqual(new_update.rows_updated, 0)
+        self.assertEqual(new_update.rows_created, 1)
+        self.assertEqual(new_update.rows_updated, 1)
         self.assertEqual(ds_models.DOBViolation.objects.get(
             isndobbisviol=544483).violationcategory, "V*-DOB VIOLATION - DISMISSED")
         changed_record = ds_models.DOBViolation.objects.get(isndobbisviol=1347329)
@@ -351,8 +350,8 @@ class ECBViolationTests(BaseTest, TestCase):
                                            file=new_file, previous_file=file)
         ds_models.ECBViolation.seed_or_update_self(file=new_file, update=new_update)
         self.assertEqual(ds_models.ECBViolation.objects.count(), 6)
-        self.assertEqual(new_update.rows_created, 2)
-        self.assertEqual(new_update.rows_updated, 0)
+        self.assertEqual(new_update.rows_created, 1)
+        self.assertEqual(new_update.rows_updated, 1)
         self.assertEqual(ds_models.ECBViolation.objects.get(
             ecbviolationnumber="34830294Z").ecbviolationstatus, "RESOLVE")
         changed_record = ds_models.ECBViolation.objects.get(ecbviolationnumber="38087901Z")
@@ -383,9 +382,41 @@ class DOBComplaintTests(BaseTest, TestCase):
                                            file=new_file, previous_file=file)
         ds_models.DOBComplaint.seed_or_update_self(file=new_file, update=new_update)
         self.assertEqual(ds_models.DOBComplaint.objects.count(), 11)
-        self.assertEqual(new_update.rows_created, 2)
-        self.assertEqual(new_update.rows_updated, 0)
+        self.assertEqual(new_update.rows_created, 1)
+        self.assertEqual(new_update.rows_updated, 1)
         self.assertEqual(ds_models.DOBComplaint.objects.get(
             complaintnumber="4483428").status, "CLOSED")
         changed_record = ds_models.DOBComplaint.objects.get(complaintnumber="1347612")
         self.assertEqual(changed_record.status, 'CLOSED')
+
+
+class BuildingTests(BaseTest, TestCase):
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_seed_building(self):
+        dataset = Dataset.objects.create(name="mock", model_name="Building")
+        file = DataFile.objects.create(file=self.get_file('mock_propertymap_bobaadr.csv'), dataset=dataset)
+        update = Update.objects.create(dataset=dataset, file=file, model_name="Building")
+
+        ds_models.Building.seed_or_update_self(file=file, update=update)
+        self.assertEqual(ds_models.Building.objects.count(), 9)
+        self.assertEqual(update.rows_created, 9)
+
+    def test_seed_building_after_update(self):
+        dataset = Dataset.objects.create(name="mock", model_name="Building")
+        file = DataFile.objects.create(file=self.get_file('mock_propertymap_bobaadr.csv'), dataset=dataset)
+        update = Update.objects.create(dataset=dataset, model_name='Building', file=file)
+        ds_models.Building.seed_or_update_self(file=file, update=update)
+
+        new_file = DataFile.objects.create(file=self.get_file('mock_propertymap_bobaadr_diff.csv'), dataset=dataset)
+        new_update = Update.objects.create(dataset=dataset, model_name='Building',
+                                           file=new_file, previous_file=file)
+        ds_models.Building.seed_or_update_self(file=new_file, update=new_update)
+        self.assertEqual(ds_models.Building.objects.count(), 10)
+        self.assertEqual(new_update.rows_created, 1)
+        self.assertEqual(new_update.rows_updated, 1)
+        self.assertEqual(ds_models.Building.objects.get(
+            bin="1086410").hhnd, "25")
+        changed_record = ds_models.Building.objects.get(bin="1086412")
+        self.assertEqual(changed_record.hhnd, '104')

@@ -5,7 +5,10 @@ from core.utils.typecast import date
 
 
 def is_null(value):
-    return value is None
+    if isinstance(value, str):
+        return not value.strip()
+    else:
+        return value is None
 
 
 def exceeds_char_length(value, length):
