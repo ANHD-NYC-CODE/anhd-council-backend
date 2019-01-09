@@ -1,6 +1,6 @@
 from django.db import models
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
-from core.utils.transform import from_csv_file_to_gen, with_bbl
+from core.utils.transform import from_csv_file_to_gen, with_bbl, hpd_contacts_address_cleanup
 from datasets.utils.validation_filters import is_null, is_older_than
 import logging
 
@@ -46,7 +46,7 @@ class HPDContact(BaseDatasetModel, models.Model):
 
     @classmethod
     def transform_self(self, file_path):
-        return self.pre_validation_filters(with_bbl(from_csv_file_to_gen(file_path), allow_blank=True))
+        return self.pre_validation_filters(hpd_contacts_address_cleanup(with_bbl(from_csv_file_to_gen(file_path), allow_blank=True)))
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
