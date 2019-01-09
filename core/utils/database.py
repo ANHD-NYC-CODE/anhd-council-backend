@@ -57,7 +57,7 @@ def seed_from_csv_diff(original_file_path, new_file_path, model, update):
         for row in diff:
             writer.writerow(json.loads(row))
 
-    diff_gen = from_csv_file_to_gen(temp_file_path)
+    diff_gen = from_csv_file_to_gen(temp_file_path, update)
     logger.debug(" * Csv diff completed, beginning batch upsert.")
     while True:
         batch = list(itertools.islice(diff_gen, 0, BATCH_SIZE))
@@ -76,7 +76,7 @@ def bulk_insert_from_csv(model, file, update=None):
 
     # create new csv with cleaned rows
     temp_file_path = os.path.join(settings.MEDIA_TEMP_ROOT, str(uuid.uuid4().hex) + '.csv')
-    rows = model.transform_self_from_file(file_path)
+    rows = model.transform_self_from_file(file_path, update)
     gen_to_csv(rows, temp_file_path)
 
     with open(temp_file_path, 'r') as temp_file:
@@ -96,7 +96,7 @@ def bulk_insert_from_csv(model, file, update=None):
         except Exception as e:
             print(e)
             logger.warning("Database - Bulk Import Error - beginning Batch seeding. Error: {}".format(e))
-            rows = model.transform_self_from_file(file.file.path)
+            rows = model.transform_self_from_file(file.file.path, update)
             batch_upsert_from_gen(model, rows, update)
 
     os.remove(temp_file_path)
@@ -108,6 +108,13 @@ def upsert_query(table_name, row, primary_key):
     placeholders = ', '.join(["%s" for v in row.values()])
     sql = "INSERT INTO {table_name} ({fields}) VALUES ({values}) ON CONFLICT ({primary_key}) DO UPDATE SET {upsert_fields};"
     return sql.format(table_name=table_name, fields=fields, values=placeholders, primary_key=primary_key, upsert_fields=upsert_fields)
+
+
+def insert_query(table_name, row):
+    fields = ', '.join(row.keys())
+    placeholders = ', '.join(["%s" for v in row.values()])
+    sql = "INSERT INTO {table_name} ({fields}) VALUES ({values})"
+    return sql.format(table_name=table_name, fields=fields, values=placeholders)
 
 
 def update_query(table_name, row, primary_key):
@@ -161,19 +168,20 @@ def batch_upsert_rows(rows, model, update=None):
 
 def single_upsert_row(rows, model, update=None):
     table_name = model._meta.db_table
-    primary_key = model._meta.pk.name
     rows_created = 0
     rows_updated = 0
     with connection.cursor() as curs:
         for row in rows:
             try:
                 with transaction.atomic():
-                    curs.execute(upsert_query(table_name, row, primary_key), build_row_values(row))
+                    curs.execute(insert_query(table_name, row), build_row_values(row))
                     rows_created = rows_created + 1
-            # except utils.IntegrityError as e:
-            #     with transaction.atomic():
-            #         curs.execute(update_query(table_name, row, primary_key), build_row_values(row))
-            #         rows_updated = rows_updated + 1
+            except utils.IntegrityError as e:
+                message = e.args[0]
+                pkey = message[message.find("(") + 1:message.find(")")]
+                with transaction.atomic():
+                    curs.execute(update_query(table_name, row, pkey), build_row_values(row) + (row[pkey],))
+                    rows_updated = rows_updated + 1
             except Exception as e:
                 logger.error("Database Error * - unable to upsert single record. Error: {}".format(e))
                 print(e)

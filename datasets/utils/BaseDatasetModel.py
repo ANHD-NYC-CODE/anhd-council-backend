@@ -73,12 +73,12 @@ class BaseDatasetModel():
         data_file.file.save(file_name, files.File(lf))
 
     @classmethod
-    def transform_self_from_file(self, file_path):
-        return Typecast(self).cast_rows(foreign_key_formatting(self.transform_self(file_path)))
+    def transform_self_from_file(self, file_path, update=None):
+        return Typecast(self).cast_rows(foreign_key_formatting(self.transform_self(file_path, update)))
 
     @classmethod
     def seed_with_overwrite(self, **kwargs):
-        rows = self.transform_self_from_file(kwargs['file'].file.path)
+        rows = self.transform_self_from_file(kwargs['file'].file.path, kwargs['update'])
         return batch_upsert_from_gen(self, rows, kwargs['update'])
 
     @classmethod

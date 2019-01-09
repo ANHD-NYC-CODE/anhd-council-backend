@@ -148,8 +148,8 @@ class Property(BaseDatasetModel, models.Model):
             yield row
 
     @classmethod
-    def transform_self(self, file_path):
-        return self.pre_validation_filters(with_geo(from_csv_file_to_gen(extract_csvs_from_zip(file_path))))
+    def transform_self(self, file_path, update=None):
+        return self.pre_validation_filters(with_geo(from_csv_file_to_gen(extract_csvs_from_zip(file_path), update)))
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
