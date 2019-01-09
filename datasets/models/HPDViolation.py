@@ -13,8 +13,9 @@ class HPDViolation(BaseDatasetModel, models.Model):
     violationid = models.IntegerField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
-    buildingid = models.ForeignKey('Building', db_column='buildingid', db_constraint=False,
-                                   on_delete=models.SET_NULL, null=True, blank=True)
+    bin = models.ForeignKey('Building', db_column='bin', db_constraint=False,
+                            on_delete=models.SET_NULL, null=True, blank=True)
+    buildingid = models.IntegerField(blank=True, null=True)
     registrationid = models.IntegerField(blank=True, null=True)
     boroid = models.TextField(blank=True, null=True)
     borough = models.TextField(db_index=True)
@@ -50,7 +51,6 @@ class HPDViolation(BaseDatasetModel, models.Model):
     communityboard = models.TextField(blank=True, null=True)
     councildistrict = models.SmallIntegerField(blank=True, null=True)
     censustract = models.TextField(blank=True, null=True)
-    bin = models.IntegerField(db_index=True, blank=True, null=True)
     nta = models.TextField(blank=True, null=True)
 
     @classmethod
@@ -61,8 +61,9 @@ class HPDViolation(BaseDatasetModel, models.Model):
     def pre_validation_filters(self, gen_rows):
         for row in gen_rows:
             if is_null(row['violationid']):
-                pass
-            row['bbl'] = str(row['bbl'])
+                continue
+            if 'bbl' in row:
+                row['bbl'] = str(row['bbl'])
             yield row
 
     # trims down new update files to preserve memory
@@ -71,7 +72,7 @@ class HPDViolation(BaseDatasetModel, models.Model):
     def update_set_filter(self, csv_reader, headers):
         for row in csv_reader:
             if is_older_than(row[headers.index('InspectionDate')], 2):
-                pass
+                continue
             yield row
 
     @classmethod

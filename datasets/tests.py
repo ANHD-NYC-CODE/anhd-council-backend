@@ -254,7 +254,7 @@ class HPDComplaint(BaseTest, TestCase):
         self.assertEqual(record.apartment, '12D')
         self.assertEqual(record.receiveddate.year, 2014)
         self.assertEqual(record.status, 'CLOSE')
-        self.assertEqual(record.statusdate.year, 2017)
+        self.assertEqual(record.statusdate.year, 2018)
         self.assertEqual(record.problemid, 17307278)
         self.assertEqual(record.majorcategory, 'DOOR/WINDOW')
         self.assertEqual(record.statusdescription,
@@ -391,6 +391,38 @@ class DOBComplaintTests(BaseTest, TestCase):
 
 
 class BuildingTests(BaseTest, TestCase):
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_seed_building(self):
+        dataset = Dataset.objects.create(name="mock", model_name="Building")
+        file = DataFile.objects.create(file=self.get_file('mock_propertymap_bobaadr.csv'), dataset=dataset)
+        update = Update.objects.create(dataset=dataset, file=file, model_name="Building")
+
+        ds_models.Building.seed_or_update_self(file=file, update=update)
+        self.assertEqual(ds_models.Building.objects.count(), 9)
+        self.assertEqual(update.rows_created, 9)
+
+    def test_seed_building_after_update(self):
+        dataset = Dataset.objects.create(name="mock", model_name="Building")
+        file = DataFile.objects.create(file=self.get_file('mock_propertymap_bobaadr.csv'), dataset=dataset)
+        update = Update.objects.create(dataset=dataset, model_name='Building', file=file)
+        ds_models.Building.seed_or_update_self(file=file, update=update)
+
+        new_file = DataFile.objects.create(file=self.get_file('mock_propertymap_bobaadr_diff.csv'), dataset=dataset)
+        new_update = Update.objects.create(dataset=dataset, model_name='Building',
+                                           file=new_file, previous_file=file)
+        ds_models.Building.seed_or_update_self(file=new_file, update=new_update)
+        self.assertEqual(ds_models.Building.objects.count(), 10)
+        self.assertEqual(new_update.rows_created, 1)
+        self.assertEqual(new_update.rows_updated, 1)
+        self.assertEqual(ds_models.Building.objects.get(
+            bin="1086410").hhnd, "25")
+        changed_record = ds_models.Building.objects.get(bin="1086412")
+        self.assertEqual(changed_record.hhnd, '104')
+
+
+class HousingLitigationTests(BaseTest, TestCase):
     def tearDown(self):
         self.clean_tests()
 
