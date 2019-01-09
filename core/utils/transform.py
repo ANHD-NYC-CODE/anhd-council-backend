@@ -6,10 +6,12 @@ import types
 import pyproj
 from zipfile import ZipFile
 from pyproj import *
+import copy
 
 from .address import normalize_street, normalize_street_number, normalize_apartment
 from .bbl import bbl
 from .utility import merge
+from core.utils.csv_helpers import count_csv_rows
 
 invalid_header_chars = ["\n", "\r", ' ', '-', '#', '.', "'", '"', '_', '/', '(', ')', ':']
 replace_header_chars = [('%', 'pct')]
@@ -108,23 +110,31 @@ def from_dict_list_to_gen(list_rows):
         yield dict((headers[i], values[i]) for i in range(0, len(headers)))
 
 
-def from_csv_file_to_gen(file_path_or_generator):
+def from_csv_file_to_gen(file_path_or_generator, update=None):
     """
     input: String | Generator
     outs: Generator
 
     reads firstline as the headers and converts input into a stream of dicts
     """
+    c = None
     if isinstance(file_path_or_generator, types.GeneratorType):
         f = io.StringIO(''.join(list(file_path_or_generator)))
     elif isinstance(file_path_or_generator, str):
         f = open(file_path_or_generator, mode='r', encoding='utf-8', errors='replace')
+        if update:
+            c = open(file_path_or_generator, mode='r', encoding='utf-8', errors='replace')
     else:
         raise ValueError("from_csv_file_to_gen accepts Strings or Generators")
 
+    if update and c:
+        update.total_rows = count_csv_rows(c)
+        update.save()
+
     with f:
         headers = clean_headers(f.readline())
-        for row in csv.DictReader(f, fieldnames=headers):
+        reader = csv.DictReader(f, fieldnames=headers)
+        for row in reader:
             yield row
 
 

@@ -26,8 +26,8 @@ class Dataset(models.Model):
     def download(self):
         return getattr(dataset_models, self.model_name).download()
 
-    def transform_dataset(self, file_path):
-        return getattr(dataset_models, self.model_name).transform_self(file_path)
+    def transform_dataset(self, file_path, update=None):
+        return getattr(dataset_models, self.model_name).transform_self(file_path, update)
 
     def seed_dataset(self, **kwargs):
         return getattr(dataset_models, self.model_name).seed_or_update_self(**kwargs)
@@ -83,6 +83,7 @@ class Update(models.Model):
                                   choices=ACTIVE_MODELS_CHOICES)
     rows_updated = models.IntegerField(blank=True, null=True, default=0)
     rows_created = models.IntegerField(blank=True, null=True, default=0)
+    total_rows = models.IntegerField(blank=True, null=True)
     created_date = models.DateTimeField(default=timezone.now)
     completed_date = models.DateTimeField(blank=True, null=True)
     task_id = models.CharField(max_length=255, blank=True, null=True)

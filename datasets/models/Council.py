@@ -12,7 +12,7 @@ class Council(BaseDatasetModel, models.Model):
     council_member_name = models.TextField(blank=True, null=True)
 
     @classmethod
-    def transform_self(self, file_path):
+    def transform_self(self, file_path, update=None):
         return from_council_geojson(file_path)
 
     @classmethod

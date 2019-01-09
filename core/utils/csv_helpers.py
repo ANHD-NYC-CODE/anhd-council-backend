@@ -3,6 +3,13 @@ from zipfile import ZipFile
 # String (filepath) -> String
 
 
+def count_csv_rows(file_reader):
+    reader = csv.reader(file_reader)
+    import pdb
+    pdb.set_trace()
+    return (sum(1 for row in reader) - 1)  # subtract headers
+
+
 def extract_csvs_from_zip(file_path):
     """
     Combines all content in all CSVs (.csv) in the zip file.

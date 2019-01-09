@@ -64,6 +64,7 @@ class BuildingTests(BaseTest, TestCase):
         ds_models.Building.seed_or_update_self(file=file, update=update)
         self.assertEqual(ds_models.Building.objects.count(), 9)
         self.assertEqual(update.rows_created, 9)
+        self.assertEqual(update.total_rows, 9)
 
     def test_seed_building_after_update(self):
         dataset = Dataset.objects.create(name="mock", model_name="Building")
@@ -578,5 +579,5 @@ class RentStabilizationRecordTests(BaseTest, TestCase):
         self.assertEqual(new_update.rows_created, 1)
         self.assertEqual(new_update.rows_updated, 1)
         self.assertEqual(ds_models.RentStabilizationRecord.objects.first().uc2017, 6)
-        changed_record = ds_models.RentStabilizationRecord.objects.all()[6]
+        changed_record = ds_models.RentStabilizationRecord.objects.all()[5]
         self.assertEqual(changed_record.uc2018, 6)
