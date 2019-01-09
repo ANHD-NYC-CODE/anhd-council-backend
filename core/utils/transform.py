@@ -24,6 +24,10 @@ def foreign_key_formatting(rows):
             row['bbl'] = str(row['bbl'])
         if 'bin' in row:
             row['bin'] = str(row['bin'])
+        if 'registrationid' in row:
+            row['registrationid'] = int(row['registrationid'])
+        if 'documentid' in row:
+            row['documentid'] = str(row['documentid'])
         yield row
 
 
