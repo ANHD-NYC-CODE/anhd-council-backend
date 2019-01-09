@@ -2,6 +2,7 @@ from core import models as c_models
 from core.utils.database import batch_upsert_from_gen, bulk_insert_from_csv, seed_from_csv_diff
 from core.utils.typecast import Typecast
 from django.core import files
+from core.utils.transform import foreign_key_formatting
 
 import os
 import csv
@@ -73,7 +74,7 @@ class BaseDatasetModel():
 
     @classmethod
     def transform_self_from_file(self, file_path):
-        return Typecast(self).cast_rows(self.transform_self(file_path))
+        return Typecast(self).cast_rows(foreign_key_formatting(self.transform_self(file_path)))
 
     @classmethod
     def seed_with_overwrite(self, **kwargs):

@@ -18,6 +18,15 @@ starts_with_numbers = re.compile(r'^(\d+)(.*)$')
 only_numbers = re.compile(r'^\d+$')
 
 
+def foreign_key_formatting(rows):
+    for row in rows:
+        if 'bbl' in row:
+            row['bbl'] = str(row['bbl'])
+        if 'bin' in row:
+            row['bin'] = str(row['bin'])
+        yield row
+
+
 def flip_numbers(header):
     """
     str -> str

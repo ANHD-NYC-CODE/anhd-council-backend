@@ -46,8 +46,6 @@ class HousingLitigation(BaseDatasetModel, models.Model):
         for row in gen_rows:
             if is_null(row['litigationid']):
                 continue
-            if 'bbl' in row:
-                row['bbl'] = str(row['bbl'])
             yield row
 
     # trims down new update files to preserve memory

@@ -18,8 +18,7 @@ class HPDComplaint(BaseDatasetModel, models.Model):
     complaintid = models.IntegerField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
-    buildingid = models.ForeignKey('Building', db_column='buildingid', db_constraint=False,
-                                   on_delete=models.SET_NULL, null=True, blank=True)
+    buildingid = models.IntegerField(blank=True, null=True)
     boroughid = models.IntegerField(blank=True, null=True)
     borough = models.TextField(blank=True, null=True)
     housenumber = models.TextField(blank=True, null=True)
@@ -58,8 +57,6 @@ class HPDComplaint(BaseDatasetModel, models.Model):
         for row in gen_rows:
             if is_null(row['complaintid']):
                 continue
-            if 'bbl' in row:
-                row['bbl'] = str(row['bbl'])
             yield row
 
     # trims down new update files to preserve memory
