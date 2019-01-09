@@ -160,18 +160,26 @@ def batch_upsert_rows(rows, model, update=None):
 
 
 def single_upsert_row(rows, model, update=None):
+    table_name = model._meta.db_table
+    primary_key = model._meta.pk.name
     rows_created = 0
-    for row in rows:
-        try:
-            with transaction.atomic():
-                curs.execute(upsert_query(table_name, row, primary_key), build_row_values(row))
-                rows_created = rows_created + 1
-
-        except utils.DataError as e:
-            logger.error("Database Error * - unable to upsert single record. Error: {}".format(e))
-            print(e)
-            pass
+    rows_updated = 0
+    with connection.cursor() as curs:
+        for row in rows:
+            try:
+                with transaction.atomic():
+                    curs.execute(upsert_query(table_name, row, primary_key), build_row_values(row))
+                    rows_created = rows_created + 1
+            # except utils.IntegrityError as e:
+            #     with transaction.atomic():
+            #         curs.execute(update_query(table_name, row, primary_key), build_row_values(row))
+            #         rows_updated = rows_updated + 1
+            except Exception as e:
+                logger.error("Database Error * - unable to upsert single record. Error: {}".format(e))
+                print(e)
+                pass
 
     if update:
         update.rows_created = update.rows_created + rows_created
+        update.rows_updated = update.rows_updated + rows_created
         update.save()

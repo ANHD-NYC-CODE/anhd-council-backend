@@ -426,7 +426,7 @@ class HousingLitigationTests(BaseTest, TestCase):
     def tearDown(self):
         self.clean_tests()
 
-    def test_seed_building(self):
+    def test_seed_litigation(self):
         dataset = Dataset.objects.create(name="mock", model_name="HousingLitigation")
         file = DataFile.objects.create(file=self.get_file('mock_housing_litigations.csv'), dataset=dataset)
         update = Update.objects.create(dataset=dataset, file=file, model_name="HousingLitigation")
@@ -435,7 +435,7 @@ class HousingLitigationTests(BaseTest, TestCase):
         self.assertEqual(ds_models.HousingLitigation.objects.count(), 10)
         self.assertEqual(update.rows_created, 10)
 
-    def test_seed_building_after_update(self):
+    def test_seed_litigation_after_update(self):
         dataset = Dataset.objects.create(name="mock", model_name="HousingLitigation")
         file = DataFile.objects.create(file=self.get_file('mock_housing_litigations.csv'), dataset=dataset)
         update = Update.objects.create(dataset=dataset, model_name='HousingLitigation', file=file)
@@ -458,7 +458,7 @@ class HPDRegistrationTests(BaseTest, TestCase):
     def tearDown(self):
         self.clean_tests()
 
-    def test_seed_building(self):
+    def test_seed_registration(self):
         dataset = Dataset.objects.create(name="mock", model_name="HPDRegistration")
         file = DataFile.objects.create(file=self.get_file('mock_hpd_registrations.csv'), dataset=dataset)
         update = Update.objects.create(dataset=dataset, file=file, model_name="HPDRegistration")
@@ -467,7 +467,7 @@ class HPDRegistrationTests(BaseTest, TestCase):
         self.assertEqual(ds_models.HPDRegistration.objects.count(), 4)
         self.assertEqual(update.rows_created, 4)
 
-    def test_seed_building_after_update(self):
+    def test_seed_registration_after_update(self):
         dataset = Dataset.objects.create(name="mock", model_name="HPDRegistration")
         file = DataFile.objects.create(file=self.get_file('mock_hpd_registrations.csv'), dataset=dataset)
         update = Update.objects.create(dataset=dataset, model_name='HPDRegistration', file=file)
@@ -490,7 +490,7 @@ class HPDContactTests(BaseTest, TestCase):
     def tearDown(self):
         self.clean_tests()
 
-    def test_seed_building(self):
+    def test_seed_contact(self):
         dataset = Dataset.objects.create(name="mock", model_name="HPDContact")
         file = DataFile.objects.create(file=self.get_file('mock_hpd_contacts.csv'), dataset=dataset)
         update = Update.objects.create(dataset=dataset, file=file, model_name="HPDContact")
@@ -499,7 +499,7 @@ class HPDContactTests(BaseTest, TestCase):
         self.assertEqual(ds_models.HPDContact.objects.count(), 4)
         self.assertEqual(update.rows_created, 4)
 
-    def test_seed_building_after_update(self):
+    def test_seed_contact_after_update(self):
         dataset = Dataset.objects.create(name="mock", model_name="HPDContact")
         file = DataFile.objects.create(file=self.get_file('mock_hpd_contacts.csv'), dataset=dataset)
         update = Update.objects.create(dataset=dataset, model_name='HPDContact', file=file)
@@ -522,7 +522,7 @@ class HPDBuildingRecordTests(BaseTest, TestCase):
     def tearDown(self):
         self.clean_tests()
 
-    def test_seed_building(self):
+    def test_seed_record(self):
         dataset = Dataset.objects.create(name="mock", model_name="HPDBuildingRecord")
         file = DataFile.objects.create(file=self.get_file('mock_hpd_building_records.csv'), dataset=dataset)
         update = Update.objects.create(dataset=dataset, file=file, model_name="HPDBuildingRecord")
@@ -531,7 +531,7 @@ class HPDBuildingRecordTests(BaseTest, TestCase):
         self.assertEqual(ds_models.HPDBuildingRecord.objects.count(), 6)
         self.assertEqual(update.rows_created, 6)
 
-    def test_seed_building_after_update(self):
+    def test_seed_record_after_update(self):
         dataset = Dataset.objects.create(name="mock", model_name="HPDBuildingRecord")
         file = DataFile.objects.create(file=self.get_file('mock_hpd_building_records.csv'), dataset=dataset)
         update = Update.objects.create(dataset=dataset, model_name='HPDBuildingRecord', file=file)
@@ -548,3 +548,35 @@ class HPDBuildingRecordTests(BaseTest, TestCase):
             buildingid="859129").housenumber, "0")
         changed_record = ds_models.HPDBuildingRecord.objects.get(buildingid="510673")
         self.assertEqual(changed_record.housenumber, '193-17')
+
+
+class RentStabilizationRecordTests(BaseTest, TestCase):
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_seed_record(self):
+        dataset = Dataset.objects.create(name="mock", model_name="RentStabilizationRecord")
+        file = DataFile.objects.create(file=self.get_file('mock_rent_stabilization_records.csv'), dataset=dataset)
+        update = Update.objects.create(dataset=dataset, file=file, model_name="RentStabilizationRecord")
+
+        ds_models.RentStabilizationRecord.seed_or_update_self(file=file, update=update)
+        self.assertEqual(ds_models.RentStabilizationRecord.objects.count(), 6)
+        self.assertEqual(update.rows_created, 6)
+
+    def test_seed_record_after_update(self):
+        dataset = Dataset.objects.create(name="mock", model_name="RentStabilizationRecord")
+        file = DataFile.objects.create(file=self.get_file('mock_rent_stabilization_records.csv'), dataset=dataset)
+        update = Update.objects.create(dataset=dataset, model_name='RentStabilizationRecord', file=file)
+        ds_models.RentStabilizationRecord.seed_or_update_self(file=file, update=update)
+
+        new_file = DataFile.objects.create(file=self.get_file(
+            'mock_rent_stabilization_records_diff.csv'), dataset=dataset)
+        new_update = Update.objects.create(dataset=dataset, model_name='RentStabilizationRecord',
+                                           file=new_file, previous_file=file)
+        ds_models.RentStabilizationRecord.seed_or_update_self(file=new_file, update=new_update)
+        self.assertEqual(ds_models.RentStabilizationRecord.objects.count(), 7)
+        self.assertEqual(new_update.rows_created, 1)
+        self.assertEqual(new_update.rows_updated, 1)
+        self.assertEqual(ds_models.RentStabilizationRecord.objects.first().uc2017, 6)
+        changed_record = ds_models.RentStabilizationRecord.objects.all()[6]
+        self.assertEqual(changed_record.uc2018, 6)
