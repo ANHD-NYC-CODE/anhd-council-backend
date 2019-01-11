@@ -5,8 +5,6 @@ from zipfile import ZipFile
 
 def count_csv_rows(file_reader):
     reader = csv.reader(file_reader)
-    import pdb
-    pdb.set_trace()
     return (sum(1 for row in reader) - 1)  # subtract headers
 
 

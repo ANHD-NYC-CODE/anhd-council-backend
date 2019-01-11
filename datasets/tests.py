@@ -64,7 +64,7 @@ class BuildingTests(BaseTest, TestCase):
         ds_models.Building.seed_or_update_self(file=file, update=update)
         self.assertEqual(ds_models.Building.objects.count(), 9)
         self.assertEqual(update.rows_created, 9)
-        self.assertEqual(update.total_rows, 9)
+        self.assertEqual(update.total_rows, 11)
 
     def test_seed_building_after_update(self):
         dataset = Dataset.objects.create(name="mock", model_name="Building")
