@@ -42,7 +42,7 @@ class TaxLien(BaseDatasetModel, models.Model):
 
     @classmethod
     def transform_self(self, file_path, update=None):
-        return self.pre_validation_filters(with_bbl(from_xlsx_file_to_gen(file_path, update)))
+        return self.pre_validation_filters(with_bbl(from_xlsx_file_to_gen(file_path, 'Web File', update)))
 
     @classmethod
     def seed_or_update_self(self, **kwargs):

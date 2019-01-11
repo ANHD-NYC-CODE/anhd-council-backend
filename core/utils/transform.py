@@ -111,9 +111,9 @@ def from_dict_list_to_gen(list_rows):
         yield dict((headers[i], values[i]) for i in range(0, len(headers)))
 
 
-def from_xlsx_file_to_gen(file_path, update):
+def from_xlsx_file_to_gen(file_path, worksheet, update):
     wb = openpyxl.load_workbook(file_path)
-    worksheet = wb['Web File']
+    worksheet = wb[worksheet]
     rows = worksheet.rows
     headers = clean_headers(','.join([c.value for c in next(rows)]))
 
