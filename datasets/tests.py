@@ -571,3 +571,28 @@ class EvictionTest(BaseTest, TestCase):
         self.assertEqual(ds_models.Eviction.objects.first().scheduledstatus, 'scheduled')
         changed_record = ds_models.Eviction.objects.all()[9]
         self.assertEqual(changed_record.scheduledstatus, 'executed')
+
+
+class TaxLienTest(BaseTest, TestCase):
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_seed_record(self):
+        update = self.update_factory(model_name="TaxLien",
+                                     file_name="mock_tax_liens.xlsx")
+        ds_models.TaxLien.seed_or_update_self(file=update.file, update=update)
+        self.assertEqual(ds_models.TaxLien.objects.count(), 10)
+        self.assertEqual(update.rows_created, 10)
+
+    def test_seed_record_after_overwrite(self):
+        update = self.update_factory(model_name="TaxLien",
+                                     file_name="mock_tax_liens.xlsx")
+        ds_models.TaxLien.seed_or_update_self(file=update.file, update=update)
+        self.assertEqual(ds_models.TaxLien.objects.count(), 10)
+
+        new_update = self.update_factory(dataset=update.dataset, model_name="TaxLien",
+                                         file_name="mock_tax_liens.xlsx")
+        ds_models.TaxLien.seed_or_update_self(file=new_update.file, update=new_update)
+        self.assertEqual(ds_models.TaxLien.objects.count(), 10)
+        self.assertEqual(new_update.rows_created, 10)
+        self.assertEqual(new_update.rows_updated, 0)
