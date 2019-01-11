@@ -188,8 +188,6 @@ class Typecast():
                 d[field.name] = lambda x: numeric(x)
             elif isinstance(field, ArrayField):
                 d[field.name] = lambda x: text_array(x)
-            elif isinstance(field, models.ForeignKey):
-                d[field.name] = lambda x: integer(x)
             else:
                 d[field.name] = lambda x: x
         return d

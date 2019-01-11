@@ -94,6 +94,7 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
         for row in gen_rows:
             if is_null(row['ucbbl']):
                 continue
+            row['ucbbl'] = str(row['ucbbl'])
             yield row
 
     # trims down new update files to preserve memory
@@ -108,7 +109,7 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        return self.seed_or_update_from_set_diff(**kwargs)
+        return self.seed_with_overwrite(**kwargs)
 
     def __str__(self):
         return str(self.complaintid)
