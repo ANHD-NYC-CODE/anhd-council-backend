@@ -23,13 +23,13 @@ only_numbers = re.compile(r'^\d+$')
 def foreign_key_formatting(rows):
     for row in rows:
         if 'bbl' in row:
-            row['bbl'] = str(row['bbl'])
+            row['bbl'] = str(row['bbl']).strip()
         if 'bin' in row:
-            row['bin'] = str(row['bin'])
+            row['bin'] = str(row['bin']).strip()
         if 'registrationid' in row:
             row['registrationid'] = int(row['registrationid'])
         if 'documentid' in row:
-            row['documentid'] = str(row['documentid'])
+            row['documentid'] = str(row['documentid']).strip()
         yield row
 
 
@@ -110,7 +110,7 @@ def from_dict_list_to_gen(list_rows):
         yield dict((headers[i], values[i]) for i in range(0, len(headers)))
 
 
-def from_csv_file_to_gen(file_path_or_generator, update=None):
+def from_csv_file_to_gen(file_path_or_generator, update=None, cleaner=None):
     """
     input: String | Generator
     outs: Generator
@@ -132,8 +132,13 @@ def from_csv_file_to_gen(file_path_or_generator, update=None):
         update.save()
 
     with f:
-        headers = clean_headers(f.readline())
-        reader = csv.DictReader(f, fieldnames=headers)
+        if cleaner:
+            lines = cleaner([*f])
+            headers = clean_headers(next(lines))
+            reader = csv.DictReader(lines, fieldnames=headers)
+        else:
+            headers = clean_headers(f.readline())
+            reader = csv.DictReader(f, fieldnames=headers)
         for row in reader:
             yield row
 
