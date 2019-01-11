@@ -70,7 +70,7 @@ def seed_from_csv_diff(original_file_path, new_file_path, model, update):
     os.remove(temp_file_path)
 
 
-def bulk_insert_from_csv(model, file, update=None):
+def bulk_insert_from_file(model, file, update=None, overwrite=False):
     table_name = model._meta.db_table
     file_path = file.file.path
 
@@ -84,7 +84,10 @@ def bulk_insert_from_csv(model, file, update=None):
         sql = copy_query(table_name, columns)
 
         try:
+
             with transaction.atomic():
+                if overwrite:
+                    connection.cursor().execute('DELETE FROM {};'.format(table_name))
                 logger.debug("* Beginning Bulk CSV copy.")
                 connection.cursor().copy_expert(sql, temp_file)
                 logger.debug(" * Bulk CSV copy completed successfully.")

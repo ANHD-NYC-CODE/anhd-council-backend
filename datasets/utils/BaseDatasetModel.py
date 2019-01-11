@@ -1,5 +1,5 @@
 from core import models as c_models
-from core.utils.database import batch_upsert_from_gen, bulk_insert_from_csv, seed_from_csv_diff
+from core.utils.database import batch_upsert_from_gen, bulk_insert_from_file, seed_from_csv_diff
 from core.utils.typecast import Typecast
 from django.core import files
 from core.utils.transform import foreign_key_formatting
@@ -83,7 +83,7 @@ class BaseDatasetModel():
 
     @classmethod
     def bulk_seed(self, **kwargs):
-        bulk_insert_from_csv(self, **kwargs)
+        bulk_insert_from_file(self, **kwargs)
 
     @classmethod
     def seed_or_update_from_set_diff(self, **kwargs):

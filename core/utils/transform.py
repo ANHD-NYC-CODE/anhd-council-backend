@@ -1,4 +1,5 @@
 import csv
+import openpyxl
 import json
 import io
 import re
@@ -108,6 +109,17 @@ def from_dict_list_to_gen(list_rows):
         headers = clean_headers(','.join(row.keys()))
         values = list(row.values())
         yield dict((headers[i], values[i]) for i in range(0, len(headers)))
+
+
+def from_xlsx_file_to_gen(file_path, update):
+    wb = openpyxl.load_workbook(file_path)
+    worksheet = wb['Web File']
+    rows = worksheet.rows
+    headers = clean_headers(','.join([c.value for c in next(rows)]))
+
+    for row in rows:
+        values = [c.value for c in row]
+        yield dict(zip(headers, values))
 
 
 def from_csv_file_to_gen(file_path_or_generator, update=None, cleaner=None):
