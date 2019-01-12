@@ -79,8 +79,6 @@ class Update(models.Model):
     previous_file = models.ForeignKey(DataFile, related_name='previous_file',
                                       on_delete=models.SET_NULL, null=True, blank=True)
     dataset = models.ForeignKey(Dataset, on_delete=models.SET_NULL, null=True)
-    model_name = models.CharField(max_length=255, blank=False, null=False,
-                                  choices=ACTIVE_MODELS_CHOICES)
     rows_updated = models.IntegerField(blank=True, null=True, default=0)
     rows_created = models.IntegerField(blank=True, null=True, default=0)
     total_rows = models.IntegerField(blank=True, null=True)

@@ -17,9 +17,8 @@ class UpdateTests(BaseTest, TestCase):
         self.clean_tests()
 
     def test_create_update(self):
-        dataset = Dataset.objects.create(name="mock", model_name="Property")
-        file = DataFile.objects.create(file=self.get_file('mock_csv.csv'), dataset=dataset)
-        update = Update.objects.create(model_name='Property', file=file)
+        update = self.update_factory(model_name="Update",
+                                     file_name="mock_csv.csv")
         self.assertEqual(Update.objects.count(), 1)
 
 

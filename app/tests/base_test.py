@@ -17,11 +17,14 @@ class BaseTest():
     def get_file_path(self, name):
         return os.path.join(settings.BASE_DIR, "app/tests/mocks/" + name)
 
-    def update_factory(self, dataset=None, model_name=None, file_name=None):
+    def update_factory(self, dataset=None, model_name=None, file_name=None, previous_file_name=None):
         if not dataset:
             dataset = c_models.Dataset.objects.create(name=model_name, model_name=model_name)
         file = c_models.DataFile.objects.create(file=self.get_file(file_name), dataset=dataset)
-        update = c_models.Update.objects.create(dataset=dataset, model_name=model_name, file=file)
+
+        previous_file = c_models.DataFile.objects.create(file=self.get_file(
+            previous_file_name), dataset=dataset) if previous_file_name else None
+        update = c_models.Update.objects.create(dataset=dataset, file=file, previous_file=previous_file)
         return update
 
     def get_file(self, name):
