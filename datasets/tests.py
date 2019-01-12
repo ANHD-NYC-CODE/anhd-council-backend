@@ -115,82 +115,49 @@ class HPDViolationTests(BaseTest, TestCase):
         self.assertEqual(changed_record.currentstatusdate.year, 2017)
 
 
-class AcrisRealMasterLegalTests(BaseTest, TestCase):
-    def tearDown(self):
-        self.clean_tests()
-
-    def test_seed_legals(self):
-        update = self.update_factory(model_name="AcrisRealMasterLegal",
-                                     file_name="mock_acris_real_property_legals.csv")
-
-        ds_models.AcrisRealMasterLegal.seed_or_update_self(file=update.file, update=update)
-        self.assertEqual(ds_models.AcrisRealMasterLegal.objects.count(), 10)
-        self.assertEqual(update.rows_created, 10)
-
-    def test_seed_master(self):
-        update = self.update_factory(model_name="AcrisRealMasterLegal",
+class AcrisRealMasterTests(BaseTest, TestCase):
+    def test_seed_masters(self):
+        update = self.update_factory(model_name="AcrisRealMaster",
                                      file_name="mock_acris_real_property_master.csv")
 
-        ds_models.AcrisRealMasterLegal.seed_or_update_self(file=update.file, update=update)
-        record = ds_models.AcrisRealMasterLegal.objects.all()[0]
-        self.assertEqual(ds_models.AcrisRealMasterLegal.objects.count(), 10)
+        ds_models.AcrisRealMaster.seed_or_update_self(file=update.file, update=update)
+        self.assertEqual(ds_models.AcrisRealMaster.objects.count(), 10)
         self.assertEqual(update.rows_created, 10)
 
-    def test_combined_table(self):
-        dataset = Dataset.objects.create(name="mock", model_name="AcrisRealMasterLegal")
+    def test_seed_masters_with_overwrite(self):
+        update = self.update_factory(model_name="AcrisRealMaster",
+                                     file_name="mock_acris_real_property_master.csv")
+        ds_models.AcrisRealMaster.seed_or_update_self(file=update.file, update=update)
 
-        master_file = DataFile.objects.create(file=self.get_file(
-            "mock_acris_real_property_master.csv"), dataset=dataset)
-        master_update = Update.objects.create(dataset=dataset, file=master_file, model_name="AcrisRealMasterLegal")
-        legals_file = DataFile.objects.create(file=self.get_file(
-            "mock_acris_real_property_legals.csv"), dataset=dataset)
-        legals_update = Update.objects.create(dataset=dataset, file=legals_file, model_name="AcrisRealMasterLegal")
+        new_update = self.update_factory(dataset=update.dataset, model_name="AcrisRealMaster",
+                                         file_name="mock_acris_real_property_master_diff.csv")
+        ds_models.AcrisRealMaster.seed_or_update_self(
+            file=new_update.file, update=new_update)
+        self.assertEqual(new_update.rows_created, 11)
+        self.assertEqual(new_update.rows_updated, 0)
 
-        ds_models.AcrisRealMasterLegal.seed_or_update_self(file=master_file, update=master_update)
-        ds_models.AcrisRealMasterLegal.seed_or_update_self(file=legals_file, update=legals_update)
 
-        self.assertEqual(ds_models.AcrisRealMasterLegal.objects.count(), 10)
-        record = ds_models.AcrisRealMasterLegal.objects.all()[0]
-        self.assertEqual(record.documentid, '2006020802474003')
-        self.assertEqual(record.recordtype, 'L')
-        self.assertEqual(record.propertytype, 'CR')
-        self.assertEqual(record.doctype, 'MTGE')
-        self.assertEqual(record.docdate.year, 2009)
-        self.assertEqual(record.docamount, 395000)
-        self.assertEqual(record.recordedfiled.year, 2010)
+class AcrisRealLegalTests(BaseTest, TestCase):
+    def test_seed_legals(self):
+        update = self.update_factory(model_name="AcrisRealLegal",
+                                     file_name="mock_acris_real_property_legals.csv")
 
-    def test_combined_tables_with_update(self):
-        dataset = Dataset.objects.create(name="mock", model_name="AcrisRealMasterLegal")
-        master_file = DataFile.objects.create(file=self.get_file(
-            "mock_acris_real_property_master.csv"), dataset=dataset)
-        master_update = Update.objects.create(dataset=dataset, file=master_file, model_name="AcrisRealMasterLegal")
-        legals_file = DataFile.objects.create(file=self.get_file(
-            "mock_acris_real_property_legals.csv"), dataset=dataset)
-        legals_update = Update.objects.create(dataset=dataset, file=legals_file, model_name="AcrisRealMasterLegal")
+        ds_models.AcrisRealLegal.seed_or_update_self(file=update.file, update=update)
+        self.assertEqual(ds_models.AcrisRealLegal.objects.count(), 10)
+        self.assertEqual(update.rows_created, 10)
 
-        ds_models.AcrisRealMasterLegal.seed_or_update_self(file=master_file, update=master_update)
-        ds_models.AcrisRealMasterLegal.seed_or_update_self(file=legals_file, update=legals_update)
+    def test_seed_legals_with_overwrite(self):
 
-        master_file_diff = DataFile.objects.create(file=self.get_file(
-            "mock_acris_real_property_master_diff.csv"), dataset=dataset)
-        master_update_diff = Update.objects.create(
-            dataset=dataset, file=master_file_diff, previous_file=master_file, model_name="AcrisRealMasterLegal")
+        update = self.update_factory(model_name="AcrisRealLegal",
+                                     file_name="mock_acris_real_property_legals.csv")
+        ds_models.AcrisRealLegal.seed_or_update_self(file=update.file, update=update)
 
-        ds_models.AcrisRealMasterLegal.seed_or_update_self(file=master_file_diff, update=master_update_diff)
-        self.assertEqual(master_update_diff.rows_created, 1)
-        self.assertEqual(master_update_diff.rows_updated, 0)
-
-        legals_file_diff = DataFile.objects.create(file=self.get_file(
-            "mock_acris_real_property_legals_diff.csv"), dataset=dataset)
-        legals_update_diff = Update.objects.create(
-            dataset=dataset, file=legals_file_diff, previous_file=legals_file, model_name="AcrisRealMasterLegal")
-
-        ds_models.AcrisRealMasterLegal.seed_or_update_self(file=legals_file_diff, update=legals_update_diff)
-        self.assertEqual(legals_update_diff.rows_created, 1)
-        self.assertEqual(legals_update_diff.rows_updated, 2)
-        self.assertEqual(ds_models.AcrisRealMasterLegal.objects.get(documentid="2006020802474003").recordtype, "M")
-
-        self.assertEqual(ds_models.AcrisRealMasterLegal.objects.count(), 12)
+        new_update = self.update_factory(dataset=update.dataset, model_name="AcrisRealLegal",
+                                         file_name="mock_acris_real_property_legals_diff.csv")
+        ds_models.AcrisRealLegal.seed_or_update_self(
+            file=new_update.file, update=new_update)
+        self.assertEqual(new_update.rows_created, 12)
+        self.assertEqual(new_update.rows_updated, 0)
 
 
 class AcrisRealPartyTests(BaseTest, TestCase):

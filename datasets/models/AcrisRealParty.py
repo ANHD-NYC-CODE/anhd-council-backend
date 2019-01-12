@@ -12,7 +12,7 @@ from datasets.utils.validation_filters import is_null, is_older_than
 class AcrisRealParty(BaseDatasetModel, models.Model):
     download_endpoint = 'https://data.cityofnewyork.us/api/views/636b-3b5g/rows.csv?accessType=DOWNLOAD'
 
-    documentid = models.ForeignKey('AcrisRealMasterLegal', db_column='documentid', db_constraint=False,
+    documentid = models.ForeignKey('AcrisRealMaster', db_column='documentid', db_constraint=False,
                                    on_delete=models.SET_NULL, null=True, blank=False)
     recordtype = models.TextField(blank=True, null=True)
     partytype = models.SmallIntegerField(blank=True, null=True)

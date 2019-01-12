@@ -9,7 +9,7 @@ import datetime
 logger = logging.getLogger('app')
 
 
-# Update guide:
+# Update strategy: Manual
 #
 # Combine all borough files downloaded from DOF into single xlsx file
 # https://www1.nyc.gov/site/finance/taxes/property-lien-sales.page
