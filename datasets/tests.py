@@ -588,3 +588,28 @@ class SubsidyJ51Tests(BaseTest, TestCase):
         self.assertEqual(ds_models.SubsidyJ51.objects.count(), 19)
         self.assertEqual(new_update.rows_created, 19)
         self.assertEqual(new_update.rows_updated, 0)
+
+
+class Subsidy451aTests(BaseTest, TestCase):
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_seed_record(self):
+        update = self.update_factory(model_name="Subsidy451a",
+                                     file_name="mock_subsidy451a.csv")
+        ds_models.Subsidy451a.seed_or_update_self(file=update.file, update=update)
+        self.assertEqual(ds_models.Subsidy451a.objects.count(), 10)
+        self.assertEqual(update.rows_created, 10)
+
+    def test_seed_record_after_overwrite(self):
+        update = self.update_factory(model_name="Subsidy451a",
+                                     file_name="mock_subsidy451a.csv")
+        ds_models.Subsidy451a.seed_or_update_self(file=update.file, update=update)
+        self.assertEqual(ds_models.Subsidy451a.objects.count(), 10)
+
+        new_update = self.update_factory(dataset=update.dataset, model_name="Subsidy451a",
+                                         file_name="mock_subsidy451a.csv", previous_file_name="mock_coredatarecords.xlsx")
+        ds_models.Subsidy451a.seed_or_update_self(file=new_update.file, update=new_update)
+        self.assertEqual(ds_models.Subsidy451a.objects.count(), 10)
+        self.assertEqual(new_update.rows_created, 10)
+        self.assertEqual(new_update.rows_updated, 0)
