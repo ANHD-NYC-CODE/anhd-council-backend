@@ -122,8 +122,9 @@ def insert_query(table_name, row):
 
 def update_query(table_name, row, primary_key):
     fields = ', '.join(['{key} = %s'.format(key=key) for key in row.keys()])
-    sql = 'UPDATE {table_name} SET {fields} WHERE({pk}=%s);'
-    return sql.format(table_name=table_name, fields=fields, pk=primary_key)
+    keys = ' AND '.join(['{key} = %s'.format(key=key) for key in primary_key.split(', ')])
+    sql = 'UPDATE {table_name} SET {fields} WHERE({pk});'
+    return sql.format(table_name=table_name, fields=fields, pk=keys)
 
 
 def copy_query(table_name, columns):
@@ -133,6 +134,13 @@ def copy_query(table_name, columns):
 def build_row_values(row):
     t_row = tuple(row.values())
     return tuple(None if x == '' else x for x in t_row)
+
+
+def build_pkey_tuple(row, pkey):
+    tup = tuple()
+    for key in pkey.split(', '):
+        tup = tup + (row[key],)
+    return tup
 
 
 def batch_upsert_from_gen(model_class, rows, update=None):
@@ -181,9 +189,10 @@ def single_upsert_row(rows, model, update=None):
                     rows_created = rows_created + 1
             except utils.IntegrityError as e:
                 message = e.args[0]
-                pkey = message[message.find("(") + 1:message.find(")")]
+                pkey = message[message.find("(") + 1: message.find(")")]
                 with transaction.atomic():
-                    curs.execute(update_query(table_name, row, pkey), build_row_values(row) + (row[pkey],))
+                    curs.execute(update_query(table_name, row, pkey),
+                                 build_row_values(row) + build_pkey_tuple(row, pkey))
                     rows_updated = rows_updated + 1
             except Exception as e:
                 logger.error("Database Error * - unable to upsert single record. Error: {}".format(e))
