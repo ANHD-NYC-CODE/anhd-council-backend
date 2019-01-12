@@ -1,7 +1,7 @@
 from django.db import models
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.transform import from_csv_file_to_gen, with_bbl
-from datasets.utils.validation_filters import is_null, is_older_than
+from datasets.utils.validation_filters import is_null, is_older_than, does_not_contain_values
 import logging
 
 logger = logging.getLogger('app')
@@ -9,9 +9,9 @@ logger = logging.getLogger('app')
 
 class DOBPermitIssuedLegacy(BaseDatasetModel, models.Model):
     download_endpoint = "https://data.cityofnewyork.us/api/views/ipu4-2q9a/rows.csv?accessType=DOWNLOAD"
-    permitsino = models.TextField(primary_key=True, blank=False, null=False)
 
-    job = models.TextField(blank=True, null=True)
+    job = models.TextField(blank=False, null=False)
+    permitsino = models.TextField(blank=False, null=False)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
     bin = models.ForeignKey('Building', db_column='bin', db_constraint=False,
@@ -74,6 +74,9 @@ class DOBPermitIssuedLegacy(BaseDatasetModel, models.Model):
     censustract = models.TextField(blank=True, null=True)
     ntaname = models.TextField(blank=True, null=True)
 
+    class Meta:
+        unique_together = ('job', 'permitsino',)
+
     @classmethod
     def download(self):
         return self.download_file(self.download_endpoint)
@@ -81,7 +84,9 @@ class DOBPermitIssuedLegacy(BaseDatasetModel, models.Model):
     @classmethod
     def pre_validation_filters(self, gen_rows):
         for row in gen_rows:
-            if is_null(row['job']):
+            if is_null(row['job']) or is_null(row['permitsino']):
+                continue
+            if does_not_contain_values(["a1", "a2", "dm", "nb"], row["jobtype"]):
                 continue
             yield row
 
@@ -90,7 +95,9 @@ class DOBPermitIssuedLegacy(BaseDatasetModel, models.Model):
     @classmethod
     def update_set_filter(self, csv_reader, headers):
         for row in csv_reader:
-            if is_older_than(row[headers.index('Issuance Date')], 2):
+            if is_older_than(row[headers.index('Issuance Date')], 1):
+                continue
+            if does_not_contain_values(["a1", "a2", "dm", "nb"], row[headers.index('Job Type')]):
                 continue
             yield row
 

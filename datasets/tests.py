@@ -623,8 +623,8 @@ class DOBPermitIssuedLegacyTests(BaseTest, TestCase):
         update = self.update_factory(model_name="DOBPermitIssuedLegacy",
                                      file_name="mock_dob_permit_issued_legacy.csv")
         ds_models.DOBPermitIssuedLegacy.seed_or_update_self(file=update.file, update=update)
-        self.assertEqual(ds_models.DOBPermitIssuedLegacy.objects.count(), 10)
-        self.assertEqual(update.rows_created, 10)
+        self.assertEqual(ds_models.DOBPermitIssuedLegacy.objects.count(), 7)
+        self.assertEqual(update.rows_created, 7)
 
     def test_seed_record_after_update(self):
         update = self.update_factory(model_name="DOBPermitIssuedLegacy",
@@ -634,9 +634,9 @@ class DOBPermitIssuedLegacyTests(BaseTest, TestCase):
         new_update = self.update_factory(dataset=update.dataset, model_name="DOBPermitIssuedLegacy",
                                          file_name="mock_dob_permit_issued_legacy_diff.csv", previous_file_name="mock_evictions.csv")
         ds_models.DOBPermitIssuedLegacy.seed_or_update_self(file=new_update.file, update=new_update)
-        self.assertEqual(ds_models.DOBPermitIssuedLegacy.objects.count(), 10)
-        self.assertEqual(new_update.rows_created, 0)
-        self.assertEqual(new_update.rows_updated, 11)
+        self.assertEqual(ds_models.DOBPermitIssuedLegacy.objects.count(), 8)
+        self.assertEqual(new_update.rows_created, 1)
+        self.assertEqual(new_update.rows_updated, 1)
 
-        changed_record = ds_models.DOBPermitIssuedLegacy.objects.filter(courtindex='76472/16')[0]
-        self.assertEqual(changed_record.scheduledstatus, 'Executed')
+        changed_record = ds_models.DOBPermitIssuedLegacy.objects.filter(job='123527200', permitsino='3574712')[0]
+        self.assertEqual(changed_record.filingstatus, 'RENEWAL')
