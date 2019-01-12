@@ -34,12 +34,6 @@ class TaxLien(BaseDatasetModel, models.Model):
     def pre_validation_filters(self, gen_rows):
         return gen_rows
 
-    # trims down new update files to preserve memory
-    # uses original header values
-    @classmethod
-    def update_set_filter(self, csv_reader, headers):
-        return csv_reader
-
     @classmethod
     def transform_self(self, file_path, update=None):
         return self.pre_validation_filters(with_bbl(from_xlsx_file_to_gen(file_path, 'Web File', update)))
