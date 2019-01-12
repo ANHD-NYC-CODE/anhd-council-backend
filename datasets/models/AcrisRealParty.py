@@ -40,10 +40,7 @@ class AcrisRealParty(BaseDatasetModel, models.Model):
     # uses original header values
     @classmethod
     def update_set_filter(self, csv_reader, headers):
-        for row in csv_reader:
-            if is_older_than(row[headers.index('GOOD THROUGH DATE')], 8):
-                continue
-            yield row
+        return csv_reader
 
     @classmethod
     def transform_self(self, file_path, update=None):

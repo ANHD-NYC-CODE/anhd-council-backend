@@ -12,6 +12,9 @@ import copy
 import re
 import datetime
 from decimal import Decimal, InvalidOperation
+import logging
+
+logger = logging.getLogger('app')
 
 YES_VALUES = [1, True, 'T', 't', 'true', 'True', 'TRUE', '1', 'y', 'Y', "YES", 'Yes']
 NO_VALUES = ['0', 0, False, 'False', 'f', 'F', 'false', 'FALSE', 'N', 'n', 'NO', 'No', 'no']
@@ -78,13 +81,23 @@ def mm_dd_yyyy(date_str):
 # TODO: allow for different date inputs besides mm/dd/yyyy
 #  03/04/2015 12:00:00 AM
 def date(x):
-    if isinstance(x, (datetime.date, datetime.datetime)):
+    if not x or isinstance(x, (datetime.date, datetime.datetime)):
         return x
+    # checks yyyymmdd format in integers
+    if isinstance(x, int):
+        if len(str(x)) == 8:
+            try:
+                return datetime.datetime.strptime(str(x), '%Y%m%d').date()
+            except ValueError:
+                logger.warning("* Unable to parse date - {}".format(x))
+                return None
+
     # checks for 20181231 date input
     if re.match(r'[0-9]{8}', x):
         try:
             return datetime.datetime.strptime(x, '%Y%m%d').date()
         except ValueError:
+            logger.warning("* Unable to parse date - {}".format(x))
             return None
     # checks for 12/31/2018 date input
     elif len(x) == 10 and len(x.split('/')) == 3:
@@ -93,6 +106,7 @@ def date(x):
     elif len(x) == 22 and len(x[0:10].split('/')) == 3:
         return mm_dd_yyyy(x)
     else:
+        logger.warning("* Unable to parse date - {}".format(x))
         return None
 
 

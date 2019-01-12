@@ -16,6 +16,7 @@ django-celery-results = "*"
 redis = "*"
 python-dateutil = ">=2.6.1"
 openpyxl = "*"
+image = "*"
 
 [requires]
 python_version = "3.5"
