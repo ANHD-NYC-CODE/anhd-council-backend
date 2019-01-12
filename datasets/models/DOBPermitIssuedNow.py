@@ -50,7 +50,7 @@ class DOBPermitIssuedNow(BaseDatasetModel, models.Model):
     ownerzipcode = models.TextField(blank=True, null=True)
 
     class Meta:
-        unique_together = ('jobfilingnumber', 'workpermit')
+        unique_together = ('jobfilingnumber', 'workpermit', 'issueddate')
 
     @classmethod
     def download(self):
@@ -59,7 +59,7 @@ class DOBPermitIssuedNow(BaseDatasetModel, models.Model):
     @classmethod
     def pre_validation_filters(self, gen_rows):
         for row in gen_rows:
-            if is_null(row['jobfilingnumber']) or is_null(row['workpermit']):
+            if is_null(row['jobfilingnumber']) or is_null(row['workpermit']) or is_null(row['issueddate']):
                 continue
             yield row
 

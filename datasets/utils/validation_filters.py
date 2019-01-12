@@ -16,6 +16,8 @@ def exceeds_char_length(value, length):
 
 
 def is_older_than(date_value, year_number):
+    if not date_value:
+        return True
     years_ago = datetime.now() - relativedelta(years=year_number)
     return date(date_value) < years_ago.date()
 
