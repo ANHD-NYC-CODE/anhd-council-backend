@@ -25,7 +25,7 @@ class HPDRegistration(BaseDatasetModel, models.Model):
     streetcode = models.IntegerField(blank=True, null=True)
     zip = models.TextField(blank=True, null=True)
     block = models.SmallIntegerField(blank=True, null=True)
-    lot = models.SmallIntegerField(blank=True, null=True)
+    lot = models.IntegerField(blank=True, null=True)
     communityboard = models.IntegerField(blank=True, null=True)
     lastregistrationdate = models.DateTimeField(blank=True, null=True)
     registrationenddate = models.DateTimeField(blank=True, null=True)

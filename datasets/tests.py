@@ -583,7 +583,7 @@ class SubsidyJ51Tests(BaseTest, TestCase):
         self.assertEqual(ds_models.SubsidyJ51.objects.count(), 19)
 
         new_update = self.update_factory(dataset=update.dataset, model_name="SubsidyJ51",
-                                         file_name="mock_subsidyj51.csv", previous_file_name="mock_coredatarecords.xlsx")
+                                         file_name="mock_subsidyj51.csv", previous_file_name="mock_subsidyj51.csv")
         ds_models.SubsidyJ51.seed_or_update_self(file=new_update.file, update=new_update)
         self.assertEqual(ds_models.SubsidyJ51.objects.count(), 19)
         self.assertEqual(new_update.rows_created, 19)
@@ -608,7 +608,7 @@ class Subsidy451aTests(BaseTest, TestCase):
         self.assertEqual(ds_models.Subsidy451a.objects.count(), 10)
 
         new_update = self.update_factory(dataset=update.dataset, model_name="Subsidy451a",
-                                         file_name="mock_subsidy451a.csv", previous_file_name="mock_coredatarecords.xlsx")
+                                         file_name="mock_subsidy451a.csv", previous_file_name="mock_subsidy451a.csv")
         ds_models.Subsidy451a.seed_or_update_self(file=new_update.file, update=new_update)
         self.assertEqual(ds_models.Subsidy451a.objects.count(), 10)
         self.assertEqual(new_update.rows_created, 10)
@@ -632,7 +632,7 @@ class DOBPermitIssuedLegacyTests(BaseTest, TestCase):
         ds_models.DOBPermitIssuedLegacy.seed_or_update_self(file=update.file, update=update)
 
         new_update = self.update_factory(dataset=update.dataset, model_name="DOBPermitIssuedLegacy",
-                                         file_name="mock_dob_permit_issued_legacy_diff.csv", previous_file_name="mock_evictions.csv")
+                                         file_name="mock_dob_permit_issued_legacy_diff.csv", previous_file_name="mock_dob_permit_issued_legacy.csv")
         ds_models.DOBPermitIssuedLegacy.seed_or_update_self(file=new_update.file, update=new_update)
         self.assertEqual(ds_models.DOBPermitIssuedLegacy.objects.count(), 8)
         self.assertEqual(new_update.rows_created, 1)
@@ -640,3 +640,31 @@ class DOBPermitIssuedLegacyTests(BaseTest, TestCase):
 
         changed_record = ds_models.DOBPermitIssuedLegacy.objects.filter(job='123527200', permitsino='3574712')[0]
         self.assertEqual(changed_record.filingstatus, 'RENEWAL')
+
+
+class DOBPermitIssuedNowTests(BaseTest, TestCase):
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_seed_record(self):
+        update = self.update_factory(model_name="DOBPermitIssuedNow",
+                                     file_name="mock_dob_permit_issued_now.csv")
+        ds_models.DOBPermitIssuedNow.seed_or_update_self(file=update.file, update=update)
+        self.assertEqual(ds_models.DOBPermitIssuedNow.objects.count(), 5)
+        self.assertEqual(update.rows_created, 5)
+
+    def test_seed_record_after_update(self):
+        update = self.update_factory(model_name="DOBPermitIssuedNow",
+                                     file_name="mock_dob_permit_issued_now.csv")
+        ds_models.DOBPermitIssuedNow.seed_or_update_self(file=update.file, update=update)
+
+        new_update = self.update_factory(dataset=update.dataset, model_name="DOBPermitIssuedNow",
+                                         file_name="mock_dob_permit_issued_now_diff.csv", previous_file_name="mock_dob_permit_issued_now.csv")
+        ds_models.DOBPermitIssuedNow.seed_or_update_self(file=new_update.file, update=new_update)
+        self.assertEqual(ds_models.DOBPermitIssuedNow.objects.count(), 6)
+        self.assertEqual(new_update.rows_created, 1)
+        self.assertEqual(new_update.rows_updated, 1)
+
+        changed_record = ds_models.DOBPermitIssuedNow.objects.filter(
+            jobfilingnumber='B00093657-I1', workpermit='B00093657-I1-SH')[0]
+        self.assertEqual(changed_record.filingreason, 'Final Permit')

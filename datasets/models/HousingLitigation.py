@@ -21,7 +21,7 @@ class HousingLitigation(BaseDatasetModel, models.Model):
     streetname = models.TextField(blank=True, null=True)
     zip = models.TextField(blank=True, null=True)
     block = models.SmallIntegerField(blank=True, null=True)
-    lot = models.SmallIntegerField(blank=True, null=True)
+    lot = models.IntegerField(blank=True, null=True)
     casetype = models.TextField(blank=True, null=True)
     caseopendate = models.DateTimeField(blank=True, null=True)
     casestatus = models.TextField(blank=True, null=True)
