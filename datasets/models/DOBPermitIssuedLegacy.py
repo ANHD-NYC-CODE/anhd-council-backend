@@ -86,6 +86,8 @@ class DOBPermitIssuedLegacy(BaseDatasetModel, models.Model):
         for row in gen_rows:
             if is_null(row['job']) or is_null(row['permitsino']):
                 continue
+            if is_null(row['issuancedate']):
+                continue
             if does_not_contain_values(["a1", "a2", "dm", "nb"], row["jobtype"]):
                 continue
             yield row

@@ -623,6 +623,7 @@ class DOBPermitIssuedLegacyTests(BaseTest, TestCase):
         update = self.update_factory(model_name="DOBPermitIssuedLegacy",
                                      file_name="mock_dob_permit_issued_legacy.csv")
         ds_models.DOBPermitIssuedLegacy.seed_or_update_self(file=update.file, update=update)
+        self.assertEqual(update.total_rows, 9)
         self.assertEqual(ds_models.DOBPermitIssuedLegacy.objects.count(), 7)
         self.assertEqual(update.rows_created, 7)
 
@@ -650,6 +651,7 @@ class DOBPermitIssuedNowTests(BaseTest, TestCase):
         update = self.update_factory(model_name="DOBPermitIssuedNow",
                                      file_name="mock_dob_permit_issued_now.csv")
         ds_models.DOBPermitIssuedNow.seed_or_update_self(file=update.file, update=update)
+        self.assertEqual(update.total_rows, 5)
         self.assertEqual(ds_models.DOBPermitIssuedNow.objects.count(), 5)
         self.assertEqual(update.rows_created, 5)
 
@@ -668,3 +670,20 @@ class DOBPermitIssuedNowTests(BaseTest, TestCase):
         changed_record = ds_models.DOBPermitIssuedNow.objects.filter(
             jobfilingnumber='B00093657-I1', workpermit='B00093657-I1-SH')[0]
         self.assertEqual(changed_record.filingreason, 'Final Permit')
+
+
+# class DOBPermitIssuedTests(BaseTest, TestCase):
+#     def tearDown(self):
+#         self.clean_tests()
+#
+#     def test_seed_combined_query(self):
+#         update1 = self.update_factory(model_name="DOBPermitIssuedNow",
+#                                       file_name="mock_dob_permit_issued_now.csv")
+#         ds_models.DOBPermitIssuedNow.seed_or_update_self(file=update1.file, update=update1)
+#
+#         update2 = self.update_factory(model_name="DOBPermitIssuedLegacy",
+#                                       file_name="mock_dob_permit_issued_legacy.csv")
+#         ds_models.DOBPermitIssuedLegacy.seed_or_update_self(file=update2.file, update=update2)
+#
+#         permits = ds_models.DOBPermitIssued.permits
+#         self.assertEqual(update.total_rows, 5)
