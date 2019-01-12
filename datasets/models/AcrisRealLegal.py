@@ -10,24 +10,24 @@ from datasets.utils.validation_filters import is_null, is_older_than
 # into 1 table
 # joined on document_id
 # and linked to buildings with FK bbl
-# Duplicate document IDs are removed
+# Duplicate document IDs are removed from legals
+# Master = a deed / sale
+# legals = a property associated with the deed
 # ####
 # Optimal seed method is Master first, legals second.
 
 
-class AcrisRealMasterLegal(BaseDatasetModel, models.Model):
-    # Real property legals,
-    # Real property master,
+class AcrisRealLegal(BaseDatasetModel, models.Model):
     download_endpoints = [
         'https://data.cityofnewyork.us/api/views/8h5j-fqxa/rows.csv?accessType=DOWNLOAD',
-        'https://data.cityofnewyork.us/api/views/bnx9-e6tj/rows.csv?accessType=DOWNLOAD',
     ]
 
-    documentid = models.TextField(primary_key=True, blank=False, null=False)
+    documentid = models.ForeignKey('AcrisRealMaster', db_column='documentid', db_constraint=False,
+                                   on_delete=models.SET_NULL, null=True, blank=False)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
     recordtype = models.TextField(db_index=True, blank=True, null=True)
-    borough = models.IntegerField(blank=True, null=True)
+    borough = models.SmallIntegerField(blank=True, null=True)
     block = models.IntegerField(blank=True, null=True)
     lot = models.IntegerField(blank=True, null=True)
     easement = models.BooleanField(blank=True, null=True)
@@ -38,22 +38,11 @@ class AcrisRealMasterLegal(BaseDatasetModel, models.Model):
     streetnumber = models.TextField(blank=True, null=True)
     streetname = models.TextField(blank=True, null=True)
     unit = models.TextField(blank=True, null=True)
-    goodthroughdate = models.TextField(blank=True, null=True)
-    crfn = models.TextField(blank=True, null=True)
-    doctype = models.TextField(db_index=True, blank=True, null=True)
-    docdate = models.DateTimeField(db_index=True, blank=True, null=True)
-    docamount = models.BigIntegerField(db_index=True, blank=True, null=True)
-    recordedfiled = models.DateTimeField(db_index=True, blank=True, null=True)
-    modifieddate = models.DateTimeField(blank=True, null=True)
-    reelyear = models.SmallIntegerField(blank=True, null=True)
-    reelnbr = models.IntegerField(blank=True, null=True)
-    reelpage = models.IntegerField(blank=True, null=True)
-    pcttransferred = models.DecimalField(decimal_places=2, max_digits=5, blank=True, null=True)
+    goodthroughdate = models.DateTimeField(db_index=True, blank=True, null=True)
 
     @classmethod
     def download(self):
-        for endpoint in self.download_endpoints:
-            async_download_file.delay(self.__name__, endpoint)
+        async_download_file.delay(self.__name__, endpoint)
 
     @classmethod
     def pre_validation_filters(self, gen_rows):
@@ -68,10 +57,7 @@ class AcrisRealMasterLegal(BaseDatasetModel, models.Model):
     # uses original header values
     @classmethod
     def update_set_filter(self, csv_reader, headers):
-        for row in csv_reader:
-            if is_older_than(row[headers.index('GOOD THROUGH DATE')], 8):
-                continue
-            yield row
+        return csv_reader
 
     @classmethod
     def transform_self(self, file_path, update=None):
@@ -79,7 +65,7 @@ class AcrisRealMasterLegal(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        return self.seed_or_update_from_set_diff(**kwargs)
+        return self.bulk_seed(**kwargs, overwrite=True)
 
     def __str__(self):
         return self.documentid
