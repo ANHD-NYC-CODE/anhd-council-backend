@@ -14,7 +14,7 @@ from .bbl import bbl
 from .utility import merge
 from core.utils.csv_helpers import count_csv_rows
 
-invalid_header_chars = ["\n", "\r", ' ', '-', '#', '.', "'", '"', '_', '/', '(', ')', ':']
+invalid_header_chars = ["\n", "\r", ' ', '-', '#', '.', "'", '"', '_', '/', '(', ')', ':', "&", "’"]
 replace_header_chars = [('%', 'pct')]
 invalid_header_names = ["class"]
 starts_with_numbers = re.compile(r'^(\d+)(.*)$')

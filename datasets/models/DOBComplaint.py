@@ -53,7 +53,7 @@ class DOBComplaint(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        logger.info("Seeding/Updating {}", self.__name__)
+        logger.debug("Seeding/Updating {}", self.__name__)
         return self.seed_or_update_from_set_diff(**kwargs)
 
     def __str__(self):
