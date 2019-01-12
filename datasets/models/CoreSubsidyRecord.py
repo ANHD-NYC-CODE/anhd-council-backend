@@ -9,11 +9,12 @@ import datetime
 logger = logging.getLogger('app')
 
 
-# Update strategy: Manual
+# Update process: Manual
+# Update strategy: Overwrite
 #
-# Combine all borough files downloaded from DOF into single xlsx file
-# https://www1.nyc.gov/site/finance/taxes/property-lien-sales.page
-# upload through admin, then update
+# Download Core Data "Full Property and Subsidy Dataset"
+# https://nyu.box.com/shared/static/a3zb4u588l06jmz1jwuep400womyc85q.zip
+# Extract ZIP and upload xlsx file through admin, then update
 
 class CoreSubsidyRecord(BaseDatasetModel, models.Model):
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
@@ -62,4 +63,4 @@ class CoreSubsidyRecord(BaseDatasetModel, models.Model):
         return self.bulk_seed(**kwargs, overwrite=True)
 
     def __str__(self):
-        return str(self.complaintid)
+        return str(self.id)

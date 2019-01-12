@@ -9,11 +9,12 @@ import datetime
 logger = logging.getLogger('app')
 
 
-# Update strategy: Manual
+# Update process: Manual
+# Update strategy: Overwrite
 #
-# Combine all borough files downloaded from DOF into single xlsx file
+# Combine all borough files downloaded from DOF into single xlsx file under a worksheet named "Web File"
 # https://www1.nyc.gov/site/finance/taxes/property-lien-sales.page
-# upload through admin, then update
+# upload file through admin, then update
 
 class TaxLien(BaseDatasetModel, models.Model):
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
@@ -43,4 +44,4 @@ class TaxLien(BaseDatasetModel, models.Model):
         return self.bulk_seed(**kwargs, overwrite=True)
 
     def __str__(self):
-        return str(self.complaintid)
+        return str(self.id)
