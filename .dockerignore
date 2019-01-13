@@ -1,0 +1,5 @@
+app/data**
+!app/data/temp
+app/tests/mocks/**
+
+celerybeat-schedule.db
