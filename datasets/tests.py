@@ -4,6 +4,7 @@ from core.models import Dataset, Update, DataFile
 from django_celery_results.models import TaskResult
 from datasets import models as ds_models
 from app.tests.base_test import BaseTest
+from django.db.models import Count, Q
 # Create your tests here.
 
 import logging
@@ -32,6 +33,7 @@ class PropertyTests(BaseTest, TestCase):
                                      file_name="test_pluto_17v1.zip")
 
         ds_models.Property.seed_or_update_self(file=update.file, update=update)
+
         self.assertEqual(ds_models.Property.objects.count(), 2)
         self.assertEqual(update.rows_created, 2)
 
@@ -672,18 +674,31 @@ class DOBPermitIssuedNowTests(BaseTest, TestCase):
         self.assertEqual(changed_record.filingreason, 'Final Permit')
 
 
-# class DOBPermitIssuedTests(BaseTest, TestCase):
-#     def tearDown(self):
-#         self.clean_tests()
-#
-#     def test_seed_combined_query(self):
-#         update1 = self.update_factory(model_name="DOBPermitIssuedNow",
-#                                       file_name="mock_dob_permit_issued_now.csv")
-#         ds_models.DOBPermitIssuedNow.seed_or_update_self(file=update1.file, update=update1)
-#
-#         update2 = self.update_factory(model_name="DOBPermitIssuedLegacy",
-#                                       file_name="mock_dob_permit_issued_legacy.csv")
-#         ds_models.DOBPermitIssuedLegacy.seed_or_update_self(file=update2.file, update=update2)
-#
-#         permits = ds_models.DOBPermitIssued.permits
-#         self.assertEqual(update.total_rows, 5)
+class DOBPermitIssuedTests(BaseTest, TestCase):
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_seed_combined_query(self):
+        update1 = self.update_factory(model_name="DOBPermitIssuedNow",
+                                      file_name="mock_dob_permit_issued_now.csv")
+        ds_models.DOBPermitIssuedNow.seed_or_update_self(file=update1.file, update=update1)
+
+        update2 = self.update_factory(model_name="DOBPermitIssuedLegacy",
+                                      file_name="mock_dob_permit_issued_legacy.csv")
+        ds_models.DOBPermitIssuedLegacy.seed_or_update_self(file=update2.file, update=update2)
+
+        update3 = self.update_factory(model_name="Property",
+                                      file_name="test_pluto_17v1.zip")
+
+        # # https://stackoverflow.com/questions/6525771/django-query-related-field-count
+        # # https://docs.djangoproject.com/en/2.1/topics/db/aggregation/#filter-and-exclude
+        # from django.db.models import Count, Sum, Q
+        # # adds A2 permit counts to each property
+        # ds_models.Property.objects.annotate(totals=Count('dobpermitissuedlegacy', filter=Q(dobpermitissuedlegacy__jobtype='A2')))
+        # # adds A2 permits to all NOW permits
+        # ds_models.Property.objects.annotate(totals=Count('dobpermitissuedlegacy', filter=Q(dobpermitissuedlegacy__jobtype='A2')) + Count('dobpermitissuednow')).filter(totals__gte=2)
+
+        ds_models.Property.seed_or_update_self(file=update3.file, update=update3)
+        query = ds_models.Property.objects.annotate(totals=Count('dobpermitissuedlegacy', filter=Q(
+            dobpermitissuedlegacy__jobtype='A2')) + Count('dobpermitissuednow')).filter(totals__gte=2)
+        self.assertEqual(query.count(), 1)
