@@ -9,7 +9,9 @@ import csv
 import requests
 import tempfile
 import re
+import logging
 
+logger = logging.getLogger('app')
 # Testing
 
 # 1) query buildings with > 5 HPD violations total
@@ -47,6 +49,7 @@ class BaseDatasetModel():
         # Was the request OK?
         if file_request.status_code != requests.codes.ok:
             # Nope, error handling, skip file etc etc etc
+            logger.error("* ERROR * Download request failed: {}".format(endpoint))
             raise Exception("Request error: {}".format(file_request.status_code))
 
         # get filename
@@ -60,9 +63,11 @@ class BaseDatasetModel():
 
         # Read the streamed file in sections
         downloaded = 0
+        logger.info("Download started for: {} at {}".format(self.get_dataset().name, endpoint))
+
         for block in file_request.iter_content(1024 * 8):
             downloaded += len(block)
-            print("{0} MB".format(downloaded / 1000000))
+            logger.debug("{0} MB".format(downloaded / 1000000))
             # If no more file then stop
             if not block:
                 break
@@ -71,13 +76,14 @@ class BaseDatasetModel():
             lf.write(block)
         data_file = c_models.DataFile(dataset=dataset)
         data_file.file.save(file_name, files.File(lf))
+        logger.info("Download completed for: {} and saved to: {}".format(self.get_dataset().name, data_file.file.path))
 
     @classmethod
     def transform_self_from_file(self, file_path, update=None):
         return Typecast(self).cast_rows(foreign_key_formatting(self.transform_self(file_path, update)))
 
     @classmethod
-    def seed_with_overwrite(self, **kwargs):
+    def seed_with_upsert(self, **kwargs):
         rows = self.transform_self_from_file(kwargs['file'].file.path, kwargs['update'])
         return batch_upsert_from_gen(self, rows, kwargs['update'])
 

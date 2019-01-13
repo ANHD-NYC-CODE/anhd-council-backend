@@ -8,6 +8,13 @@ import logging
 
 logger = logging.getLogger('app')
 
+# Update process: Manual
+# Update strategy: Upsert
+#
+# Download latest .csv zipfile from:
+# https://www1.nyc.gov/site/planning/data-maps/open-data/dwn-pluto-mappluto.page
+# upload zipfile file through admin, update
+
 
 class CurrentPropertyManager(models.Manager):
     def get_queryset(self):

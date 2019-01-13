@@ -28,5 +28,5 @@ def async_download_start(self, dataset_id):
     if dataset:
         dataset.download()
     else:
-        logger.error("Task Failure - No dataset found in async_download_start")
+        logger.error("*ERROR* - Task Failure - No dataset found in async_download_start")
         raise Exception("No dataset.")

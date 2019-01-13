@@ -6,9 +6,16 @@ import logging
 
 logger = logging.getLogger('app')
 
+# Update process: Manual
+# Update strategy: Upsert
+#
+# Download file from:
+# http://taxbills.nyc/joined.csv
+# upload file through admin then update
+
 
 class RentStabilizationRecord(BaseDatasetModel, models.Model):
-    download_endpoint = "https://data.cityofnewyork.us/api/views/tesw-yqqr/rows.csv?accessType=DOWNLOAD"
+    download_endpoint = "http://taxbills.nyc/joined.csv"
 
     ucbbl = models.ForeignKey('Property', db_column='ucbbl', unique=True, db_constraint=False,
                               on_delete=models.SET_NULL, null=True, blank=True)
@@ -109,7 +116,7 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        return self.seed_with_overwrite(**kwargs)
+        return self.seed_with_upsert(**kwargs)
 
     def __str__(self):
         return str(self.complaintid)
