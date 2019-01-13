@@ -20,8 +20,6 @@ ACTIVE_MODELS_CHOICES = list(map(lambda model: (model, model), settings.ACTIVE_M
 class Dataset(models.Model):
     name = models.CharField(unique=True, max_length=255, blank=False, null=False)
     model_name = models.CharField(unique=True, max_length=255, blank=False, null=False, choices=ACTIVE_MODELS_CHOICES)
-    download_endpoint = models.TextField(blank=True, null=True)
-    uploaded_date = models.DateTimeField(default=timezone.now)
 
     def download(self):
         return getattr(dataset_models, self.model_name).download()

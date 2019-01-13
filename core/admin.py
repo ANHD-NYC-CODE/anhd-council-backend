@@ -40,7 +40,7 @@ class DatasetAdmin(admin.ModelAdmin):
     def has_change_permission(self, request, obj=None):
         return False
 
-    list_display = ['name', 'model_name', 'download_endpoint',
+    list_display = ['name', 'model_name',
                     'updates_count', 'updates_link', 'data_files_count', 'datafiles_link']
     Dataset.objects.prefetch_related('update')
     Dataset.objects.prefetch_related('datafile')
