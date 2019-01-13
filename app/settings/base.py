@@ -192,14 +192,27 @@ LOGGING = {
 
 # Use exact model names from datasets/models
 ACTIVE_MODELS = [
-    'HPDViolation',
-    'Property',
     'Council',
-    'AcrisRealMaster',
+    'Property',
+    'Building',
     'AcrisRealLegal',
+    'AcrisRealMaster',
     'AcrisRealParty',
-    'HPDComplaint',
+    'CoreSubsidyRecord',
+    'DOBComplaint',
+    'DOBPermitFiledLegacy',
+    'DOBPermitIssuedLegacy',
+    'DOBPermitIssuedNow',
     'DOBViolation',
     'ECBViolation',
-    'DOBComplaint'
+    'Eviction',
+    'HousingLitigation',
+    'HPDBuildingRecord',
+    'HPDComplaint',
+    'HPDContact',
+    'HPDRegistration',
+    'HPDViolation',
+    'RentStabilizationRecord',
+    'SubsidyJ51',
+    'Subsidy451a',
 ]
