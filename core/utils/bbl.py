@@ -1,11 +1,11 @@
 """ create BBL  """
 import re
 
-manhattan_values = [ 'manhattan', 'mn', '1', 1 ]
-bronx_values = [ 'bronx', 'the bronx', 'bx', '2', 2 ]
-brooklyn_values = [ 'brooklyn', 'bklyn', 'bk' , '3', 3 ]
-queens_values = [ 'queens', 'qn', '4', 4 ]
-staten_island_values = [ 'staten island', 'si', '5', 5 ]
+manhattan_values = ['manhattan', 'mn', '1', 1]
+bronx_values = ['bronx', 'the bronx', 'bx', '2', 2]
+brooklyn_values = ['brooklyn', 'bklyn', 'bk', '3', 3]
+queens_values = ['queens', 'qn', '4', 4]
+staten_island_values = ['staten island', 'si', '5', 5]
 
 
 def boro_to_code(boro):
@@ -32,12 +32,13 @@ def boro_to_code(boro):
 
 def lot_length_helper(lot):
     if len(lot) == 5:
-        return  lot[1:]
+        return lot[1:]
     elif len(lot) < 5:
         return lot.zfill(4)
     else:
         # print(lot + " is more than 5 chars long!")
         return '0000'
+
 
 def is_empty(i):
     """
