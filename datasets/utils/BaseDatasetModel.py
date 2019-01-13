@@ -77,6 +77,7 @@ class BaseDatasetModel():
         data_file = c_models.DataFile(dataset=dataset)
         data_file.file.save(file_name, files.File(lf))
         logger.info("Download completed for: {} and saved to: {}".format(self.get_dataset().name, data_file.file.path))
+        return data_file
 
     @classmethod
     def transform_self_from_file(self, file_path, update=None):
