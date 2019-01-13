@@ -690,15 +690,36 @@ class DOBPermitIssuedTests(BaseTest, TestCase):
         update3 = self.update_factory(model_name="Property",
                                       file_name="test_pluto_17v1.zip")
 
-        # # https://stackoverflow.com/questions/6525771/django-query-related-field-count
-        # # https://docs.djangoproject.com/en/2.1/topics/db/aggregation/#filter-and-exclude
-        # from django.db.models import Count, Sum, Q
-        # # adds A2 permit counts to each property
-        # ds_models.Property.objects.annotate(totals=Count('dobpermitissuedlegacy', filter=Q(dobpermitissuedlegacy__jobtype='A2')))
-        # # adds A2 permits to all NOW permits
-        # ds_models.Property.objects.annotate(totals=Count('dobpermitissuedlegacy', filter=Q(dobpermitissuedlegacy__jobtype='A2')) + Count('dobpermitissuednow')).filter(totals__gte=2)
-
         ds_models.Property.seed_or_update_self(file=update3.file, update=update3)
         query = ds_models.Property.objects.annotate(totals=Count('dobpermitissuedlegacy', filter=Q(
             dobpermitissuedlegacy__jobtype='A2')) + Count('dobpermitissuednow')).filter(totals__gte=2)
         self.assertEqual(query.count(), 1)
+
+
+class DOBPermitFiledTests(BaseTest, TestCase):
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_seed_record(self):
+        update = self.update_factory(model_name="DOBPermitFiledLegacy",
+                                     file_name="mock_dob_permit_filed_legacy.csv")
+        ds_models.DOBPermitFiledLegacy.seed_or_update_self(file=update.file, update=update)
+        self.assertEqual(update.total_rows, 5)
+        self.assertEqual(ds_models.DOBPermitFiledLegacy.objects.count(), 4)
+        self.assertEqual(update.rows_created, 4)
+
+    def test_seed_record_after_update(self):
+        update = self.update_factory(model_name="DOBPermitFiledLegacy",
+                                     file_name="mock_dob_permit_filed_legacy.csv")
+        ds_models.DOBPermitFiledLegacy.seed_or_update_self(file=update.file, update=update)
+
+        new_update = self.update_factory(dataset=update.dataset, model_name="DOBPermitFiledLegacy",
+                                         file_name="mock_dob_permit_filed_legacy_diff.csv", previous_file_name="mock_dob_permit_issued_now.csv")
+        ds_models.DOBPermitFiledLegacy.seed_or_update_self(file=new_update.file, update=new_update)
+        self.assertEqual(ds_models.DOBPermitFiledLegacy.objects.count(), 5)
+        self.assertEqual(new_update.rows_created, 1)
+        self.assertEqual(new_update.rows_updated, 1)
+
+        changed_record = ds_models.DOBPermitFiledLegacy.objects.filter(
+            job='421677974')[0]
+        self.assertEqual(changed_record.jobstatusdescrp, 'PERMIT ISSUED - ENTIRE JOB/WORK')
