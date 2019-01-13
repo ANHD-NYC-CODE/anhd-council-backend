@@ -5,24 +5,31 @@ from django.http import HttpResponseRedirect
 from core.models import Dataset, DataFile, Update
 from app.admin.mixins import admin_changelist_link, admin_link
 from core.tasks import async_download_start
+from django.contrib import messages
 
 import os
+import logging
+
+logger = logging.getLogger('app')
 
 
 class DatasetAdmin(admin.ModelAdmin):
     def response_change(self, request, obj):
         if "_download-file" in request.POST:
-            logger.info("User requested download for dataset: {}".format(obj.name))
+            if hasattr(obj.model(), 'download_endpoint'):
+                logger.info("User requested download for dataset: {}".format(obj.name))
 
-            worker = async_download_start.delay(obj.id)
-            self.message_user(
-                request, "This file is now downloading with worker {}. Please view monitor the status in Flower. {}".format(worker.id, settings.FLOWER_URL))
+                worker = async_download_start.delay(obj.id)
+                messages.info(
+                    request, "This file is now downloading with worker {}. Please view monitor the status in Flower. {}".format(worker.id, settings.FLOWER_URL))
+            else:
+                messages.error(request, "This file does not have an automated download configured.")
             return HttpResponseRedirect(".")
         return super().response_change(request, obj)
 
     @admin_changelist_link('datafile_set', ('DataFiles'), query_string=lambda c: 'dataset={}'.format(c.pk))
     def datafiles_link(self, updates):
-        return ('View DateFiles')
+        return ('View DataFiles')
 
     @admin_changelist_link('update_set', ('Updates'), query_string=lambda c: 'dataset={}'.format(c.pk))
     def updates_link(self, updates):
@@ -40,7 +47,7 @@ class DatasetAdmin(admin.ModelAdmin):
     def has_change_permission(self, request, obj=None):
         return False
 
-    list_display = ['name',
+    list_display = ['name', 'automated', 'update_instructions',
                     'updates_count', 'updates_link', 'data_files_count', 'datafiles_link']
     Dataset.objects.prefetch_related('update')
     Dataset.objects.prefetch_related('datafile')
