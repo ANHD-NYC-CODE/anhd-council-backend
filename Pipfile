@@ -19,6 +19,7 @@ openpyxl = "*"
 image = "*"
 pyyaml = "*"
 django-postgres-copy = "*"
+django-celery-beat = "*"
 
 [requires]
 python_version = "3.5"

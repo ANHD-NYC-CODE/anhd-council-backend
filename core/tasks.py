@@ -30,3 +30,14 @@ def async_download_start(self, dataset_id):
     else:
         logger.error("*ERROR* - Task Failure - No dataset found in async_download_start")
         raise Exception("No dataset.")
+
+
+@app.task(bind=True)
+def async_download_and_update(self, dataset_id):
+    dataset = Dataset.objects.filter(id=dataset_id).first()
+    logger.info("Starting async download and update for dataset: {}".format(dataset.name))
+    if dataset:
+        dataset.download_and_update()
+    else:
+        logger.error("*ERROR* - Task Failure - No dataset found in async_download_start")
+        raise Exception("No dataset.")
