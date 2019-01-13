@@ -18,6 +18,7 @@ python-dateutil = ">=2.6.1"
 openpyxl = "*"
 image = "*"
 pyyaml = "*"
+django-postgres-copy = "*"
 
 [requires]
 python_version = "3.5"

@@ -2,27 +2,46 @@ version: '2'
 services:
   # app:
   #   build: .
+  #   command: python manage.py start
   #   container_name: "app"
   #   image: debian/latest
   #   environment:
   #       - ENVIRONMENT=production
   #   links:
   #       - postgres
+  #       - redis
   #   depends_on:
   #       - postgres
+  #       - redis
   #   ports:
-  #     - '5000:5000'
+  #     - '8000:8000'
   #   networks:
   #     - network1
-
-  # celery:
-  #   build: .
-  #   command: celery -A app worker -l info
+  celery:
+    build: .
+    command: celery -A app worker -l info
+    environment:
+        - DJANGO_SETTINGS_MODULE=app.settings.production
+    networks:
+      - network1
+    depends_on:
+      - postgres
+      - redis
+  celery-beat:
+    build: .
+    command: celery -A proj beat -l info
+    environment:
+        - DJANGO_SETTINGS_MODULE=app.settings.production
+    networks:
+      - network1
+    depends_on:
+      - postgres
+      - redis
   # https://www.distributedpython.com/2018/10/13/flower-docker/
   flower:
     image: mher/flower
     environment:
-    - CELERY_BROKER_URL=redis://redis
+    - CELERY_BROKER_URL=redis://redis:6379/0
     - FLOWER_PORT=8888
     ports:
       - 8888:8888
@@ -30,7 +49,7 @@ services:
       - network1
   redis:
     hostname: redis
-    image: redis:latest
+    image: redis:alpine
     ports:
         - 6378:6379
     networks:
