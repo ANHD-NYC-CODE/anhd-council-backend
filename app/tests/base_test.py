@@ -11,8 +11,6 @@ import zipfile
 class BaseTest():
     def clean_tests(self):
         DataFile.objects.all().delete()
-        d_models.Property.objects.all().delete()
-        d_models.HPDViolation.objects.all().delete()
 
     def get_file_path(self, name):
         return os.path.join(settings.BASE_DIR, "app/tests/mocks/" + name)

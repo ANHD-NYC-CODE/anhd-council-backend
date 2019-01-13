@@ -112,6 +112,9 @@ class HPDViolationTests(BaseTest, TestCase):
 
 
 class AcrisRealMasterTests(BaseTest, TestCase):
+    def tearDown(self):
+        self.clean_tests()
+
     def test_seed_masters(self):
         update = self.update_factory(model_name="AcrisRealMaster",
                                      file_name="mock_acris_real_property_master.csv")
@@ -134,6 +137,9 @@ class AcrisRealMasterTests(BaseTest, TestCase):
 
 
 class AcrisRealLegalTests(BaseTest, TestCase):
+    def tearDown(self):
+        self.clean_tests()
+
     def test_seed_legals(self):
         update = self.update_factory(model_name="AcrisRealLegal",
                                      file_name="mock_acris_real_property_legals.csv")
