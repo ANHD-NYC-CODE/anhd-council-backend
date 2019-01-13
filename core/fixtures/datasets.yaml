@@ -1,0 +1,115 @@
+- model: core.dataset
+  pk: 1
+  fields:
+    name: Councils
+    model_name: Council
+- model: core.dataset
+  pk: 2
+  fields:
+    name: Properties
+    model_name: Property
+- model: core.dataset
+  pk: 3
+  fields:
+    name: Buildings
+    model_name: Building
+- model: core.dataset
+  pk: 4
+  fields:
+    name: Acris Real Property Legals
+    model_name: AcrisRealLegal
+- model: core.dataset
+  pk: 5
+  fields:
+    name: Acris Real Property Masters
+    model_name: AcrisRealMaster
+- model: core.dataset
+  pk: 6
+  fields:
+    name: Acris Real Property Party
+    model_name: AcrisRealParty
+- model: core.dataset
+  pk: 7
+  fields:
+    name: CoreData Subsidy Records
+    model_name: CoreSubsidyRecord
+- model: core.dataset
+  pk: 8
+  fields:
+    name: DOB Complaints
+    model_name: DOBComplaint
+- model: core.dataset
+  pk: 9
+  fields:
+    name: DOB Permits Filed (Legacy)
+    model_name: DOBPermitFiledLegacy
+- model: core.dataset
+  pk: 10
+  fields:
+    name: DOB Permits Issued (Legacy)
+    model_name: DOBPermitIssuedLegacy
+- model: core.dataset
+  pk: 11
+  fields:
+    name: DOB Permits Issued (NOW)
+    model_name: DOBPermitIssuedNow
+- model: core.dataset
+  pk: 12
+  fields:
+    name: DOB Violations
+    model_name: DOBViolation
+- model: core.dataset
+  pk: 13
+  fields:
+    name: ECB Violations
+    model_name: ECBViolation
+- model: core.dataset
+  pk: 14
+  fields:
+    name: Evictions
+    model_name: Eviction
+- model: core.dataset
+  pk: 15
+  fields:
+    name: Housing Litigations
+    model_name: HousingLitigation
+- model: core.dataset
+  pk: 16
+  fields:
+    name: HPD Building Records
+    model_name: HPDBuildingRecord
+- model: core.dataset
+  pk: 17
+  fields:
+    name: HPD Complaints
+    model_name: HPDComplaint
+- model: core.dataset
+  pk: 18
+  fields:
+    name: HPD Registration Contacts
+    model_name: HPDContact
+- model: core.dataset
+  pk: 19
+  fields:
+    name: HPD Registrations
+    model_name: HPDRegistration
+- model: core.dataset
+  pk: 20
+  fields:
+    name: HPD Violations
+    model_name: HPDViolation
+- model: core.dataset
+  pk: 21
+  fields:
+    name: TaxBills Rent Stabilization Records
+    model_name: RentStabilizationRecord
+- model: core.dataset
+  pk: 22
+  fields:
+    name: J-51 Subsidy Records
+    model_name: SubsidyJ51
+- model: core.dataset
+  pk: 23
+  fields:
+    name: 451a Subsidy Records
+    model_name: Subsidy451a
