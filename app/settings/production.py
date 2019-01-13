@@ -1,7 +1,7 @@
 from app.settings.base import *
 
 FLOWER_URL = "localhost:8888"
-CELERY_BROKER_URL = 'redis://redis:6379/0'
+CELERY_BROKER_URL = 'redis://redis'
 DEBUG = False
 
 

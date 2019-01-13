@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_celery_results',
+    'django_celery_beat',
     'core',
     'datasets'
 ]
@@ -106,6 +107,10 @@ USE_L10N = True
 USE_TZ = True
 
 
+CELERY_ENABLE_UTC = True
+CELERY_TIMEZONE = "America/New_York"
+
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
@@ -117,7 +122,6 @@ LOG_ROOT = os.path.join(BASE_DIR, 'logs')
 
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_BACKEND = 'rpc://'
-
 
 LOGGING = {
     'version': 1,

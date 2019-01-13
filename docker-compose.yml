@@ -27,9 +27,12 @@ services:
     depends_on:
       - postgres
       - redis
+    links:
+        - postgres
+        - redis
   celery-beat:
     build: .
-    command: celery -A app beat -l info
+    command: celery -A app beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     environment:
         - DJANGO_SETTINGS_MODULE=app.settings.production
     networks:
@@ -37,11 +40,14 @@ services:
     depends_on:
       - postgres
       - redis
+    links:
+        - postgres
+        - redis
   # https://www.distributedpython.com/2018/10/13/flower-docker/
   flower:
     image: mher/flower
     environment:
-    - CELERY_BROKER_URL=redis://redis:6379/0
+    - CELERY_BROKER_URL=redis://redis
     - FLOWER_PORT=8888
     ports:
       - 8888:8888
