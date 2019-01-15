@@ -119,4 +119,4 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
         return self.seed_with_upsert(**kwargs)
 
     def __str__(self):
-        return str(self.complaintid)
+        return str(self.id)

@@ -147,7 +147,7 @@ def batch_upsert_from_gen(model_class, rows, update=None):
         batch = list(itertools.islice(rows, 0, BATCH_SIZE))
 
         if len(batch) == 0:
-            logger.info("Database - Batch upserts completed.")
+            logger.info("Database - Batch upserts completed for {}.".format(model_class.__name__))
             break
         else:
             batch_upsert_rows(batch, model_class, update)

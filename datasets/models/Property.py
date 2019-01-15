@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, Count
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from datasets.utils.validation_filters import is_null, exceeds_char_length
 from core.utils.transform import from_csv_file_to_gen, with_geo
@@ -26,11 +26,17 @@ class ObsoletePropertyManager(models.Manager):
         return super().get_queryset().filter(~Q(version=self.model.current_version))
 
 
+class RentStabManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(version=self.model.current_version, yearbuilt__lte=1974, yearbuilt__gt=0).annotate(rentstabrecords=Count('rentstabilizationrecord')).filter(rentstabrecords__gt=0)
+
+
 class Property(BaseDatasetModel, models.Model):
     current_version = '18V1'
     objects = models.Manager()
     current = CurrentPropertyManager()
     obsolete = ObsoletePropertyManager()
+    rentstab = RentStabManager()
 
     # 763178 +- records for residential properties.
     # Current version: Pluto18v1
