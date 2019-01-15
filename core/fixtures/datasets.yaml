@@ -17,7 +17,8 @@
   fields:
     name: Buildings
     model_name: Building
-    automated: True
+    automated: False
+    update_instructions: "Visit https://data.cityofnewyork.us/City-Government/Property-Address-Directory/bc8t-ecyu 2) Download latest zipfile. 3) Extract zipfile and open bobaadr.csv. 4) Upload bobaadr.csv to app. 5) Update"
 - model: core.dataset
   pk: 4
   fields:

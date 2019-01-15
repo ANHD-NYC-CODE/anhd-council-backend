@@ -6,6 +6,8 @@ import logging
 
 logger = logging.getLogger('app')
 
+# TODO: split into HPD Complaint and HPD Problems
+
 
 class HPDComplaint(BaseDatasetModel, models.Model):
     # HPD Complaints
@@ -18,7 +20,8 @@ class HPDComplaint(BaseDatasetModel, models.Model):
     complaintid = models.IntegerField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
-    buildingid = models.IntegerField(blank=True, null=True)
+    buildingid = models.ForeignKey('HPDBuildingRecord', db_column='buildingid', db_constraint=False,
+                                   on_delete=models.SET_NULL, null=True, blank=True)
     boroughid = models.IntegerField(blank=True, null=True)
     borough = models.TextField(blank=True, null=True)
     housenumber = models.TextField(blank=True, null=True)
@@ -50,7 +53,7 @@ class HPDComplaint(BaseDatasetModel, models.Model):
     @classmethod
     def download(self):
         for endpoint in self.download_endpoints:
-            async_download_file.delay(self.__name__, endpoint)
+            self.download_file(self.download_endpoint)
 
     @classmethod
     def pre_validation_filters(self, gen_rows):

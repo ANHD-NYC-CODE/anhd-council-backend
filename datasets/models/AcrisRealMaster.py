@@ -18,9 +18,7 @@ from datasets.utils.validation_filters import is_null, is_older_than
 
 
 class AcrisRealMaster(BaseDatasetModel, models.Model):
-    download_endpoints = [
-        'https://data.cityofnewyork.us/api/views/bnx9-e6tj/rows.csv?accessType=DOWNLOAD',
-    ]
+    download_endpoint = 'https://data.cityofnewyork.us/api/views/bnx9-e6tj/rows.csv?accessType=DOWNLOAD'
 
     documentid = models.TextField(primary_key=True, blank=False, null=False)
     recordtype = models.TextField(db_index=True, blank=True, null=True)
@@ -39,7 +37,7 @@ class AcrisRealMaster(BaseDatasetModel, models.Model):
 
     @classmethod
     def download(self):
-        async_download_file.delay(self.__name__, endpoint)
+        return self.download_file(self.download_endpoint)
 
     @classmethod
     def pre_validation_filters(self, gen_rows):

@@ -94,7 +94,7 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
 
     @classmethod
     def download(self):
-        async_download_file.delay(self.__name__, endpoint)
+        return self.download_file(self.download_endpoint)
 
     @classmethod
     def pre_validation_filters(self, gen_rows):

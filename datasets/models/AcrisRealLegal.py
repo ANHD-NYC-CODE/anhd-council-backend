@@ -18,9 +18,7 @@ from datasets.utils.validation_filters import is_null, is_older_than
 
 
 class AcrisRealLegal(BaseDatasetModel, models.Model):
-    download_endpoints = [
-        'https://data.cityofnewyork.us/api/views/8h5j-fqxa/rows.csv?accessType=DOWNLOAD',
-    ]
+    download_endpoint = 'https://data.cityofnewyork.us/api/views/8h5j-fqxa/rows.csv?accessType=DOWNLOAD'
 
     documentid = models.ForeignKey('AcrisRealMaster', db_column='documentid', db_constraint=False,
                                    on_delete=models.SET_NULL, null=True, blank=False)
@@ -42,7 +40,7 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
 
     @classmethod
     def download(self):
-        async_download_file.delay(self.__name__, endpoint)
+        return self.download_file(self.download_endpoint)
 
     @classmethod
     def pre_validation_filters(self, gen_rows):

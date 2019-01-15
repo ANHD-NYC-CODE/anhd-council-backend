@@ -8,7 +8,12 @@ import logging
 
 logger = logging.getLogger('app')
 
-# use bobaadr.csv file
+# Update process: Manual
+# Update strategy: Upsert
+#
+# Download latest
+# https://data.cityofnewyork.us/City-Government/Property-Address-Directory/bc8t-ecyu
+# Extract ZIP and upload bobaadr.csv file through admin, then update
 
 
 class Building(BaseDatasetModel, models.Model):
