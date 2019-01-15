@@ -19,7 +19,7 @@ class CouncilTests(BaseTest, TestCase):
         update = self.update_factory(model_name="Council",
                                      file_name="mock_council_json.geojson")
 
-        ds_models.Council.seed_or_update_self(file=update.file, update=update)
+        ds_models.Council.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds_models.Council.objects.count(), 1)
         self.assertEqual(update.rows_created, 1)
 
@@ -32,7 +32,7 @@ class PropertyTests(BaseTest, TestCase):
         update = self.update_factory(model_name="Property",
                                      file_name="test_pluto_17v1.zip")
 
-        ds_models.Property.seed_or_update_self(file=update.file, update=update)
+        ds_models.Property.seed_or_update_self(file_path=update.file.file.path, update=update)
 
         self.assertEqual(ds_models.Property.objects.count(), 2)
         self.assertEqual(update.rows_created, 2)
@@ -40,11 +40,11 @@ class PropertyTests(BaseTest, TestCase):
     def test_seed_properties_update(self):
         update = self.update_factory(model_name="Property",
                                      file_name="test_pluto_17v1.zip")
-        ds_models.Property.seed_or_update_self(file=update.file, update=update)
+        ds_models.Property.seed_or_update_self(file_path=update.file.file.path, update=update)
 
         new_update = self.update_factory(dataset=update.dataset, model_name="Property",
                                          file_name="test_pluto_18v1.zip")
-        ds_models.Property.seed_or_update_self(file=new_update.file, update=new_update)
+        ds_models.Property.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
 
         self.assertEqual(ds_models.Property.objects.count(), 3)
         self.assertEqual(new_update.rows_created, 1)
@@ -59,7 +59,7 @@ class BuildingTests(BaseTest, TestCase):
         update = self.update_factory(model_name="Building",
                                      file_name="mock_propertymap_bobaadr.csv")
 
-        ds_models.Building.seed_or_update_self(file=update.file, update=update)
+        ds_models.Building.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds_models.Building.objects.count(), 9)
         self.assertEqual(update.rows_created, 9)
         self.assertEqual(update.total_rows, 11)
@@ -67,11 +67,11 @@ class BuildingTests(BaseTest, TestCase):
     def test_seed_building_after_update(self):
         update = self.update_factory(model_name="Building",
                                      file_name="mock_propertymap_bobaadr.csv")
-        ds_models.Building.seed_or_update_self(file=update.file, update=update)
+        ds_models.Building.seed_or_update_self(file_path=update.file.file.path, update=update)
 
         new_update = self.update_factory(dataset=update.dataset, model_name="Building",
                                          file_name="mock_propertymap_bobaadr_diff.csv", previous_file_name="mock_propertymap_bobaadr.csv")
-        ds_models.Building.seed_or_update_self(file=new_update.file, update=new_update)
+        ds_models.Building.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds_models.Building.objects.count(), 10)
         self.assertEqual(new_update.rows_created, 1)
         self.assertEqual(new_update.rows_updated, 1)
@@ -90,18 +90,18 @@ class HPDViolationTests(BaseTest, TestCase):
         update = self.update_factory(model_name="HPDViolation",
                                      file_name="test_hpd_violations.csv")
 
-        ds_models.HPDViolation.seed_or_update_self(file=update.file, update=update)
+        ds_models.HPDViolation.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds_models.HPDViolation.objects.count(), 4)
         self.assertEqual(update.rows_created, 4)
 
     def test_seed_hpdviolation_after_update(self):
         update = self.update_factory(model_name="HPDViolation",
                                      file_name="test_hpd_violations.csv")
-        ds_models.HPDViolation.seed_or_update_self(file=update.file, update=update)
+        ds_models.HPDViolation.seed_or_update_self(file_path=update.file.file.path, update=update)
 
         new_update = self.update_factory(dataset=update.dataset, model_name='HPDViolation',
                                          file_name="test_hpd_violations_diff.csv", previous_file_name="test_hpd_violations.csv")
-        ds_models.HPDViolation.seed_or_update_self(file=new_update.file, update=new_update)
+        ds_models.HPDViolation.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds_models.HPDViolation.objects.count(), 6)
         self.assertEqual(new_update.rows_created, 2)
         self.assertEqual(new_update.rows_updated, 2)
@@ -119,19 +119,18 @@ class AcrisRealMasterTests(BaseTest, TestCase):
         update = self.update_factory(model_name="AcrisRealMaster",
                                      file_name="mock_acris_real_property_master.csv")
 
-        ds_models.AcrisRealMaster.seed_or_update_self(file=update.file, update=update)
+        ds_models.AcrisRealMaster.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds_models.AcrisRealMaster.objects.count(), 10)
         self.assertEqual(update.rows_created, 10)
 
     def test_seed_masters_with_overwrite(self):
         update = self.update_factory(model_name="AcrisRealMaster",
                                      file_name="mock_acris_real_property_master.csv")
-        ds_models.AcrisRealMaster.seed_or_update_self(file=update.file, update=update)
+        ds_models.AcrisRealMaster.seed_or_update_self(file_path=update.file.file.path, update=update)
 
         new_update = self.update_factory(dataset=update.dataset, model_name="AcrisRealMaster",
                                          file_name="mock_acris_real_property_master_diff.csv")
-        ds_models.AcrisRealMaster.seed_or_update_self(
-            file=new_update.file, update=new_update)
+        ds_models.AcrisRealMaster.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(new_update.rows_created, 11)
         self.assertEqual(new_update.rows_updated, 0)
 
@@ -144,7 +143,7 @@ class AcrisRealLegalTests(BaseTest, TestCase):
         update = self.update_factory(model_name="AcrisRealLegal",
                                      file_name="mock_acris_real_property_legals.csv")
 
-        ds_models.AcrisRealLegal.seed_or_update_self(file=update.file, update=update)
+        ds_models.AcrisRealLegal.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds_models.AcrisRealLegal.objects.count(), 10)
         self.assertEqual(update.rows_created, 10)
 
@@ -152,12 +151,11 @@ class AcrisRealLegalTests(BaseTest, TestCase):
 
         update = self.update_factory(model_name="AcrisRealLegal",
                                      file_name="mock_acris_real_property_legals.csv")
-        ds_models.AcrisRealLegal.seed_or_update_self(file=update.file, update=update)
+        ds_models.AcrisRealLegal.seed_or_update_self(file_path=update.file.file.path, update=update)
 
         new_update = self.update_factory(dataset=update.dataset, model_name="AcrisRealLegal",
                                          file_name="mock_acris_real_property_legals_diff.csv")
-        ds_models.AcrisRealLegal.seed_or_update_self(
-            file=new_update.file, update=new_update)
+        ds_models.AcrisRealLegal.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(new_update.rows_created, 12)
         self.assertEqual(new_update.rows_updated, 0)
 
@@ -170,7 +168,7 @@ class AcrisRealPartyTests(BaseTest, TestCase):
         update = self.update_factory(model_name="AcrisRealParty",
                                      file_name="mock_acris_real_property_parties.csv")
 
-        ds_models.AcrisRealParty.seed_or_update_self(file=update.file, update=update)
+        ds_models.AcrisRealParty.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds_models.AcrisRealParty.objects.count(), 10)
         self.assertEqual(update.rows_created, 10)
 
@@ -178,13 +176,13 @@ class AcrisRealPartyTests(BaseTest, TestCase):
         update = self.update_factory(model_name="AcrisRealParty",
                                      file_name="mock_acris_real_property_parties.csv")
 
-        ds_models.AcrisRealParty.seed_or_update_self(file=update.file, update=update)
+        ds_models.AcrisRealParty.seed_or_update_self(file_path=update.file.file.path, update=update)
 
         party_update_diff = self.update_factory(dataset=update.dataset, model_name="AcrisRealParty",
                                                 file_name="mock_acris_real_property_parties_diff.csv", previous_file_name="mock_acris_real_property_parties.csv")
 
         ds_models.AcrisRealParty.seed_or_update_self(
-            file=party_update_diff.file, update=party_update_diff)
+            file_path=party_update_diff.file.file.path, update=party_update_diff)
         self.assertEqual(party_update_diff.rows_created, 2)
         self.assertEqual(party_update_diff.rows_updated, 0)
 
@@ -197,7 +195,7 @@ class HPDComplaint(BaseTest, TestCase):
         update = self.update_factory(model_name="HPDComplaint",
                                      file_name="mock_hpd_complaints.csv")
 
-        ds_models.HPDComplaint.seed_or_update_self(file=update.file, update=update)
+        ds_models.HPDComplaint.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds_models.HPDComplaint.objects.count(), 9)
         self.assertEqual(update.rows_created, 9)
 
@@ -205,7 +203,7 @@ class HPDComplaint(BaseTest, TestCase):
         update = self.update_factory(model_name="HPDComplaint",
                                      file_name="mock_hpd_problems.csv")
 
-        ds_models.HPDComplaint.seed_or_update_self(file=update.file, update=update)
+        ds_models.HPDComplaint.seed_or_update_self(file_path=update.file.file.path, update=update)
         record = ds_models.HPDComplaint.objects.all()[0]
         self.assertEqual(ds_models.HPDComplaint.objects.count(), 9)
         self.assertEqual(update.rows_created, 9)
@@ -217,8 +215,8 @@ class HPDComplaint(BaseTest, TestCase):
         problem_update = self.update_factory(dataset=complaint_update.dataset, model_name="HPDComplaint",
                                              file_name="mock_hpd_problems.csv")
 
-        ds_models.HPDComplaint.seed_or_update_self(file=complaint_update.file, update=complaint_update)
-        ds_models.HPDComplaint.seed_or_update_self(file=problem_update.file, update=problem_update)
+        ds_models.HPDComplaint.seed_or_update_self(file_path=complaint_update.file.file.path, update=complaint_update)
+        ds_models.HPDComplaint.seed_or_update_self(file_path=problem_update.file.file.path, update=problem_update)
 
         self.assertEqual(ds_models.HPDComplaint.objects.count(), 9)
 
@@ -241,14 +239,14 @@ class HPDComplaint(BaseTest, TestCase):
         problem_update = self.update_factory(dataset=complaint_update.dataset, model_name="HPDComplaint",
                                              file_name="mock_hpd_problems.csv")
 
-        ds_models.HPDComplaint.seed_or_update_self(file=complaint_update.file, update=complaint_update)
-        ds_models.HPDComplaint.seed_or_update_self(file=problem_update.file, update=problem_update)
+        ds_models.HPDComplaint.seed_or_update_self(file_path=complaint_update.file.file.path, update=complaint_update)
+        ds_models.HPDComplaint.seed_or_update_self(file_path=problem_update.file.file.path, update=problem_update)
 
         complaint_update_diff = self.update_factory(dataset=complaint_update.dataset, model_name="HPDComplaint",
                                                     file_name="mock_hpd_complaints_diff.csv", previous_file_name="mock_hpd_complaints.csv")
 
         ds_models.HPDComplaint.seed_or_update_self(
-            file=complaint_update_diff.file, update=complaint_update_diff)
+            file_path=complaint_update_diff.file.file.path, update=complaint_update_diff)
         self.assertEqual(complaint_update_diff.rows_created, 1)
         self.assertEqual(complaint_update_diff.rows_updated, 1)
         self.assertEqual(ds_models.HPDComplaint.objects.get(complaintid=6961276).unittypeid, 91)
@@ -256,7 +254,8 @@ class HPDComplaint(BaseTest, TestCase):
         problem_update_diff = self.update_factory(
             dataset=complaint_update.dataset, model_name="HPDComplaint", file_name="mock_hpd_problems_diff.csv", previous_file_name="mock_hpd_problems.csv")
 
-        ds_models.HPDComplaint.seed_or_update_self(file=problem_update_diff.file, update=problem_update_diff)
+        ds_models.HPDComplaint.seed_or_update_self(
+            file_path=problem_update_diff.file.file.path, update=problem_update_diff)
         self.assertEqual(problem_update_diff.rows_created, 1)
         self.assertEqual(problem_update_diff.rows_updated, 2)
 
@@ -271,19 +270,19 @@ class DOBViolationTests(BaseTest, TestCase):
         update = self.update_factory(model_name="DOBViolation",
                                      file_name="mock_dob_violations.csv")
 
-        ds_models.DOBViolation.seed_or_update_self(file=update.file, update=update)
+        ds_models.DOBViolation.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds_models.DOBViolation.objects.count(), 10)
         self.assertEqual(update.rows_created, 10)
 
     def test_seed_dobviolation_after_update(self):
         update = self.update_factory(model_name="DOBViolation",
                                      file_name="mock_dob_violations.csv")
-        ds_models.DOBViolation.seed_or_update_self(file=update.file, update=update)
+        ds_models.DOBViolation.seed_or_update_self(file_path=update.file.file.path, update=update)
 
         new_update = self.update_factory(dataset=update.dataset, model_name="DOBViolation",
                                          file_name="mock_dob_violations_diff.csv", previous_file_name="mock_dob_violations.csv")
 
-        ds_models.DOBViolation.seed_or_update_self(file=new_update.file, update=new_update)
+        ds_models.DOBViolation.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds_models.DOBViolation.objects.count(), 11)
         self.assertEqual(new_update.rows_created, 1)
         self.assertEqual(new_update.rows_updated, 1)
@@ -301,7 +300,7 @@ class ECBViolationTests(BaseTest, TestCase):
         update = self.update_factory(model_name="ECBViolation",
                                      file_name="mock_ecb_violations.csv")
 
-        ds_models.ECBViolation.seed_or_update_self(file=update.file, update=update)
+        ds_models.ECBViolation.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds_models.ECBViolation.objects.count(), 5)
         self.assertEqual(update.rows_created, 5)
 
@@ -309,12 +308,12 @@ class ECBViolationTests(BaseTest, TestCase):
         update = self.update_factory(model_name="ECBViolation",
                                      file_name="mock_ecb_violations.csv")
 
-        ds_models.ECBViolation.seed_or_update_self(file=update.file, update=update)
+        ds_models.ECBViolation.seed_or_update_self(file_path=update.file.file.path, update=update)
 
         new_update = self.update_factory(dataset=update.dataset, model_name="ECBViolation",
                                          file_name="mock_ecb_violations_diff.csv", previous_file_name="mock_ecb_violations.csv")
 
-        ds_models.ECBViolation.seed_or_update_self(file=new_update.file, update=new_update)
+        ds_models.ECBViolation.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds_models.ECBViolation.objects.count(), 6)
         self.assertEqual(new_update.rows_created, 1)
         self.assertEqual(new_update.rows_updated, 1)
@@ -331,18 +330,18 @@ class DOBComplaintTests(BaseTest, TestCase):
     def test_seed_dobcomplaint_first(self):
         update = self.update_factory(model_name="DOBComplaint",
                                      file_name="mock_dob_complaints.csv")
-        ds_models.DOBComplaint.seed_or_update_self(file=update.file, update=update)
+        ds_models.DOBComplaint.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds_models.DOBComplaint.objects.count(), 10)
         self.assertEqual(update.rows_created, 10)
 
     def test_seed_dobcomplaint_after_update(self):
         update = self.update_factory(model_name="DOBComplaint",
                                      file_name="mock_dob_complaints.csv")
-        ds_models.DOBComplaint.seed_or_update_self(file=update.file, update=update)
+        ds_models.DOBComplaint.seed_or_update_self(file_path=update.file.file.path, update=update)
 
         new_update = self.update_factory(dataset=update.dataset, model_name="DOBComplaint",
                                          file_name="mock_dob_complaints_diff.csv", previous_file_name="mock_dob_complaints.csv")
-        ds_models.DOBComplaint.seed_or_update_self(file=new_update.file, update=new_update)
+        ds_models.DOBComplaint.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds_models.DOBComplaint.objects.count(), 11)
         self.assertEqual(new_update.rows_created, 1)
         self.assertEqual(new_update.rows_updated, 1)
@@ -360,7 +359,7 @@ class HousingLitigationTests(BaseTest, TestCase):
         update = self.update_factory(model_name="HousingLitigation",
                                      file_name="mock_housing_litigations.csv")
 
-        ds_models.HousingLitigation.seed_or_update_self(file=update.file, update=update)
+        ds_models.HousingLitigation.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds_models.HousingLitigation.objects.count(), 10)
         self.assertEqual(update.rows_created, 10)
 
@@ -368,11 +367,11 @@ class HousingLitigationTests(BaseTest, TestCase):
         update = self.update_factory(model_name="HousingLitigation",
                                      file_name="mock_housing_litigations.csv")
 
-        ds_models.HousingLitigation.seed_or_update_self(file=update.file, update=update)
+        ds_models.HousingLitigation.seed_or_update_self(file_path=update.file.file.path, update=update)
 
         new_update = self.update_factory(dataset=update.dataset, model_name='HousingLitigation',
                                          file_name="mock_housing_litigations_diff.csv", previous_file_name="mock_housing_litigations.csv")
-        ds_models.HousingLitigation.seed_or_update_self(file=new_update.file, update=new_update)
+        ds_models.HousingLitigation.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds_models.HousingLitigation.objects.count(), 11)
         self.assertEqual(new_update.rows_created, 1)
         self.assertEqual(new_update.rows_updated, 1)
@@ -389,18 +388,18 @@ class HPDRegistrationTests(BaseTest, TestCase):
     def test_seed_registration(self):
         update = self.update_factory(model_name="HPDRegistration",
                                      file_name="mock_hpd_registrations.csv")
-        ds_models.HPDRegistration.seed_or_update_self(file=update.file, update=update)
+        ds_models.HPDRegistration.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds_models.HPDRegistration.objects.count(), 4)
         self.assertEqual(update.rows_created, 4)
 
     def test_seed_registration_after_update(self):
         update = self.update_factory(model_name="HPDRegistration",
                                      file_name="mock_hpd_registrations.csv")
-        ds_models.HPDRegistration.seed_or_update_self(file=update.file, update=update)
+        ds_models.HPDRegistration.seed_or_update_self(file_path=update.file.file.path, update=update)
 
         new_update = self.update_factory(dataset=update.dataset, model_name='HPDRegistration',
                                          file_name='mock_hpd_registrations_diff.csv', previous_file_name='mock_hpd_registrations.csv')
-        ds_models.HPDRegistration.seed_or_update_self(file=new_update.file, update=new_update)
+        ds_models.HPDRegistration.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds_models.HPDRegistration.objects.count(), 5)
         self.assertEqual(new_update.rows_created, 1)
         self.assertEqual(new_update.rows_updated, 1)
@@ -418,19 +417,19 @@ class HPDContactTests(BaseTest, TestCase):
         update = self.update_factory(model_name="HPDContact",
                                      file_name="mock_hpd_contacts.csv")
 
-        ds_models.HPDContact.seed_or_update_self(file=update.file, update=update)
+        ds_models.HPDContact.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds_models.HPDContact.objects.count(), 4)
         self.assertEqual(update.rows_created, 4)
 
     def test_seed_contact_after_update(self):
         update = self.update_factory(model_name="HPDContact",
                                      file_name="mock_hpd_contacts.csv")
-        ds_models.HPDContact.seed_or_update_self(file=update.file, update=update)
+        ds_models.HPDContact.seed_or_update_self(file_path=update.file.file.path, update=update)
 
         new_update = self.update_factory(dataset=update.dataset, model_name="HPDContact",
                                          file_name="mock_hpd_contacts_diff.csv", previous_file_name='mock_hpd_contacts.csv')
 
-        ds_models.HPDContact.seed_or_update_self(file=new_update.file, update=new_update)
+        ds_models.HPDContact.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds_models.HPDContact.objects.count(), 5)
         self.assertEqual(new_update.rows_created, 1)
         self.assertEqual(new_update.rows_updated, 1)
@@ -448,18 +447,18 @@ class HPDBuildingRecordTests(BaseTest, TestCase):
         update = self.update_factory(model_name="HPDBuildingRecord",
                                      file_name="mock_hpd_building_records.csv")
 
-        ds_models.HPDBuildingRecord.seed_or_update_self(file=update.file, update=update)
+        ds_models.HPDBuildingRecord.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds_models.HPDBuildingRecord.objects.count(), 6)
         self.assertEqual(update.rows_created, 6)
 
     def test_seed_record_after_update(self):
         update = self.update_factory(model_name="HPDBuildingRecord",
                                      file_name="mock_hpd_building_records.csv")
-        ds_models.HPDBuildingRecord.seed_or_update_self(file=update.file, update=update)
+        ds_models.HPDBuildingRecord.seed_or_update_self(file_path=update.file.file.path, update=update)
 
         new_update = self.update_factory(dataset=update.dataset, model_name="HPDBuildingRecord",
                                          file_name="mock_hpd_building_records_diff.csv", previous_file_name="mock_hpd_building_records.csv")
-        ds_models.HPDBuildingRecord.seed_or_update_self(file=new_update.file, update=new_update)
+        ds_models.HPDBuildingRecord.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds_models.HPDBuildingRecord.objects.count(), 7)
         self.assertEqual(new_update.rows_created, 1)
         self.assertEqual(new_update.rows_updated, 1)
@@ -476,18 +475,19 @@ class RentStabilizationRecordTests(BaseTest, TestCase):
     def test_seed_record(self):
         update = self.update_factory(model_name="RentStabilizationRecord",
                                      file_name="mock_rent_stabilization_records.csv")
-        ds_models.RentStabilizationRecord.seed_or_update_self(file=update.file, update=update)
+        ds_models.RentStabilizationRecord.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds_models.RentStabilizationRecord.objects.count(), 6)
         self.assertEqual(update.rows_created, 6)
 
     def test_seed_record_after_update(self):
         update = self.update_factory(model_name="RentStabilizationRecord",
                                      file_name="mock_rent_stabilization_records.csv")
-        ds_models.RentStabilizationRecord.seed_or_update_self(file=update.file, update=update)
+        ds_models.RentStabilizationRecord.seed_or_update_self(file_path=update.file.file.path, update=update)
 
         new_update = self.update_factory(dataset=update.dataset, model_name="RentStabilizationRecord",
                                          file_name="mock_rent_stabilization_records_diff.csv", previous_file_name="mock_rent_stabilization_records.csv")
-        ds_models.RentStabilizationRecord.seed_or_update_self(file=new_update.file, update=new_update)
+        ds_models.RentStabilizationRecord.seed_or_update_self(
+            file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds_models.RentStabilizationRecord.objects.count(), 7)
         self.assertEqual(new_update.rows_created, 1)
         self.assertEqual(new_update.rows_updated, 1)
@@ -503,18 +503,18 @@ class EvictionTest(BaseTest, TestCase):
     def test_seed_record(self):
         update = self.update_factory(model_name="Eviction",
                                      file_name="mock_evictions.csv")
-        ds_models.Eviction.seed_or_update_self(file=update.file, update=update)
+        ds_models.Eviction.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds_models.Eviction.objects.count(), 10)
         self.assertEqual(update.rows_created, 10)
 
     def test_seed_record_after_update(self):
         update = self.update_factory(model_name="Eviction",
                                      file_name="mock_evictions.csv")
-        ds_models.Eviction.seed_or_update_self(file=update.file, update=update)
+        ds_models.Eviction.seed_or_update_self(file_path=update.file.file.path, update=update)
 
         new_update = self.update_factory(dataset=update.dataset, model_name="Eviction",
                                          file_name="mock_evictions_diff.csv", previous_file_name="mock_evictions.csv")
-        ds_models.Eviction.seed_or_update_self(file=new_update.file, update=new_update)
+        ds_models.Eviction.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds_models.Eviction.objects.count(), 11)
         self.assertEqual(new_update.rows_created, 1)
         self.assertEqual(new_update.rows_updated, 1)
@@ -530,19 +530,19 @@ class TaxLienTests(BaseTest, TestCase):
     def test_seed_record(self):
         update = self.update_factory(model_name="TaxLien",
                                      file_name="mock_tax_liens.xlsx")
-        ds_models.TaxLien.seed_or_update_self(file=update.file, update=update)
+        ds_models.TaxLien.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds_models.TaxLien.objects.count(), 10)
         self.assertEqual(update.rows_created, 10)
 
     def test_seed_record_after_overwrite(self):
         update = self.update_factory(model_name="TaxLien",
                                      file_name="mock_tax_liens.xlsx")
-        ds_models.TaxLien.seed_or_update_self(file=update.file, update=update)
+        ds_models.TaxLien.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds_models.TaxLien.objects.count(), 10)
 
         new_update = self.update_factory(dataset=update.dataset, model_name="TaxLien",
                                          file_name="mock_tax_liens.xlsx", previous_file_name="mock_tax_liens.xlsx")
-        ds_models.TaxLien.seed_or_update_self(file=new_update.file, update=new_update)
+        ds_models.TaxLien.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds_models.TaxLien.objects.count(), 10)
         self.assertEqual(new_update.rows_created, 10)
         self.assertEqual(new_update.rows_updated, 0)
@@ -555,19 +555,19 @@ class CoreSubsidyRecordTests(BaseTest, TestCase):
     def test_seed_record(self):
         update = self.update_factory(model_name="CoreSubsidyRecord",
                                      file_name="mock_coredatarecords.xlsx")
-        ds_models.CoreSubsidyRecord.seed_or_update_self(file=update.file, update=update)
+        ds_models.CoreSubsidyRecord.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds_models.CoreSubsidyRecord.objects.count(), 10)
         self.assertEqual(update.rows_created, 10)
 
     def test_seed_record_after_overwrite(self):
         update = self.update_factory(model_name="CoreSubsidyRecord",
                                      file_name="mock_coredatarecords.xlsx")
-        ds_models.CoreSubsidyRecord.seed_or_update_self(file=update.file, update=update)
+        ds_models.CoreSubsidyRecord.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds_models.CoreSubsidyRecord.objects.count(), 10)
 
         new_update = self.update_factory(dataset=update.dataset, model_name="CoreSubsidyRecord",
                                          file_name="mock_coredatarecords.xlsx", previous_file_name="mock_coredatarecords.xlsx")
-        ds_models.CoreSubsidyRecord.seed_or_update_self(file=new_update.file, update=new_update)
+        ds_models.CoreSubsidyRecord.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds_models.CoreSubsidyRecord.objects.count(), 10)
         self.assertEqual(new_update.rows_created, 10)
         self.assertEqual(new_update.rows_updated, 0)
@@ -580,19 +580,19 @@ class SubsidyJ51Tests(BaseTest, TestCase):
     def test_seed_record(self):
         update = self.update_factory(model_name="SubsidyJ51",
                                      file_name="mock_subsidyj51.csv")
-        ds_models.SubsidyJ51.seed_or_update_self(file=update.file, update=update)
+        ds_models.SubsidyJ51.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds_models.SubsidyJ51.objects.count(), 19)
         self.assertEqual(update.rows_created, 19)
 
     def test_seed_record_after_overwrite(self):
         update = self.update_factory(model_name="SubsidyJ51",
                                      file_name="mock_subsidyj51.csv")
-        ds_models.SubsidyJ51.seed_or_update_self(file=update.file, update=update)
+        ds_models.SubsidyJ51.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds_models.SubsidyJ51.objects.count(), 19)
 
         new_update = self.update_factory(dataset=update.dataset, model_name="SubsidyJ51",
                                          file_name="mock_subsidyj51.csv", previous_file_name="mock_subsidyj51.csv")
-        ds_models.SubsidyJ51.seed_or_update_self(file=new_update.file, update=new_update)
+        ds_models.SubsidyJ51.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds_models.SubsidyJ51.objects.count(), 19)
         self.assertEqual(new_update.rows_created, 19)
         self.assertEqual(new_update.rows_updated, 0)
@@ -605,19 +605,19 @@ class Subsidy451aTests(BaseTest, TestCase):
     def test_seed_record(self):
         update = self.update_factory(model_name="Subsidy451a",
                                      file_name="mock_subsidy451a.csv")
-        ds_models.Subsidy451a.seed_or_update_self(file=update.file, update=update)
+        ds_models.Subsidy451a.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds_models.Subsidy451a.objects.count(), 10)
         self.assertEqual(update.rows_created, 10)
 
     def test_seed_record_after_overwrite(self):
         update = self.update_factory(model_name="Subsidy451a",
                                      file_name="mock_subsidy451a.csv")
-        ds_models.Subsidy451a.seed_or_update_self(file=update.file, update=update)
+        ds_models.Subsidy451a.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds_models.Subsidy451a.objects.count(), 10)
 
         new_update = self.update_factory(dataset=update.dataset, model_name="Subsidy451a",
                                          file_name="mock_subsidy451a.csv", previous_file_name="mock_subsidy451a.csv")
-        ds_models.Subsidy451a.seed_or_update_self(file=new_update.file, update=new_update)
+        ds_models.Subsidy451a.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds_models.Subsidy451a.objects.count(), 10)
         self.assertEqual(new_update.rows_created, 10)
         self.assertEqual(new_update.rows_updated, 0)
@@ -630,7 +630,7 @@ class DOBPermitIssuedLegacyTests(BaseTest, TestCase):
     def test_seed_record(self):
         update = self.update_factory(model_name="DOBPermitIssuedLegacy",
                                      file_name="mock_dob_permit_issued_legacy.csv")
-        ds_models.DOBPermitIssuedLegacy.seed_or_update_self(file=update.file, update=update)
+        ds_models.DOBPermitIssuedLegacy.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(update.total_rows, 9)
         self.assertEqual(ds_models.DOBPermitIssuedLegacy.objects.count(), 7)
         self.assertEqual(update.rows_created, 7)
@@ -638,11 +638,11 @@ class DOBPermitIssuedLegacyTests(BaseTest, TestCase):
     def test_seed_record_after_update(self):
         update = self.update_factory(model_name="DOBPermitIssuedLegacy",
                                      file_name="mock_dob_permit_issued_legacy.csv")
-        ds_models.DOBPermitIssuedLegacy.seed_or_update_self(file=update.file, update=update)
+        ds_models.DOBPermitIssuedLegacy.seed_or_update_self(file_path=update.file.file.path, update=update)
 
         new_update = self.update_factory(dataset=update.dataset, model_name="DOBPermitIssuedLegacy",
                                          file_name="mock_dob_permit_issued_legacy_diff.csv", previous_file_name="mock_dob_permit_issued_legacy.csv")
-        ds_models.DOBPermitIssuedLegacy.seed_or_update_self(file=new_update.file, update=new_update)
+        ds_models.DOBPermitIssuedLegacy.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds_models.DOBPermitIssuedLegacy.objects.count(), 8)
         self.assertEqual(new_update.rows_created, 1)
         self.assertEqual(new_update.rows_updated, 1)
@@ -658,7 +658,7 @@ class DOBPermitIssuedNowTests(BaseTest, TestCase):
     def test_seed_record(self):
         update = self.update_factory(model_name="DOBPermitIssuedNow",
                                      file_name="mock_dob_permit_issued_now.csv")
-        ds_models.DOBPermitIssuedNow.seed_or_update_self(file=update.file, update=update)
+        ds_models.DOBPermitIssuedNow.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(update.total_rows, 5)
         self.assertEqual(ds_models.DOBPermitIssuedNow.objects.count(), 5)
         self.assertEqual(update.rows_created, 5)
@@ -666,11 +666,11 @@ class DOBPermitIssuedNowTests(BaseTest, TestCase):
     def test_seed_record_after_update(self):
         update = self.update_factory(model_name="DOBPermitIssuedNow",
                                      file_name="mock_dob_permit_issued_now.csv")
-        ds_models.DOBPermitIssuedNow.seed_or_update_self(file=update.file, update=update)
+        ds_models.DOBPermitIssuedNow.seed_or_update_self(file_path=update.file.file.path, update=update)
 
         new_update = self.update_factory(dataset=update.dataset, model_name="DOBPermitIssuedNow",
                                          file_name="mock_dob_permit_issued_now_diff.csv", previous_file_name="mock_dob_permit_issued_now.csv")
-        ds_models.DOBPermitIssuedNow.seed_or_update_self(file=new_update.file, update=new_update)
+        ds_models.DOBPermitIssuedNow.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds_models.DOBPermitIssuedNow.objects.count(), 6)
         self.assertEqual(new_update.rows_created, 1)
         self.assertEqual(new_update.rows_updated, 1)
@@ -687,16 +687,16 @@ class DOBPermitIssuedTests(BaseTest, TestCase):
     def test_seed_combined_query(self):
         update1 = self.update_factory(model_name="DOBPermitIssuedNow",
                                       file_name="mock_dob_permit_issued_now.csv")
-        ds_models.DOBPermitIssuedNow.seed_or_update_self(file=update1.file, update=update1)
+        ds_models.DOBPermitIssuedNow.seed_or_update_self(file_path=update1.file.file.path, update=update1)
 
         update2 = self.update_factory(model_name="DOBPermitIssuedLegacy",
                                       file_name="mock_dob_permit_issued_legacy.csv")
-        ds_models.DOBPermitIssuedLegacy.seed_or_update_self(file=update2.file, update=update2)
+        ds_models.DOBPermitIssuedLegacy.seed_or_update_self(file_path=update2.file.file.path, update=update2)
 
         update3 = self.update_factory(model_name="Property",
                                       file_name="test_pluto_17v1.zip")
 
-        ds_models.Property.seed_or_update_self(file=update3.file, update=update3)
+        ds_models.Property.seed_or_update_self(file_path=update3.file.file.path, update=update3)
         query = ds_models.Property.objects.annotate(totals=Count('dobpermitissuedlegacy', filter=Q(
             dobpermitissuedlegacy__jobtype='A2')) + Count('dobpermitissuednow')).filter(totals__gte=2)
         self.assertEqual(query.count(), 1)
@@ -709,7 +709,7 @@ class DOBPermitFiledTests(BaseTest, TestCase):
     def test_seed_record(self):
         update = self.update_factory(model_name="DOBPermitFiledLegacy",
                                      file_name="mock_dob_permit_filed_legacy.csv")
-        ds_models.DOBPermitFiledLegacy.seed_or_update_self(file=update.file, update=update)
+        ds_models.DOBPermitFiledLegacy.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(update.total_rows, 5)
         self.assertEqual(ds_models.DOBPermitFiledLegacy.objects.count(), 4)
         self.assertEqual(update.rows_created, 4)
@@ -717,11 +717,11 @@ class DOBPermitFiledTests(BaseTest, TestCase):
     def test_seed_record_after_update(self):
         update = self.update_factory(model_name="DOBPermitFiledLegacy",
                                      file_name="mock_dob_permit_filed_legacy.csv")
-        ds_models.DOBPermitFiledLegacy.seed_or_update_self(file=update.file, update=update)
+        ds_models.DOBPermitFiledLegacy.seed_or_update_self(file_path=update.file.file.path, update=update)
 
         new_update = self.update_factory(dataset=update.dataset, model_name="DOBPermitFiledLegacy",
                                          file_name="mock_dob_permit_filed_legacy_diff.csv", previous_file_name="mock_dob_permit_issued_now.csv")
-        ds_models.DOBPermitFiledLegacy.seed_or_update_self(file=new_update.file, update=new_update)
+        ds_models.DOBPermitFiledLegacy.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds_models.DOBPermitFiledLegacy.objects.count(), 5)
         self.assertEqual(new_update.rows_created, 1)
         self.assertEqual(new_update.rows_updated, 1)

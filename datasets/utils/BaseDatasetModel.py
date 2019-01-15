@@ -85,7 +85,7 @@ class BaseDatasetModel():
 
     @classmethod
     def seed_with_upsert(self, **kwargs):
-        rows = self.transform_self_from_file(kwargs['file'].file.path, kwargs['update'])
+        rows = self.transform_self_from_file(kwargs['file_path'], kwargs['update'])
         return batch_upsert_from_gen(self, rows, kwargs['update'])
 
     @classmethod
