@@ -15,7 +15,8 @@ class HPDViolation(BaseDatasetModel, models.Model):
                             on_delete=models.SET_NULL, null=True, blank=False)
     bin = models.ForeignKey('Building', db_column='bin', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=True)
-    buildingid = models.IntegerField(blank=True, null=True)
+    buildingid = models.ForeignKey('HPDBuildingRecord', db_column='buildingid', db_constraint=False,
+                                   on_delete=models.SET_NULL, null=True, blank=True)
     registrationid = models.IntegerField(blank=True, null=True)
     boroid = models.TextField(blank=True, null=True)
     borough = models.TextField(db_index=True)

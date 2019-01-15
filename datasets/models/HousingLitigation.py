@@ -15,7 +15,8 @@ class HousingLitigation(BaseDatasetModel, models.Model):
                             on_delete=models.SET_NULL, null=True, blank=True)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
-    buildingid = models.IntegerField(blank=True, null=True)
+    buildingid = models.ForeignKey('HPDBuildingRecord', db_column='buildingid', db_constraint=False,
+                                   on_delete=models.SET_NULL, null=True, blank=True)
     boro = models.SmallIntegerField(blank=True, null=True)
     housenumber = models.TextField(blank=True, null=True)
     streetname = models.TextField(blank=True, null=True)

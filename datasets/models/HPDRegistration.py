@@ -15,7 +15,8 @@ class HPDRegistration(BaseDatasetModel, models.Model):
                             on_delete=models.SET_NULL, null=True, blank=False)
     bin = models.ForeignKey('Building', db_column='bin', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=True)
-    buildingid = models.IntegerField(blank=True, null=True)
+    buildingid = models.ForeignKey('HPDBuildingRecord', db_column='buildingid', db_constraint=False,
+                                   on_delete=models.SET_NULL, null=True, blank=True)
     boroid = models.SmallIntegerField(blank=True, null=True)
     boro = models.TextField(blank=True, null=True)
     housenumber = models.TextField(blank=True, null=True)
@@ -32,7 +33,7 @@ class HPDRegistration(BaseDatasetModel, models.Model):
 
     @classmethod
     def download(self):
-        async_download_file.delay(self.__name__, endpoint)
+        return self.download_file(self.download_endpoint)
 
     @classmethod
     def pre_validation_filters(self, gen_rows):
