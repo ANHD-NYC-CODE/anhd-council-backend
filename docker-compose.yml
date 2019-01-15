@@ -17,21 +17,21 @@ services:
   #     - '8000:8000'
   #   networks:
   #     - network1
-  celery:
-    build: .
-    command: celery -A app worker -l info
-    environment:
-        - DJANGO_SETTINGS_MODULE=app.settings.production
-    networks:
-      - network1
-    depends_on:
-      - postgres
-      - redis
-    volumes:
-      - ./data:/data
-    links:
-        - postgres
-        - redis
+  # celery:
+  #   build: .
+  #   command: celery -A app worker -l info
+  #   environment:
+  #       - DJANGO_SETTINGS_MODULE=app.settings.production
+  #   networks:
+  #     - network1
+  #   depends_on:
+  #     - postgres
+  #     - redis
+  #   volumes:
+  #     - ./data:/data
+  #   links:
+  #       - postgres
+  #       - redis
   celery-beat:
     build: .
     command: celery -A app beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
@@ -42,6 +42,8 @@ services:
     depends_on:
       - postgres
       - redis
+    volumes:
+      - ./data:/data
     links:
         - postgres
         - redis

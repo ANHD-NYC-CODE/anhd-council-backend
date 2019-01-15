@@ -16,8 +16,8 @@ logger = logging.getLogger('app')
 def async_seed_file(self, file_path, update_id):
     update = Update.objects.get(id=update_id)
     file_path = os.path.join(settings.MEDIA_ROOT, os.path.basename(file_path))
-    logger.info("Beginning async seeding - {} - Update: {}".format(update.dataset.name, update.id))
-    update.dataset.seed_dataset(file_path=file_path, update=update)
+    logger.info("Beginning async seeding - {} - Update: {}".format(update.file.dataset.name, update.id))
+    update.file.dataset.seed_dataset(file_path=file_path, update=update)
 
 
 @app.task(bind=True)

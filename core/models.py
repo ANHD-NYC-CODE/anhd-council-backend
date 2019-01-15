@@ -5,6 +5,7 @@ from django.apps import apps
 from django.conf import settings
 from django_celery_results.models import TaskResult
 from datasets import models as dataset_models
+from core import models as c_models
 
 import time
 import datetime
@@ -38,7 +39,8 @@ class Dataset(models.Model):
         return getattr(dataset_models, self.model_name).transform_self(file_path, update)
 
     def seed_dataset(self, **kwargs):
-        return getattr(dataset_models, self.model_name).seed_or_update_self(**kwargs)
+        getattr(dataset_models, self.model_name).seed_or_update_self(**kwargs)
+        self.delete_old_files()
 
     def latest_update(self):
         try:
@@ -49,6 +51,12 @@ class Dataset(models.Model):
 
     def latest_file(self):
         return self.datafile_set.latest('uploaded_date')
+
+    def delete_old_files(self):
+        # Deletes all but the last 2 files saved for this dataset.
+        old_files = self.datafile_set.all().order_by('-uploaded_date')[2:]
+        for file in old_files:
+            file.delete()
 
     def __str__(self):
         return self.name
@@ -86,7 +94,7 @@ class Update(models.Model):
                              on_delete=models.SET_NULL, null=True)
     previous_file = models.ForeignKey(DataFile, related_name='previous_file',
                                       on_delete=models.SET_NULL, null=True, blank=True)
-    dataset = models.ForeignKey(Dataset, on_delete=models.SET_NULL, null=True)
+    dataset = models.ForeignKey(Dataset, on_delete=models.SET_NULL, null=True, blank=True)
     rows_updated = models.IntegerField(blank=True, null=True, default=0)
     rows_created = models.IntegerField(blank=True, null=True, default=0)
     total_rows = models.IntegerField(blank=True, null=True)
@@ -108,6 +116,8 @@ def auto_seed_on_create(sender, instance, created, **kwargs):
 
     def on_commit():
         print("commit")
+        if created and not instance.dataset:
+            instance.dataset = instance.file.dataset
         if created and instance.file and os.path.isfile(instance.file.file.path):
             from core.tasks import async_seed_file
             worker = async_seed_file.delay(instance.file.file.path, instance.id)
