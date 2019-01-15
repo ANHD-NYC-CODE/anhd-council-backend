@@ -110,7 +110,7 @@ def auto_seed_on_create(sender, instance, created, **kwargs):
         print("commit")
         if created and instance.file and os.path.isfile(instance.file.file.path):
             from core.tasks import async_seed_file
-            worker = async_seed_file.delay(instance.dataset.id, instance.file.id, instance.id)
+            worker = async_seed_file.delay(instance.file.file.path, instance.id)
             instance.task_id = worker.id
             instance.save()
         elif created:

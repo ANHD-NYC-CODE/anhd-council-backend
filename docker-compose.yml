@@ -27,6 +27,8 @@ services:
     depends_on:
       - postgres
       - redis
+    volumes:
+      - ./data:/data
     links:
         - postgres
         - redis

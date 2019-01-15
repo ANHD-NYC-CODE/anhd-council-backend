@@ -2,7 +2,8 @@ from __future__ import absolute_import, unicode_literals
 from app.celery import app
 from core.models import Dataset, Update, DataFile
 from django_celery_results.models import TaskResult
-
+from django.conf import settings
+import os
 # TODO - setup auth for flower
 # https://stackoverflow.com/questions/19689510/celery-flower-security-in-production
 
@@ -12,13 +13,11 @@ logger = logging.getLogger('app')
 
 
 @app.task(bind=True)
-def async_seed_file(self, dataset_id, file_id, update_id):
-    dataset = Dataset.objects.get(id=dataset_id)
-    file = DataFile.objects.get(id=file_id)
+def async_seed_file(self, file_path, update_id):
     update = Update.objects.get(id=update_id)
-
-    logger.info("Beginning async seeding - {} - Update: {}".format(dataset.name, update.id))
-    dataset.seed_dataset(file=file, update=update)
+    file_path = os.path.join(settings.MEDIA_ROOT, os.path.basename(file_path))
+    logger.info("Beginning async seeding - {} - Update: {}".format(update.dataset.name, update.id))
+    update.dataset.seed_dataset(file_path=file_path, update=update)
 
 
 @app.task(bind=True)

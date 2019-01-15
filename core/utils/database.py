@@ -70,9 +70,8 @@ def seed_from_csv_diff(original_file_path, new_file_path, model, update):
     os.remove(temp_file_path)
 
 
-def bulk_insert_from_file(model, file, update=None, overwrite=False):
+def bulk_insert_from_file(model, file_path, update=None, overwrite=False):
     table_name = model._meta.db_table
-    file_path = file.file.path
 
     # create new csv with cleaned rows
     temp_file_path = os.path.join(settings.MEDIA_TEMP_ROOT, str(uuid.uuid4().hex) + '.csv')
@@ -99,7 +98,7 @@ def bulk_insert_from_file(model, file, update=None, overwrite=False):
         except Exception as e:
             print(e)
             logger.warning("Database - Bulk Import Error - beginning Batch seeding. Error: {}".format(e))
-            rows = model.transform_self_from_file(file.file.path, update)
+            rows = model.transform_self_from_file(file_path, update)
             batch_upsert_from_gen(model, rows, update)
 
     os.remove(temp_file_path)
