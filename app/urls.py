@@ -25,6 +25,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('docs/', include_docs_urls(title='API', description='API Documentation')),
     path('councils/', api_views.councils_index, name="councils_index"),
+    path('councils/<int:councilnum>/<str:housingtype>/', api_views.query, name="query"),
     path('properties/<str:bbl>/', api_views.building_lookup, name="building_lookup")
 
 ]
