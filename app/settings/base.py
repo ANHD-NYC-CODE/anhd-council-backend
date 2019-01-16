@@ -162,6 +162,18 @@ LOGGING = {
                 'CRITICAL': 'bold_red',
             },
         },
+        'sql': {
+            '()': 'colorlog.ColoredFormatter',
+            'format': "%(log_color)s[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+            'datefmt': "%d/%b/%Y %H:%M:%S",
+            'log_colors': {
+                'DEBUG':    'bold_green',
+                'INFO':     'bold_blue',
+                'WARNING':  'bold_yellow',
+                'ERROR':    'bold_red',
+                'CRITICAL': 'bold_red',
+            },
+        },
     },
     'handlers': {
         'logfile': {
@@ -180,6 +192,11 @@ LOGGING = {
             'backupCount': 10,
             'formatter': 'standard',
         },
+        'sql': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'sql'
+        },
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
@@ -193,7 +210,7 @@ LOGGING = {
             'propagate': True,
         },
         'django.db.backends': {
-            'handlers': ['console'],
+            'handlers': ['sql'],
             'level': 'DEBUG',
             'propagate': False,
         },
