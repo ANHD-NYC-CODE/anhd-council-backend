@@ -30,6 +30,23 @@ def councils_index(request, format=None):
 
 
 @api_view(['GET'])
+def council_show(request, councilnum, format=None):
+    if request.path_info in cache:
+        logger.debug('Serving cache: {}'.format(request.path_info))
+        councils_json = cache.get(request.path_info)
+        return JsonResponse(councils_json, safe=False)
+    else:
+        try:
+            council = d_models.Council.objects.filter(coundist=councilnum)
+            council_json = serializers.serialize('json', council)
+            logger.debug('Caching: {}'.format(request.path_info))
+            cache.set(request.path_info, council_json, timeout=settings.CACHE_TTL)
+            return JsonResponse(council_json, safe=False)
+        except Exception as e:
+            return JsonResponse(e.args, status=status.HTTP_500_INTERNAL_SERVER_ERROR, safe=False)
+
+
+@api_view(['GET'])
 def query(request, councilnum, housingtype, format=None):
     cache_key = request.path_info + request.query_params.dict().__str__()
     if cache_key in cache:
