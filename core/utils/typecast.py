@@ -89,24 +89,32 @@ def date(x):
             try:
                 return datetime.datetime.strptime(str(x), '%Y%m%d').date()
             except ValueError:
-                logger.warning("* Unable to parse date - {}".format(x))
+                logger.warning("* Unable to parse date int - {}".format(x))
                 return None
 
+    # checks string dates
     # checks for 20181231 date input
     if re.match(r'[0-9]{8}', x):
         try:
             return datetime.datetime.strptime(x, '%Y%m%d').date()
         except ValueError:
-            logger.warning("* Unable to parse date - {}".format(x))
+            logger.warning("* Unable to parse date string - {}".format(x))
             return None
-    # checks for 12/31/2018 date input
-    elif len(x) == 10 and len(x.split('/')) == 3:
+
+    # Filters bad string entries
+    elif len(x.strip()) == 1:
+        return None
+    elif len(x.strip()) == 10 and len(x.split('/')) == 3:
+        # checks for 12/31/2018 date input
         return mm_dd_yyyy(x)
-    # checks for 12/31/2018 12:00:00 AM date input
-    elif len(x) == 22 and len(x[0:10].split('/')) == 3:
+    elif len(x.strip()) == 22 and len(x[0:10].split('/')) == 3:
+        # checks for 12/31/2018 12:00:00 AM date input
+        return mm_dd_yyyy(x)
+    elif len(x.strip()) == 19 and len(x[0:10].split('/')) == 3:
+        # checks for 12/31/2018 12:00:00 date input
         return mm_dd_yyyy(x)
     else:
-        logger.warning("* Unable to parse date - {}".format(x))
+        logger.warning("* Unable to parse date string - {}".format(x))
         return None
 
 

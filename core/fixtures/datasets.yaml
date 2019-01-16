@@ -145,7 +145,7 @@
 - model: core.dataset
   pk: 24
   fields:
-    name: 451a Subsidy Records
-    model_name: Subsidy451a
+    name: 421a Subsidy Records
+    model_name: Subsidy421a
     automated: False
     update_instructions: "1) Download all 5 borough .xlsx Excel files from https://www1.nyc.gov/site/finance/benefits/benefits-421a.page 2) Manually combine all files into single .csv file. 3) Upload file to app. 4) Create Update."

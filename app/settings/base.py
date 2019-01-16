@@ -177,19 +177,19 @@ LOGGING = {
     },
     'handlers': {
         'logfile': {
-            'level': 'DEBUG',
+            'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(LOG_ROOT, "dap-council.log"),
-            'maxBytes': 1024 * 1024 * 15,  # 15MB
-            'backupCount': 10,
+            'maxBytes': 1024 * 1024 * 5,  # 15MB
+            'backupCount': 20,
             'formatter': 'standard',
         },
         'errorfile': {
             'level': 'WARNING',
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(LOG_ROOT, "dap-council.error.log"),
-            'maxBytes': 1024 * 1024 * 15,  # 15MB
-            'backupCount': 10,
+            'maxBytes': 1024 * 1024 * 5,  # 15MB
+            'backupCount': 20,
             'formatter': 'standard',
         },
         'sql': {
@@ -246,5 +246,5 @@ ACTIVE_MODELS = [
     'HPDViolation',
     'RentStabilizationRecord',
     'SubsidyJ51',
-    'Subsidy451a',
+    'Subsidy421a',
 ]
