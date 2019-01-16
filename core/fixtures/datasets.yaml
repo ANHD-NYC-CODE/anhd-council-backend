@@ -107,39 +107,43 @@
 - model: core.dataset
   pk: 18
   fields:
+    name: HPD Problems
+    model_name: HPDProblem
+    automated: True
+- model: core.dataset
+  pk: 19
+  fields:
     name: HPD Registration Contacts
     model_name: HPDContact
     automated: True
 - model: core.dataset
-  pk: 19
+  pk: 20
   fields:
     name: HPD Registrations
     model_name: HPDRegistration
     automated: True
 - model: core.dataset
-  pk: 20
+  pk: 21
   fields:
     name: HPD Violations
     model_name: HPDViolation
     automated: True
 - model: core.dataset
-  pk: 21
+  pk: 22
   fields:
     name: TaxBills Rent Stabilization Records
     model_name: RentStabilizationRecord
     automated: False
     update_instructions: "1) Download joined.csv file http://taxbills.nyc/joined.csv 2) Upload file to app. 3) Create update. -- Current app supports new columns up to 2020"
-
 - model: core.dataset
-  pk: 22
+  pk: 23
   fields:
     name: J-51 Subsidy Records
     model_name: SubsidyJ51
     automated: False
     update_instructions: "1) Download all 5 borough .xlsx Excel files from https://www1.nyc.gov/site/finance/benefits/benefits-j51.page 2) Manually combine all files into single .csv file. 3) Upload file to app. 4) Create Update."
-
 - model: core.dataset
-  pk: 23
+  pk: 24
   fields:
     name: 451a Subsidy Records
     model_name: Subsidy451a

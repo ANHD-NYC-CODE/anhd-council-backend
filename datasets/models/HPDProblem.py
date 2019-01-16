@@ -6,28 +6,31 @@ import logging
 
 logger = logging.getLogger('app')
 
+# TODO: split into HPD Complaint and HPD Problems
 
-class HPDComplaint(BaseDatasetModel, models.Model):
-    download_endpoint = "https://data.cityofnewyork.us/api/views/uwyv-629c/rows.csv?accessType=DOWNLOAD"
 
-    complaintid = models.IntegerField(primary_key=True, blank=False, null=False)
-    bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
-                            on_delete=models.SET_NULL, null=True, blank=False)
-    buildingid = models.ForeignKey('HPDBuildingRecord', db_column='buildingid', db_constraint=False,
-                                   on_delete=models.SET_NULL, null=True, blank=True)
-    boroughid = models.IntegerField(blank=True, null=True)
-    borough = models.TextField(blank=True, null=True)
-    housenumber = models.TextField(blank=True, null=True)
-    streetname = models.TextField(blank=True, null=True)
-    zip = models.TextField(blank=True, null=True)
-    block = models.IntegerField(blank=True, null=True)
-    lot = models.IntegerField(blank=True, null=True)
-    apartment = models.TextField(blank=True, null=True)
-    communityboard = models.IntegerField(blank=True, null=True)
-    receiveddate = models.DateTimeField(db_index=True, blank=True, null=True)
+class HPDProblem(BaseDatasetModel, models.Model):
+    download_endpoint = "https://data.cityofnewyork.us/api/views/a2nx-4u46/rows.csv?accessType=DOWNLOAD"
+
+    problemid = models.IntegerField(primary_key=True, blank=False, null=False)
+    complaintid = models.ForeignKey('HPDComplaint', db_column='complaintid', db_constraint=False,
+                                    on_delete=models.SET_NULL, null=True, blank=False)
+    unittypeid = models.SmallIntegerField(blank=True, null=True)
+    unittype = models.TextField(blank=True, null=True)
+    spacetypeid = models.SmallIntegerField(blank=True, null=True)
+    spacetype = models.TextField(blank=True, null=True)
+    typeid = models.SmallIntegerField(blank=True, null=True)
+    type = models.TextField(blank=True, null=True)
+    majorcategoryid = models.SmallIntegerField(blank=True, null=True)
+    majorcategory = models.TextField(blank=True, null=True)
+    minorcategoryid = models.SmallIntegerField(blank=True, null=True)
+    minorcategory = models.TextField(blank=True, null=True)
+    codeid = models.SmallIntegerField(blank=True, null=True)
+    code = models.TextField(blank=True, null=True)
     statusid = models.IntegerField(db_index=True, blank=True, null=True)
     status = models.TextField(db_index=True, blank=True, null=True)
     statusdate = models.DateTimeField(db_index=True, blank=True, null=True)
+    statusdescription = models.TextField(blank=True, null=True)
 
     @classmethod
     def download(self):
