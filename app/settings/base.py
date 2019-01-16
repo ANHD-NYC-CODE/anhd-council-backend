@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 
 import os
 
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -38,8 +39,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_celery_results',
     'django_celery_beat',
+    'rest_framework',
     'core',
-    'datasets'
+    'datasets',
+    'api',
+    'users'
 ]
 
 MIDDLEWARE = [
@@ -72,7 +76,20 @@ TEMPLATES = [
 
 
 WSGI_APPLICATION = 'app.wsgi.application'
+CACHE_TTL = 60 * 60 * 24  # cache for 24 hours
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
 
+CACHES = {
+    "default": {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/',
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        },
+        "KEY_PREFIX": "DAP"
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
@@ -155,7 +172,7 @@ LOGGING = {
             'formatter': 'standard',
         },
         'console': {
-            'level': 'INFO',
+            'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'standard'
         },
@@ -163,7 +180,7 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['console'],
-            'level': 'WARN',
+            'level': 'DEBUG',
             'propagate': True,
         },
         'django.db.backends': {

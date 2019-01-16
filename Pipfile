@@ -20,6 +20,9 @@ image = "*"
 pyyaml = "*"
 django-postgres-copy = "*"
 django-celery-beat = "*"
+djangorestframework = "*"
+coreapi = "*"
+django-redis = "*"
 
 [requires]
 python_version = "3.5"

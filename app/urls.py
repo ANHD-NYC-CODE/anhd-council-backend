@@ -15,7 +15,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.conf.urls import url, include
+from rest_framework.documentation import include_docs_urls
+
+from api import views as api_views
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('docs/', include_docs_urls(title='API', description='API Documentation')),
+    path('councils/', api_views.councils_index, name="councils_index"),
+    path('properties/<str:bbl>/', api_views.building_lookup, name="building_lookup")
+
 ]
