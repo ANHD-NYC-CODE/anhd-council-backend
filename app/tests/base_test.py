@@ -10,6 +10,8 @@ import zipfile
 
 class BaseTest():
     def clean_tests(self):
+        from django_redis import get_redis_connection
+        get_redis_connection("default").flushall()
         DataFile.objects.all().delete()
 
     def get_file_path(self, name):
