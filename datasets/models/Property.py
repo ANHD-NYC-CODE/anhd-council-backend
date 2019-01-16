@@ -31,6 +31,11 @@ class RentStabManager(models.Manager):
         return super().get_queryset().filter(version=self.model.current_version, yearbuilt__lte=1974, yearbuilt__gt=0).annotate(rentstabrecords=Count('rentstabilizationrecord')).filter(rentstabrecords__gt=0)
 
 
+class RentRegManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(version=self.model.current_version, yearbuilt__lte=1974, yearbuilt__gt=0).annotate(rentstabrecords=Count('rentstabilizationrecord')).filter(rentstabrecords__gt=0)
+
+
 class Property(BaseDatasetModel, models.Model):
     current_version = '18V1'
     objects = models.Manager()

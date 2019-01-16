@@ -16,7 +16,7 @@ logger = logging.getLogger('app')
 # https://www1.nyc.gov/site/finance/benefits/benefits-421a.page
 # upload file through admin, then update
 
-class Subsidy451a(BaseDatasetModel, models.Model):
+class Subsidy421a(BaseDatasetModel, models.Model):
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
     borough = models.SmallIntegerField(blank=True, null=True)
