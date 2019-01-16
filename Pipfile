@@ -23,6 +23,7 @@ django-celery-beat = "*"
 djangorestframework = "*"
 coreapi = "*"
 django-redis = "*"
+colorlog = "*"
 
 [requires]
 python_version = "3.5"
