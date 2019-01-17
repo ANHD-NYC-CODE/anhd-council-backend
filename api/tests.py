@@ -1,3 +1,22 @@
-from django.test import TestCase
+from django.test import TestCase, RequestFactory
+from app.tests.base_test import BaseTest
 
-# Create your tests here.
+
+from api.views import councils_index
+
+import logging
+logging.disable(logging.CRITICAL)
+
+
+class CouncilsIndexTests(BaseTest, TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_api_request(self):
+        self.council_factory(coundist=1, geometry="{foo: bar}")
+        request = self.factory.get('/councils')
+        response = councils_index(request)
+        self.assertEqual(response.status_code, 200)
