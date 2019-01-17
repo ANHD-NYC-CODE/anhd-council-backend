@@ -58,8 +58,8 @@ def query(request, councilnum, housingtype, format=None):
         return JsonResponse(results_json, safe=False)
     else:
         try:
-            results = ds.Property.objects.filter(council=councilnum)
-            results_json = serializers.serialize('json', results)
+            council_housing_results = queryset_by_housingtype(ds.Property.objects.council(councilnum), housingtype)
+            results_json = json.dumps(council_housing_results)
             logger.debug('Caching: {}'.format(cache_key))
             cache.set(cache_key, results_json, timeout=settings.CACHE_TTL)
             return JsonResponse(results_json, safe=False)

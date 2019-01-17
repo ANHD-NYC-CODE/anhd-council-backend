@@ -1,13 +1,12 @@
 from datasets import models as d_models
 
 
-def queryset_by_housingtype(housingtype):
+def queryset_by_housingtype(queryset, housingtype):
     switcher = {
-        "rent-stabilized": d_models.Properties.objects.all(),
-        "rent-regulated": d_models.Properties.objects.all(),
-        "small-homes": d_models.Properties.objects.all(),
-        "market-rate": d_models.Properties.objects.all(),
-        "public-housing": d_models.Properties.objects.all(),
+        "rent-stabilized": queryset.rentstab(),
+        "rent-regulated": queryset.rentreg(),
+        "small-homes": queryset.smallhome(),
+        "market-rate": queryset.marketrate()
     }
 
-    return switcher.get(housingtype, [])
+    return switcher.get(housingtype, None)

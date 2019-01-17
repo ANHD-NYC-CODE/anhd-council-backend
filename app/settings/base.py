@@ -193,7 +193,7 @@ LOGGING = {
             'formatter': 'standard',
         },
         'sql': {
-            'level': 'DEBUG',
+            'level': 'INFO',
             'class': 'logging.StreamHandler',
             'formatter': 'sql'
         },

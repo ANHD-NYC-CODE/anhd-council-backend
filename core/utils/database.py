@@ -59,15 +59,19 @@ def seed_from_csv_diff(original_file_path, new_file_path, model, update):
 
     diff_gen = from_csv_file_to_gen(temp_file_path, update)
     logger.debug(" * Csv diff completed, beginning batch upsert.")
+    iterate_through_batch(model, update, diff_gen, BATCH_SIZE)
+    os.remove(temp_file_path)
+
+
+def iterate_through_batch(model, update, collection, batch_size):
     while True:
-        batch = list(itertools.islice(diff_gen, 0, BATCH_SIZE))
+        batch = list(itertools.islice(collection, 0, batch_size))
 
         if len(batch) == 0:
             logger.info("Database - Batch seeding completed.")
             break
         else:
             batch_upsert_rows(batch, model, update)
-    os.remove(temp_file_path)
 
 
 def bulk_insert_from_file(model, file_path, update=None, overwrite=False):

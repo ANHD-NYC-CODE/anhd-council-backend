@@ -87,6 +87,43 @@ class PropertyQuerySet(models.QuerySet):
     def marketrate(self):
         return self.residential().marketrate_filter()
 
+    def rentstab_annotate(self, fields_list):
+        for field in fields_list:
+            if field == 'hpdcomplaint':
+                self = self.annotate(hpdcomplaint_count=Count(field))
+            if field == 'hpdviolation':
+                self = self.annotate(hpdviolation_count=Count(field))
+            if field == 'dobcomplaint':
+                self = self.annotate(dobcomplaint_count=Count(field))
+            if field == 'dobviolation':
+                self = self.annotate(dobviolation_count=Count(field))
+            if field == 'ecbviolation':
+                self = self.annotate(ecbviolation_count=Count(field))
+            if field == 'ecbviolation':
+                self = self.annotate(ecbviolation_count=Count(field))
+            if field == 'permitsissued':
+                self = self.annotate(permitsissued_count=Count('dobpermitissuedlegacy') + Count('dobpermitissuednow'))
+            if field == 'acris':
+                self = self.annotate(acris_count=Count('acrisreallegal'))
+            if field == 'rentstab':
+                self = self.annotate(
+                    rs2007=Count('rentstabilizationrecord__uc2007'),
+                    rs2008=Count('rentstabilizationrecord__uc2008'),
+                    rs2009=Count('rentstabilizationrecord__uc2009'),
+                    rs2010=Count('rentstabilizationrecord__uc2010'),
+                    rs2011=Count('rentstabilizationrecord__uc2011'),
+                    rs2012=Count('rentstabilizationrecord__uc2012'),
+                    rs2013=Count('rentstabilizationrecord__uc2013'),
+                    rs2014=Count('rentstabilizationrecord__uc2014'),
+                    rs2015=Count('rentstabilizationrecord__uc2015'),
+                    rs2016=Count('rentstabilizationrecord__uc2016'),
+                    rs2017=Count('rentstabilizationrecord__uc2017'),
+                    rs2018=Count('rentstabilizationrecord__uc2018'),
+                    rs2019=Count('rentstabilizationrecord__uc2019'),
+                    rs2020=Count('rentstabilizationrecord__uc2020'))
+
+        return self
+
 
 class PropertyManager(models.Manager):
     def get_queryset(self):
