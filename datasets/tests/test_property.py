@@ -90,5 +90,5 @@ class PropertyQuerySetTest(BaseTest, TestCase):
         self.assertEqual(queryset.get(bbl='0a').ecbviolation_count, 1)
         self.assertEqual(queryset.get(bbl='0a').permitsissued_count, 2)
         # self.assertEqual(queryset.get(bbl='0a').acris_count, 1)
-        # self.assertEqual(queryset.get(bbl='0a').rs2010, 10)
-        # self.assertEqual(queryset.get(bbl='0a').rs2017, 10)
+        self.assertEqual(queryset.get(bbl='0a').rs2010, 10)
+        self.assertEqual(queryset.get(bbl='0a').rs2017, 9)

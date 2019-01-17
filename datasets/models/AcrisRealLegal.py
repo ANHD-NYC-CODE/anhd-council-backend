@@ -36,7 +36,7 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
     streetnumber = models.TextField(blank=True, null=True)
     streetname = models.TextField(blank=True, null=True)
     unit = models.TextField(blank=True, null=True)
-    goodthroughdate = models.DateTimeField(db_index=True, blank=True, null=True)
+    goodthroughdate = models.DateTimeField(blank=True, null=True)
 
     @classmethod
     def download(self):
