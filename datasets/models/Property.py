@@ -88,39 +88,42 @@ class PropertyQuerySet(models.QuerySet):
         return self.residential().marketrate_filter()
 
     def rentstab_annotate(self, fields_list):
+        unique_fields_list = []
         for field in fields_list:
+            unique_fields_list.append(field.split('__')[0])
+        unique_fields_list = list(set(unique_fields_list))
+
+        for field in unique_fields_list:
             if field == 'hpdcomplaint':
                 self = self.annotate(hpdcomplaint_count=Count(field))
             if field == 'hpdviolation':
                 self = self.annotate(hpdviolation_count=Count(field))
-            if field == 'dobcomplaint':
-                self = self.annotate(dobcomplaint_count=Count(field))
+            # if field == 'dobcomplaint':
+            #     self = self.annotate(dobcomplaint_count=Count(field))
             if field == 'dobviolation':
                 self = self.annotate(dobviolation_count=Count(field))
             if field == 'ecbviolation':
                 self = self.annotate(ecbviolation_count=Count(field))
-            if field == 'ecbviolation':
-                self = self.annotate(ecbviolation_count=Count(field))
             if field == 'permitsissued':
                 self = self.annotate(permitsissued_count=Count('dobpermitissuedlegacy') + Count('dobpermitissuednow'))
-            if field == 'acris':
-                self = self.annotate(acris_count=Count('acrisreallegal'))
-            if field == 'rentstab':
-                self = self.annotate(
-                    rs2007=Count('rentstabilizationrecord__uc2007'),
-                    rs2008=Count('rentstabilizationrecord__uc2008'),
-                    rs2009=Count('rentstabilizationrecord__uc2009'),
-                    rs2010=Count('rentstabilizationrecord__uc2010'),
-                    rs2011=Count('rentstabilizationrecord__uc2011'),
-                    rs2012=Count('rentstabilizationrecord__uc2012'),
-                    rs2013=Count('rentstabilizationrecord__uc2013'),
-                    rs2014=Count('rentstabilizationrecord__uc2014'),
-                    rs2015=Count('rentstabilizationrecord__uc2015'),
-                    rs2016=Count('rentstabilizationrecord__uc2016'),
-                    rs2017=Count('rentstabilizationrecord__uc2017'),
-                    rs2018=Count('rentstabilizationrecord__uc2018'),
-                    rs2019=Count('rentstabilizationrecord__uc2019'),
-                    rs2020=Count('rentstabilizationrecord__uc2020'))
+            # if field == 'acris':
+            #     self = self.annotate(acris_count=Count('acrisreallegal'))
+            # if field == 'rentstab':
+            #     self = self.annotate(
+            #         rs2007=Count('rentstabilizationrecord__uc2007'),
+            #         rs2008=Count('rentstabilizationrecord__uc2008'),
+            #         rs2009=Count('rentstabilizationrecord__uc2009'),
+            #         rs2010=Count('rentstabilizationrecord__uc2010'),
+            #         rs2011=Count('rentstabilizationrecord__uc2011'),
+            #         rs2012=Count('rentstabilizationrecord__uc2012'),
+            #         rs2013=Count('rentstabilizationrecord__uc2013'),
+            #         rs2014=Count('rentstabilizationrecord__uc2014'),
+            #         rs2015=Count('rentstabilizationrecord__uc2015'),
+            #         rs2016=Count('rentstabilizationrecord__uc2016'),
+            #         rs2017=Count('rentstabilizationrecord__uc2017'),
+            #         rs2018=Count('rentstabilizationrecord__uc2018'),
+            #         rs2019=Count('rentstabilizationrecord__uc2019'),
+            #         rs2020=Count('rentstabilizationrecord__uc2020'))
 
         return self
 
@@ -214,8 +217,8 @@ class Property(BaseDatasetModel, models.Model):
     areasource = models.TextField(blank=True, null=True)
     numbldgs = models.IntegerField(db_index=True, blank=True, null=True)
     numfloors = models.DecimalField(db_index=True, decimal_places=2, max_digits=8, blank=True, null=True)
-    unitsres = models.IntegerField(db_index=True, blank=False, null=False)
-    unitstotal = models.IntegerField(db_index=True, blank=False, null=False)
+    unitsres = models.IntegerField(db_index=True, blank=True, null=True)
+    unitstotal = models.IntegerField(db_index=True, blank=True, null=True)
     lotfront = models.DecimalField(decimal_places=3, max_digits=32, blank=True, null=True)
     lotdepth = models.DecimalField(decimal_places=3, max_digits=32, blank=True, null=True)
     bldgfront = models.DecimalField(decimal_places=3, max_digits=32, blank=True, null=True)

@@ -1,6 +1,6 @@
 from __future__ import absolute_import, unicode_literals
 from app.celery import app
-from core.models import Dataset, Update, DataFile
+from core import models as c
 from django_celery_results.models import TaskResult
 from django.conf import settings
 import os
@@ -14,15 +14,15 @@ logger = logging.getLogger('app')
 
 @app.task(bind=True)
 def async_seed_file(self, file_path, update_id):
-    update = Update.objects.get(id=update_id)
+    update = c.Update.objects.get(id=update_id)
     file_path = os.path.join(settings.MEDIA_ROOT, os.path.basename(file_path))
-    logger.info("Beginning async seeding - {} - Update: {}".format(update.file.dataset.name, update.id))
+    logger.info("Beginning async seeding - {} - c.Update: {}".format(update.file.dataset.name, update.id))
     update.file.dataset.seed_dataset(file_path=file_path, update=update)
 
 
 @app.task(bind=True)
 def async_download_start(self, dataset_id):
-    dataset = Dataset.objects.filter(id=dataset_id).first()
+    dataset = c.Dataset.objects.filter(id=dataset_id).first()
     logger.info("Starting async download for dataset: {}".format(dataset.name))
     if dataset:
         dataset.download()
@@ -33,7 +33,7 @@ def async_download_start(self, dataset_id):
 
 @app.task(bind=True)
 def async_download_and_update(self, dataset_id):
-    dataset = Dataset.objects.filter(id=dataset_id).first()
+    dataset = c.Dataset.objects.filter(id=dataset_id).first()
     logger.info("Starting async download and update for dataset: {}".format(dataset.name))
     if dataset:
         dataset.download_and_update()
