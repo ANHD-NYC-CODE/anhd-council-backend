@@ -17,8 +17,8 @@ logger = logging.getLogger('app')
 class RentStabilizationRecord(BaseDatasetModel, models.Model):
     download_endpoint = "http://taxbills.nyc/joined.csv"
 
-    ucbbl = models.ForeignKey('Property', db_column='ucbbl', unique=True, db_constraint=False,
-                              on_delete=models.SET_NULL, null=True, blank=True)
+    ucbbl = models.OneToOneField('Property', db_column='ucbbl', db_constraint=False,
+                                 on_delete=models.SET_NULL, null=True, blank=True)
     borough = models.TextField(blank=True, null=True)
     uc2007 = models.IntegerField(blank=True, null=True)
     est2007 = models.BooleanField(blank=True, null=True)
