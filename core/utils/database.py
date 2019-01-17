@@ -142,7 +142,7 @@ def build_pkey_tuple(row, pkey):
     return tup
 
 
-def batch_upsert_from_gen(model_class, rows, update=None):
+def batch_upsert_from_gen(model_class, rows, update=None, overwrite=False):
     while True:
         batch = list(itertools.islice(rows, 0, BATCH_SIZE))
 
