@@ -14,10 +14,6 @@ import logging
 
 logger = logging.getLogger('app')
 
-# 100000 = 30 seconds + (1sec * n)
-# 1000000 = 5 minutes + (1min * n)
-BATCH_SIZE = 1000000
-
 
 def seed_from_csv_diff(original_file_path, new_file_path, model, update):
     """
@@ -59,19 +55,8 @@ def seed_from_csv_diff(original_file_path, new_file_path, model, update):
 
     diff_gen = from_csv_file_to_gen(temp_file_path, update)
     logger.debug(" * Csv diff completed, beginning batch upsert.")
-    iterate_through_batch(model, update, diff_gen, BATCH_SIZE)
+    batch_upsert_from_gen(model, diff_gen, settings.BATCH_SIZE, update=update)
     os.remove(temp_file_path)
-
-
-def iterate_through_batch(model, update, collection, batch_size):
-    while True:
-        batch = list(itertools.islice(collection, 0, batch_size))
-
-        if len(batch) == 0:
-            logger.info("Database - Batch seeding completed.")
-            break
-        else:
-            batch_upsert_rows(batch, model, update)
 
 
 def bulk_insert_from_file(model, file_path, update=None, overwrite=False):
@@ -103,7 +88,7 @@ def bulk_insert_from_file(model, file_path, update=None, overwrite=False):
             print(e)
             logger.warning("Database - Bulk Import Error - beginning Batch seeding. Error: {}".format(e))
             rows = model.transform_self_from_file(file_path, update)
-            batch_upsert_from_gen(model, rows, update)
+            batch_upsert_from_gen(model, rows, settings.BATCH_SIZE, update=update)
 
     os.remove(temp_file_path)
 
@@ -146,18 +131,18 @@ def build_pkey_tuple(row, pkey):
     return tup
 
 
-def batch_upsert_from_gen(model_class, rows, update=None, overwrite=False):
+def batch_upsert_from_gen(model, rows, batch_size, update=None, overwrite=False):
     while True:
-        batch = list(itertools.islice(rows, 0, BATCH_SIZE))
+        batch = list(itertools.islice(rows, 0, batch_size))
 
         if len(batch) == 0:
-            logger.info("Database - Batch upserts completed for {}.".format(model_class.__name__))
+            logger.info("Database - Batch upserts completed for {}.".format(model.__name__))
             break
         else:
-            batch_upsert_rows(batch, model_class, update)
+            batch_upsert_rows(batch, model, batch_size, update=update)
 
 
-def batch_upsert_rows(rows, model, update=None):
+def batch_upsert_rows(rows, model, batch_size, update=None):
     table_name = model._meta.db_table
     primary_key = model._meta.pk.name
     """ Inserts many row, all in the same transaction"""
@@ -175,9 +160,14 @@ def batch_upsert_rows(rows, model, update=None):
                 update.save()
 
         except Exception as e:
-            logger.warning('Database - error upserting rows. Switching to single row upsert. - Error: {}'.format(e))
             print(e)
-            single_upsert_row(rows, model, update)
+            if batch_size > 1:
+                logger.info(
+                    'Database - error upserting rows. Switching reducing batch size to {} - Error: {}'.format(batch_size / 10, e))
+                batch_upsert_rows(rows, model, batch_size / 10, update=update)
+            else:
+                logger.info('Database - error upserting rows. Switching to single row upsert. - Error: {}'.format(e))
+                single_upsert_row(rows, model, update=update)
 
 
 def single_upsert_row(rows, model, update=None):

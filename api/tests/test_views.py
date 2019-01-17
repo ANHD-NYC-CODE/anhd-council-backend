@@ -16,7 +16,7 @@ class CouncilsIndexTests(BaseTest, TestCase):
         self.clean_tests()
 
     def test_api_request(self):
-        self.council_factory(coundist=1, geometry="{foo: bar}")
+        self.council_factory()
         request = self.factory.get('/councils')
         response = councils_index(request)
         self.assertEqual(response.status_code, 200)

@@ -1,10 +1,7 @@
-import os
 from django.test import TestCase
-from core.models import Dataset, Update, DataFile
-from django_celery_results.models import TaskResult
-from datasets import models as ds_models
 from app.tests.base_test import BaseTest
 from django.db.models import Count, Q
+from datasets import models as ds_models
 # Create your tests here.
 
 import logging

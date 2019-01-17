@@ -4,6 +4,7 @@ from django.dispatch import receiver
 from django.apps import apps
 from django.conf import settings
 from django_celery_results.models import TaskResult
+from core.tasks import async_seed_file
 from datasets import models as dataset_models
 from core import models as c_models
 
@@ -119,7 +120,6 @@ def auto_seed_on_create(sender, instance, created, **kwargs):
         if created and not instance.dataset:
             instance.dataset = instance.file.dataset
         if created and instance.file and os.path.isfile(instance.file.file.path):
-            from core.tasks import async_seed_file
             worker = async_seed_file.delay(instance.file.file.path, instance.id)
             instance.task_id = worker.id
             instance.save()

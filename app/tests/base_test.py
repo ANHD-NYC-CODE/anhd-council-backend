@@ -5,6 +5,7 @@ from django.core.files import File
 from django.conf import settings
 import os
 import zipfile
+from datetime import datetime
 
 
 class BaseTest():
@@ -26,13 +27,245 @@ class BaseTest():
         update = c_models.Update.objects.create(dataset=dataset, file=file, previous_file=previous_file)
         return update
 
-    def council_factory(self, **kwargs):
+    def council_factory(self, coundist=1, geometry='{"type":"Polygon","coordinates":[]}', **kwargs):
         name = 'Council'
         if not len(c_models.Dataset.objects.filter(name=name)):
             dataset = c_models.Dataset.objects.create(name=name, model_name=name)
 
-        update = d_models.Council.objects.create(**kwargs)
-        return update
+        factory = d_models.Council.objects.create(
+            coundist=coundist,
+            geometry=geometry,
+            **kwargs
+        )
+        return factory
+
+    def property_factory(self, bbl=1, council=None, unitsres=1, unitstotal=1, borough=1, block='0001', lot='00001', **kwargs):
+        name = 'Property'
+        if not len(c_models.Dataset.objects.filter(name=name)):
+            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+        if not council:
+            council = council_factory(self, coundist=1)
+
+        factory = d_models.Property.objects.create(
+            bbl=bbl,
+            council=council,
+            unitsres=unitsres,
+            unitstotal=unitstotal,
+            borough=borough,
+            block=block,
+            lot=lot,
+            **kwargs
+        )
+        return factory
+
+    def building_factory(self, bin=1, property=None, boro=1, block='0001', lot='00001', lhnd='1a', hhnd='1b', **kwargs):
+        name = 'Building'
+        if not len(c_models.Dataset.objects.filter(name=name)):
+            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+        if not property:
+            property = self.property_factory(bbl=1)
+
+        factory = d_models.Building.objects.create(
+            bin=bin,
+            bbl=property,
+            boro=boro,
+            block=block,
+            lot=lot,
+            lhnd=lhnd,
+            hhnd=hhnd,
+            **kwargs
+        )
+        return factory
+
+    def hpdbuilding_factory(self, buildingid=1, property=None, building=None, **kwargs):
+        name = 'HPDBuildingRecord'
+        if not len(c_models.Dataset.objects.filter(name=name)):
+            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+        if not property:
+            property = self.property_factory(bbl=1)
+        if not building:
+            building = self.building_factory(bin=1, property=property, boro=property.borough,
+                                             block=property.block, lot=property.lot)
+
+        factory = d_models.HPDBuildingRecord.objects.create(
+            buildingid=buildingid,
+            bbl=property,
+            bin=building,
+            **kwargs
+        )
+        return factory
+
+    def hpdcomplaint_factory(self, complaintid=1, property=None, hpdbuilding=None, **kwargs):
+        name = 'HPDComplaint'
+        if not len(c_models.Dataset.objects.filter(name=name)):
+            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+        if not property:
+            property = self.property_factory(bbl=1)
+        if not hpdbuilding:
+            building = self.building_factory(bin=1, property=property, boro=property.borough,
+                                             block=property.block, lot=property.lot)
+            hpdbuilding = self.hpdbuilding_factory(buildingid=1, property=property, building=building)
+
+        factory = d_models.HPDComplaint.objects.create(
+            complaintid=complaintid,
+            bbl=property,
+            buildingid=hpdbuilding,
+            **kwargs
+        )
+        return factory
+
+    def hpdviolation_factory(self, violationid=1, property=None, building=None, currentstatusid=1, currentstatus="ACTIVE", **kwargs):
+        name = 'HPDViolation'
+        if not len(c_models.Dataset.objects.filter(name=name)):
+            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+        if not property:
+            property = self.property_factory(bbl=1)
+        if not building:
+            building = self.building_factory(bin=1, property=property, boro=property.borough,
+                                             block=property.block, lot=property.lot)
+
+        factory = d_models.HPDViolation.objects.create(
+            violationid=violationid,
+            bbl=property,
+            bin=building,
+            currentstatusid=currentstatusid,
+            currentstatus=currentstatus,
+            **kwargs
+        )
+        return factory
+
+    def dobcomplaint_factory(self, complaintnumber=1, building=None, **kwargs):
+        name = 'DOBComplaint'
+        if not len(c_models.Dataset.objects.filter(name=name)):
+            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+        if not property:
+            property = self.property_factory(bbl=1)
+        if not building:
+            building = self.building_factory(bin=1, property=property, boro=property.borough,
+                                             block=property.block, lot=property.lot)
+
+        factory = d_models.DOBComplaint.objects.create(
+            complaintnumber=complaintnumber,
+            building=building,
+            **kwargs
+        )
+        return factory
+
+    def dobviolation_factory(self, isndobbisviol=1, property=None, building=None, **kwargs):
+        name = 'DOBViolation'
+        if not len(c_models.Dataset.objects.filter(name=name)):
+            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+        if not property:
+            property = self.property_factory(bbl=1)
+        if not building:
+            building = self.building_factory(bin=1, property=property, boro=property.borough,
+                                             block=property.block, lot=property.lot)
+
+        factory = d_models.DOBViolation.objects.create(
+            isndobbisviol=isndobbisviol,
+            bbl=property,
+            bin=building,
+            **kwargs
+        )
+        return factory
+
+    def ecbviolation_factory(self, ecbviolationnumber=1, property=None, building=None, **kwargs):
+        name = 'ECBViolation'
+        if not len(c_models.Dataset.objects.filter(name=name)):
+            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+        if not property:
+            property = self.property_factory(bbl=1)
+        if not building:
+            building = self.building_factory(bin=1, property=property, boro=property.borough,
+                                             block=property.block, lot=property.lot)
+
+        factory = d_models.ECBViolation.objects.create(
+            ecbviolationnumber=ecbviolationnumber,
+            bbl=property,
+            bin=building,
+            **kwargs
+        )
+        return factory
+
+    def acrismaster_factory(self, documentid=1, **kwargs):
+        name = 'AcrisRealMaster'
+        if not len(c_models.Dataset.objects.filter(name=name)):
+            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+
+        factory = d_models.AcrisRealMaster.objects.create(
+            documentid=documentid,
+            **kwargs
+        )
+        return factory
+
+    def acrislegal_factory(self, documentid=None, property=None, **kwargs):
+        name = 'AcrisRealLegal'
+        if not len(c_models.Dataset.objects.filter(name=name)):
+            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+        if not property:
+            property = self.property_factory(bbl=1)
+        if not documentid:
+            documentid = self.acrismaster_factory(self, documentid=1)
+
+        factory = d_models.AcrisRealLegal.objects.create(
+            documentid=documentid,
+            bbl=property,
+            **kwargs
+        )
+        return factory
+
+    def permitissuedlegacy_factory(self, job=1, permitsino=1, property=None, building=None, **kwargs):
+        name = 'DOBPermitIssuedLegacy'
+        if not len(c_models.Dataset.objects.filter(name=name)):
+            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+        if not property:
+            property = self.property_factory(bbl=1)
+        if not building:
+            building = self.building_factory(bin=1, property=property, boro=property.borough,
+                                             block=property.block, lot=property.lot)
+
+        factory = d_models.DOBPermitIssuedLegacy.objects.create(
+            job=job,
+            permitsino=permitsino,
+            bbl=property,
+            bin=building,
+            **kwargs
+        )
+        return factory
+
+    def permitissuednow_factory(self, jobfilingnumber=1, workpermit=1, issueddate=None, property=None, building=None, **kwargs):
+        name = 'DOBPermitIssuedNow'
+        if not len(c_models.Dataset.objects.filter(name=name)):
+            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+        if not property:
+            property = self.property_factory(bbl=1)
+        if not building:
+            building = self.building_factory(bin=1, property=property, boro=property.borough,
+                                             block=property.block, lot=property.lot)
+        if not issueddate:
+            issueddate = datetime.now()
+        factory = d_models.DOBPermitIssuedNow.objects.create(
+            jobfilingnumber=jobfilingnumber,
+            workpermit=workpermit,
+            issueddate=issueddate,
+            bbl=property,
+            bin=building,
+            **kwargs
+        )
+        return factory
+
+    def rentstabilizationrecord_factory(self, property=None, **kwargs):
+        name = 'RentStabilizationRecord'
+        if not len(c_models.Dataset.objects.filter(name=name)):
+            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+        if not property:
+            property = self.property_factory(bbl=1)
+
+        factory = d_models.RentStabilizationRecord.objects.create(
+            ucbbl=property,
+            **kwargs
+        )
+        return factory
 
     def get_file(self, name):
         file_path = os.path.join(settings.BASE_DIR, "app/tests/mocks/" + name)
