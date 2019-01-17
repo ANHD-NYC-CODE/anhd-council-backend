@@ -5,10 +5,11 @@ from django.core import serializers
 from django.conf import settings
 from django.core.cache import cache
 from api.helpers.api_helpers import queryset_by_housingtype
+from api.serializers import council_housing_type_dict
 
-from datasets import models as d_models
+from datasets import models as ds
 import logging
-
+import json
 logger = logging.getLogger('app')
 
 
@@ -20,7 +21,7 @@ def councils_index(request, format=None):
         return JsonResponse(councils_json, safe=False)
     else:
         try:
-            councils = d_models.Council.objects.all()
+            councils = ds.Council.objects.all()
             councils_json = serializers.serialize('json', councils)
             logger.debug('Caching: {}'.format(request.path_info))
             cache.set(request.path_info, councils_json, timeout=settings.CACHE_TTL)
@@ -33,15 +34,17 @@ def councils_index(request, format=None):
 def council_show(request, councilnum, format=None):
     if request.path_info in cache:
         logger.debug('Serving cache: {}'.format(request.path_info))
-        councils_json = cache.get(request.path_info)
-        return JsonResponse(councils_json, safe=False)
+        council_json = cache.get(request.path_info)
+        return JsonResponse(council_json, safe=False)
     else:
         try:
-            council = d_models.Council.objects.filter(coundist=councilnum)
-            council_json = serializers.serialize('json', council)
+            council = ds.Council.objects.get(coundist=councilnum)
+            council_json = json.dumps(council_housing_type_dict(council.coundist))
             logger.debug('Caching: {}'.format(request.path_info))
             cache.set(request.path_info, council_json, timeout=settings.CACHE_TTL)
             return JsonResponse(council_json, safe=False)
+        except ds.Council.DoesNotExist as e:
+            return JsonResponse([], status=status.HTTP_404_NOT_FOUND, safe=False)
         except Exception as e:
             return JsonResponse(e.args, status=status.HTTP_500_INTERNAL_SERVER_ERROR, safe=False)
 
@@ -55,8 +58,7 @@ def query(request, councilnum, housingtype, format=None):
         return JsonResponse(results_json, safe=False)
     else:
         try:
-            # results = queryset_by_housingtype(housingtype)
-            results = d_models.Property.objects.filter(council=councilnum)
+            results = ds.Property.objects.filter(council=councilnum)
             results_json = serializers.serialize('json', results)
             logger.debug('Caching: {}'.format(cache_key))
             cache.set(cache_key, results_json, timeout=settings.CACHE_TTL)
@@ -73,12 +75,12 @@ def building_lookup(request, bbl, format=None):
         return JsonResponse(property_json, safe=False)
     else:
         try:
-            property = d_models.Property.objects.get(bbl=bbl)
+            property = ds.Property.objects.get(bbl=bbl)
             property_json = serializers.serialize('json', [property])
             logger.debug('Caching: {}'.format(request.path_info))
             cache.set(request.path_info, property_json, timeout=settings.CACHE_TTL)
             return JsonResponse(property_json, safe=False)
-        except d_models.Property.DoesNotExist as e:
+        except ds.Property.DoesNotExist as e:
             return JsonResponse([], status=status.HTTP_404_NOT_FOUND, safe=False)
         except Exception as e:
             return JsonResponse(e.args, status=status.HTTP_500_INTERNAL_SERVER_ERROR, safe=False)

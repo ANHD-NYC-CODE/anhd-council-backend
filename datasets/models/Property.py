@@ -26,22 +26,96 @@ class ObsoletePropertyManager(models.Manager):
         return super().get_queryset().filter(~Q(version=self.model.current_version))
 
 
-class RentStabManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().filter(version=self.model.current_version, yearbuilt__lte=1974, yearbuilt__gt=0).annotate(rentstabrecords=Count('rentstabilizationrecord')).filter(rentstabrecords__gt=0)
+class PropertyQuerySet(models.QuerySet):
+    def rentstab_filter(self):
+        return self.filter(yearbuilt__lte=1974, yearbuilt__gte=1).annotate(rentstabrecords=Count('rentstabilizationrecord')).filter(rentstabrecords__gte=1)
+
+    def rentreg_filter(self):
+        return self.annotate(corerecords=Count('coresubsidyrecord'), subsidyj51records=Count('subsidyj51'), subsidy421arecords=Count('subsidy421a')).filter(Q(corerecords__gte=1) | Q(subsidyj51records__gte=1) | Q(subsidy421arecords__gte=1))
+
+    def smallhome_filter(self):
+        return self.filter(unitsres__lte=4)
+
+    def marketrate_filter(self):
+        return self.annotate(
+            rs2007=Count('rentstabilizationrecord', filter=Q(rentstabilizationrecord__uc2007__gt=0)),
+            rs2008=Count('rentstabilizationrecord', filter=Q(rentstabilizationrecord__uc2008__gt=0)),
+            rs2009=Count('rentstabilizationrecord', filter=Q(rentstabilizationrecord__uc2009__gt=0)),
+            rs2010=Count('rentstabilizationrecord', filter=Q(rentstabilizationrecord__uc2010__gt=0)),
+            rs2011=Count('rentstabilizationrecord', filter=Q(rentstabilizationrecord__uc2011__gt=0)),
+            rs2012=Count('rentstabilizationrecord', filter=Q(rentstabilizationrecord__uc2012__gt=0)),
+            rs2013=Count('rentstabilizationrecord', filter=Q(rentstabilizationrecord__uc2013__gt=0)),
+            rs2014=Count('rentstabilizationrecord', filter=Q(rentstabilizationrecord__uc2014__gt=0)),
+            rs2015=Count('rentstabilizationrecord', filter=Q(rentstabilizationrecord__uc2015__gt=0)),
+            rs2016=Count('rentstabilizationrecord', filter=Q(rentstabilizationrecord__uc2016__gt=0)),
+            rs2017=Count('rentstabilizationrecord', filter=Q(rentstabilizationrecord__uc2017__gt=0)),
+            rs2018=Count('rentstabilizationrecord', filter=Q(rentstabilizationrecord__uc2018__gt=0)),
+            rs2019=Count('rentstabilizationrecord', filter=Q(rentstabilizationrecord__uc2019__gt=0)),
+            rs2020=Count('rentstabilizationrecord', filter=Q(rentstabilizationrecord__uc2020__gt=0))
+        ).filter(Q(
+            unitsres__gte=6,
+            rs2007=0,
+            rs2008=0,
+            rs2009=0,
+            rs2010=0,
+            rs2011=0,
+            rs2012=0,
+            rs2013=0,
+            rs2014=0,
+            rs2015=0,
+            rs2016=0,
+            rs2017=0,
+            rs2018=0,
+            rs2019=0,
+            rs2020=0) | Q(unitsres__lte=5))
+
+    def council(self, number):
+        return self.filter(council=number)
+
+    def residential(self):
+        return self.filter(unitsres__gt=0)
+
+    def rentstab(self):
+        return self.residential().rentstab_filter()
+
+    def rentreg(self):
+        return self.residential().rentreg_filter()
+
+    def smallhome(self):
+        return self.residential().smallhome_filter()
+
+    def marketrate(self):
+        return self.residential().marketrate_filter()
 
 
-class RentRegManager(models.Manager):
+class PropertyManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().filter(version=self.model.current_version, yearbuilt__lte=1974, yearbuilt__gt=0).annotate(rentstabrecords=Count('rentstabilizationrecord')).filter(rentstabrecords__gt=0)
+        return PropertyQuerySet(self.model, using=self._db)
+
+    def council(self, number):
+        return self.get_queryset().council(number)
+
+    def residential(self):
+        return self.get_queryset().residential()
+
+    def rentstab(self):
+        return self.get_queryset().renstab()
+
+    def rentreg(self):
+        return self.get_queryset().rentreg()
+
+    def smallhome(self):
+        return self.get_queryset().smallhome()
+
+    def marketrate(self):
+        return self.get_queryset().marketrate()
 
 
 class Property(BaseDatasetModel, models.Model):
     current_version = '18V1'
-    objects = models.Manager()
+    objects = PropertyManager()
     current = CurrentPropertyManager()
     obsolete = ObsoletePropertyManager()
-    rentstab = RentStabManager()
 
     # 763178 +- records for residential properties.
     # Current version: Pluto18v1
@@ -156,12 +230,6 @@ class Property(BaseDatasetModel, models.Model):
     def pre_validation_filters(self, gen_rows):
         for row in gen_rows:
             if is_null(row['bbl']) or exceeds_char_length(row['bbl'], 10):
-                continue
-            if is_null(row['unitstotal']):
-                continue
-            if is_null(row['unitsres']):
-                continue
-            elif int(row['unitsres']) <= 0:
                 continue
             yield row
 
