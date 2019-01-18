@@ -138,15 +138,14 @@ class BaseTest():
         name = 'DOBComplaint'
         if not len(c_models.Dataset.objects.filter(name=name)):
             dataset = c_models.Dataset.objects.create(name=name, model_name=name)
-        if not property:
-            property = self.property_factory(bbl=1)
         if not building:
+            property = self.property_factory(bbl=1)
             building = self.building_factory(bin=1, property=property, boro=property.borough,
                                              block=property.block, lot=property.lot)
 
         factory = d_models.DOBComplaint.objects.create(
             complaintnumber=complaintnumber,
-            building=building,
+            bin=building,
             **kwargs
         )
         return factory

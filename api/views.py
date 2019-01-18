@@ -5,7 +5,8 @@ from django.core import serializers
 from django.conf import settings
 from django.core.cache import cache
 from api.helpers.api_helpers import queryset_by_housingtype
-from api.serializers import council_housing_type_dict
+from api.serializers import council_housing_type_dict, property_serializer
+from datasets.models.Property import PropertyFilter
 
 from datasets import models as ds
 import logging
@@ -59,7 +60,8 @@ def query(request, councilnum, housingtype, format=None):
     else:
         try:
             council_housing_results = queryset_by_housingtype(ds.Property.objects.council(councilnum), housingtype)
-            results_json = json.dumps(council_housing_results)
+            property_filter = PropertyFilter(request.GET, queryset=council_housing_results.all())
+            results_json = json.dumps(property_serializer(property_filter.qs.all()))
             logger.debug('Caching: {}'.format(cache_key))
             cache.set(cache_key, results_json, timeout=settings.CACHE_TTL)
             return JsonResponse(results_json, safe=False)

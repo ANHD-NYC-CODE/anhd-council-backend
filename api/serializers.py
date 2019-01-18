@@ -11,3 +11,7 @@ def council_housing_type_dict(councilnum):
         "small_homes_count": council_buildings.smallhome().count(),
         "market_rate_count": council_buildings.marketrate().count(),
     }
+
+
+def property_serializer(properties):
+    return list({'foo': 'bar'} for property in properties)

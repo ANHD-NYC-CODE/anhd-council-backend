@@ -24,6 +24,7 @@ djangorestframework = "*"
 coreapi = "*"
 django-redis = "*"
 colorlog = "*"
+django-filter = "*"
 
 [requires]
 python_version = "3.5"
