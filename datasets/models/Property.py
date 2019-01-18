@@ -4,6 +4,8 @@ from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from datasets.utils.validation_filters import is_null, exceeds_char_length
 from core.utils.transform import from_csv_file_to_gen, with_geo
 from core.utils.csv_helpers import extract_csvs_from_zip
+import django_filters
+
 import logging
 
 logger = logging.getLogger('app')
@@ -95,19 +97,18 @@ class PropertyQuerySet(models.QuerySet):
 
         for field in unique_fields_list:
             if field == 'hpdcomplaint':
-                self = self.annotate(hpdcomplaint_count=Count(field))
+                self = self.annotate(hpdcomplaint_count=Count(field, distinct=True))
             if field == 'hpdviolation':
-                self = self.annotate(hpdviolation_count=Count(field))
+                self = self.annotate(hpdviolation_count=Count(field, distinct=True))
             if field == 'dobcomplaint':
-                import pdb
-                pdb.set_trace()
-                self = self.annotate(dobcomplaint_count=Count(field))
+                self = self.annotate(dobcomplaint_count=Count("building__dobcomplaint", distinct=True))
             if field == 'dobviolation':
-                self = self.annotate(dobviolation_count=Count(field))
+                self = self.annotate(dobviolation_count=Count(field, distinct=True))
             if field == 'ecbviolation':
-                self = self.annotate(ecbviolation_count=Count(field))
+                self = self.annotate(ecbviolation_count=Count(field, distinct=True))
             if field == 'permitsissued':
-                self = self.annotate(permitsissued_count=Count('dobpermitissuedlegacy') + Count('dobpermitissuednow'))
+                self = self.annotate(permitsissued_count=Count('dobpermitissuedlegacy',
+                                                               distinct=True) + Count('dobpermitissuednow', distinct=True))
             # if field == 'acris':
             #     self = self.annotate(acris_count=Count('acrisreallegal'))
             if field == 'rentstab':
@@ -285,3 +286,11 @@ class Property(BaseDatasetModel, models.Model):
 
     def __str__(self):
         return self.bbl
+
+
+class PropertyFilter(django_filters.FilterSet):
+    class Meta:
+        model = Property
+        fields = {
+            'yearbuilt': ['exact', 'lt', 'gt'],
+        }
