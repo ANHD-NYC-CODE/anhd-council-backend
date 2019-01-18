@@ -85,7 +85,7 @@ class PropertyQuerySetTest(BaseTest, TestCase):
         queryset = ds.Property.objects.residential().rentstab_annotate(fields_list)
         self.assertEqual(queryset.get(bbl='0a').hpdcomplaint_count, 1)
         self.assertEqual(queryset.get(bbl='0a').hpdviolation_count, 1)
-        # self.assertEqual(queryset.get(bbl='0a').dobcomplaint_count, 1)
+        self.assertEqual(queryset.get(bbl='0a').dobcomplaint_count, 1)
         self.assertEqual(queryset.get(bbl='0a').dobviolation_count, 1)
         self.assertEqual(queryset.get(bbl='0a').ecbviolation_count, 1)
         self.assertEqual(queryset.get(bbl='0a').permitsissued_count, 2)

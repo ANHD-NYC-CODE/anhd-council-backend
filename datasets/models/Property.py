@@ -98,8 +98,10 @@ class PropertyQuerySet(models.QuerySet):
                 self = self.annotate(hpdcomplaint_count=Count(field))
             if field == 'hpdviolation':
                 self = self.annotate(hpdviolation_count=Count(field))
-            # if field == 'dobcomplaint':
-            #     self = self.annotate(dobcomplaint_count=Count(field))
+            if field == 'dobcomplaint':
+                import pdb
+                pdb.set_trace()
+                self = self.annotate(dobcomplaint_count=Count(field))
             if field == 'dobviolation':
                 self = self.annotate(dobviolation_count=Count(field))
             if field == 'ecbviolation':
