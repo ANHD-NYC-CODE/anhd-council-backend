@@ -8,10 +8,10 @@ from datasets import serializers as serial
 from datasets import models as ds
 
 
-class BuildingViewSet(NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
+class HPDBuildingViewSet(NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
-    queryset = ds.Building.objects
-    serializer_class = serial.BuildingSerializer
+    queryset = ds.HPDBuildingRecord.objects
+    serializer_class = serial.HPDBuildingSerializer
 
     @cache_me()
     def list(self, request, *args, **kwargs):
