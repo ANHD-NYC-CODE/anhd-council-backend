@@ -83,7 +83,7 @@ class PropertyViewSet(NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     @cache_me()
     def list(self, request, *args, **kwargs):
         if 'parent_lookup_council' in kwargs:
-            queryset = ds.Property.objects.council(self.kwargs['parent_lookup_council1'])
+            queryset = ds.Property.objects.council(self.kwargs['parent_lookup_council'])
         else:
             queryset = ds.Property.objects
         self.queryset = properties_by_housingtype(self.request, queryset=queryset)
