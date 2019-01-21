@@ -74,6 +74,15 @@ TEMPLATES = [
     },
 ]
 
+# REST_FRAMEWORK = {
+#     # specifying the renderers
+#     'DEFAULT_RENDERER_CLASSES': (
+#         'rest_framework.renderers.JSONRenderer',
+#         'rest_framework.renderers.BrowsableAPIRenderer',
+#         'rest_framework_csv.renderers.CSVRenderer',
+#     ),
+# }
+
 
 WSGI_APPLICATION = 'app.wsgi.application'
 CACHE_TTL = 60 * 60 * 24  # cache for 24 hours

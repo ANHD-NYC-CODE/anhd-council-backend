@@ -1,8 +1,15 @@
 from rest_framework.decorators import api_view
+from rest_framework.views import APIView
+
 from rest_framework import status
 from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
-from django.http import JsonResponse, HttpResponseNotFound
+from rest_framework.response import Response
+from rest_framework.settings import api_settings
+from rest_framework_csv import renderers as rf_csv
+
+
+from django.http import JsonResponse, HttpResponseNotFound, Http404
 from django.core import serializers
 from django.conf import settings
 from django.core.cache import cache
@@ -18,48 +25,54 @@ import json
 logger = logging.getLogger('app')
 
 
-def council_list(request):
-    if request.method == 'GET':
+class CouncilList(APIView):
+    renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
+
+    def get(self, request, format=None):
         if request.path_info in cache:
             logger.debug('Serving cache: {}'.format(request.path_info))
-            return JsonResponse(cache.get(request.path_info), safe=False)
+            return Response(cache.get(request.path_info))
         else:
             try:
                 councils = ds.Council.objects.all()
             except ds.Council.DoesNotExist:
-                return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+                return Response(status=status.HTTP_404_NOT_FOUND)
 
             try:
                 serializer = serial.CouncilSerializer(councils, many=True)
                 logger.debug('Caching: {}'.format(request.path_info))
                 cache.set(request.path_info, serializer.data, timeout=settings.CACHE_TTL)
-                return JsonResponse(serializer.data, safe=False)
+                return Response(serializer.data)
             except Exception as e:
-                return JsonResponse(e.args, status=status.HTTP_500_INTERNAL_SERVER_ERROR, safe=False)
-    else:
-        return HttpResponse(400)
+                return Response(e.args, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-def council_detail(request, pk):
-    if request.method == 'GET':
+class CouncilDetail(APIView):
+    renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
+
+    def get_object(self, pk):
+        try:
+            return ds.Council.objects.get(pk=pk)
+        except ds.Council.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
         if request.path_info in cache:
             logger.debug('Serving cache: {}'.format(request.path_info))
-            return JsonResponse(cache.get(request.path_info), safe=False)
+            return Response(cache.get(request.path_info))
         else:
             try:
-                council = ds.Council.objects.get(pk=pk)
+                council = self.get_object(pk)
             except ds.Council.DoesNotExist:
-                return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+                return Response(status=status.HTTP_404_NOT_FOUND)
 
             try:
                 serializer = serial.CouncilDetailSerializer(council)
                 logger.debug('Caching: {}'.format(request.path_info))
                 cache.set(request.path_info, serializer.data, timeout=settings.CACHE_TTL)
-                return JsonResponse(serializer.data, safe=False)
+                return Response(serializer.data)
             except Exception as e:
-                return JsonResponse(e.args, status=status.HTTP_500_INTERNAL_SERVER_ERROR, safe=False)
-    else:
-        return HttpResponse(400)
+                return Response(e.args, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['GET'])
