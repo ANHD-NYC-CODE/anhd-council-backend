@@ -1,8 +1,7 @@
 from django.test import TestCase, RequestFactory
 from app.tests.base_test import BaseTest
 
-
-from api.views import councils_index, property_lookup
+from datasets.views import councils_index, property_lookup
 import json
 import logging
 logging.disable(logging.CRITICAL)
