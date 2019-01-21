@@ -52,20 +52,8 @@ def cache_me(relative_key_path=True, get_queryset=False):
 
 class CouncilViewSet(viewsets.ReadOnlyModelViewSet):
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
-
-    def get_serializer_class(self, *args, **kwargs):
-        if self.action == 'retrieve':
-            return serial.CouncilDetailSerializer
-        elif self.action == 'properties':
-            return serial.PropertySerializer
-        else:
-            return serial.CouncilSerializer
-
-    def get_queryset(self, *args, **kwargs):
-        if self.action == 'properties':
-            return properties_by_housingtype(self.request, queryset=ds.Property.objects.council(self.kwargs['pk']))
-        else:
-            return ds.Council.objects
+    queryset = ds.Council.objects
+    serializer_class = serial.CouncilSerializer
 
     @cache_me()
     def list(self, request, *args, **kwargs):
@@ -73,12 +61,13 @@ class CouncilViewSet(viewsets.ReadOnlyModelViewSet):
 
     @cache_me()
     def retrieve(self, request, *args, **kwargs):
-        queryset = properties_by_housingtype(self.request, queryset=ds.Property.objects.council(self.kwargs['pk']))
+        self.serializer_class = serial.CouncilDetailSerializer
         return super().retrieve(self, request, *args, **kwargs)
 
-    @action(detail=True)
     @cache_me()
     def properties(self, request, *args, **kwargs):
+        self.queryset = properties_by_housingtype(self.request, queryset=ds.Property.objects.council(self.kwargs['pk']))
+        self.serializer_class = serial.PropertySerializer
         return super().list(self, request, *args, **kwargs)
 
 
