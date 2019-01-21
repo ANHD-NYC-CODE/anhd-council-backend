@@ -5,7 +5,7 @@ from django.core import serializers
 from django.conf import settings
 from django.core.cache import cache
 from api.helpers.api_helpers import queryset_by_housingtype
-from api.serializers import council_housing_type_dict, property_serializer
+from api.serializers import council_housing_type_dict, property_query_serializer, property_lookup_serializer
 from datasets.models.Property import PropertyFilter
 
 from datasets import models as ds
@@ -61,7 +61,7 @@ def query(request, councilnum, housingtype, format=None):
         try:
             council_housing_results = queryset_by_housingtype(ds.Property.objects.council(councilnum), housingtype)
             property_filter = PropertyFilter(request.GET, queryset=council_housing_results.all())
-            results_json = json.dumps(property_serializer(property_filter.qs.all()))
+            results_json = json.dump(property_query_serializer(property_filter.qs.all()))
             logger.debug('Caching: {}'.format(cache_key))
             cache.set(cache_key, results_json, timeout=settings.CACHE_TTL)
             return JsonResponse(results_json, safe=False)
@@ -70,7 +70,7 @@ def query(request, councilnum, housingtype, format=None):
 
 
 @api_view(['GET'])
-def building_lookup(request, bbl, format=None):
+def property_lookup(request, bbl, format=None):
     if request.path_info in cache:
         logger.debug('Serving cache: {}'.format(request.path_info))
         property_json = cache.get(request.path_info)
@@ -78,7 +78,7 @@ def building_lookup(request, bbl, format=None):
     else:
         try:
             property = ds.Property.objects.get(bbl=bbl)
-            property_json = serializers.serialize('json', [property])
+            property_json = property_lookup_serializer(property)
             logger.debug('Caching: {}'.format(request.path_info))
             cache.set(request.path_info, property_json, timeout=settings.CACHE_TTL)
             return JsonResponse(property_json, safe=False)

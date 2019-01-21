@@ -27,6 +27,6 @@ urlpatterns = [
     path('councils/', api_views.councils_index, name="councils_index"),
     path('councils/<int:councilnum>', api_views.council_show, name="council_show"),
     path('councils/<int:councilnum>/<str:housingtype>/', api_views.query, name="query"),
-    path('properties/<str:bbl>/', api_views.building_lookup, name="building_lookup")
+    path('properties/<str:bbl>/', api_views.property_lookup, name="property_lookup")
 
 ]
