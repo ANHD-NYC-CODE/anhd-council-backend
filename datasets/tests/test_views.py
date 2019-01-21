@@ -1,24 +1,39 @@
 from django.test import TestCase, RequestFactory
 from app.tests.base_test import BaseTest
 
-from datasets.views import councils_index, property_lookup
+from datasets import views as v
 import json
 import logging
 logging.disable(logging.CRITICAL)
 
 
-class CouncilsIndexTests(BaseTest, TestCase):
+class CouncilsTests(BaseTest, TestCase):
     def setUp(self):
         self.factory = RequestFactory()
 
     def tearDown(self):
         self.clean_tests()
 
-    def test_api_request(self):
+    def test_council_list(self):
         self.council_factory()
+
         request = self.factory.get('/councils')
-        response = councils_index(request)
+        response = v.council_list(request)
+        content = json.loads(response.content.decode('utf-8'))
+
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+
+    def test_council_detail(self):
+        council = self.council_factory(coundist=1)
+        property = self.property_factory(council=council)
+
+        request = self.factory.get('/councils')
+        response = v.council_detail(request, 1)
+        content = json.loads(response.content.decode('utf-8'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(content["housing_types"]["market_rate_count"], 1)
 
 
 class PropertyLookupTests(BaseTest, TestCase):
@@ -39,7 +54,7 @@ class PropertyLookupTests(BaseTest, TestCase):
         self.hpdviolation_factory(property=property, building=building1)
 
         request = self.factory.get('/buildings/1')
-        response = property_lookup(request, "1")
+        response = v.property_lookup(request, "1")
         content = json.loads(response.content.decode('utf-8'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(content['bbl'], '1')
