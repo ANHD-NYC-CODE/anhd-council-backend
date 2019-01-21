@@ -28,30 +28,21 @@ import json
 logger = logging.getLogger('app')
 
 
-def cache_me(relative_key_path=True, list=True, get_queryset=False):
+def cache_me(relative_key_path=True, get_queryset=False):
     def cache_decorator(function):
         @wraps(function)
         def cached_view(*original_args, **original_kwargs):
-            if relative_key_path:
-                cache_key = original_args[1].path_info
-            else:
-                cache_key = original_args[1].build_absolute_uri()
+            cache_key = original_args[1].build_absolute_uri()
 
             if cache_key in cache:
                 logger.debug('Serving cache: {}'.format(cache_key))
                 return Response(cache.get(cache_key))
             else:
-                if get_queryset:
-                    original_args[0].queryset = original_args[0].queryset(
-                        original_args[1], original_kwargs['pk'])
-                if list:
-                    response = original_args[0].list(original_args[1], original_args, original_kwargs)
-                else:
-                    response = original_args[0].retrieve(original_args[1], original_args, original_kwargs)
+                response = function(*original_args, **original_kwargs)
 
                 logger.debug('Caching: {}'.format(cache_key))
                 cache.set(cache_key, response.data, timeout=settings.CACHE_TTL)
-                return Response(response.data)
+                return response
 
         return cached_view
     return cache_decorator
@@ -72,7 +63,7 @@ class CouncilDetail(generics.RetrieveAPIView):
     queryset = ds.Council.objects
     serializer_class = serial.CouncilDetailSerializer
 
-    @cache_me(list=False)
+    @cache_me()
     def get(self, request, *args, **kwargs):
         return super().get(self, request, *args, **kwargs)
 
@@ -81,11 +72,11 @@ class CouncilPropertyList(generics.ListAPIView):
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
     serializer_class = serial.PropertySerializer
 
-    def queryset(self, request, pk):
-        return properties_by_housingtype(request, queryset=ds.Property.objects.council(pk))
+    def get_queryset(self):
+        return properties_by_housingtype(self.request, queryset=ds.Property.objects.council(self.kwargs['pk']))
 
-    @cache_me(relative_key_path=False, get_queryset=True)
-    def get(self, request, pk, format=None):
+    @cache_me()
+    def get(self, request, *args, **kwargs):
         return super().get(self, request, *args, **kwargs)
 
 
@@ -94,7 +85,7 @@ class PropertyDetail(generics.RetrieveAPIView):
     queryset = ds.Property.objects
     serializer_class = serial.PropertySerializer
 
-    @cache_me(relative_key_path=False, list=False)
+    @cache_me()
     def get(self, request, *args, **kwargs):
         return super().get(self, request, *args, **kwargs)
 
