@@ -142,7 +142,7 @@ class PropertyManager(models.Manager):
         return self.get_queryset().residential()
 
     def rentstab(self):
-        return self.get_queryset().renstab()
+        return self.get_queryset().rentstab()
 
     def rentreg(self):
         return self.get_queryset().rentreg()
