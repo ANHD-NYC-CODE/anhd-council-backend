@@ -8,8 +8,9 @@ from datasets import views as v
 council_housingtype_summary = v.council_views.CouncilViewSet.as_view({
     'get': 'housingtype_summary',
 })
-council_properties = v.council_views.CouncilViewSet.as_view({
-    'get': 'properties',
+
+property_buildings_summary = v.property_views.PropertyViewSet.as_view({
+    'get': 'buildings_summary',
 })
 
 
@@ -26,11 +27,18 @@ councils_router.register(
     parents_query_lookups=['council']
 )
 
-router.register(r'properties', v.property_views.PropertyViewSet)
+properties_router = router.register(r'properties', v.property_views.PropertyViewSet)
+properties_router.register(
+    'buildings',
+    v.building_views.BuildingViewSet,
+    base_name='property-buildings',
+    parents_query_lookups=['bbl']
+)
+
 router.register(r'buildings', v.building_views.BuildingViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('councils/<int:pk>/housingtype-summary', council_housingtype_summary, name='council-housingtype-summary'),
-    # path('councils/<int:pk>/properties/', council_properties, name='council-properties'),
+    path('councils/<int:pk>/housingtype-summary/', council_housingtype_summary, name='council-housingtype-summary'),
+    path('properties/<str:pk>/buildings-summary/', property_buildings_summary, name='property-buildings-summary'),
 ]
