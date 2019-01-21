@@ -3,12 +3,12 @@ from rest_framework.urlpatterns import format_suffix_patterns
 from rest_framework.routers import DefaultRouter
 from rest_framework_extensions.routers import NestedRouterMixin
 
-from datasets import views
+from datasets import views as v
 
-council_housingtype_summary = views.CouncilViewSet.as_view({
+council_housingtype_summary = v.council_views.CouncilViewSet.as_view({
     'get': 'housingtype_summary',
 })
-council_properties = views.CouncilViewSet.as_view({
+council_properties = v.council_views.CouncilViewSet.as_view({
     'get': 'properties',
 })
 
@@ -18,15 +18,15 @@ class NestedDefaultRouter(NestedRouterMixin, DefaultRouter):
 
 
 router = NestedDefaultRouter()
-councils_router = router.register(r'councils', views.CouncilViewSet)
+councils_router = router.register(r'councils', v.council_views.CouncilViewSet)
 councils_router.register(
     'properties',
-    views.PropertyViewSet,
+    v.property_views.PropertyViewSet,
     base_name='council-properties',
     parents_query_lookups=['council']
 )
 
-router.register(r'properties', views.PropertyViewSet)
+router.register(r'properties', v.property_views.PropertyViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
