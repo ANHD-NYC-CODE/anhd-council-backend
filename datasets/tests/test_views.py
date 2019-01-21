@@ -83,3 +83,35 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         # self.assertEqual(content['hpdcomplaints']['items'][0]["status"], "ACTIVE")
         # self.assertEqual(content['hpdviolations']['total'], 1)
         # self.assertEqual(content['hpdviolations']['items'][0]["currentstatus"], "ACTIVE")
+
+
+class BuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
+    urlpatterns = [
+        path('', include('datasets.urls')),
+    ]
+
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_building_list(self):
+        council = self.council_factory(coundist=1)
+        property = self.property_factory(council=council)
+        self.building_factory(bin="1", property=property)
+        self.building_factory(bin="2", property=property)
+
+        response = self.client.get('/buildings/', format="json")
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
+    def test_building_retrieve(self):
+        council = self.council_factory(coundist=1)
+        property = self.property_factory(council=council)
+        self.building_factory(bin="1", property=property)
+
+        response = self.client.get('/buildings/1/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(content["bin"], "1")

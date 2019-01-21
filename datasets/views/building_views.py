@@ -6,9 +6,9 @@ from datasets import serializers as serial
 from datasets import models as ds
 
 
-class CouncilViewSet(NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
-    queryset = ds.Council.objects
-    serializer_class = serial.CouncilSerializer
+class BuildingViewSet(NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
+    queryset = ds.Building.objects
+    serializer_class = serial.BuildingSerializer
 
     @cache_me()
     def list(self, request, *args, **kwargs):
@@ -16,9 +16,4 @@ class CouncilViewSet(NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
 
     @cache_me()
     def retrieve(self, request, *args, **kwargs):
-        return super().retrieve(self, request, *args, **kwargs)
-
-    @cache_me()
-    def housingtype_summary(self, request, *args, **kwargs):
-        self.serializer_class = serial.CouncilHousingTypeSummarySerializer
         return super().retrieve(self, request, *args, **kwargs)
