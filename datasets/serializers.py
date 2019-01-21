@@ -66,6 +66,12 @@ class BuildingSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class HPDBuildingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.HPDBuildingRecord
+        fields = '__all__'
+
+
 def property_query_serializer(properties):
     return list({'foo': 'bar'} for property in properties)
 

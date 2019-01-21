@@ -36,7 +36,15 @@ properties_router.register(
     parents_query_lookups=['bbl']
 )
 
+properties_router.register(
+    'hpdbuildings',
+    v.building_views.BuildingViewSet,
+    base_name='property-hpdbuildings',
+    parents_query_lookups=['bbl']
+)
+
 router.register(r'buildings', v.building_views.BuildingViewSet)
+router.register(r'hpdbuildings', v.hpdbuilding_views.HPDBuildingViewSet)
 
 custom_routes = format_suffix_patterns([
     path('councils/<int:pk>/housingtype-summary/', council_housingtype_summary, name='council-housingtype-summary'),
