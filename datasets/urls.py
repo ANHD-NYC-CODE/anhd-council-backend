@@ -2,6 +2,7 @@ from django.urls import path, include
 from rest_framework.urlpatterns import format_suffix_patterns
 from rest_framework.routers import DefaultRouter
 from rest_framework_extensions.routers import NestedRouterMixin
+from rest_framework import renderers
 
 from datasets import views as v
 
@@ -37,8 +38,12 @@ properties_router.register(
 
 router.register(r'buildings', v.building_views.BuildingViewSet)
 
-urlpatterns = [
-    path('', include(router.urls)),
+custom_routes = format_suffix_patterns([
     path('councils/<int:pk>/housingtype-summary/', council_housingtype_summary, name='council-housingtype-summary'),
     path('properties/<str:pk>/buildings-summary/', property_buildings_summary, name='property-buildings-summary'),
+])
+
+urlpatterns = [
+    path('', include(router.urls)),
+    *custom_routes
 ]

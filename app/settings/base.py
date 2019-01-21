@@ -76,6 +76,9 @@ TEMPLATES = [
 
 REST_FRAMEWORK = {
     'TEST_REQUEST_DEFAULT_FORMAT': 'json'
+    # 'DEFAULT_RENDERER_CLASSES': (
+    #     'rest_framework_csv.renderers.CSVRenderer',
+    # ),
 }
 
 
