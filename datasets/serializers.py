@@ -34,6 +34,12 @@ class PropertySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class BuildingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.Building
+        fields = '__all__'
+
+
 def property_query_serializer(properties):
     return list({'foo': 'bar'} for property in properties)
 

@@ -44,7 +44,7 @@ class BaseTest():
         if not len(c_models.Dataset.objects.filter(name=name)):
             dataset = c_models.Dataset.objects.create(name=name, model_name=name)
         if not council:
-            council = council_factory(self, coundist=1)
+            council = self.council_factory(self, coundist=1)
 
         factory = d_models.Property.objects.create(
             bbl=bbl,

@@ -27,6 +27,7 @@ councils_router.register(
 )
 
 router.register(r'properties', v.property_views.PropertyViewSet)
+router.register(r'buildings', v.building_views.BuildingViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
