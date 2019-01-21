@@ -45,6 +45,7 @@ properties_router.register(
 
 router.register(r'buildings', v.building_views.BuildingViewSet)
 router.register(r'hpdbuildings', v.hpdbuilding_views.HPDBuildingViewSet)
+router.register(r'hpdviolations', v.hpdviolation_views.HPDViolationViewSet)
 
 custom_routes = format_suffix_patterns([
     path('councils/<int:pk>/housingtype-summary/', council_housingtype_summary, name='council-housingtype-summary'),

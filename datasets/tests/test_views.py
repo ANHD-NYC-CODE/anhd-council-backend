@@ -19,15 +19,16 @@ class CouncilViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
 
     def test_council_list(self):
         self.council_factory()
+        self.council_factory()
 
         response = self.client.get('/councils/', format="json")
         content = response.data
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(content), 1)
+        self.assertEqual(len(content), 2)
 
     def test_council_retrieve(self):
-        council = self.council_factory(coundist=1)
+        self.council_factory(coundist=1)
 
         response = self.client.get('/councils/1/')
         content = response.data
@@ -63,9 +64,8 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
     ]
 
     def test_property_list(self):
-        council = self.council_factory(coundist=1)
-        self.property_factory(council=council, bbl="1")
-        self.property_factory(council=council, bbl="2")
+        self.property_factory(bbl="1")
+        self.property_factory(bbl="2")
 
         response = self.client.get('/properties/')
         content = response.data
@@ -73,8 +73,7 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(len(content), 2)
 
     def test_property_retrieve(self):
-        council = self.council_factory(coundist=1)
-        property = self.property_factory(council=council, bbl="1", yearbuilt="1910")
+        property = self.property_factory(bbl="1", yearbuilt="1910")
         # hpdbuilding = self.hpdbuilding_factory(property=property, building=building1)
         #
         # self.hpdcomplaint_factory(property=property, hpdbuilding=hpdbuilding, status="ACTIVE")
@@ -91,8 +90,7 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         # self.assertEqual(content['hpdviolations']['items'][0]["currentstatus"], "ACTIVE")
 
     def test_property_buildings(self):
-        council = self.council_factory(coundist=1)
-        property = self.property_factory(council=council, bbl="1")
+        property = self.property_factory(bbl="1")
         self.building_factory(bin="1", property=property)
         self.building_factory(bin="2", property=property)
 
@@ -103,12 +101,9 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(len(content), 2)
 
     def test_property_hpdbuildings(self):
-        council = self.council_factory(coundist=1)
-        property = self.property_factory(council=council, bbl="1")
-        building1 = self.building_factory(bin="1", property=property)
-        building2 = self.building_factory(bin="2", property=property)
-        self.hpdbuilding_factory(buildingid="1", property=property, building=building1)
-        self.hpdbuilding_factory(buildingid="2", property=property, building=building2)
+        property = self.property_factory(bbl="1")
+        self.hpdbuilding_factory(buildingid="1", property=property)
+        self.hpdbuilding_factory(buildingid="2", property=property)
 
         response = self.client.get('/properties/1/hpdbuildings/')
         content = response.data
@@ -117,8 +112,7 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(len(content), 2)
 
     def test_property_buildings_summary(self):
-        council = self.council_factory(coundist=1)
-        property = self.property_factory(council=council)
+        property = self.property_factory(bbl="1")
         building1 = self.building_factory(property=property, bin="10a", lhnd="100", hhnd="100")
         building2 = self.building_factory(property=property, bin="10b", lhnd="102", hhnd="102")
 
@@ -139,10 +133,8 @@ class BuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.clean_tests()
 
     def test_building_list(self):
-        council = self.council_factory(coundist=1)
-        property = self.property_factory(council=council)
-        self.building_factory(bin="1", property=property)
-        self.building_factory(bin="2", property=property)
+        self.building_factory(bin="1")
+        self.building_factory(bin="2")
 
         response = self.client.get('/buildings/', format="json")
         content = response.data
@@ -151,9 +143,7 @@ class BuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(len(content), 2)
 
     def test_building_retrieve(self):
-        council = self.council_factory(coundist=1)
-        property = self.property_factory(council=council)
-        self.building_factory(bin="1", property=property)
+        self.building_factory(bin="1")
 
         response = self.client.get('/buildings/1/')
         content = response.data
@@ -171,12 +161,8 @@ class HPDBuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase)
         self.clean_tests()
 
     def test_building_list(self):
-        council = self.council_factory(coundist=1)
-        property = self.property_factory(council=council)
-        building1 = self.building_factory(bin="1", property=property)
-        building2 = self.building_factory(bin="2", property=property)
-        self.hpdbuilding_factory(buildingid="1", property=property, building=building1)
-        self.hpdbuilding_factory(buildingid="2", property=property, building=building2)
+        self.hpdbuilding_factory(buildingid="1")
+        self.hpdbuilding_factory(buildingid="2")
 
         response = self.client.get('/hpdbuildings/', format="json")
         content = response.data
@@ -185,13 +171,39 @@ class HPDBuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase)
         self.assertEqual(len(content), 2)
 
     def test_building_retrieve(self):
-        council = self.council_factory(coundist=1)
-        property = self.property_factory(council=council)
-        building = self.building_factory(bin="1", property=property)
-        self.hpdbuilding_factory(buildingid="1", property=property, building=building)
+        building = self.building_factory(bin="1")
+        self.hpdbuilding_factory(buildingid="1", building=building)
 
         response = self.client.get('/hpdbuildings/1/')
         content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(content["buildingid"], 1)
+
+
+class HPDViolationViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
+    urlpatterns = [
+        path('', include('datasets.urls')),
+    ]
+
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_violation_list(self):
+        self.hpdviolation_factory(violationid="1")
+        self.hpdviolation_factory(violationid="2")
+
+        response = self.client.get('/hpdviolations/', format="json")
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
+    def test_violation_retrieve(self):
+        self.hpdviolation_factory(violationid="1")
+
+        response = self.client.get('/hpdviolations/1/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(content["violationid"], 1)
