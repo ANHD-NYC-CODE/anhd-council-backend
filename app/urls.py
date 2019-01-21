@@ -26,6 +26,4 @@ urlpatterns = [
     path('docs/', include_docs_urls(title='API', description='API Documentation')),
     path('', include('datasets.urls')),
     path('councils/<int:councilnum>/<str:housingtype>/', datasets.query, name="query"),
-    path('properties/<str:bbl>/', datasets.property_lookup, name="property_lookup")
-
 ]
