@@ -8,6 +8,8 @@ from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
 from rest_framework_csv import renderers as rf_csv
+from rest_framework import viewsets
+from rest_framework.decorators import action
 
 
 from django.http import JsonResponse, HttpResponseNotFound, Http404
@@ -48,36 +50,36 @@ def cache_me(relative_key_path=True, get_queryset=False):
     return cache_decorator
 
 
-class CouncilList(generics.ListAPIView):
+class CouncilViewSet(viewsets.ReadOnlyModelViewSet):
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
-    queryset = ds.Council.objects
-    serializer_class = serial.CouncilSerializer
+
+    def get_serializer_class(self, *args, **kwargs):
+        if self.action == 'retrieve':
+            return serial.CouncilDetailSerializer
+        elif self.action == 'properties':
+            return serial.PropertySerializer
+        else:
+            return serial.CouncilSerializer
+
+    def get_queryset(self, *args, **kwargs):
+        if self.action == 'properties':
+            return properties_by_housingtype(self.request, queryset=ds.Property.objects.council(self.kwargs['pk']))
+        else:
+            return ds.Council.objects
 
     @cache_me()
-    def get(self, request, *args, **kwargs):
-        return super().get(self, request, *args, **kwargs)
-
-
-class CouncilDetail(generics.RetrieveAPIView):
-    renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
-    queryset = ds.Council.objects
-    serializer_class = serial.CouncilDetailSerializer
+    def list(self, request, *args, **kwargs):
+        return super().list(self, request, *args, **kwargs)
 
     @cache_me()
-    def get(self, request, *args, **kwargs):
-        return super().get(self, request, *args, **kwargs)
+    def retrieve(self, request, *args, **kwargs):
+        queryset = properties_by_housingtype(self.request, queryset=ds.Property.objects.council(self.kwargs['pk']))
+        return super().retrieve(self, request, *args, **kwargs)
 
-
-class CouncilPropertyList(generics.ListAPIView):
-    renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
-    serializer_class = serial.PropertySerializer
-
-    def get_queryset(self):
-        return properties_by_housingtype(self.request, queryset=ds.Property.objects.council(self.kwargs['pk']))
-
+    @action(detail=True)
     @cache_me()
-    def get(self, request, *args, **kwargs):
-        return super().get(self, request, *args, **kwargs)
+    def properties(self, request, *args, **kwargs):
+        return super().list(self, request, *args, **kwargs)
 
 
 class PropertyDetail(generics.RetrieveAPIView):
