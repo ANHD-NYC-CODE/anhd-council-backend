@@ -1,7 +1,15 @@
-from datasets import models as d_models
+from datasets import models as ds
 
 
-def queryset_by_housingtype(queryset, housingtype):
+def properties_by_housingtype(request, queryset=None):
+    if not queryset:
+        queryset = ds.Property.objects
+
+    if 'housingtype' in request.query_params:
+        housingtype = request.query_params['housingtype']
+    else:
+        housingtype = None
+
     switcher = {
         "rent-stabilized": queryset.rentstab(),
         "rent-regulated": queryset.rentreg(),
@@ -9,4 +17,4 @@ def queryset_by_housingtype(queryset, housingtype):
         "market-rate": queryset.marketrate()
     }
 
-    return switcher.get(housingtype, None)
+    return switcher.get(housingtype, queryset)
