@@ -74,20 +74,13 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
 
     def test_property_retrieve(self):
         property = self.property_factory(bbl="1", yearbuilt="1910")
-        # hpdbuilding = self.hpdbuilding_factory(property=property, building=building1)
-        #
-        # self.hpdcomplaint_factory(property=property, hpdbuilding=hpdbuilding, status="ACTIVE")
-        # self.hpdviolation_factory(property=property, building=building1)
 
         response = self.client.get('/properties/1/')
         content = response.data
+
         self.assertEqual(response.status_code, 200)
         self.assertEqual(content['bbl'], '1')
         self.assertEqual(content['yearbuilt'], 1910)
-        # self.assertEqual(content['hpdcomplaints']['total'], 1)
-        # self.assertEqual(content['hpdcomplaints']['items'][0]["status"], "ACTIVE")
-        # self.assertEqual(content['hpdviolations']['total'], 1)
-        # self.assertEqual(content['hpdviolations']['items'][0]["currentstatus"], "ACTIVE")
 
     def test_property_buildings(self):
         property = self.property_factory(bbl="1")
@@ -106,6 +99,17 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.hpdbuilding_factory(buildingid="2", property=property)
 
         response = self.client.get('/properties/1/hpdbuildings/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
+    def test_property_hpdviolations(self):
+        property = self.property_factory(bbl="1")
+        self.hpdviolation_factory(property=property)
+        self.hpdviolation_factory(property=property)
+
+        response = self.client.get('/properties/1/hpdviolations/')
         content = response.data
 
         self.assertEqual(response.status_code, 200)
@@ -150,6 +154,17 @@ class BuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(content["bin"], "1")
+
+    def test_building_hpdviolations(self):
+        building = self.building_factory(bin="1")
+        self.hpdviolation_factory(building=building)
+        self.hpdviolation_factory(building=building)
+
+        response = self.client.get('/buildings/1/hpdviolations/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
 
 
 class HPDBuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
