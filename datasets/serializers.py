@@ -9,10 +9,10 @@ class CouncilSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class CouncilDetailSerializer(serializers.ModelSerializer):
+class CouncilHousingTypeSummarySerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Council
-        fields = '__all__'
+        fields = ('pk', 'housing_types')
 
     housing_types = serializers.SerializerMethodField()
 

@@ -25,6 +25,7 @@ coreapi = "*"
 django-redis = "*"
 colorlog = "*"
 django-filter = "*"
+drf-extensions = "*"
 
 [requires]
 python_version = "3.5"

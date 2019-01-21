@@ -26,28 +26,24 @@ class CouncilViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
 
-    def test_council_detail(self):
+    def test_council_retrieve(self):
         council = self.council_factory(coundist=1)
-        property = self.property_factory(council=council)
 
         response = self.client.get('/councils/1/')
         content = response.data
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(content["housing_types"]["market_rate_count"], 1)
+        self.assertEqual(content["coundist"], 1)
 
-    def test_council_property_list(self):
-        council1 = self.council_factory(coundist=1)
-        council2 = self.council_factory(coundist=2)
-        self.property_factory(council=council1, bbl="1")
-        self.property_factory(council=council1, bbl="2")
-        self.property_factory(council=council2, bbl="3")
+    def test_council_housingtype_summary(self):
+        council = self.council_factory(coundist=1)
+        property = self.property_factory(council=council)
 
-        response = self.client.get('/councils/1/properties/')
+        response = self.client.get('/councils/1/housingtype-summary')
         content = response.data
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(content), 2)
+        self.assertEqual(content["housing_types"]["market_rate_count"], 1)
 
 
 class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
@@ -55,7 +51,17 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         path('', include('datasets.urls')),
     ]
 
-    def test_property_detail(self):
+    def test_property_list(self):
+        council = self.council_factory(coundist=1)
+        self.property_factory(council=council, bbl="1")
+        self.property_factory(council=council, bbl="2")
+
+        response = self.client.get('/properties/')
+        content = response.data
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
+    def test_property_retrieve(self):
         council = self.council_factory(coundist=1)
         property = self.property_factory(council=council, bbl="1", yearbuilt="1910")
         # building1 = self.building_factory(property=property, bin="10a", lhnd="100", hhnd="100")

@@ -10,7 +10,7 @@ from rest_framework.settings import api_settings
 from rest_framework_csv import renderers as rf_csv
 from rest_framework import viewsets
 from rest_framework.decorators import action
-
+from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from django.http import JsonResponse, HttpResponseNotFound, Http404
 from django.core import serializers
@@ -50,7 +50,7 @@ def cache_me(relative_key_path=True, get_queryset=False):
     return cache_decorator
 
 
-class CouncilViewSet(viewsets.ReadOnlyModelViewSet):
+class CouncilViewSet(NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
     queryset = ds.Council.objects
     serializer_class = serial.CouncilSerializer
@@ -61,7 +61,11 @@ class CouncilViewSet(viewsets.ReadOnlyModelViewSet):
 
     @cache_me()
     def retrieve(self, request, *args, **kwargs):
-        self.serializer_class = serial.CouncilDetailSerializer
+        return super().retrieve(self, request, *args, **kwargs)
+
+    @cache_me()
+    def housingtype_summary(self, request, *args, **kwargs):
+        self.serializer_class = serial.CouncilHousingTypeSummarySerializer
         return super().retrieve(self, request, *args, **kwargs)
 
     @cache_me()
@@ -71,14 +75,23 @@ class CouncilViewSet(viewsets.ReadOnlyModelViewSet):
         return super().list(self, request, *args, **kwargs)
 
 
-class PropertyDetail(generics.RetrieveAPIView):
+class PropertyViewSet(NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
     queryset = ds.Property.objects
     serializer_class = serial.PropertySerializer
 
     @cache_me()
-    def get(self, request, *args, **kwargs):
-        return super().get(self, request, *args, **kwargs)
+    def list(self, request, *args, **kwargs):
+        if 'parent_lookup_council' in kwargs:
+            queryset = ds.Property.objects.council(self.kwargs['parent_lookup_council1'])
+        else:
+            queryset = ds.Property.objects
+        self.queryset = properties_by_housingtype(self.request, queryset=queryset)
+        return super().list(self, request, *args, **kwargs)
+
+    @cache_me()
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(self, request, *args, **kwargs)
 
 
 @api_view(['GET'])

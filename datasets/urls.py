@@ -1,22 +1,35 @@
-from django.urls import path
+from django.urls import path, include
 from rest_framework.urlpatterns import format_suffix_patterns
+from rest_framework.routers import DefaultRouter
+from rest_framework_extensions.routers import NestedRouterMixin
 
 from datasets import views
 
-council_list = views.CouncilViewSet.as_view({
-    'get': 'list',
-})
-council_detail = views.CouncilViewSet.as_view({
-    'get': 'retrieve',
+council_housingtype_summary = views.CouncilViewSet.as_view({
+    'get': 'housingtype_summary',
 })
 council_properties = views.CouncilViewSet.as_view({
     'get': 'properties',
 })
 
 
-urlpatterns = format_suffix_patterns([
-    path('councils/', council_list, name='council-list'),
-    path('councils/<int:pk>/', council_detail, name='council-detail'),
-    path('councils/<int:pk>/properties/', council_properties, name='council-properties'),
-    path('properties/<str:pk>/', views.PropertyDetail.as_view()),
-])
+class NestedDefaultRouter(NestedRouterMixin, DefaultRouter):
+    pass
+
+
+router = NestedDefaultRouter()
+councils_router = router.register(r'councils', views.CouncilViewSet)
+councils_router.register(
+    'properties',
+    views.PropertyViewSet,
+    base_name='council-properties',
+    parents_query_lookups=['council']
+)
+
+router.register(r'properties', views.PropertyViewSet)
+
+urlpatterns = [
+    path('', include(router.urls)),
+    path('councils/<int:pk>/housingtype-summary', council_housingtype_summary, name='council-housingtype-summary'),
+    # path('councils/<int:pk>/properties/', council_properties, name='council-properties'),
+]
