@@ -38,12 +38,27 @@ properties_router.register(
 
 properties_router.register(
     'hpdbuildings',
-    v.building_views.BuildingViewSet,
+    v.hpdbuilding_views.HPDBuildingViewSet,
     base_name='property-hpdbuildings',
     parents_query_lookups=['bbl']
 )
 
-router.register(r'buildings', v.building_views.BuildingViewSet)
+properties_router.register(
+    'hpdviolations',
+    v.hpdviolation_views.HPDViolationViewSet,
+    base_name='property-hpdviolations',
+    parents_query_lookups=['bbl']
+)
+
+buildings_router = router.register(r'buildings', v.building_views.BuildingViewSet)
+
+buildings_router.register(
+    'hpdviolations',
+    v.hpdviolation_views.HPDViolationViewSet,
+    base_name='building-hpdviolations',
+    parents_query_lookups=['bin']
+)
+
 router.register(r'hpdbuildings', v.hpdbuilding_views.HPDBuildingViewSet)
 router.register(r'hpdviolations', v.hpdviolation_views.HPDViolationViewSet)
 
