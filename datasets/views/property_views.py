@@ -38,6 +38,11 @@ class PropertyViewSet(NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(self, request, *args, **kwargs)
 
+    @cache_me()
+    def buildings_summary(self, request, *args, **kwargs):
+        self.serializer_class = serial.PropertyBuildingsSummary
+        return super().retrieve(self, request, *args, **kwargs)
+
 #
 # @api_view(['GET'])
 # def query(request, councilnum, housingtype, format=None):

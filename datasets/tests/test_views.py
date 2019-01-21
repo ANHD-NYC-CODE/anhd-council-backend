@@ -35,11 +35,22 @@ class CouncilViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(content["coundist"], 1)
 
+    def test_council_properties(self):
+        council = self.council_factory(coundist=1)
+        self.property_factory(council=council, bbl="1")
+        self.property_factory(council=council, bbl="2")
+
+        response = self.client.get('/councils/1/properties/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
     def test_council_housingtype_summary(self):
         council = self.council_factory(coundist=1)
-        property = self.property_factory(council=council)
+        self.property_factory(council=council)
 
-        response = self.client.get('/councils/1/housingtype-summary')
+        response = self.client.get('/councils/1/housingtype-summary/')
         content = response.data
 
         self.assertEqual(response.status_code, 200)
@@ -83,6 +94,31 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         # self.assertEqual(content['hpdcomplaints']['items'][0]["status"], "ACTIVE")
         # self.assertEqual(content['hpdviolations']['total'], 1)
         # self.assertEqual(content['hpdviolations']['items'][0]["currentstatus"], "ACTIVE")
+
+    def test_property_buildings(self):
+        council = self.council_factory(coundist=1)
+        property = self.property_factory(council=council, bbl="1")
+        self.building_factory(bin="1", property=property)
+        self.building_factory(bin="2", property=property)
+
+        response = self.client.get('/properties/1/buildings/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
+    def test_property_buildings_summary(self):
+        council = self.council_factory(coundist=1)
+        property = self.property_factory(council=council)
+        building1 = self.building_factory(property=property, bin="10a", lhnd="100", hhnd="100")
+        building2 = self.building_factory(property=property, bin="10b", lhnd="102", hhnd="102")
+
+        response = self.client.get('/properties/1/buildings-summary/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content["buildings"]["items"]), 2)
+        self.assertEqual(content["buildings"]["items"][0]["house_number"], "102")
 
 
 class BuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):

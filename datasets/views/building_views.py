@@ -12,6 +12,8 @@ class BuildingViewSet(NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
 
     @cache_me()
     def list(self, request, *args, **kwargs):
+        # if 'parent_lookup_property' in kwargs:
+        #     self.queryset = self.queryset.filter(bbl=self.kwargs['parent_lookup_property'])
         return super().list(self, request, *args, **kwargs)
 
     @cache_me()
