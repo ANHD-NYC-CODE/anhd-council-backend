@@ -78,6 +78,20 @@ class HPDViolationSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class HPDComplaintSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.HPDComplaint
+        fields = '__all__'
+
+    bin = serializers.SerializerMethodField()
+
+    def get_bin(self, obj):
+        try:
+            return obj.buildingid.bin.bin
+        except Exception as e:
+            return None
+
+
 def property_query_serializer(properties):
     return list({'foo': 'bar'} for property in properties)
 
