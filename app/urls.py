@@ -18,15 +18,15 @@ from django.urls import path
 from django.conf.urls import url, include
 from rest_framework.documentation import include_docs_urls
 
-from api import views as api_views
+from datasets import views as datasets
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('docs/', include_docs_urls(title='API', description='API Documentation')),
-    path('councils/', api_views.councils_index, name="councils_index"),
-    path('councils/<int:councilnum>', api_views.council_show, name="council_show"),
-    path('councils/<int:councilnum>/<str:housingtype>/', api_views.query, name="query"),
-    path('properties/<str:bbl>/', api_views.property_lookup, name="property_lookup")
+    path('councils/', datasets.councils_index, name="councils_index"),
+    path('councils/<int:councilnum>', datasets.council_show, name="council_show"),
+    path('councils/<int:councilnum>/<str:housingtype>/', datasets.query, name="query"),
+    path('properties/<str:bbl>/', datasets.property_lookup, name="property_lookup")
 
 ]
