@@ -115,6 +115,17 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
+    def test_property_hpdcomplaints(self):
+        property = self.property_factory(bbl="1")
+        self.hpdcomplaint_factory(property=property)
+        self.hpdcomplaint_factory(property=property)
+
+        response = self.client.get('/properties/1/hpdcomplaints/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
     def test_property_buildings_summary(self):
         property = self.property_factory(bbl="1")
         building1 = self.building_factory(property=property, bin="10a", lhnd="100", hhnd="100")
@@ -161,6 +172,18 @@ class BuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.hpdviolation_factory(building=building)
 
         response = self.client.get('/buildings/1/hpdviolations/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
+    def test_building_hpdcomplaints(self):
+        building = self.building_factory(bin="1")
+        hpdbuilding = self.hpdbuilding_factory(building=building)
+        self.hpdcomplaint_factory(hpdbuilding=hpdbuilding)
+        self.hpdcomplaint_factory(hpdbuilding=hpdbuilding)
+
+        response = self.client.get('/buildings/1/hpdcomplaints/')
         content = response.data
 
         self.assertEqual(response.status_code, 200)
@@ -222,3 +245,31 @@ class HPDViolationViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(content["violationid"], 1)
+
+
+class HPDComplaintViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
+    urlpatterns = [
+        path('', include('datasets.urls')),
+    ]
+
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_violation_list(self):
+        self.hpdcomplaint_factory(complaintid="1")
+        self.hpdcomplaint_factory(complaintid="2")
+
+        response = self.client.get('/hpdcomplaints/', format="json")
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
+    def test_complaint_retrieve(self):
+        self.hpdcomplaint_factory(complaintid="1")
+
+        response = self.client.get('/hpdcomplaints/1/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(content["complaintid"], 1)
