@@ -24,8 +24,7 @@ from datasets import views as datasets
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('docs/', include_docs_urls(title='API', description='API Documentation')),
-    path('councils/', datasets.councils_index, name="councils_index"),
-    path('councils/<int:councilnum>', datasets.council_show, name="council_show"),
+    path('', include('datasets.urls')),
     path('councils/<int:councilnum>/<str:housingtype>/', datasets.query, name="query"),
     path('properties/<str:bbl>/', datasets.property_lookup, name="property_lookup")
 
