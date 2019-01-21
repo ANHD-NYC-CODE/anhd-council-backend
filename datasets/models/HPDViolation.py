@@ -42,7 +42,7 @@ class HPDViolation(BaseDatasetModel, models.Model):
     novid = models.IntegerField(blank=True, null=True)
     novdescription = models.TextField(blank=True, null=True)
     novissueddate = models.DateTimeField(blank=True, null=True)
-    currentstatusid = models.SmallIntegerField(db_index=True, blank=True, null=True)
+    currentstatusid = models.IntegerField(db_index=True, blank=True, null=True)
     currentstatus = models.TextField(db_index=True, blank=True, null=True)
     currentstatusdate = models.DateTimeField(db_index=True, blank=True, null=True)
     novtype = models.TextField(blank=True, null=True)
@@ -50,7 +50,7 @@ class HPDViolation(BaseDatasetModel, models.Model):
     latitude = models.DecimalField(decimal_places=8, max_digits=32, blank=True, null=True)
     longitude = models.DecimalField(decimal_places=8, max_digits=32, blank=True, null=True)
     communityboard = models.TextField(blank=True, null=True)
-    councildistrict = models.SmallIntegerField(blank=True, null=True)
+    councildistrict = models.IntegerField(blank=True, null=True)
     censustract = models.TextField(blank=True, null=True)
     nta = models.TextField(blank=True, null=True)
 

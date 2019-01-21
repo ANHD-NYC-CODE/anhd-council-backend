@@ -6,6 +6,7 @@ from django.conf import settings
 import os
 import zipfile
 from datetime import datetime
+import random
 
 
 class BaseTest():
@@ -27,8 +28,10 @@ class BaseTest():
         update = c_models.Update.objects.create(dataset=dataset, file=file, previous_file=previous_file)
         return update
 
-    def council_factory(self, coundist=1, geometry='{"type":"Polygon","coordinates":[]}', **kwargs):
+    def council_factory(self, coundist=None, geometry='{"type":"Polygon","coordinates":[]}', **kwargs):
         name = 'Council'
+        if not coundist:
+            coundist = random.randint(1, 100000)
         if not len(c_models.Dataset.objects.filter(name=name)):
             dataset = c_models.Dataset.objects.create(name=name, model_name=name)
 
@@ -39,12 +42,14 @@ class BaseTest():
         )
         return factory
 
-    def property_factory(self, bbl=1, council=None, unitsres=1, unitstotal=1, borough=1, block='0001', lot='00001', **kwargs):
+    def property_factory(self, bbl=None, council=None, unitsres=1, unitstotal=1, borough=1, block='0001', lot='00001', **kwargs):
         name = 'Property'
+        if not bbl:
+            bbl = random.randint(1000000000, 5999999999)
         if not len(c_models.Dataset.objects.filter(name=name)):
             dataset = c_models.Dataset.objects.create(name=name, model_name=name)
         if not council:
-            council = self.council_factory(self, coundist=1)
+            council = self.council_factory(coundist=random.randint(1, 100000))
 
         factory = d_models.Property.objects.create(
             bbl=bbl,
@@ -58,12 +63,14 @@ class BaseTest():
         )
         return factory
 
-    def building_factory(self, bin=1, property=None, boro=1, block='0001', lot='00001', lhnd='1a', hhnd='1b', **kwargs):
+    def building_factory(self, bin=None, property=None, boro=1, block='0001', lot='00001', lhnd='1a', hhnd='1b', **kwargs):
         name = 'Building'
+        if not bin:
+            bin = random.randint(1, 100000)
         if not len(c_models.Dataset.objects.filter(name=name)):
             dataset = c_models.Dataset.objects.create(name=name, model_name=name)
         if not property:
-            property = self.property_factory(bbl=1)
+            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
 
         factory = d_models.Building.objects.create(
             bin=bin,
@@ -77,14 +84,16 @@ class BaseTest():
         )
         return factory
 
-    def hpdbuilding_factory(self, buildingid=1, property=None, building=None, **kwargs):
+    def hpdbuilding_factory(self, buildingid=None, property=None, building=None, **kwargs):
         name = 'HPDBuildingRecord'
+        if not buildingid:
+            buildingid = random.randint(1, 100000)
         if not len(c_models.Dataset.objects.filter(name=name)):
             dataset = c_models.Dataset.objects.create(name=name, model_name=name)
         if not property:
-            property = self.property_factory(bbl=1)
+            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
         if not building:
-            building = self.building_factory(bin=1, property=property, boro=property.borough,
+            building = self.building_factory(bin=random.randint(1, 100000), property=property, boro=property.borough,
                                              block=property.block, lot=property.lot)
 
         factory = d_models.HPDBuildingRecord.objects.create(
@@ -97,10 +106,12 @@ class BaseTest():
 
     def hpdcomplaint_factory(self, complaintid=1, property=None, hpdbuilding=None, **kwargs):
         name = 'HPDComplaint'
+        if not complaintid:
+            complaintid = random.randint(1, 100000)
         if not len(c_models.Dataset.objects.filter(name=name)):
             dataset = c_models.Dataset.objects.create(name=name, model_name=name)
         if not property:
-            property = self.property_factory(bbl=1)
+            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
         if not hpdbuilding:
             building = self.building_factory(bin=1, property=property, boro=property.borough,
                                              block=property.block, lot=property.lot)
@@ -114,14 +125,16 @@ class BaseTest():
         )
         return factory
 
-    def hpdviolation_factory(self, violationid=1, property=None, building=None, currentstatusid=1, currentstatus="ACTIVE", **kwargs):
+    def hpdviolation_factory(self, violationid=None, property=None, building=None, currentstatusid=1, currentstatus="ACTIVE", **kwargs):
         name = 'HPDViolation'
+        if not violationid:
+            violationid = random.randint(1, 100000)
         if not len(c_models.Dataset.objects.filter(name=name)):
             dataset = c_models.Dataset.objects.create(name=name, model_name=name)
         if not property:
-            property = self.property_factory(bbl=1)
+            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
         if not building:
-            building = self.building_factory(bin=1, property=property, boro=property.borough,
+            building = self.building_factory(bin=random.randint(1, 100000), property=property, boro=property.borough,
                                              block=property.block, lot=property.lot)
 
         factory = d_models.HPDViolation.objects.create(
@@ -139,8 +152,8 @@ class BaseTest():
         if not len(c_models.Dataset.objects.filter(name=name)):
             dataset = c_models.Dataset.objects.create(name=name, model_name=name)
         if not building:
-            property = self.property_factory(bbl=1)
-            building = self.building_factory(bin=1, property=property, boro=property.borough,
+            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+            building = self.building_factory(bin=random.randint(1, 100000), property=property, boro=property.borough,
                                              block=property.block, lot=property.lot)
 
         factory = d_models.DOBComplaint.objects.create(
@@ -155,7 +168,7 @@ class BaseTest():
         if not len(c_models.Dataset.objects.filter(name=name)):
             dataset = c_models.Dataset.objects.create(name=name, model_name=name)
         if not property:
-            property = self.property_factory(bbl=1)
+            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
         if not building:
             building = self.building_factory(bin=1, property=property, boro=property.borough,
                                              block=property.block, lot=property.lot)
@@ -173,7 +186,7 @@ class BaseTest():
         if not len(c_models.Dataset.objects.filter(name=name)):
             dataset = c_models.Dataset.objects.create(name=name, model_name=name)
         if not property:
-            property = self.property_factory(bbl=1)
+            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
         if not building:
             building = self.building_factory(bin=1, property=property, boro=property.borough,
                                              block=property.block, lot=property.lot)
@@ -202,7 +215,7 @@ class BaseTest():
         if not len(c_models.Dataset.objects.filter(name=name)):
             dataset = c_models.Dataset.objects.create(name=name, model_name=name)
         if not property:
-            property = self.property_factory(bbl=1)
+            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
         if not documentid:
             documentid = self.acrismaster_factory(self, documentid=1)
 
@@ -218,7 +231,7 @@ class BaseTest():
         if not len(c_models.Dataset.objects.filter(name=name)):
             dataset = c_models.Dataset.objects.create(name=name, model_name=name)
         if not property:
-            property = self.property_factory(bbl=1)
+            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
         if not building:
             building = self.building_factory(bin=1, property=property, boro=property.borough,
                                              block=property.block, lot=property.lot)
@@ -237,7 +250,7 @@ class BaseTest():
         if not len(c_models.Dataset.objects.filter(name=name)):
             dataset = c_models.Dataset.objects.create(name=name, model_name=name)
         if not property:
-            property = self.property_factory(bbl=1)
+            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
         if not building:
             building = self.building_factory(bin=1, property=property, boro=property.borough,
                                              block=property.block, lot=property.lot)
@@ -258,7 +271,7 @@ class BaseTest():
         if not len(c_models.Dataset.objects.filter(name=name)):
             dataset = c_models.Dataset.objects.create(name=name, model_name=name)
         if not property:
-            property = self.property_factory(bbl=1)
+            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
 
         factory = d_models.RentStabilizationRecord.objects.create(
             ucbbl=property,
