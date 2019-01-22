@@ -202,6 +202,12 @@ class DOBPermitIssuedLegacySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class DOBPermitIssuedNowSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.DOBPermitIssuedNow
+        fields = '__all__'
+
+
 def property_query_serializer(properties):
     return list({'foo': 'bar'} for property in properties)
 
