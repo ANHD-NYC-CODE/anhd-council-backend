@@ -10,7 +10,7 @@ from datasets import models as ds
 
 class AcrisRealLegalViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
-    queryset = ds.AcrisRealLegal.objects.all()
+    queryset = ds.AcrisRealLegal.objects.all().order_by('pk')
     serializer_class = serial.AcrisRealLegalSerializer
 
     @cache_me()

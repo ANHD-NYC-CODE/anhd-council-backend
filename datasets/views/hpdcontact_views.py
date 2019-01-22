@@ -10,7 +10,7 @@ from datasets import models as ds
 
 class HPDContactViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
-    queryset = ds.HPDContact.objects.all()
+    queryset = ds.HPDContact.objects.all().order_by('pk')
     serializer_class = serial.HPDContactSerializer
 
     @cache_me()

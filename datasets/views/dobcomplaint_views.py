@@ -10,7 +10,7 @@ from datasets import models as ds
 
 class DOBComplaintViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
-    queryset = ds.DOBComplaint.objects.all()
+    queryset = ds.DOBComplaint.objects.all().order_by('pk')
     serializer_class = serial.DOBComplaintSerializer
 
     @cache_me()

@@ -10,7 +10,7 @@ from datasets import models as ds
 
 class Subsidy421aViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
-    queryset = ds.Subsidy421a.objects.all()
+    queryset = ds.Subsidy421a.objects.all().order_by('pk')
     serializer_class = serial.Subsidy421aSerializer
 
     @cache_me()

@@ -10,7 +10,7 @@ from datasets import models as ds
 
 class RentStabilizationRecordViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
-    queryset = ds.RentStabilizationRecord.objects.all()
+    queryset = ds.RentStabilizationRecord.objects.all().order_by('pk')
     serializer_class = serial.RentStabilizationRecordSerializer
 
     @cache_me()

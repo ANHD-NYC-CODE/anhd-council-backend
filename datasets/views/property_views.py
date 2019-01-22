@@ -23,16 +23,16 @@ logger = logging.getLogger('app')
 
 class PropertyViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
-    queryset = ds.Property.objects.all()
+    queryset = ds.Property.objects.all().order_by('pk')
     serializer_class = serial.PropertySerializer
 
     @cache_me()
     def list(self, request, *args, **kwargs):
         if 'parent_lookup_council' in kwargs:
-            qs = ds.Property.objects.council(kwargs['parent_lookup_council'])
+            qs = ds.Property.objects.council(kwargs['parent_lookup_council']).order_by('pk')
         else:
             qs = self.queryset
-        self.queryset = properties_by_housingtype(self.request, queryset=qs).all()
+        self.queryset = properties_by_housingtype(self.request, queryset=qs).all().order_by('pk')
         return super().list(self, request, *args, **kwargs)
 
     @cache_me()

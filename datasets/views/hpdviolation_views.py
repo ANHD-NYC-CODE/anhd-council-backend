@@ -11,7 +11,7 @@ from datasets import models as ds
 
 class HPDViolationViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
-    queryset = ds.HPDViolation.objects.all()
+    queryset = ds.HPDViolation.objects.all().order_by('pk')
     serializer_class = serial.HPDViolationSerializer
 
     @cache_me()
