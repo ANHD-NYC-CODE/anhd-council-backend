@@ -148,6 +148,7 @@ def batch_upsert_rows(model, rows, batch_size, update=None):
     table_name = model._meta.db_table
     primary_key = model._meta.pk.name
     """ Inserts many row, all in the same transaction"""
+    rows_length = len(rows)
     with connection.cursor() as curs:
         try:
             starting_count = model.objects.count()
@@ -162,18 +163,21 @@ def batch_upsert_rows(model, rows, batch_size, update=None):
                 update.save()
 
         except Exception as e:
-            print(e)
-            if batch_size > 1:
-                logger.info(
-                    'Database - error upserting rows. Switching reducing batch size to {} - Error: {}'.format(math.ceil(batch_size / 10), e))
-                # TODO - use batch_upsert_from_gen
-                batch_upsert_from_gen(model, rows, math.ceil(batch_size / 10), update=update)
-            else:
-                logger.info('Database - error upserting rows. Switching to single row upsert. - Error: {}'.format(e))
-                single_upsert_row(model, rows, update=update)
+            new_batch_size = math.ceil(batch_size / 10)
+            logger.info(
+                'Database - error upserting rows. Switching reducing batch size to {} - Error: {}'.format(new_batch_size, e))
+            while True:
+                rows = list(itertools.islice(rows, 0, new_batch_size))
+                if len(rows) >= 10:
+                    batch_upsert_rows(model, rows,
+                                      new_batch_size, update=update)
+                else:
+                    logger.info('Database - error upserting rows. Switching to single row upsert. - Error: {}'.format(e))
+                    upsert_single_rows(model, rows, update=update)
+                    break
 
 
-def single_upsert_row(model, rows, update=None):
+def upsert_single_rows(model, rows, update=None):
     table_name = model._meta.db_table
     rows_created = 0
     rows_updated = 0
@@ -195,7 +199,7 @@ def single_upsert_row(model, rows, update=None):
                 pdb.set_trace()
                 logger.error("Database Error * - unable to upsert single record. Error: {}".format(e))
                 print(e)
-                pass
+                continue
 
     if update:
         update.rows_created = update.rows_created + rows_created

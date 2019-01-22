@@ -456,8 +456,8 @@ class RentStabilizationRecordTests(BaseTest, TestCase):
         update = self.update_factory(model_name="RentStabilizationRecord",
                                      file_name="mock_rent_stabilization_records.csv")
         ds_models.RentStabilizationRecord.seed_or_update_self(file_path=update.file.file.path, update=update)
-        self.assertEqual(ds_models.RentStabilizationRecord.objects.count(), 6)
-        self.assertEqual(update.rows_created, 6)
+        self.assertEqual(ds_models.RentStabilizationRecord.objects.count(), 12)
+        self.assertEqual(update.rows_created, 12)
 
     def test_seed_record_after_update(self):
         update = self.update_factory(model_name="RentStabilizationRecord",
@@ -468,11 +468,11 @@ class RentStabilizationRecordTests(BaseTest, TestCase):
                                          file_name="mock_rent_stabilization_records_diff.csv", previous_file_name="mock_rent_stabilization_records.csv")
         ds_models.RentStabilizationRecord.seed_or_update_self(
             file_path=new_update.file.file.path, update=new_update)
-        self.assertEqual(ds_models.RentStabilizationRecord.objects.count(), 7)
-        self.assertEqual(new_update.rows_created, 7)
-        self.assertEqual(new_update.rows_updated, 0)
+        self.assertEqual(ds_models.RentStabilizationRecord.objects.count(), 13)
+        self.assertEqual(new_update.rows_created, 1)
+        self.assertEqual(new_update.rows_updated, 1)
         self.assertEqual(ds_models.RentStabilizationRecord.objects.first().uc2017, 6)
-        changed_record = ds_models.RentStabilizationRecord.objects.all()[5]
+        changed_record = ds_models.RentStabilizationRecord.objects.filter(ucbbl='3050800013').first()
         self.assertEqual(changed_record.uc2018, 6)
 
 
