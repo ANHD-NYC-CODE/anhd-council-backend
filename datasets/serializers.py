@@ -103,6 +103,20 @@ class DOBComplaintSerializer(serializers.ModelSerializer):
         model = ds.DOBComplaint
         fields = '__all__'
 
+    bbl = serializers.SerializerMethodField()
+
+    def get_bbl(self, obj):
+        try:
+            return obj.bin.bbl.bbl
+        except Exception as e:
+            return None
+
+
+class ECBViolationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.ECBViolation
+        fields = '__all__'
+
 
 def property_query_serializer(properties):
     return list({'foo': 'bar'} for property in properties)
