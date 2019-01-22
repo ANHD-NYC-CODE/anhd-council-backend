@@ -262,12 +262,23 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
-    def test_property_dobpermitissued(self):
+    def test_property_doblegacypermitissued(self):
         property = self.property_factory(bbl="1")
         self.permitissuedlegacy_factory(property=property)
         self.permitissuedlegacy_factory(property=property)
 
         response = self.client.get('/properties/1/doblegacyissuedpermits/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
+    def test_property_dobnowpermitissued(self):
+        property = self.property_factory(bbl="1")
+        self.permitissuednow_factory(property=property)
+        self.permitissuednow_factory(property=property)
+
+        response = self.client.get('/properties/1/dobnowissuedpermits/')
         content = response.data
 
         self.assertEqual(response.status_code, 200)
@@ -397,6 +408,17 @@ class BuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.permitissuedlegacy_factory(building=building)
 
         response = self.client.get('/buildings/1/doblegacyissuedpermits/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
+    def test_building_dobnowissuedpermits(self):
+        building = self.building_factory(bin="1")
+        self.permitissuednow_factory(building=building)
+        self.permitissuednow_factory(building=building)
+
+        response = self.client.get('/buildings/1/dobnowissuedpermits/')
         content = response.data
 
         self.assertEqual(response.status_code, 200)
@@ -1004,3 +1026,31 @@ class DOBPermitIssuedLegacyTests(BaseTest, APITestCase, URLPatternsTestCase, Tes
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(content["id"], doblegacyissuedpermits.id)
+
+
+class DOBPermitIssuedNowTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
+    urlpatterns = [
+        path('', include('datasets.urls')),
+    ]
+
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_list(self):
+        self.permitissuednow_factory()
+        self.permitissuednow_factory()
+
+        response = self.client.get('/dobnowissuedpermits/', format="json")
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
+    def test_retrieve(self):
+        dobnowissuedpermits = self.permitissuednow_factory()
+
+        response = self.client.get('/dobnowissuedpermits/{}/'.format(dobnowissuedpermits.id))
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(content["id"], dobnowissuedpermits.id)
