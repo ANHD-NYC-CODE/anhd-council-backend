@@ -333,7 +333,7 @@ class BaseTest():
         )
         return factory
 
-    def rentstabilizationrecord_factory(self, property=None, **kwargs):
+    def taxbill_factory(self, property=None, **kwargs):
         name = 'RentStabilizationRecord'
         if not property:
             property = self.property_factory(bbl=random.randint(1000000000, 5999999999))

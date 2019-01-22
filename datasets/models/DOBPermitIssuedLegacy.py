@@ -88,8 +88,6 @@ class DOBPermitIssuedLegacy(BaseDatasetModel, models.Model):
                 continue
             if is_null(row['issuancedate']):
                 continue
-            if does_not_contain_values(["a1", "a2", "dm", "nb"], row["jobtype"]):
-                continue
             yield row
 
     # trims down new update files to preserve memory

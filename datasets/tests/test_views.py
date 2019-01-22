@@ -217,6 +217,18 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
+    def test_property_taxbills(self):
+        property1 = self.property_factory(bbl="1")
+        property2 = self.property_factory(bbl="2")
+        self.taxbill_factory(property=property1)
+        self.taxbill_factory(property=property2)
+
+        response = self.client.get('/properties/1/taxbills/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+
     def test_property_buildings_summary(self):
         property = self.property_factory(bbl="1")
         building1 = self.building_factory(property=property, bin="10a", lhnd="100", hhnd="100")
@@ -797,3 +809,31 @@ class TaxLienTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(content["id"], taxlien.id)
+
+
+class RentStabilizationRecordTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
+    urlpatterns = [
+        path('', include('datasets.urls')),
+    ]
+
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_list(self):
+        self.taxbill_factory()
+        self.taxbill_factory()
+
+        response = self.client.get('/taxbills/', format="json")
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
+    def test_retrieve(self):
+        taxbill = self.taxbill_factory()
+
+        response = self.client.get('/taxbills/{}/'.format(taxbill.id))
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(content["id"], taxbill.id)
