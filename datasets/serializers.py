@@ -92,6 +92,12 @@ class HPDComplaintSerializer(serializers.ModelSerializer):
             return None
 
 
+class HPDProblemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.HPDProblem
+        fields = '__all__'
+
+
 class DOBViolationSerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.DOBViolation
@@ -133,6 +139,18 @@ class AcrisRealLegalSerializer(serializers.ModelSerializer):
 class AcrisRealPartySerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.AcrisRealParty
+        fields = '__all__'
+
+
+class EvictionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.Eviction
+        fields = '__all__'
+
+
+class HousingLitigationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.HousingLitigation
         fields = '__all__'
 
 

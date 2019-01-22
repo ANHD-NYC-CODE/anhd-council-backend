@@ -18,6 +18,12 @@ class BaseTest():
     def get_file_path(self, name):
         return os.path.join(settings.BASE_DIR, "app/tests/mocks/" + name)
 
+    def get_file(self, name):
+        file_path = os.path.join(settings.BASE_DIR, "app/tests/mocks/" + name)
+        file = File(open(file_path, 'rb'))
+        file.name = name
+        return file
+
     def update_factory(self, dataset=None, model_name=None, file_name=None, previous_file_name=None):
         if not dataset:
             dataset = c_models.Dataset.objects.create(name=model_name, model_name=model_name)
@@ -108,8 +114,7 @@ class BaseTest():
         name = 'HPDComplaint'
         if not complaintid:
             complaintid = random.randint(1, 100000)
-        if not len(c_models.Dataset.objects.filter(name=name)):
-            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+
         if not property:
             property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
         if not hpdbuilding:
@@ -126,12 +131,35 @@ class BaseTest():
         )
         return factory
 
+    def hpdproblem_factory(self, problemid=None, complaint=None, property=None, hpdbuilding=None, **kwargs):
+        name = 'HPDProblem'
+        if not problemid:
+            problemid = random.randint(1, 100000)
+        if not complaint:
+            complaint = self.hpdcomplaint_factory(property=property, hpdbuilding=hpdbuilding)
+
+        if not property:
+            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+        if not hpdbuilding:
+            building = self.building_factory(bin=random.randint(1, 100000), property=property, boro=property.borough,
+                                             block=property.block, lot=property.lot)
+            hpdbuilding = self.hpdbuilding_factory(buildingid=random.randint(
+                1, 100000), property=property, building=building)
+
+        factory = d_models.HPDProblem.objects.create(
+            problemid=problemid,
+            complaint=complaint,
+            bbl=property,
+            buildingid=hpdbuilding,
+            **kwargs
+        )
+        return factory
+
     def hpdviolation_factory(self, violationid=None, property=None, building=None, currentstatusid=1, currentstatus="ACTIVE", **kwargs):
         name = 'HPDViolation'
         if not violationid:
             violationid = random.randint(1, 100000)
-        if not len(c_models.Dataset.objects.filter(name=name)):
-            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+
         if not property:
             property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
         if not building:
@@ -152,8 +180,7 @@ class BaseTest():
         name = 'DOBComplaint'
         if not complaintnumber:
             complaintnumber = random.randint(1, 100000)
-        if not len(c_models.Dataset.objects.filter(name=name)):
-            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+
         if not building:
             property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
             building = self.building_factory(bin=random.randint(1, 100000), property=property, boro=property.borough,
@@ -170,8 +197,7 @@ class BaseTest():
         name = 'DOBViolation'
         if not isndobbisviol:
             isndobbisviol = random.randint(1, 100000)
-        if not len(c_models.Dataset.objects.filter(name=name)):
-            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+
         if not property:
             property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
         if not building:
@@ -190,8 +216,7 @@ class BaseTest():
         name = 'ECBViolation'
         if not ecbviolationnumber:
             ecbviolationnumber = random.randint(1, 100000)
-        if not len(c_models.Dataset.objects.filter(name=name)):
-            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+
         if not property:
             property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
         if not building:
@@ -210,8 +235,6 @@ class BaseTest():
         name = 'AcrisRealMaster'
         if not documentid:
             documentid = random.randint(1, 100000)
-        if not len(c_models.Dataset.objects.filter(name=name)):
-            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
 
         factory = d_models.AcrisRealMaster.objects.create(
             documentid=documentid,
@@ -223,8 +246,6 @@ class BaseTest():
         name = 'AcrisRealParty'
         if not master:
             master = self.acrismaster_factory(documentid=random.randint(1, 100000))
-        if not len(c_models.Dataset.objects.filter(name=name)):
-            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
 
         factory = d_models.AcrisRealParty.objects.create(
             documentid=master,
@@ -236,8 +257,7 @@ class BaseTest():
         name = 'AcrisRealLegal'
         if not master:
             master = self.acrismaster_factory(documentid=random.randint(1, 100000))
-        if not len(c_models.Dataset.objects.filter(name=name)):
-            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+
         if not property:
             property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
 
@@ -250,8 +270,7 @@ class BaseTest():
 
     def permitissuedlegacy_factory(self, job=1, permitsino=1, property=None, building=None, **kwargs):
         name = 'DOBPermitIssuedLegacy'
-        if not len(c_models.Dataset.objects.filter(name=name)):
-            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+
         if not property:
             property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
         if not building:
@@ -269,8 +288,7 @@ class BaseTest():
 
     def permitissuednow_factory(self, jobfilingnumber=1, workpermit=1, issueddate=None, property=None, building=None, **kwargs):
         name = 'DOBPermitIssuedNow'
-        if not len(c_models.Dataset.objects.filter(name=name)):
-            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+
         if not property:
             property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
         if not building:
@@ -290,8 +308,6 @@ class BaseTest():
 
     def rentstabilizationrecord_factory(self, property=None, **kwargs):
         name = 'RentStabilizationRecord'
-        if not len(c_models.Dataset.objects.filter(name=name)):
-            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
         if not property:
             property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
 
@@ -301,8 +317,34 @@ class BaseTest():
         )
         return factory
 
-    def get_file(self, name):
-        file_path = os.path.join(settings.BASE_DIR, "app/tests/mocks/" + name)
-        file = File(open(file_path, 'rb'))
-        file.name = name
-        return file
+    def eviction_factory(self, courtindex=None, property=None, **kwargs):
+        name = 'Eviction'
+        if not courtindex:
+            courtindex = random.randint(1, 100000)
+        if not property:
+            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+
+        factory = d_models.Eviction.objects.create(
+            courtindex=courtindex,
+            bbl=property,
+            **kwargs
+        )
+        return factory
+
+    def housinglitigation_factory(self, litigationid=None, property=None, building=None, **kwargs):
+        name = 'HousingLitigation'
+        if not litigationid:
+            litigationid = random.randint(1, 100000)
+        if not property:
+            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+        if not building:
+            building = self.building_factory(bin=random.randint(1, 100000), property=property, boro=property.borough,
+                                             block=property.block, lot=property.lot)
+
+        factory = d_models.HousingLitigation.objects.create(
+            litigationid=litigationid,
+            bbl=property,
+            bin=building,
+            **kwargs
+        )
+        return factory

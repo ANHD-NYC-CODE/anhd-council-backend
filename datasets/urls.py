@@ -85,6 +85,20 @@ properties_router.register(
     parents_query_lookups=['acrisreallegal__bbl']
 )
 
+properties_router.register(
+    'evictions',
+    v.eviction_views.EvictionViewSet,
+    base_name='property-evictions',
+    parents_query_lookups=['bbl']
+)
+
+properties_router.register(
+    'housinglitigations',
+    v.housinglitigation_views.HousingLitigationViewSet,
+    base_name='property-housinglitigations',
+    parents_query_lookups=['bbl']
+)
+
 buildings_router = router.register(r'buildings', v.building_views.BuildingViewSet)
 
 buildings_router.register(
@@ -123,10 +137,25 @@ buildings_router.register(
     parents_query_lookups=['bin']
 )
 
+buildings_router.register(
+    'housinglitigations',
+    v.housinglitigation_views.HousingLitigationViewSet,
+    base_name='building-housinglitigations',
+    parents_query_lookups=['bin']
+)
+
 
 router.register(r'hpdbuildings', v.hpdbuilding_views.HPDBuildingViewSet)
 router.register(r'hpdviolations', v.hpdviolation_views.HPDViolationViewSet)
-router.register(r'hpdcomplaints', v.hpdcomplaint_views.HPDComplaintViewSet)
+hpdcomplaints_router = router.register(r'hpdcomplaints', v.hpdcomplaint_views.HPDComplaintViewSet)
+hpdcomplaints_router.register(
+    'hpdproblems',
+    v.hpdproblem_views.HPDProblemViewSet,
+    base_name='building-hpdproblems',
+    parents_query_lookups=['complaintid']
+)
+
+router.register(r'hpdproblems', v.hpdproblem_views.HPDProblemViewSet)
 router.register(r'dobviolations', v.dobviolation_views.DOBViolationViewSet)
 router.register(r'dobcomplaints', v.dobcomplaint_views.DOBComplaintViewSet)
 router.register(r'ecbviolations', v.ecbviolation_views.ECBViolationViewSet)
@@ -141,6 +170,8 @@ acrisrealmasters_router.register(
 
 router.register(r'acrisreallegals', v.acrisreallegal_views.AcrisRealLegalViewSet)
 router.register(r'acrisrealparties', v.acrisrealparty_views.AcrisRealPartyViewSet)
+router.register(r'evictions', v.eviction_views.EvictionViewSet)
+router.register(r'housinglitigations', v.housinglitigation_views.HousingLitigationViewSet)
 
 custom_routes = format_suffix_patterns([
     path('councils/<int:pk>/housingtype-summary/', council_housingtype_summary, name='council-housingtype-summary'),
