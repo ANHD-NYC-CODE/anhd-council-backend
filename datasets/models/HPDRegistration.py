@@ -12,7 +12,7 @@ class HPDRegistration(BaseDatasetModel, models.Model):
 
     registrationid = models.IntegerField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
-                            on_delete=models.SET_NULL, null=True, blank=False)
+                            on_delete=models.SET_NULL, null=True, blank=True)
     bin = models.ForeignKey('Building', db_column='bin', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=True)
     buildingid = models.ForeignKey('HPDBuildingRecord', db_column='buildingid', db_constraint=False,

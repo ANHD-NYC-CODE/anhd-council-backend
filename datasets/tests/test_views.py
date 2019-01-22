@@ -195,6 +195,17 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
+    def test_property_registrations(self):
+        property = self.property_factory(bbl="1")
+        self.hpdregistration_factory(property=property)
+        self.hpdregistration_factory(property=property)
+
+        response = self.client.get('/properties/1/hpdregistrations/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
     def test_property_buildings_summary(self):
         property = self.property_factory(bbl="1")
         building1 = self.building_factory(property=property, bin="10a", lhnd="100", hhnd="100")
@@ -302,6 +313,17 @@ class BuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
+    def test_building_registrations(self):
+        building = self.building_factory(bin="1")
+        self.hpdregistration_factory(building=building)
+        self.hpdregistration_factory(building=building)
+
+        response = self.client.get('/buildings/1/hpdregistrations/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
 
 class HPDBuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
     urlpatterns = [
@@ -330,6 +352,39 @@ class HPDBuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(content["buildingid"], 1)
+
+    def test_hpdbuilding_violations(self):
+        hpdbuilding = self.hpdbuilding_factory(buildingid="1")
+        self.hpdviolation_factory(hpdbuilding=hpdbuilding)
+        self.hpdviolation_factory(hpdbuilding=hpdbuilding)
+
+        response = self.client.get('/hpdbuildings/1/hpdviolations/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
+    def test_hpdbuilding_complaints(self):
+        hpdbuilding = self.hpdbuilding_factory(buildingid="1")
+        self.hpdcomplaint_factory(hpdbuilding=hpdbuilding)
+        self.hpdcomplaint_factory(hpdbuilding=hpdbuilding)
+
+        response = self.client.get('/hpdbuildings/1/hpdcomplaints/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
+    def test_hpdbuilding_registrations(self):
+        hpdbuilding = self.hpdbuilding_factory(buildingid="1")
+        self.hpdregistration_factory(hpdbuilding=hpdbuilding)
+        self.hpdregistration_factory(hpdbuilding=hpdbuilding)
+
+        response = self.client.get('/hpdbuildings/1/hpdregistrations/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
 
 
 class HPDViolationViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
@@ -636,3 +691,70 @@ class HousingLitigationViewTests(BaseTest, APITestCase, URLPatternsTestCase, Tes
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(content["litigationid"], 1)
+
+
+class HPDRegistrationViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
+    urlpatterns = [
+        path('', include('datasets.urls')),
+    ]
+
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_list(self):
+        self.hpdregistration_factory(registrationid="1")
+        self.hpdregistration_factory(registrationid="2")
+
+        response = self.client.get('/hpdregistrations/', format="json")
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
+    def test_retrieve(self):
+        hpdregistration = self.hpdregistration_factory(registrationid="1")
+
+        response = self.client.get('/hpdregistrations/1/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(content["registrationid"], 1)
+
+
+class HPDContactViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
+    urlpatterns = [
+        path('', include('datasets.urls')),
+    ]
+
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_list(self):
+        self.hpdcontact_factory()
+        self.hpdcontact_factory()
+
+        response = self.client.get('/hpdcontacts/', format="json")
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
+    def test_retrieve(self):
+        self.hpdcontact_factory(registrationcontactid="1")
+
+        response = self.client.get('/hpdcontacts/1/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(content["registrationcontactid"], 1)
+
+    def test_hpdregistration_hpdcontacts(self):
+        registration = self.hpdregistration_factory(registrationid="1")
+        self.hpdcontact_factory(registration=registration)
+        self.hpdcontact_factory(registration=registration)
+
+        response = self.client.get('/hpdregistrations/1/hpdcontacts/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)

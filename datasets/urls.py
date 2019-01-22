@@ -99,6 +99,13 @@ properties_router.register(
     parents_query_lookups=['bbl']
 )
 
+properties_router.register(
+    'hpdregistrations',
+    v.hpdregistration_views.HPDRegistrationViewSet,
+    base_name='property-hpdregistrations',
+    parents_query_lookups=['bbl']
+)
+
 buildings_router = router.register(r'buildings', v.building_views.BuildingViewSet)
 
 buildings_router.register(
@@ -144,8 +151,44 @@ buildings_router.register(
     parents_query_lookups=['bin']
 )
 
+buildings_router.register(
+    'hpdregistrations',
+    v.hpdregistration_views.HPDRegistrationViewSet,
+    base_name='building-hpdregistrations',
+    parents_query_lookups=['bin']
+)
 
-router.register(r'hpdbuildings', v.hpdbuilding_views.HPDBuildingViewSet)
+
+hpdbuildings_router = router.register(r'hpdbuildings', v.hpdbuilding_views.HPDBuildingViewSet)
+
+hpdbuildings_router.register(
+    'hpdviolations',
+    v.hpdviolation_views.HPDViolationViewSet,
+    base_name='building-hpdviolations',
+    parents_query_lookups=['buildingid']
+)
+
+hpdbuildings_router.register(
+    'hpdcomplaints',
+    v.hpdcomplaint_views.HPDComplaintViewSet,
+    base_name='building-hpdcomplaints',
+    parents_query_lookups=['buildingid']
+)
+
+hpdbuildings_router.register(
+    'housinglitigations',
+    v.housinglitigation_views.HousingLitigationViewSet,
+    base_name='building-housinglitigations',
+    parents_query_lookups=['buildingid']
+)
+
+hpdbuildings_router.register(
+    'hpdregistrations',
+    v.hpdregistration_views.HPDRegistrationViewSet,
+    base_name='building-hpdregistrations',
+    parents_query_lookups=['buildingid']
+)
+
 router.register(r'hpdviolations', v.hpdviolation_views.HPDViolationViewSet)
 hpdcomplaints_router = router.register(r'hpdcomplaints', v.hpdcomplaint_views.HPDComplaintViewSet)
 hpdcomplaints_router.register(
@@ -172,6 +215,14 @@ router.register(r'acrisreallegals', v.acrisreallegal_views.AcrisRealLegalViewSet
 router.register(r'acrisrealparties', v.acrisrealparty_views.AcrisRealPartyViewSet)
 router.register(r'evictions', v.eviction_views.EvictionViewSet)
 router.register(r'housinglitigations', v.housinglitigation_views.HousingLitigationViewSet)
+hpdregistrations_router = router.register(r'hpdregistrations', v.hpdregistration_views.HPDRegistrationViewSet)
+hpdregistrations_router.register(
+    'hpdcontacts',
+    v.hpdcontact_views.HPDContactViewSet,
+    base_name='hpdregistration-hpdcontacts',
+    parents_query_lookups=['registrationid']
+)
+router.register(r'hpdcontacts', v.hpdcontact_views.HPDContactViewSet)
 
 custom_routes = format_suffix_patterns([
     path('councils/<int:pk>/housingtype-summary/', council_housingtype_summary, name='council-housingtype-summary'),
