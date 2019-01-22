@@ -196,6 +196,12 @@ class CoreSubsidyRecordSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class DOBPermitIssuedLegacySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.DOBPermitIssuedLegacy
+        fields = '__all__'
+
+
 def property_query_serializer(properties):
     return list({'foo': 'bar'} for property in properties)
 

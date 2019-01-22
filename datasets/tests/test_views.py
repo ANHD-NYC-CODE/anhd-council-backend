@@ -262,6 +262,17 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
+    def test_property_dobpermitissued(self):
+        property = self.property_factory(bbl="1")
+        self.permitissuedlegacy_factory(property=property)
+        self.permitissuedlegacy_factory(property=property)
+
+        response = self.client.get('/properties/1/doblegacyissuedpermits/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
     def test_property_buildings_summary(self):
         property = self.property_factory(bbl="1")
         building1 = self.building_factory(property=property, bin="10a", lhnd="100", hhnd="100")
@@ -375,6 +386,17 @@ class BuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.hpdregistration_factory(building=building)
 
         response = self.client.get('/buildings/1/hpdregistrations/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
+    def test_building_doblegacyissuedpermits(self):
+        building = self.building_factory(bin="1")
+        self.permitissuedlegacy_factory(building=building)
+        self.permitissuedlegacy_factory(building=building)
+
+        response = self.client.get('/buildings/1/doblegacyissuedpermits/')
         content = response.data
 
         self.assertEqual(response.status_code, 200)
@@ -954,3 +976,31 @@ class SubsidyJ51Tests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(content["id"], subsidyj51.id)
+
+
+class DOBPermitIssuedLegacyTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
+    urlpatterns = [
+        path('', include('datasets.urls')),
+    ]
+
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_list(self):
+        self.permitissuedlegacy_factory()
+        self.permitissuedlegacy_factory()
+
+        response = self.client.get('/doblegacyissuedpermits/', format="json")
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
+    def test_retrieve(self):
+        doblegacyissuedpermits = self.permitissuedlegacy_factory()
+
+        response = self.client.get('/doblegacyissuedpermits/{}/'.format(doblegacyissuedpermits.id))
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(content["id"], doblegacyissuedpermits.id)
