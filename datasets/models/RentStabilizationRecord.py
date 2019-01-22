@@ -7,7 +7,7 @@ import logging
 logger = logging.getLogger('app')
 
 # Update process: Manual
-# Update strategy: Upsert
+# Update strategy: Overwrite
 #
 # Download file from:
 # http://taxbills.nyc/joined.csv
@@ -116,7 +116,7 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        return self.seed_with_upsert(**kwargs)
+        return self.bulk_seed(**kwargs, overwrite=True)
 
     def __str__(self):
         return str(self.id)
