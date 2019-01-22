@@ -77,7 +77,6 @@ class PropertyQuerySetTest(BaseTest, TestCase):
         BaseTest.ecbviolation_factory(self, property=properties[0], building=building1)
         BaseTest.permitissuedlegacy_factory(self, property=properties[0], building=building1)
         BaseTest.permitissuednow_factory(self, property=properties[0], building=building1)
-        BaseTest.acrislegal_factory(self, property=properties[0], documentid=BaseTest.acrismaster_factory(self))
         BaseTest.rentstabilizationrecord_factory(self, property=properties[0], uc2010=10, uc2017=9)
 
         fields_list = ['hpdcomplaint__gte',
@@ -86,7 +85,6 @@ class PropertyQuerySetTest(BaseTest, TestCase):
                        'dobviolation__gte',
                        'ecbviolation__gte',
                        'permitsissued__gte',
-                       'acris__gte',
                        'rentstab__gte',
                        'rentstab__lte'
                        ]
@@ -97,6 +95,5 @@ class PropertyQuerySetTest(BaseTest, TestCase):
         self.assertEqual(queryset.get(bbl='0a').dobviolation_count, 1)
         self.assertEqual(queryset.get(bbl='0a').ecbviolation_count, 1)
         self.assertEqual(queryset.get(bbl='0a').permitsissued_count, 2)
-        # self.assertEqual(queryset.get(bbl='0a').acris_count, 1)
         self.assertEqual(queryset.get(bbl='0a').rs2010, 10)
         self.assertEqual(queryset.get(bbl='0a').rs2017, 9)
