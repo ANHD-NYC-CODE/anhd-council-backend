@@ -424,3 +424,31 @@ class ECBViolationViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(content["ecbviolationnumber"], '1')
+
+
+class AcrisRealMasterViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
+    urlpatterns = [
+        path('', include('datasets.urls')),
+    ]
+
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_list(self):
+        self.acrismaster_factory(documentid="1")
+        self.acrismaster_factory(documentid="2")
+
+        response = self.client.get('/acrisrealmasters/', format="json")
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
+    def test_retrieve(self):
+        self.acrismaster_factory(documentid="1")
+
+        response = self.client.get('/acrisrealmasters/1/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(content["documentid"], '1')
