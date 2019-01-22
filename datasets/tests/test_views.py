@@ -173,6 +173,28 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
+    def test_property_evictions(self):
+        property = self.property_factory(bbl="1")
+        self.eviction_factory(courtindex="1", property=property)
+        self.eviction_factory(courtindex="2", property=property)
+
+        response = self.client.get('/properties/1/evictions/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
+    def test_property_litigations(self):
+        property = self.property_factory(bbl="1")
+        self.housinglitigation_factory(property=property)
+        self.housinglitigation_factory(property=property)
+
+        response = self.client.get('/properties/1/housinglitigations/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
     def test_property_buildings_summary(self):
         property = self.property_factory(bbl="1")
         building1 = self.building_factory(property=property, bin="10a", lhnd="100", hhnd="100")
@@ -269,6 +291,17 @@ class BuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
+    def test_building_litigations(self):
+        building = self.building_factory(bin="1")
+        self.housinglitigation_factory(building=building)
+        self.housinglitigation_factory(building=building)
+
+        response = self.client.get('/buildings/1/housinglitigations/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
 
 class HPDBuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
     urlpatterns = [
@@ -353,6 +386,17 @@ class HPDComplaintViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(content["complaintid"], 1)
+
+    def test_hpdcomplaint_hpdproblems(self):
+        complaint = self.hpdcomplaint_factory(complaintid="1")
+        self.hpdproblem_factory(complaint=complaint)
+        self.hpdproblem_factory(complaint=complaint)
+
+        response = self.client.get('/hpdcomplaints/1/hpdproblems/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
 
 
 class DOBViolationViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
@@ -536,3 +580,59 @@ class AcrisRealPartyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCa
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(content["documentid"], '1')
+
+
+class EvictionViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
+    urlpatterns = [
+        path('', include('datasets.urls')),
+    ]
+
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_list(self):
+        self.eviction_factory(courtindex="1")
+        self.eviction_factory(courtindex="2")
+
+        response = self.client.get('/evictions/', format="json")
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
+    def test_retrieve(self):
+        eviction = self.eviction_factory(courtindex="1")
+
+        response = self.client.get('/evictions/1/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(content["courtindex"], '1')
+
+
+class HousingLitigationViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
+    urlpatterns = [
+        path('', include('datasets.urls')),
+    ]
+
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_list(self):
+        self.housinglitigation_factory(litigationid="1")
+        self.housinglitigation_factory(litigationid="2")
+
+        response = self.client.get('/housinglitigations/', format="json")
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
+    def test_retrieve(self):
+        housinglitigation = self.housinglitigation_factory(litigationid="1")
+
+        response = self.client.get('/housinglitigations/1/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(content["litigationid"], 1)
