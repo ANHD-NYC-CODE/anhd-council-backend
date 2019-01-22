@@ -124,6 +124,18 @@ class AcrisRealMasterSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class AcrisRealLegalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.AcrisRealLegal
+        fields = '__all__'
+
+
+class AcrisRealPartySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.AcrisRealParty
+        fields = '__all__'
+
+
 def property_query_serializer(properties):
     return list({'foo': 'bar'} for property in properties)
 
