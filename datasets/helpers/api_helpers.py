@@ -1,12 +1,24 @@
 from django.core.cache import cache
 from django.conf import settings
 from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
 
 from datasets import models as ds
 from functools import wraps
 import logging
 
 logger = logging.getLogger('app')
+
+
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 100
+
+
+class ApplicationViewSet():
+    def list(self, request, *args, **kwargs):
+        if 'format' not in kwargs or kwargs['format'] != 'csv':
+            self.pagination_class = StandardResultsSetPagination
+        return super().list(self, request, *args, **kwargs)
 
 
 def cache_me(relative_key_path=True, get_queryset=False):
@@ -34,15 +46,13 @@ def properties_by_housingtype(request, queryset=None):
         queryset = ds.Property.objects
 
     if 'housingtype' in request.query_params:
-        housingtype = request.query_params['housingtype']
+        switcher = {
+            "rentstabilized": queryset.rentstab(),
+            "rentregulated": queryset.rentreg(),
+            "smallhomes": queryset.smallhome(),
+            "marketrate": queryset.marketrate()
+        }
+
+        return switcher.get(request.query_params['housingtype'], queryset)
     else:
-        housingtype = None
-
-    switcher = {
-        "rent-stabilized": queryset.rentstab(),
-        "rent-regulated": queryset.rentreg(),
-        "small-homes": queryset.smallhome(),
-        "market-rate": queryset.marketrate()
-    }
-
-    return switcher.get(housingtype, queryset)
+        return queryset

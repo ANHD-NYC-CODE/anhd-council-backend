@@ -75,7 +75,8 @@ TEMPLATES = [
 
 
 REST_FRAMEWORK = {
-    'TEST_REQUEST_DEFAULT_FORMAT': 'json'
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
+    # 'DEFAULT_PAGINATION_CLASS': 'apps.core.pagination.StandardResultsSetPagination'
     # 'DEFAULT_RENDERER_CLASSES': (
     #     'rest_framework_csv.renderers.CSVRenderer',
     # ),

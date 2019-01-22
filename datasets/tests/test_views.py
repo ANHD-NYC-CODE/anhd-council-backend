@@ -22,7 +22,7 @@ class CouncilViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.council_factory()
 
         response = self.client.get('/councils/', format="json")
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -42,7 +42,7 @@ class CouncilViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.property_factory(council=council, bbl="2")
 
         response = self.client.get('/councils/1/properties/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -68,7 +68,7 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.property_factory(bbl="2")
 
         response = self.client.get('/properties/')
-        content = response.data
+        content = response.data['results']
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
@@ -88,7 +88,7 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.building_factory(bin="2", property=property)
 
         response = self.client.get('/properties/1/buildings/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -99,7 +99,7 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.hpdbuilding_factory(buildingid="2", property=property)
 
         response = self.client.get('/properties/1/hpdbuildings/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -110,7 +110,7 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.hpdviolation_factory(property=property)
 
         response = self.client.get('/properties/1/hpdviolations/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -121,7 +121,7 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.hpdcomplaint_factory(property=property)
 
         response = self.client.get('/properties/1/hpdcomplaints/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -132,7 +132,7 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.dobviolation_factory(property=property)
 
         response = self.client.get('/properties/1/dobviolations/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -144,7 +144,7 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.dobcomplaint_factory(building=building)
 
         response = self.client.get('/properties/1/dobcomplaints/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -155,7 +155,7 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.ecbviolation_factory(property=property)
 
         response = self.client.get('/properties/1/ecbviolations/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -168,7 +168,7 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.acrislegal_factory(master=master2, property=property)
 
         response = self.client.get('/properties/1/acrisrealmasters/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -179,7 +179,7 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.eviction_factory(courtindex="2", property=property)
 
         response = self.client.get('/properties/1/evictions/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -190,7 +190,7 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.housinglitigation_factory(property=property)
 
         response = self.client.get('/properties/1/housinglitigations/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -201,7 +201,7 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.hpdregistration_factory(property=property)
 
         response = self.client.get('/properties/1/hpdregistrations/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -212,7 +212,7 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.taxlien_factory(property=property)
 
         response = self.client.get('/properties/1/taxliens/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -224,7 +224,7 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.taxbill_factory(property=property2)
 
         response = self.client.get('/properties/1/taxbills/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -235,7 +235,7 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.subsidy421a_factory(property=property)
 
         response = self.client.get('/properties/1/subsidy421a/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -246,7 +246,7 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.subsidyj51_factory(property=property)
 
         response = self.client.get('/properties/1/subsidyj51/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -257,7 +257,7 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.coredata_factory(property=property)
 
         response = self.client.get('/properties/1/coredata/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -268,7 +268,7 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.permitissuedlegacy_factory(property=property)
 
         response = self.client.get('/properties/1/doblegacyissuedpermits/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -279,7 +279,7 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.permitissuednow_factory(property=property)
 
         response = self.client.get('/properties/1/dobnowissuedpermits/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -290,7 +290,7 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.permitfiledlegacy_factory(property=property)
 
         response = self.client.get('/properties/1/doblegacyfiledpermits/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -321,7 +321,7 @@ class BuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.building_factory(bin="2")
 
         response = self.client.get('/buildings/', format="json")
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -341,7 +341,7 @@ class BuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.hpdviolation_factory(building=building)
 
         response = self.client.get('/buildings/1/hpdviolations/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -353,7 +353,7 @@ class BuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.hpdcomplaint_factory(hpdbuilding=hpdbuilding)
 
         response = self.client.get('/buildings/1/hpdcomplaints/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -364,7 +364,7 @@ class BuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.dobviolation_factory(building=building)
 
         response = self.client.get('/buildings/1/dobviolations/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -375,7 +375,7 @@ class BuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.dobcomplaint_factory(building=building)
 
         response = self.client.get('/buildings/1/dobcomplaints/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -386,7 +386,7 @@ class BuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.ecbviolation_factory(building=building)
 
         response = self.client.get('/buildings/1/ecbviolations/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -397,7 +397,7 @@ class BuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.housinglitigation_factory(building=building)
 
         response = self.client.get('/buildings/1/housinglitigations/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -408,7 +408,7 @@ class BuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.hpdregistration_factory(building=building)
 
         response = self.client.get('/buildings/1/hpdregistrations/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -419,7 +419,7 @@ class BuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.permitissuedlegacy_factory(building=building)
 
         response = self.client.get('/buildings/1/doblegacyissuedpermits/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -430,7 +430,7 @@ class BuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.permitissuednow_factory(building=building)
 
         response = self.client.get('/buildings/1/dobnowissuedpermits/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -441,7 +441,7 @@ class BuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.permitfiledlegacy_factory(building=building)
 
         response = self.client.get('/buildings/1/doblegacyfiledpermits/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -460,7 +460,7 @@ class HPDBuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase)
         self.hpdbuilding_factory(buildingid="2")
 
         response = self.client.get('/hpdbuildings/', format="json")
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -481,7 +481,7 @@ class HPDBuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase)
         self.hpdviolation_factory(hpdbuilding=hpdbuilding)
 
         response = self.client.get('/hpdbuildings/1/hpdviolations/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -492,7 +492,7 @@ class HPDBuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase)
         self.hpdcomplaint_factory(hpdbuilding=hpdbuilding)
 
         response = self.client.get('/hpdbuildings/1/hpdcomplaints/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -503,7 +503,7 @@ class HPDBuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase)
         self.hpdregistration_factory(hpdbuilding=hpdbuilding)
 
         response = self.client.get('/hpdbuildings/1/hpdregistrations/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -522,7 +522,7 @@ class HPDViolationViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase
         self.hpdviolation_factory(violationid="2")
 
         response = self.client.get('/hpdviolations/', format="json")
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -550,7 +550,7 @@ class HPDComplaintViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase
         self.hpdcomplaint_factory(complaintid="2")
 
         response = self.client.get('/hpdcomplaints/', format="json")
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -570,7 +570,7 @@ class HPDComplaintViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase
         self.hpdproblem_factory(complaint=complaint)
 
         response = self.client.get('/hpdcomplaints/1/hpdproblems/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -589,7 +589,7 @@ class DOBViolationViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase
         self.dobviolation_factory(isndobbisviol="2")
 
         response = self.client.get('/dobviolations/', format="json")
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -617,7 +617,7 @@ class DOBComplaintViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase
         self.dobcomplaint_factory(complaintnumber="2")
 
         response = self.client.get('/dobcomplaints/', format="json")
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -645,7 +645,7 @@ class ECBViolationViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase
         self.ecbviolation_factory(ecbviolationnumber="2")
 
         response = self.client.get('/ecbviolations/', format="json")
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -673,7 +673,7 @@ class AcrisRealMasterViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestC
         self.acrismaster_factory(documentid="2")
 
         response = self.client.get('/acrisrealmasters/', format="json")
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -693,7 +693,7 @@ class AcrisRealMasterViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestC
         self.acrisparty_factory(master=master)
 
         response = self.client.get('/acrisrealmasters/1/acrisrealparties/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -713,7 +713,7 @@ class AcrisRealLegalViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCa
         self.acrislegal_factory(master=master)
 
         response = self.client.get('/acrisreallegals/', format="json")
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -743,7 +743,7 @@ class AcrisRealPartyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCa
         self.acrisparty_factory(master=master)
 
         response = self.client.get('/acrisrealparties/', format="json")
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -772,7 +772,7 @@ class EvictionViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.eviction_factory(courtindex="2")
 
         response = self.client.get('/evictions/', format="json")
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -800,7 +800,7 @@ class HousingLitigationViewTests(BaseTest, APITestCase, URLPatternsTestCase, Tes
         self.housinglitigation_factory(litigationid="2")
 
         response = self.client.get('/housinglitigations/', format="json")
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -828,7 +828,7 @@ class HPDRegistrationViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestC
         self.hpdregistration_factory(registrationid="2")
 
         response = self.client.get('/hpdregistrations/', format="json")
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -848,7 +848,7 @@ class HPDRegistrationViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestC
         self.hpdcontact_factory(registration=registration)
 
         response = self.client.get('/hpdregistrations/1/hpdcontacts/')
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -867,7 +867,7 @@ class HPDContactViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.hpdcontact_factory()
 
         response = self.client.get('/hpdcontacts/', format="json")
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -895,7 +895,7 @@ class TaxLienTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.taxlien_factory()
 
         response = self.client.get('/taxliens/', format="json")
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -923,7 +923,7 @@ class RentStabilizationRecordTests(BaseTest, APITestCase, URLPatternsTestCase, T
         self.taxbill_factory()
 
         response = self.client.get('/taxbills/', format="json")
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -951,7 +951,7 @@ class Subsidy421aTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.subsidy421a_factory()
 
         response = self.client.get('/subsidy421a/', format="json")
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -979,7 +979,7 @@ class CoreDataTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.coredata_factory()
 
         response = self.client.get('/coredata/', format="json")
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -1007,7 +1007,7 @@ class SubsidyJ51Tests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.subsidyj51_factory()
 
         response = self.client.get('/subsidyj51/', format="json")
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -1035,7 +1035,7 @@ class DOBPermitIssuedLegacyTests(BaseTest, APITestCase, URLPatternsTestCase, Tes
         self.permitissuedlegacy_factory()
 
         response = self.client.get('/doblegacyissuedpermits/', format="json")
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -1063,7 +1063,7 @@ class DOBPermitIssuedNowTests(BaseTest, APITestCase, URLPatternsTestCase, TestCa
         self.permitissuednow_factory()
 
         response = self.client.get('/dobnowissuedpermits/', format="json")
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -1091,7 +1091,7 @@ class DOBPermitFiledLegacyTests(BaseTest, APITestCase, URLPatternsTestCase, Test
         self.permitfiledlegacy_factory()
 
         response = self.client.get('/doblegacyfiledpermits/', format="json")
-        content = response.data
+        content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
