@@ -98,6 +98,12 @@ class DOBViolationSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class DOBComplaintSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.DOBComplaint
+        fields = '__all__'
+
+
 def property_query_serializer(properties):
     return list({'foo': 'bar'} for property in properties)
 
