@@ -295,13 +295,14 @@ class BaseTest():
         )
         return factory
 
-    def permitissuedlegacy_factory(self, job=1, permitsino=1, property=None, building=None, **kwargs):
+    def permitissuedlegacy_factory(self, job=None, permitsino=1, property=None, building=None, **kwargs):
         name = 'DOBPermitIssuedLegacy'
-
+        if not job:
+            job = random.randint(1, 100000)
         if not property:
             property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
         if not building:
-            building = self.building_factory(bin=1, property=property, boro=property.borough,
+            building = self.building_factory(bin=random.randint(1, 100000), property=property, boro=property.borough,
                                              block=property.block, lot=property.lot)
 
         factory = d_models.DOBPermitIssuedLegacy.objects.create(
@@ -313,13 +314,16 @@ class BaseTest():
         )
         return factory
 
-    def permitissuednow_factory(self, jobfilingnumber=1, workpermit=1, issueddate=None, property=None, building=None, **kwargs):
+    def permitissuednow_factory(self, jobfilingnumber=None, workpermit=1, issueddate=None, property=None, building=None, **kwargs):
         name = 'DOBPermitIssuedNow'
+
+        if not jobfilingnumber:
+            jobfilingnumber = random.randint(1, 100000)
 
         if not property:
             property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
         if not building:
-            building = self.building_factory(bin=1, property=property, boro=property.borough,
+            building = self.building_factory(bin=random.randint(1, 100000), property=property, boro=property.borough,
                                              block=property.block, lot=property.lot)
         if not issueddate:
             issueddate = datetime.now()
