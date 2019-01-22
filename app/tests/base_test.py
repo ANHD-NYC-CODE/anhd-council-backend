@@ -295,10 +295,12 @@ class BaseTest():
         )
         return factory
 
-    def permitfiledlegacy_factory(self, job=None, jobs1no=1, property=None, building=None, **kwargs):
+    def permitfiledlegacy_factory(self, job=None, jobs1no=None, property=None, building=None, **kwargs):
         name = 'DOBPermitFiledLegacy'
         if not job:
             job = random.randint(1, 100000)
+        if not jobs1no:
+            jobs1no = random.randint(1, 100000)
         if not property:
             property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
         if not building:

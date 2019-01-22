@@ -469,8 +469,8 @@ class RentStabilizationRecordTests(BaseTest, TestCase):
         ds_models.RentStabilizationRecord.seed_or_update_self(
             file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds_models.RentStabilizationRecord.objects.count(), 7)
-        self.assertEqual(new_update.rows_created, 1)
-        self.assertEqual(new_update.rows_updated, 1)
+        self.assertEqual(new_update.rows_created, 7)
+        self.assertEqual(new_update.rows_updated, 0)
         self.assertEqual(ds_models.RentStabilizationRecord.objects.first().uc2017, 6)
         changed_record = ds_models.RentStabilizationRecord.objects.all()[5]
         self.assertEqual(changed_record.uc2018, 6)
@@ -624,8 +624,8 @@ class DOBPermitIssuedLegacyTests(BaseTest, TestCase):
                                          file_name="mock_dob_permit_issued_legacy_diff.csv", previous_file_name="mock_dob_permit_issued_legacy.csv")
         ds_models.DOBPermitIssuedLegacy.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds_models.DOBPermitIssuedLegacy.objects.count(), 8)
-        self.assertEqual(new_update.rows_created, 1)
-        self.assertEqual(new_update.rows_updated, 1)
+        self.assertEqual(new_update.rows_created, 8)
+        self.assertEqual(new_update.rows_updated, 0)
 
         changed_record = ds_models.DOBPermitIssuedLegacy.objects.filter(job='123527200', permitsino='3574712')[0]
         self.assertEqual(changed_record.filingstatus, 'RENEWAL')
@@ -652,8 +652,8 @@ class DOBPermitIssuedNowTests(BaseTest, TestCase):
                                          file_name="mock_dob_permit_issued_now_diff.csv", previous_file_name="mock_dob_permit_issued_now.csv")
         ds_models.DOBPermitIssuedNow.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds_models.DOBPermitIssuedNow.objects.count(), 6)
-        self.assertEqual(new_update.rows_created, 1)
-        self.assertEqual(new_update.rows_updated, 1)
+        self.assertEqual(new_update.rows_created, 6)
+        self.assertEqual(new_update.rows_updated, 0)
 
         changed_record = ds_models.DOBPermitIssuedNow.objects.filter(
             jobfilingnumber='B00093657-I1', workpermit='B00093657-I1-SH')[0]
@@ -703,8 +703,8 @@ class DOBPermitFiledTests(BaseTest, TestCase):
                                          file_name="mock_dob_permit_filed_legacy_diff.csv", previous_file_name="mock_dob_permit_issued_now.csv")
         ds_models.DOBPermitFiledLegacy.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds_models.DOBPermitFiledLegacy.objects.count(), 5)
-        self.assertEqual(new_update.rows_created, 1)
-        self.assertEqual(new_update.rows_updated, 1)
+        self.assertEqual(new_update.rows_created, 5)
+        self.assertEqual(new_update.rows_updated, 0)
 
         changed_record = ds_models.DOBPermitFiledLegacy.objects.filter(
             job='421677974')[0]
