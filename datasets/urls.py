@@ -123,6 +123,7 @@ router.register(r'hpdcomplaints', v.hpdcomplaint_views.HPDComplaintViewSet)
 router.register(r'dobviolations', v.dobviolation_views.DOBViolationViewSet)
 router.register(r'dobcomplaints', v.dobcomplaint_views.DOBComplaintViewSet)
 router.register(r'ecbviolations', v.ecbviolation_views.ECBViolationViewSet)
+router.register(r'acrisrealmasters', v.acrisrealmaster_views.AcrisRealMasterViewSet)
 
 custom_routes = format_suffix_patterns([
     path('councils/<int:pk>/housingtype-summary/', council_housingtype_summary, name='council-housingtype-summary'),

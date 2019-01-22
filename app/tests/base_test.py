@@ -206,8 +206,10 @@ class BaseTest():
         )
         return factory
 
-    def acrismaster_factory(self, documentid=1, **kwargs):
+    def acrismaster_factory(self, documentid=None, **kwargs):
         name = 'AcrisRealMaster'
+        if not documentid:
+            documentid = random.randint(1, 100000)
         if not len(c_models.Dataset.objects.filter(name=name)):
             dataset = c_models.Dataset.objects.create(name=name, model_name=name)
 
@@ -219,6 +221,8 @@ class BaseTest():
 
     def acrislegal_factory(self, documentid=None, property=None, **kwargs):
         name = 'AcrisRealLegal'
+        if not documentid:
+            documentid = random.randint(1, 100000)
         if not len(c_models.Dataset.objects.filter(name=name)):
             dataset = c_models.Dataset.objects.create(name=name, model_name=name)
         if not property:
