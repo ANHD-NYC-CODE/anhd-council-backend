@@ -10,7 +10,7 @@ from datasets import models as ds
 
 class HPDBuildingViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
-    queryset = ds.HPDBuildingRecord.objects.all()
+    queryset = ds.HPDBuildingRecord.objects.all().order_by('pk')
     serializer_class = serial.HPDBuildingSerializer
 
     @cache_me()

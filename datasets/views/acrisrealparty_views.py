@@ -10,7 +10,7 @@ from datasets import models as ds
 
 class AcrisRealPartyViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
-    queryset = ds.AcrisRealParty.objects.all()
+    queryset = ds.AcrisRealParty.objects.all().order_by('pk')
     serializer_class = serial.AcrisRealPartySerializer
 
     @cache_me()

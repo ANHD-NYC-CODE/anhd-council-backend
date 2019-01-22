@@ -10,7 +10,7 @@ from datasets import models as ds
 
 class DOBPermitIssuedLegacyViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
-    queryset = ds.DOBPermitIssuedLegacy.objects.all()
+    queryset = ds.DOBPermitIssuedLegacy.objects.all().order_by('pk')
     serializer_class = serial.DOBPermitIssuedLegacySerializer
 
     @cache_me()

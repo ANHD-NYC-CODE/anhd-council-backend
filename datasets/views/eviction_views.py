@@ -10,7 +10,7 @@ from datasets import models as ds
 
 class EvictionViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
-    queryset = ds.Eviction.objects.all()
+    queryset = ds.Eviction.objects.all().order_by('pk')
     serializer_class = serial.EvictionSerializer
 
     @cache_me()

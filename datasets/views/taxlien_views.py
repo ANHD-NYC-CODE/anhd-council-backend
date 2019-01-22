@@ -10,7 +10,7 @@ from datasets import models as ds
 
 class TaxLienViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
-    queryset = ds.TaxLien.objects.all()
+    queryset = ds.TaxLien.objects.all().order_by('pk')
     serializer_class = serial.TaxLienSerializer
 
     @cache_me()

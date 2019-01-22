@@ -7,7 +7,7 @@ from datasets import models as ds
 
 
 class CouncilViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
-    queryset = ds.Council.objects.all()
+    queryset = ds.Council.objects.all().order_by('pk')
     serializer_class = serial.CouncilSerializer
 
     @cache_me()
