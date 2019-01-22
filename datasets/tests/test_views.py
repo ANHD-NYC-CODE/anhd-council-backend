@@ -160,6 +160,19 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
+    def test_property_acrismasters(self):
+        property = self.property_factory(bbl="1")
+        master1 = self.acrismaster_factory(documentid="1")
+        master2 = self.acrismaster_factory(documentid="2")
+        self.acrislegal_factory(master=master1, property=property)
+        self.acrislegal_factory(master=master2, property=property)
+
+        response = self.client.get('/properties/1/acrisrealmasters/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
     def test_property_buildings_summary(self):
         property = self.property_factory(bbl="1")
         building1 = self.building_factory(property=property, bin="10a", lhnd="100", hhnd="100")
@@ -448,6 +461,77 @@ class AcrisRealMasterViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestC
         self.acrismaster_factory(documentid="1")
 
         response = self.client.get('/acrisrealmasters/1/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(content["documentid"], '1')
+
+    def test_acrismaster_acrisparties(self):
+        master = self.acrismaster_factory(documentid="1")
+        self.acrisparty_factory(master=master)
+        self.acrisparty_factory(master=master)
+
+        response = self.client.get('/acrisrealmasters/1/acrisrealparties/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
+
+class AcrisRealLegalViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
+    urlpatterns = [
+        path('', include('datasets.urls')),
+    ]
+
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_list(self):
+        master = self.acrismaster_factory(documentid="1")
+        self.acrislegal_factory(master=master)
+        self.acrislegal_factory(master=master)
+
+        response = self.client.get('/acrisreallegals/', format="json")
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
+    def test_retrieve(self):
+        master = self.acrismaster_factory(documentid="1")
+        legal = self.acrislegal_factory(master=master)
+
+        response = self.client.get('/acrisreallegals/{}/'.format(legal.id))
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(content["documentid"], '1')
+
+
+class AcrisRealPartyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
+    urlpatterns = [
+        path('', include('datasets.urls')),
+    ]
+
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_list(self):
+        master = self.acrismaster_factory(documentid="1")
+        self.acrisparty_factory(master=master)
+        self.acrisparty_factory(master=master)
+
+        response = self.client.get('/acrisrealparties/', format="json")
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
+    def test_retrieve(self):
+        master = self.acrismaster_factory(documentid="1")
+        party = self.acrisparty_factory(master=master)
+
+        response = self.client.get('/acrisrealparties/{}/'.format(party.id))
         content = response.data
 
         self.assertEqual(response.status_code, 200)

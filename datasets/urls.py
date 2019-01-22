@@ -78,6 +78,13 @@ properties_router.register(
     parents_query_lookups=['bbl']
 )
 
+properties_router.register(
+    'acrisrealmasters',
+    v.acrisrealmaster_views.AcrisRealMasterViewSet,
+    base_name='property-acrisrealmasters',
+    parents_query_lookups=['acrisreallegal__bbl']
+)
+
 buildings_router = router.register(r'buildings', v.building_views.BuildingViewSet)
 
 buildings_router.register(
@@ -123,7 +130,17 @@ router.register(r'hpdcomplaints', v.hpdcomplaint_views.HPDComplaintViewSet)
 router.register(r'dobviolations', v.dobviolation_views.DOBViolationViewSet)
 router.register(r'dobcomplaints', v.dobcomplaint_views.DOBComplaintViewSet)
 router.register(r'ecbviolations', v.ecbviolation_views.ECBViolationViewSet)
-router.register(r'acrisrealmasters', v.acrisrealmaster_views.AcrisRealMasterViewSet)
+acrisrealmasters_router = router.register(r'acrisrealmasters', v.acrisrealmaster_views.AcrisRealMasterViewSet)
+
+acrisrealmasters_router.register(
+    'acrisrealparties',
+    v.acrisrealparty_views.AcrisRealPartyViewSet,
+    base_name='acrisrealmaster-acrisrealparties',
+    parents_query_lookups=['documentid']
+)
+
+router.register(r'acrisreallegals', v.acrisreallegal_views.AcrisRealLegalViewSet)
+router.register(r'acrisrealparties', v.acrisrealparty_views.AcrisRealPartyViewSet)
 
 custom_routes = format_suffix_patterns([
     path('councils/<int:pk>/housingtype-summary/', council_housingtype_summary, name='council-housingtype-summary'),

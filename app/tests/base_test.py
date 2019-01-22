@@ -219,19 +219,30 @@ class BaseTest():
         )
         return factory
 
-    def acrislegal_factory(self, documentid=None, property=None, **kwargs):
+    def acrisparty_factory(self, master=None, **kwargs):
+        name = 'AcrisRealParty'
+        if not master:
+            master = self.acrismaster_factory(documentid=random.randint(1, 100000))
+        if not len(c_models.Dataset.objects.filter(name=name)):
+            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+
+        factory = d_models.AcrisRealParty.objects.create(
+            documentid=master,
+            **kwargs
+        )
+        return factory
+
+    def acrislegal_factory(self, master=None, property=None, **kwargs):
         name = 'AcrisRealLegal'
-        if not documentid:
-            documentid = random.randint(1, 100000)
+        if not master:
+            master = self.acrismaster_factory(documentid=random.randint(1, 100000))
         if not len(c_models.Dataset.objects.filter(name=name)):
             dataset = c_models.Dataset.objects.create(name=name, model_name=name)
         if not property:
             property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
-        if not documentid:
-            documentid = self.acrismaster_factory(self, documentid=1)
 
         factory = d_models.AcrisRealLegal.objects.create(
-            documentid=documentid,
+            documentid=master,
             bbl=property,
             **kwargs
         )
