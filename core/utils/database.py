@@ -164,6 +164,7 @@ def batch_upsert_rows(rows, model, batch_size, update=None):
             if batch_size > 1:
                 logger.info(
                     'Database - error upserting rows. Switching reducing batch size to {} - Error: {}'.format(batch_size / 10, e))
+                # TODO - use batch_upsert_from_gen
                 batch_upsert_rows(rows, model, batch_size / 10, update=update)
             else:
                 logger.info('Database - error upserting rows. Switching to single row upsert. - Error: {}'.format(e))

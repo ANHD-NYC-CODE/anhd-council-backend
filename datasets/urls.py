@@ -120,6 +120,21 @@ properties_router.register(
     parents_query_lookups=['ucbbl']
 )
 
+properties_router.register(
+    'subsidyj51',
+    v.subsidyj51_views.SubsidyJ51ViewSet,
+    base_name='property-subsidyj51',
+    parents_query_lookups=['bbl']
+)
+
+properties_router.register(
+    'subsidy421a',
+    v.subsidy421a_views.Subsidy421aViewSet,
+    base_name='property-subsidy421a',
+    parents_query_lookups=['bbl']
+)
+
+
 buildings_router = router.register(r'buildings', v.building_views.BuildingViewSet)
 
 buildings_router.register(
@@ -239,6 +254,8 @@ hpdregistrations_router.register(
 router.register(r'hpdcontacts', v.hpdcontact_views.HPDContactViewSet)
 router.register(r'taxliens', v.taxlien_views.TaxLienViewSet)
 router.register(r'taxbills', v.rentstabilizationrecord_views.RentStabilizationRecordViewSet)
+router.register(r'subsidyj51', v.subsidyj51_views.SubsidyJ51ViewSet)
+router.register(r'subsidy421a', v.subsidy421a_views.Subsidy421aViewSet)
 
 custom_routes = format_suffix_patterns([
     path('councils/<int:pk>/housingtype-summary/', council_housingtype_summary, name='council-housingtype-summary'),
