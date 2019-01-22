@@ -295,8 +295,8 @@ class BaseTest():
         )
         return factory
 
-    def permitissuedlegacy_factory(self, job=None, permitsino=1, property=None, building=None, **kwargs):
-        name = 'DOBPermitIssuedLegacy'
+    def permitfiledlegacy_factory(self, job=None, jobs1no=1, property=None, building=None, **kwargs):
+        name = 'DOBPermitFiledLegacy'
         if not job:
             job = random.randint(1, 100000)
         if not property:
@@ -305,9 +305,9 @@ class BaseTest():
             building = self.building_factory(bin=random.randint(1, 100000), property=property, boro=property.borough,
                                              block=property.block, lot=property.lot)
 
-        factory = d_models.DOBPermitIssuedLegacy.objects.create(
+        factory = d_models.DOBPermitFiledLegacy.objects.create(
             job=job,
-            permitsino=permitsino,
+            jobs1no=jobs1no,
             bbl=property,
             bin=building,
             **kwargs
@@ -331,6 +331,25 @@ class BaseTest():
             jobfilingnumber=jobfilingnumber,
             workpermit=workpermit,
             issueddate=issueddate,
+            bbl=property,
+            bin=building,
+            **kwargs
+        )
+        return factory
+
+    def permitissuedlegacy_factory(self, job=None, permitsino=1, property=None, building=None, **kwargs):
+        name = 'DOBPermitIssuedLegacy'
+        if not job:
+            job = random.randint(1, 100000)
+        if not property:
+            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+        if not building:
+            building = self.building_factory(bin=random.randint(1, 100000), property=property, boro=property.borough,
+                                             block=property.block, lot=property.lot)
+
+        factory = d_models.DOBPermitIssuedLegacy.objects.create(
+            job=job,
+            permitsino=permitsino,
             bbl=property,
             bin=building,
             **kwargs
