@@ -6,6 +6,13 @@ import logging
 
 logger = logging.getLogger('app')
 
+# TODO - generate unique key during transform and add as a model field
+# remove unqiue constraints beacuse it's slowing down updates a lot
+
+# Update process: Automatic
+# Update strategy: Overwrite
+#
+
 
 class DOBPermitIssuedNow(BaseDatasetModel, models.Model):
     download_endpoint = "https://data.cityofnewyork.us/api/views/rbx6-tga4/rows.csv?accessType=DOWNLOAD"
@@ -79,7 +86,7 @@ class DOBPermitIssuedNow(BaseDatasetModel, models.Model):
     @classmethod
     def seed_or_update_self(self, **kwargs):
         logger.debug("Seeding/Updating {}", self.__name__)
-        return self.seed_or_update_from_set_diff(**kwargs)
+        return self.bulk_seed(**kwargs, overwrite=True)
 
     def __str__(self):
-        return str(self.violationid)
+        return str(self.jobfilingnumber)

@@ -6,6 +6,10 @@ import logging
 
 logger = logging.getLogger('app')
 
+# Update process: Automatic
+# Update strategy: Overwrite
+#
+
 
 class DOBPermitIssuedLegacy(BaseDatasetModel, models.Model):
     download_endpoint = "https://data.cityofnewyork.us/api/views/ipu4-2q9a/rows.csv?accessType=DOWNLOAD"
@@ -108,7 +112,7 @@ class DOBPermitIssuedLegacy(BaseDatasetModel, models.Model):
     @classmethod
     def seed_or_update_self(self, **kwargs):
         logger.debug("Seeding/Updating {}", self.__name__)
-        return self.seed_or_update_from_set_diff(**kwargs)
+        return self.bulk_seed(**kwargs, overwrite=True)
 
     def __str__(self):
         return str(self.job)

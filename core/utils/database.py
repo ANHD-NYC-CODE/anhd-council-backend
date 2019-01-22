@@ -5,9 +5,11 @@ from core.utils.csv_helpers import gen_to_csv
 from django.conf import settings
 from postgres_copy import CopyManager
 
+
 import itertools
 import csv
 import uuid
+import math
 import os
 import json
 import logging
@@ -139,10 +141,10 @@ def batch_upsert_from_gen(model, rows, batch_size, update=None, overwrite=False)
             logger.info("Database - Batch upserts completed for {}.".format(model.__name__))
             break
         else:
-            batch_upsert_rows(batch, model, batch_size, update=update)
+            batch_upsert_rows(model, batch, batch_size, update=update)
 
 
-def batch_upsert_rows(rows, model, batch_size, update=None):
+def batch_upsert_rows(model, rows, batch_size, update=None):
     table_name = model._meta.db_table
     primary_key = model._meta.pk.name
     """ Inserts many row, all in the same transaction"""
@@ -163,15 +165,15 @@ def batch_upsert_rows(rows, model, batch_size, update=None):
             print(e)
             if batch_size > 1:
                 logger.info(
-                    'Database - error upserting rows. Switching reducing batch size to {} - Error: {}'.format(batch_size / 10, e))
+                    'Database - error upserting rows. Switching reducing batch size to {} - Error: {}'.format(math.ceil(batch_size / 10), e))
                 # TODO - use batch_upsert_from_gen
-                batch_upsert_rows(rows, model, batch_size / 10, update=update)
+                batch_upsert_from_gen(model, rows, math.ceil(batch_size / 10), update=update)
             else:
                 logger.info('Database - error upserting rows. Switching to single row upsert. - Error: {}'.format(e))
-                single_upsert_row(rows, model, update=update)
+                single_upsert_row(model, rows, update=update)
 
 
-def single_upsert_row(rows, model, update=None):
+def single_upsert_row(model, rows, update=None):
     table_name = model._meta.db_table
     rows_created = 0
     rows_updated = 0
@@ -189,6 +191,8 @@ def single_upsert_row(rows, model, update=None):
                                  build_row_values(row) + build_pkey_tuple(row, pkey))
                     rows_updated = rows_updated + 1
             except Exception as e:
+                import pdb
+                pdb.set_trace()
                 logger.error("Database Error * - unable to upsert single record. Error: {}".format(e))
                 print(e)
                 pass
