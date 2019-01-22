@@ -229,6 +229,28 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
 
+    def test_property_subsidy421a(self):
+        property = self.property_factory(bbl="1")
+        self.subsidy421a_factory(property=property)
+        self.subsidy421a_factory(property=property)
+
+        response = self.client.get('/properties/1/subsidy421a/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
+    def test_property_subsidyj51(self):
+        property = self.property_factory(bbl="1")
+        self.subsidyj51_factory(property=property)
+        self.subsidyj51_factory(property=property)
+
+        response = self.client.get('/properties/1/subsidyj51/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
     def test_property_buildings_summary(self):
         property = self.property_factory(bbl="1")
         building1 = self.building_factory(property=property, bin="10a", lhnd="100", hhnd="100")
@@ -837,3 +859,59 @@ class RentStabilizationRecordTests(BaseTest, APITestCase, URLPatternsTestCase, T
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(content["id"], taxbill.id)
+
+
+class Subsidy421aTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
+    urlpatterns = [
+        path('', include('datasets.urls')),
+    ]
+
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_list(self):
+        self.subsidy421a_factory()
+        self.subsidy421a_factory()
+
+        response = self.client.get('/subsidy421a/', format="json")
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
+    def test_retrieve(self):
+        subsidy421a = self.subsidy421a_factory()
+
+        response = self.client.get('/subsidy421a/{}/'.format(subsidy421a.id))
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(content["id"], subsidy421a.id)
+
+
+class SubsidyJ51Tests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
+    urlpatterns = [
+        path('', include('datasets.urls')),
+    ]
+
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_list(self):
+        self.subsidyj51_factory()
+        self.subsidyj51_factory()
+
+        response = self.client.get('/subsidyj51/', format="json")
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
+    def test_retrieve(self):
+        subsidyj51 = self.subsidyj51_factory()
+
+        response = self.client.get('/subsidyj51/{}/'.format(subsidyj51.id))
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(content["id"], subsidyj51.id)

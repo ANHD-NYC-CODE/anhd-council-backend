@@ -178,6 +178,18 @@ class RentStabilizationRecordSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class SubsidyJ51Serializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.SubsidyJ51
+        fields = '__all__'
+
+
+class Subsidy421aSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.Subsidy421a
+        fields = '__all__'
+
+
 def property_query_serializer(properties):
     return list({'foo': 'bar'} for property in properties)
 
