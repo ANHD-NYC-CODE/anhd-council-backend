@@ -113,6 +113,13 @@ properties_router.register(
     parents_query_lookups=['bbl']
 )
 
+properties_router.register(
+    'taxbills',
+    v.rentstabilizationrecord_views.RentStabilizationRecordViewSet,
+    base_name='property-taxbills',
+    parents_query_lookups=['ucbbl']
+)
+
 buildings_router = router.register(r'buildings', v.building_views.BuildingViewSet)
 
 buildings_router.register(
@@ -231,6 +238,7 @@ hpdregistrations_router.register(
 )
 router.register(r'hpdcontacts', v.hpdcontact_views.HPDContactViewSet)
 router.register(r'taxliens', v.taxlien_views.TaxLienViewSet)
+router.register(r'taxbills', v.rentstabilizationrecord_views.RentStabilizationRecordViewSet)
 
 custom_routes = format_suffix_patterns([
     path('councils/<int:pk>/housingtype-summary/', council_housingtype_summary, name='council-housingtype-summary'),

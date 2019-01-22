@@ -172,6 +172,12 @@ class TaxLienSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class RentStabilizationRecordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.RentStabilizationRecord
+        fields = '__all__'
+
+
 def property_query_serializer(properties):
     return list({'foo': 'bar'} for property in properties)
 
