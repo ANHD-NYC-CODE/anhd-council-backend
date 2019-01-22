@@ -17,7 +17,7 @@ class CouncilViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
     def tearDown(self):
         self.clean_tests()
 
-    def test_council_list(self):
+    def test_list(self):
         self.council_factory()
         self.council_factory()
 
@@ -27,7 +27,7 @@ class CouncilViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
-    def test_council_retrieve(self):
+    def test_retrieve(self):
         self.council_factory(coundist=1)
 
         response = self.client.get('/councils/1/')
@@ -47,7 +47,7 @@ class CouncilViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
-    def test_council_housingtype_summary(self):
+    def test_housingtype_summary(self):
         council = self.council_factory(coundist=1)
         self.property_factory(council=council)
 
@@ -63,7 +63,7 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         path('', include('datasets.urls')),
     ]
 
-    def test_property_list(self):
+    def test_list(self):
         self.property_factory(bbl="1")
         self.property_factory(bbl="2")
 
@@ -72,7 +72,7 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
-    def test_property_retrieve(self):
+    def test_retrieve(self):
         property = self.property_factory(bbl="1", yearbuilt="1910")
 
         response = self.client.get('/properties/1/')
@@ -126,6 +126,17 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
+    def test_property_dobviolations(self):
+        property = self.property_factory(bbl="1")
+        self.dobviolation_factory(property=property)
+        self.dobviolation_factory(property=property)
+
+        response = self.client.get('/properties/1/dobviolations/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
     def test_property_buildings_summary(self):
         property = self.property_factory(bbl="1")
         building1 = self.building_factory(property=property, bin="10a", lhnd="100", hhnd="100")
@@ -147,7 +158,7 @@ class BuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
     def tearDown(self):
         self.clean_tests()
 
-    def test_building_list(self):
+    def test_list(self):
         self.building_factory(bin="1")
         self.building_factory(bin="2")
 
@@ -157,7 +168,7 @@ class BuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
-    def test_building_retrieve(self):
+    def test_retrieve(self):
         self.building_factory(bin="1")
 
         response = self.client.get('/buildings/1/')
@@ -189,6 +200,17 @@ class BuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
+    def test_building_dobviolations(self):
+        building = self.building_factory(bin="1")
+        self.dobviolation_factory(building=building)
+        self.dobviolation_factory(building=building)
+
+        response = self.client.get('/buildings/1/dobviolations/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
 
 class HPDBuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
     urlpatterns = [
@@ -198,7 +220,7 @@ class HPDBuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase)
     def tearDown(self):
         self.clean_tests()
 
-    def test_building_list(self):
+    def test_list(self):
         self.hpdbuilding_factory(buildingid="1")
         self.hpdbuilding_factory(buildingid="2")
 
@@ -208,7 +230,7 @@ class HPDBuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
-    def test_building_retrieve(self):
+    def test_retrieve(self):
         building = self.building_factory(bin="1")
         self.hpdbuilding_factory(buildingid="1", building=building)
 
@@ -227,7 +249,7 @@ class HPDViolationViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase
     def tearDown(self):
         self.clean_tests()
 
-    def test_violation_list(self):
+    def test_list(self):
         self.hpdviolation_factory(violationid="1")
         self.hpdviolation_factory(violationid="2")
 
@@ -237,7 +259,7 @@ class HPDViolationViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
-    def test_violation_retrieve(self):
+    def test_retrieve(self):
         self.hpdviolation_factory(violationid="1")
 
         response = self.client.get('/hpdviolations/1/')
@@ -255,7 +277,7 @@ class HPDComplaintViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase
     def tearDown(self):
         self.clean_tests()
 
-    def test_violation_list(self):
+    def test_list(self):
         self.hpdcomplaint_factory(complaintid="1")
         self.hpdcomplaint_factory(complaintid="2")
 
@@ -265,7 +287,7 @@ class HPDComplaintViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
-    def test_complaint_retrieve(self):
+    def test_retrieve(self):
         self.hpdcomplaint_factory(complaintid="1")
 
         response = self.client.get('/hpdcomplaints/1/')
@@ -273,3 +295,31 @@ class HPDComplaintViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(content["complaintid"], 1)
+
+
+class DOBViolationViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
+    urlpatterns = [
+        path('', include('datasets.urls')),
+    ]
+
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_list(self):
+        self.dobviolation_factory(isndobbisviol="1")
+        self.dobviolation_factory(isndobbisviol="2")
+
+        response = self.client.get('/dobviolations/', format="json")
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
+    def test_retrieve(self):
+        self.dobviolation_factory(isndobbisviol="1")
+
+        response = self.client.get('/dobviolations/1/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(content["isndobbisviol"], '1')
