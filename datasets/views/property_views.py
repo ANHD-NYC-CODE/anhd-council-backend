@@ -10,7 +10,7 @@ from rest_framework import viewsets
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from django.core.cache import cache
-from datasets.helpers.api_helpers import cache_me, properties_by_housingtype
+from datasets.helpers.api_helpers import cache_me, properties_by_housingtype, ApplicationViewSet
 from datasets.serializers import property_query_serializer
 from datasets.models.Property import PropertyFilter
 from datasets import serializers as serial
@@ -21,18 +21,18 @@ import logging
 logger = logging.getLogger('app')
 
 
-class PropertyViewSet(NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
+class PropertyViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
-    queryset = ds.Property.objects
+    queryset = ds.Property.objects.all()
     serializer_class = serial.PropertySerializer
 
     @cache_me()
     def list(self, request, *args, **kwargs):
         if 'parent_lookup_council' in kwargs:
-            queryset = ds.Property.objects.council(self.kwargs['parent_lookup_council'])
+            qs = ds.Property.objects.council(kwargs['parent_lookup_council'])
         else:
-            queryset = ds.Property.objects
-        self.queryset = properties_by_housingtype(self.request, queryset=queryset)
+            qs = self.queryset
+        self.queryset = properties_by_housingtype(self.request, queryset=qs).all()
         return super().list(self, request, *args, **kwargs)
 
     @cache_me()

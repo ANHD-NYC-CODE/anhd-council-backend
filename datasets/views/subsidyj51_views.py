@@ -2,15 +2,15 @@ from rest_framework import viewsets
 from rest_framework_extensions.mixins import NestedViewSetMixin
 from rest_framework.settings import api_settings
 from rest_framework_csv import renderers as rf_csv
-from datasets.helpers.api_helpers import cache_me
+from datasets.helpers.api_helpers import cache_me, ApplicationViewSet
 
 from datasets import serializers as serial
 from datasets import models as ds
 
 
-class SubsidyJ51ViewSet(NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
+class SubsidyJ51ViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
-    queryset = ds.SubsidyJ51.objects
+    queryset = ds.SubsidyJ51.objects.all()
     serializer_class = serial.SubsidyJ51Serializer
 
     @cache_me()
