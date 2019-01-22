@@ -148,8 +148,10 @@ class BaseTest():
         )
         return factory
 
-    def dobcomplaint_factory(self, complaintnumber=1, building=None, **kwargs):
+    def dobcomplaint_factory(self, complaintnumber=None, building=None, **kwargs):
         name = 'DOBComplaint'
+        if not complaintnumber:
+            complaintnumber = random.randint(1, 100000)
         if not len(c_models.Dataset.objects.filter(name=name)):
             dataset = c_models.Dataset.objects.create(name=name, model_name=name)
         if not building:
@@ -164,14 +166,16 @@ class BaseTest():
         )
         return factory
 
-    def dobviolation_factory(self, isndobbisviol=1, property=None, building=None, **kwargs):
+    def dobviolation_factory(self, isndobbisviol=None, property=None, building=None, **kwargs):
         name = 'DOBViolation'
+        if not isndobbisviol:
+            isndobbisviol = random.randint(1, 100000)
         if not len(c_models.Dataset.objects.filter(name=name)):
             dataset = c_models.Dataset.objects.create(name=name, model_name=name)
         if not property:
             property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
         if not building:
-            building = self.building_factory(bin=1, property=property, boro=property.borough,
+            building = self.building_factory(bin=random.randint(1, 100000), property=property, boro=property.borough,
                                              block=property.block, lot=property.lot)
 
         factory = d_models.DOBViolation.objects.create(

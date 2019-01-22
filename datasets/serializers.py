@@ -92,6 +92,12 @@ class HPDComplaintSerializer(serializers.ModelSerializer):
             return None
 
 
+class DOBViolationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.DOBViolation
+        fields = '__all__'
+
+
 def property_query_serializer(properties):
     return list({'foo': 'bar'} for property in properties)
 
