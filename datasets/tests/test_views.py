@@ -206,6 +206,17 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
+    def test_property_taxliens(self):
+        property = self.property_factory(bbl="1")
+        self.taxlien_factory(property=property)
+        self.taxlien_factory(property=property)
+
+        response = self.client.get('/properties/1/taxliens/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
     def test_property_buildings_summary(self):
         property = self.property_factory(bbl="1")
         building1 = self.building_factory(property=property, bin="10a", lhnd="100", hhnd="100")
@@ -720,6 +731,17 @@ class HPDRegistrationViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestC
         self.assertEqual(response.status_code, 200)
         self.assertEqual(content["registrationid"], 1)
 
+    def test_hpdregistration_hpdcontacts(self):
+        registration = self.hpdregistration_factory(registrationid="1")
+        self.hpdcontact_factory(registration=registration)
+        self.hpdcontact_factory(registration=registration)
+
+        response = self.client.get('/hpdregistrations/1/hpdcontacts/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
 
 class HPDContactViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
     urlpatterns = [
@@ -748,13 +770,30 @@ class HPDContactViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(content["registrationcontactid"], 1)
 
-    def test_hpdregistration_hpdcontacts(self):
-        registration = self.hpdregistration_factory(registrationid="1")
-        self.hpdcontact_factory(registration=registration)
-        self.hpdcontact_factory(registration=registration)
 
-        response = self.client.get('/hpdregistrations/1/hpdcontacts/')
+class TaxLienTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
+    urlpatterns = [
+        path('', include('datasets.urls')),
+    ]
+
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_list(self):
+        self.taxlien_factory()
+        self.taxlien_factory()
+
+        response = self.client.get('/taxliens/', format="json")
         content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
+
+    def test_retrieve(self):
+        taxlien = self.taxlien_factory()
+
+        response = self.client.get('/taxliens/{}/'.format(taxlien.id))
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(content["id"], taxlien.id)

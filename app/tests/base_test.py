@@ -375,3 +375,39 @@ class BaseTest():
             **kwargs
         )
         return factory
+
+    def taxlien_factory(self, property=None, **kwargs):
+        name = 'TaxLien'
+
+        if not property:
+            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+
+        factory = d_models.TaxLien.objects.create(
+            bbl=property,
+            **kwargs
+        )
+        return factory
+
+    def subsidyj51_factory(self, property=None, **kwargs):
+        name = 'SubsidyJ51'
+
+        if not property:
+            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+
+        factory = d_models.SubsidyJ51.objects.create(
+            bbl=property,
+            **kwargs
+        )
+        return factory
+
+    def subsidy421a_factory(self, property=None, **kwargs):
+        name = 'Subsidy421a'
+
+        if not property:
+            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+
+        factory = d_models.Subsidy421a.objects.create(
+            bbl=property,
+            **kwargs
+        )
+        return factory
