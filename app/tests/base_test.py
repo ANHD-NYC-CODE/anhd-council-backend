@@ -131,31 +131,21 @@ class BaseTest():
         )
         return factory
 
-    def hpdproblem_factory(self, problemid=None, complaint=None, property=None, hpdbuilding=None, **kwargs):
+    def hpdproblem_factory(self, problemid=None, complaint=None, **kwargs):
         name = 'HPDProblem'
         if not problemid:
             problemid = random.randint(1, 100000)
         if not complaint:
             complaint = self.hpdcomplaint_factory(property=property, hpdbuilding=hpdbuilding)
 
-        if not property:
-            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
-        if not hpdbuilding:
-            building = self.building_factory(bin=random.randint(1, 100000), property=property, boro=property.borough,
-                                             block=property.block, lot=property.lot)
-            hpdbuilding = self.hpdbuilding_factory(buildingid=random.randint(
-                1, 100000), property=property, building=building)
-
         factory = d_models.HPDProblem.objects.create(
             problemid=problemid,
-            complaint=complaint,
-            bbl=property,
-            buildingid=hpdbuilding,
+            complaintid=complaint,
             **kwargs
         )
         return factory
 
-    def hpdviolation_factory(self, violationid=None, property=None, building=None, currentstatusid=1, currentstatus="ACTIVE", **kwargs):
+    def hpdviolation_factory(self, violationid=None, property=None, building=None, hpdbuilding=None, currentstatusid=1, currentstatus="ACTIVE", **kwargs):
         name = 'HPDViolation'
         if not violationid:
             violationid = random.randint(1, 100000)
@@ -170,8 +160,45 @@ class BaseTest():
             violationid=violationid,
             bbl=property,
             bin=building,
+            buildingid=hpdbuilding,
             currentstatusid=currentstatusid,
             currentstatus=currentstatus,
+            **kwargs
+        )
+        return factory
+
+    def hpdregistration_factory(self, registrationid=None, property=None, building=None, hpdbuilding=None, **kwargs):
+        name = 'HPDRegistration'
+        if not registrationid:
+            registrationid = random.randint(1, 100000)
+
+        if not property:
+            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+        if not building:
+            building = self.building_factory(bin=random.randint(1, 100000), property=property, boro=property.borough,
+                                             block=property.block, lot=property.lot)
+
+        factory = d_models.HPDRegistration.objects.create(
+            registrationid=registrationid,
+            bbl=property,
+            bin=building,
+            buildingid=hpdbuilding,
+            **kwargs
+        )
+        return factory
+
+    def hpdcontact_factory(self, registrationcontactid=None, registration=None, **kwargs):
+        name = 'HPDContact'
+
+        if not registrationcontactid:
+            registrationcontactid = random.randint(1, 100000)
+
+        if not registration:
+            registration = self.hpdregistration_factory(registrationid=random.randint(1, 100000))
+
+        factory = d_models.HPDContact.objects.create(
+            registrationcontactid=registrationcontactid,
+            registrationid=registration,
             **kwargs
         )
         return factory

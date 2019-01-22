@@ -154,6 +154,18 @@ class HousingLitigationSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class HPDRegistrationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.HPDRegistration
+        fields = '__all__'
+
+
+class HPDContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.HPDContact
+        fields = '__all__'
+
+
 def property_query_serializer(properties):
     return list({'foo': 'bar'} for property in properties)
 
