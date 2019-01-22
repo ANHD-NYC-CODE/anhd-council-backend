@@ -186,14 +186,16 @@ class BaseTest():
         )
         return factory
 
-    def ecbviolation_factory(self, ecbviolationnumber=1, property=None, building=None, **kwargs):
+    def ecbviolation_factory(self, ecbviolationnumber=None, property=None, building=None, **kwargs):
         name = 'ECBViolation'
+        if not ecbviolationnumber:
+            ecbviolationnumber = random.randint(1, 100000)
         if not len(c_models.Dataset.objects.filter(name=name)):
             dataset = c_models.Dataset.objects.create(name=name, model_name=name)
         if not property:
             property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
         if not building:
-            building = self.building_factory(bin=1, property=property, boro=property.borough,
+            building = self.building_factory(bin=random.randint(1, 100000), property=property, boro=property.borough,
                                              block=property.block, lot=property.lot)
 
         factory = d_models.ECBViolation.objects.create(

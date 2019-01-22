@@ -71,6 +71,13 @@ properties_router.register(
     parents_query_lookups=['bin__bbl']
 )
 
+properties_router.register(
+    'ecbviolations',
+    v.ecbviolation_views.ECBViolationViewSet,
+    base_name='property-ecbviolations',
+    parents_query_lookups=['bbl']
+)
+
 buildings_router = router.register(r'buildings', v.building_views.BuildingViewSet)
 
 buildings_router.register(
@@ -102,12 +109,20 @@ buildings_router.register(
     parents_query_lookups=['bin']
 )
 
+buildings_router.register(
+    'ecbviolations',
+    v.ecbviolation_views.ECBViolationViewSet,
+    base_name='building-ecbviolations',
+    parents_query_lookups=['bin']
+)
+
 
 router.register(r'hpdbuildings', v.hpdbuilding_views.HPDBuildingViewSet)
 router.register(r'hpdviolations', v.hpdviolation_views.HPDViolationViewSet)
 router.register(r'hpdcomplaints', v.hpdcomplaint_views.HPDComplaintViewSet)
 router.register(r'dobviolations', v.dobviolation_views.DOBViolationViewSet)
 router.register(r'dobcomplaints', v.dobcomplaint_views.DOBComplaintViewSet)
+router.register(r'ecbviolations', v.ecbviolation_views.ECBViolationViewSet)
 
 custom_routes = format_suffix_patterns([
     path('councils/<int:pk>/housingtype-summary/', council_housingtype_summary, name='council-housingtype-summary'),

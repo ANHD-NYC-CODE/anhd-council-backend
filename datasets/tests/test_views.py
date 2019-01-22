@@ -149,6 +149,17 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
+    def test_property_ecbviolations(self):
+        property = self.property_factory(bbl="1")
+        self.ecbviolation_factory(property=property)
+        self.ecbviolation_factory(property=property)
+
+        response = self.client.get('/properties/1/ecbviolations/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
     def test_property_buildings_summary(self):
         property = self.property_factory(bbl="1")
         building1 = self.building_factory(property=property, bin="10a", lhnd="100", hhnd="100")
@@ -229,6 +240,17 @@ class BuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.dobcomplaint_factory(building=building)
 
         response = self.client.get('/buildings/1/dobcomplaints/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
+    def test_building_ecbviolations(self):
+        building = self.building_factory(bin="1")
+        self.ecbviolation_factory(building=building)
+        self.ecbviolation_factory(building=building)
+
+        response = self.client.get('/buildings/1/ecbviolations/')
         content = response.data
 
         self.assertEqual(response.status_code, 200)
@@ -374,3 +396,31 @@ class DOBComplaintViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(content["complaintnumber"], 1)
+
+
+class ECBViolationViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
+    urlpatterns = [
+        path('', include('datasets.urls')),
+    ]
+
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_list(self):
+        self.ecbviolation_factory(ecbviolationnumber="1")
+        self.ecbviolation_factory(ecbviolationnumber="2")
+
+        response = self.client.get('/ecbviolations/', format="json")
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
+    def test_retrieve(self):
+        self.ecbviolation_factory(ecbviolationnumber="1")
+
+        response = self.client.get('/ecbviolations/1/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(content["ecbviolationnumber"], '1')
