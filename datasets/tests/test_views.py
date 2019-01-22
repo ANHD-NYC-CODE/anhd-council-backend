@@ -137,6 +137,18 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
+    def test_property_dobcomplaints(self):
+        property = self.property_factory(bbl="1")
+        building = self.building_factory(bin="1", property=property)
+        self.dobcomplaint_factory(building=building)
+        self.dobcomplaint_factory(building=building)
+
+        response = self.client.get('/properties/1/dobcomplaints/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
     def test_property_buildings_summary(self):
         property = self.property_factory(bbl="1")
         building1 = self.building_factory(property=property, bin="10a", lhnd="100", hhnd="100")
@@ -206,6 +218,17 @@ class BuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.dobviolation_factory(building=building)
 
         response = self.client.get('/buildings/1/dobviolations/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
+    def test_building_dobcomplaints(self):
+        building = self.building_factory(bin="1")
+        self.dobcomplaint_factory(building=building)
+        self.dobcomplaint_factory(building=building)
+
+        response = self.client.get('/buildings/1/dobcomplaints/')
         content = response.data
 
         self.assertEqual(response.status_code, 200)
@@ -323,3 +346,31 @@ class DOBViolationViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(content["isndobbisviol"], '1')
+
+
+class DOBComplaintViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
+    urlpatterns = [
+        path('', include('datasets.urls')),
+    ]
+
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_list(self):
+        self.dobcomplaint_factory(complaintnumber="1")
+        self.dobcomplaint_factory(complaintnumber="2")
+
+        response = self.client.get('/dobcomplaints/', format="json")
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
+    def test_retrieve(self):
+        self.dobcomplaint_factory(complaintnumber="1")
+
+        response = self.client.get('/dobcomplaints/1/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(content["complaintnumber"], 1)
