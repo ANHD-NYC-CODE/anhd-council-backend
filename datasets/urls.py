@@ -134,6 +134,13 @@ properties_router.register(
     parents_query_lookups=['bbl']
 )
 
+properties_router.register(
+    'coredata',
+    v.coresubsidyrecord_views.CoreSubsidyRecordViewSet,
+    base_name='property-coredata',
+    parents_query_lookups=['bbl']
+)
+
 
 buildings_router = router.register(r'buildings', v.building_views.BuildingViewSet)
 
@@ -256,6 +263,7 @@ router.register(r'taxliens', v.taxlien_views.TaxLienViewSet)
 router.register(r'taxbills', v.rentstabilizationrecord_views.RentStabilizationRecordViewSet)
 router.register(r'subsidyj51', v.subsidyj51_views.SubsidyJ51ViewSet)
 router.register(r'subsidy421a', v.subsidy421a_views.Subsidy421aViewSet)
+router.register(r'coredata', v.coresubsidyrecord_views.CoreSubsidyRecordViewSet)
 
 custom_routes = format_suffix_patterns([
     path('councils/<int:pk>/housingtype-summary/', council_housingtype_summary, name='council-housingtype-summary'),

@@ -251,6 +251,17 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
+    def test_property_coredata(self):
+        property = self.property_factory(bbl="1")
+        self.coredata_factory(property=property)
+        self.coredata_factory(property=property)
+
+        response = self.client.get('/properties/1/coredata/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
     def test_property_buildings_summary(self):
         property = self.property_factory(bbl="1")
         building1 = self.building_factory(property=property, bin="10a", lhnd="100", hhnd="100")
@@ -887,6 +898,34 @@ class Subsidy421aTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(content["id"], subsidy421a.id)
+
+
+class CoreDataTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
+    urlpatterns = [
+        path('', include('datasets.urls')),
+    ]
+
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_list(self):
+        self.coredata_factory()
+        self.coredata_factory()
+
+        response = self.client.get('/coredata/', format="json")
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
+    def test_retrieve(self):
+        coredata = self.coredata_factory()
+
+        response = self.client.get('/coredata/{}/'.format(coredata.id))
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(content["id"], coredata.id)
 
 
 class SubsidyJ51Tests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
