@@ -18,4 +18,5 @@ for name in names:
     try:
         globals()[clsname] = mo.__dict__[clsname]
     except KeyError:
-        print("No class named %s in %s.py" % (clsname, name))
+        continue
+        # print("No class named %s in %s.py" % (clsname, name))

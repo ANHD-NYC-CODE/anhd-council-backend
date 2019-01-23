@@ -17,8 +17,6 @@ class CouncilViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.clean_tests()
 
     def test_list(self):
-        import pdb
-        pdb.set_trace()
         self.council_factory()
         self.council_factory()
 

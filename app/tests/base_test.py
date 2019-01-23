@@ -5,7 +5,7 @@ from django.core.files import File
 from django.conf import settings
 import os
 import zipfile
-from datetime import datetime
+from django.utils import timezone
 import random
 
 
@@ -328,7 +328,7 @@ class BaseTest():
             building = self.building_factory(bin=random.randint(1, 100000), property=property, boro=property.borough,
                                              block=property.block, lot=property.lot)
         if not issueddate:
-            issueddate = datetime.now()
+            issueddate = timezone.now()
         factory = d_models.DOBPermitIssuedNow.objects.create(
             jobfilingnumber=jobfilingnumber,
             workpermit=workpermit,
