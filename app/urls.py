@@ -17,6 +17,7 @@ from django.contrib import admin
 from django.urls import path
 from django.conf.urls import url, include
 from rest_framework.documentation import include_docs_urls
+from django.conf import settings
 
 from datasets import views as datasets
 
@@ -26,3 +27,9 @@ urlpatterns = [
     path('docs/', include_docs_urls(title='API', description='API Documentation')),
     path('', include('datasets.urls'))
 ]
+
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns = [
+        path('__debug__/', include(debug_toolbar.urls)),
+    ] + urlpatterns

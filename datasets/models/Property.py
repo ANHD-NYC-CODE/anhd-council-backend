@@ -1,9 +1,10 @@
 from django.db import models
-from django.db.models import Q, F, Count
+from django.db.models import Q, F, Count, Exists, OuterRef
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from datasets.utils.validation_filters import is_null, exceeds_char_length
 from core.utils.transform import from_csv_file_to_gen, with_geo
 from core.utils.csv_helpers import extract_csvs_from_zip
+from datasets import models as ds
 
 import logging
 
@@ -29,7 +30,9 @@ class ObsoletePropertyManager(models.Manager):
 
 class PropertyQuerySet(models.QuerySet):
     def rentstab_filter(self):
-        return self.filter(yearbuilt__lte=1974, yearbuilt__gte=1).annotate(rentstabrecords=Count('rentstabilizationrecord')).filter(rentstabrecords__gte=1)
+        rentstab_records = ds.RentStabilizationRecord.objects.only('ucbbl', 'uc2007', 'uc2008', 'uc2009', 'uc2010', 'uc2011',
+                                                                   'uc2012', 'uc2013', 'uc2014', 'uc2015', 'uc2016', 'uc2017', 'uc2018', 'uc2019', 'uc2020',).filter(ucbbl=OuterRef('bbl'))
+        return self.filter(yearbuilt__lte=1974, yearbuilt__gte=1).annotate(has_rentstab=Exists(rentstab_records)).filter(has_rentstab=True)
 
     def rentreg_filter(self):
         return self.annotate(corerecords=Count('coresubsidyrecord'), subsidyj51records=Count('subsidyj51'), subsidy421arecords=Count('subsidy421a')).filter(Q(corerecords__gte=1) | Q(subsidyj51records__gte=1) | Q(subsidy421arecords__gte=1))
@@ -38,6 +41,8 @@ class PropertyQuerySet(models.QuerySet):
         return self.filter(unitsres__lte=4)
 
     def marketrate_filter(self):
+        smallhomes = self.filter(unitsres__lte=5)
+
         return self.annotate(
             rs2007=Count('rentstabilizationrecord', filter=Q(rentstabilizationrecord__uc2007__gt=0)),
             rs2008=Count('rentstabilizationrecord', filter=Q(rentstabilizationrecord__uc2008__gt=0)),
@@ -68,7 +73,7 @@ class PropertyQuerySet(models.QuerySet):
             rs2017=0,
             rs2018=0,
             rs2019=0,
-            rs2020=0) | Q(unitsres__lte=5))
+            rs2020=0))
 
     def council(self, number):
         return self.filter(council=number)

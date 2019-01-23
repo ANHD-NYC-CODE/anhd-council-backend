@@ -66,6 +66,7 @@ services:
       - network1
   postgres:
     image: postgres:11
+    shm_size: '2gb'
     environment:
       - POSTGRES_DB=anhd
       - POSTGRES_USER=anhd
