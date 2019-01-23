@@ -31,12 +31,7 @@ class PropertyViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyM
 
     @cache_me()
     def list(self, request, *args, **kwargs):
-        if 'parent_lookup_council' in kwargs:
-            qs = ds.Property.objects.council(kwargs['parent_lookup_council']).order_by('pk')
-        else:
-            qs = self.queryset
-        self.queryset = properties_by_housingtype(self.request, queryset=qs).all().order_by('pk')
-        return super().list(self, request, *args, **kwargs)
+        return super().list(request, *args, **kwargs)
 
     @cache_me()
     def retrieve(self, request, *args, **kwargs):
