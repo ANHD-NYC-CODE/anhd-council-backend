@@ -77,7 +77,7 @@ class PropertyQuerySetTest(BaseTest, TestCase):
         BaseTest.ecbviolation_factory(self, property=properties[0], building=building1)
         BaseTest.permitissuedlegacy_factory(self, property=properties[0], building=building1)
         BaseTest.permitissuednow_factory(self, property=properties[0], building=building1)
-        BaseTest.rentstabilizationrecord_factory(self, property=properties[0], uc2010=10, uc2017=9)
+        BaseTest.taxbill_factory(self, property=properties[0], uc2010=10, uc2017=9)
 
         fields_list = ['hpdcomplaint__gte',
                        'hpdviolation__gte',

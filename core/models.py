@@ -7,6 +7,7 @@ from django_celery_results.models import TaskResult
 from core.tasks import async_seed_file
 from datasets import models as dataset_models
 from core import models as c_models
+from django.utils import timezone
 
 import time
 import datetime
@@ -67,7 +68,7 @@ def construct_directory_path(instance, filename):
     split_filename = filename.split('.')
     name = split_filename[0]
     extension = split_filename[1]
-    return '{0}/{1}'.format(settings.MEDIA_ROOT, "{0}__{1}.{2}".format(name, datetime.datetime.now().strftime("%m%d%Y%H%M%S"), extension))
+    return '{0}/{1}'.format(settings.MEDIA_ROOT, "{0}__{1}.{2}".format(name, timezone.now().strftime("%m%d%Y%H%M%S"), extension))
 
 
 class DataFile(models.Model):
