@@ -12,8 +12,9 @@ from rest_framework_extensions.mixins import NestedViewSetMixin
 from django.core.cache import cache
 from datasets.helpers.api_helpers import cache_me, properties_by_housingtype, ApplicationViewSet
 from datasets.serializers import property_query_serializer
-from datasets.models.Property import PropertyFilter
+from datasets.filters import PropertyFilter
 from datasets import serializers as serial
+from django_filters.rest_framework import DjangoFilterBackend
 
 
 from datasets import models as ds
@@ -25,6 +26,8 @@ class PropertyViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyM
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
     queryset = ds.Property.objects.all().order_by('pk')
     serializer_class = serial.PropertySerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = PropertyFilter
 
     @cache_me()
     def list(self, request, *args, **kwargs):
