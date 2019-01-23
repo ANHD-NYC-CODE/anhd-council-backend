@@ -1,13 +1,13 @@
 from datasets import models as ds
-from django_filters.rest_framework import FilterSet, NumberFilter, CharFilter
+import rest_framework_filters as filters
 from django.db.models import Count
 
 
-class PropertyFilter(FilterSet):
-    hpdviolations = NumberFilter(method='filter_hpdviolations_exact', lookup_expr='exact')
-    hpdviolations__gt = NumberFilter(method='filter_hpdviolations_gt')
-    hpdviolations__lt = NumberFilter(method='filter_hpdviolations_lt')
-    housingtype = CharFilter(method='filter_housingtype')
+class PropertyFilter(filters.FilterSet):
+    hpdviolations = filters.NumberFilter(name="HPD Filters", method='filter_hpdviolations_exact', lookup_expr='exact')
+    hpdviolations__gt = filters.NumberFilter(method='filter_hpdviolations_gt')
+    hpdviolations__lt = filters.NumberFilter(method='filter_hpdviolations_lt')
+    housingtype = filters.CharFilter(method='filter_housingtype')
 
     def filter_hpdviolations_exact(self, queryset, name, value):
         return queryset.annotate(hpdviolations=Count('hpdviolation', distinct=True)).filter(hpdviolations=value)
