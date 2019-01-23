@@ -39,7 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_celery_results',
     'django_celery_beat',
+    'django_filters',
     'rest_framework',
+    'rest_framework_filters',
     'core',
     'datasets',
     'users'
@@ -76,6 +78,9 @@ TEMPLATES = [
 
 REST_FRAMEWORK = {
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
+    'DEFAULT_FILTER_BACKENDS': (
+        'rest_framework_filters.backends.RestFrameworkFilterBackend',
+    ),
     # 'DEFAULT_PAGINATION_CLASS': 'apps.core.pagination.StandardResultsSetPagination'
     # 'DEFAULT_RENDERER_CLASSES': (
     #     'rest_framework_csv.renderers.CSVRenderer',
@@ -220,7 +225,7 @@ LOGGING = {
         'django.db.backends': {
             'handlers': ['sql'],
             'level': 'DEBUG',
-            'propagate': False,
+            'propagate': True,
         },
         'app': {
             'handlers': ['console', 'logfile', 'errorfile'],

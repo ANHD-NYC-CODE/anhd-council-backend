@@ -24,8 +24,12 @@ djangorestframework = "*"
 coreapi = "*"
 django-redis = "*"
 colorlog = "*"
-django-filter = "*"
+django-filter = "==2.1.0"
 drf-extensions = "*"
+djangorestframework-filters = "*"
 
 [requires]
 python_version = "3.5"
+
+[pipenv]
+allow_prereleases = true

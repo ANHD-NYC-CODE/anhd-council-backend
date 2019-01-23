@@ -4,7 +4,6 @@ from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from datasets.utils.validation_filters import is_null, exceeds_char_length
 from core.utils.transform import from_csv_file_to_gen, with_geo
 from core.utils.csv_helpers import extract_csvs_from_zip
-import django_filters
 
 import logging
 
@@ -286,11 +285,3 @@ class Property(BaseDatasetModel, models.Model):
 
     def __str__(self):
         return self.bbl
-
-
-class PropertyFilter(django_filters.FilterSet):
-    class Meta:
-        model = Property
-        fields = {
-            'yearbuilt': ['exact', 'lt', 'gt'],
-        }
