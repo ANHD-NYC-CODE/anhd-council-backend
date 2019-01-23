@@ -24,7 +24,8 @@ logger = logging.getLogger('app')
 
 class PropertyViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
-    queryset = ds.Property.objects.all().order_by('pk')
+    queryset = ds.Property.objects.only('bbl', 'unitsres', 'council', 'unitstotal',
+                                        'yearbuilt', 'address', 'lat', 'lng')
     serializer_class = serial.PropertySerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = PropertyFilter
@@ -35,12 +36,12 @@ class PropertyViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyM
 
     @cache_me()
     def retrieve(self, request, *args, **kwargs):
-        return super().retrieve(self, request, *args, **kwargs)
+        return super().retrieve(request, *args, **kwargs)
 
     @cache_me()
     def buildings_summary(self, request, *args, **kwargs):
         self.serializer_class = serial.PropertyBuildingsSummary
-        return super().retrieve(self, request, *args, **kwargs)
+        return super().retrieve(request, *args, **kwargs)
 
 #
 # @api_view(['GET'])

@@ -29,13 +29,15 @@ def cache_me(relative_key_path=True, get_queryset=False):
         @wraps(function)
         def cached_view(*original_args, **original_kwargs):
             cache_key = original_args[1].build_absolute_uri()
-            # skip caching on the django RF browsable api templates since they don't work ideally - loses pagination and filters
-            # TODO - figure out a way to inject cached data into renderer / response
-            if original_args[1].accepted_renderer.format == 'api':
-                return function(*original_args, **original_kwargs)
-            elif cache_key in cache:
+            # TODO - figure out a way to inject cached data into renderer / response for browsable API pagination
+            # or skip caching on the django RF browsable api templates since they don't work ideally - loses pagination and filters
+            # if original_args[1].accepted_renderer.format == 'api':
+            #     return function(*original_args, **original_kwargs)
+            if cache_key in cache:
+                # cached response will not display pagination buttons in browsable API view
+                # but otherwise preserves the pagination data
                 logger.debug('Serving cache: {}'.format(cache_key))
-                return original_args[1].finalize_response(original_args[1], Response(cache.get(cache_key)))
+                return original_args[0].finalize_response(original_args[1], Response(cache.get(cache_key)))
             else:
                 response = function(*original_args, **original_kwargs)
                 logger.debug('Caching: {}'.format(cache_key))
