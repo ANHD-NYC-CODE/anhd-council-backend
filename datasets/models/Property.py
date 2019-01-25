@@ -146,16 +146,16 @@ class PropertyManager(models.Manager):
         return self.get_queryset().residential()
 
     def rentstab(self):
-        return self.get_queryset().rentstab()
+        return self.get_queryset().rentstab().residential()
 
     def rentreg(self):
-        return self.get_queryset().rentreg()
+        return self.get_queryset().rentreg().residential()
 
     def smallhome(self):
-        return self.get_queryset().smallhome()
+        return self.get_queryset().smallhome().residential()
 
     def marketrate(self):
-        return self.get_queryset().marketrate()
+        return self.get_queryset().marketrate().residential()
 
 
 class Property(BaseDatasetModel, models.Model):
