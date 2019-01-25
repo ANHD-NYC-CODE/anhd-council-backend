@@ -134,7 +134,8 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
             "rs": queryset.rentstab(),
             "rr": queryset.rentreg(),
             "sh": queryset.smallhome(),
-            "mr": queryset.marketrate()
+            "mr": queryset.marketrate(),
+            "ph": queryset.publichousing()
         }
         return switcher.get(value, queryset.none())
 
