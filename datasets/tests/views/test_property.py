@@ -245,6 +245,17 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
+    def test_property_publichousingrecords(self):
+        property = self.property_factory(bbl="1")
+        self.publichousingrecord_factory(property=property)
+        self.publichousingrecord_factory(property=property)
+
+        response = self.client.get('/properties/1/publichousingrecords/')
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
     def test_property_buildings_summary(self):
         property = self.property_factory(bbl="1")
         building1 = self.building_factory(property=property, bin="10a", lhnd="100", hhnd="100")
