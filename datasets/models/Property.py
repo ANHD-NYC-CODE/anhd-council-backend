@@ -35,15 +35,14 @@ class PropertyQuerySet(models.QuerySet):
         return self.filter(yearbuilt__lte=1974, yearbuilt__gte=1).annotate(has_rentstab=Exists(rentstab_records)).filter(has_rentstab=True)
 
     def rentreg_filter(self):
-        return self.annotate(corerecords=Count('coresubsidyrecord'), subsidyj51records=Count('subsidyj51'), subsidy421arecords=Count('subsidy421a')).filter(Q(corerecords__gte=1) | Q(subsidyj51records__gte=1) | Q(subsidy421arecords__gte=1))
+        return self.annotate(corerecords=Count('coresubsidyrecord'), subsidyj51records=Count('subsidyj51'), subsidy421arecords=Count('subsidy421a')).filter(Q(unitsres__gte=1), Q(corerecords__gte=1) | Q(subsidyj51records__gte=1) | Q(subsidy421arecords__gte=1))
 
     def smallhome_filter(self):
         return self.filter(unitsres__lte=4)
 
     def marketrate_filter(self):
-        smallhomes = self.filter(unitsres__lte=5)
-
         return self.annotate(
+            publichousingcount=Count('publichousingrecord'),
             rs2007=Count('rentstabilizationrecord', filter=Q(rentstabilizationrecord__uc2007__gt=0)),
             rs2008=Count('rentstabilizationrecord', filter=Q(rentstabilizationrecord__uc2008__gt=0)),
             rs2009=Count('rentstabilizationrecord', filter=Q(rentstabilizationrecord__uc2009__gt=0)),
@@ -60,6 +59,7 @@ class PropertyQuerySet(models.QuerySet):
             rs2020=Count('rentstabilizationrecord', filter=Q(rentstabilizationrecord__uc2020__gt=0))
         ).filter(Q(
             unitsres__gte=6,
+            publichousingcount=0,
             rs2007=0,
             rs2008=0,
             rs2009=0,
@@ -73,13 +73,16 @@ class PropertyQuerySet(models.QuerySet):
             rs2017=0,
             rs2018=0,
             rs2019=0,
-            rs2020=0))
+            rs2020=0) | Q(unitsres__lte=5))
+
+    def publichousing_filter(self):
+        return self.annotate(publichousingrecords=Count('publichousingrecord')).filter(publichousingrecords__gte=1)
 
     def council(self, number):
         return self.filter(council=number)
 
     def residential(self):
-        return self.filter(unitsres__gt=0)
+        return self.filter(unitsres__gte=1)
 
     def rentstab(self):
         return self.residential().rentstab_filter()
@@ -93,46 +96,49 @@ class PropertyQuerySet(models.QuerySet):
     def marketrate(self):
         return self.residential().marketrate_filter()
 
-    def rentstab_annotate(self, fields_list):
-        unique_fields_list = []
-        for field in fields_list:
-            unique_fields_list.append(field.split('__')[0])
-        unique_fields_list = list(set(unique_fields_list))
+    def publichousing(self):
+        return self.residential().publichousing_filter()
 
-        for field in unique_fields_list:
-            if field == 'hpdcomplaint':
-                self = self.annotate(hpdcomplaint_count=Count(field, distinct=True))
-            if field == 'hpdviolation':
-                self = self.annotate(hpdviolation_count=Count(field, distinct=True))
-            if field == 'dobcomplaint':
-                self = self.annotate(dobcomplaint_count=Count("building__dobcomplaint", distinct=True))
-            if field == 'dobviolation':
-                self = self.annotate(dobviolation_count=Count(field, distinct=True))
-            if field == 'ecbviolation':
-                self = self.annotate(ecbviolation_count=Count(field, distinct=True))
-            if field == 'permitsissued':
-                self = self.annotate(permitsissued_count=Count('dobpermitissuedlegacy',
-                                                               distinct=True) + Count('dobpermitissuednow', distinct=True))
-            # if field == 'acris':
-            #     self = self.annotate(acris_count=Count('acrisreallegal'))
-            if field == 'rentstab':
-                self = self.annotate(
-                    rs2007=F('rentstabilizationrecord__uc2007'),
-                    rs2008=F('rentstabilizationrecord__uc2008'),
-                    rs2009=F('rentstabilizationrecord__uc2009'),
-                    rs2010=F('rentstabilizationrecord__uc2010'),
-                    rs2011=F('rentstabilizationrecord__uc2011'),
-                    rs2012=F('rentstabilizationrecord__uc2012'),
-                    rs2013=F('rentstabilizationrecord__uc2013'),
-                    rs2014=F('rentstabilizationrecord__uc2014'),
-                    rs2015=F('rentstabilizationrecord__uc2015'),
-                    rs2016=F('rentstabilizationrecord__uc2016'),
-                    rs2017=F('rentstabilizationrecord__uc2017'),
-                    rs2018=F('rentstabilizationrecord__uc2018'),
-                    rs2019=F('rentstabilizationrecord__uc2019'),
-                    rs2020=F('rentstabilizationrecord__uc2020'))
-
-        return self
+    # def rentstab_annotate(self, fields_list):
+    #     unique_fields_list = []
+    #     for field in fields_list:
+    #         unique_fields_list.append(field.split('__')[0])
+    #     unique_fields_list = list(set(unique_fields_list))
+    #
+    #     for field in unique_fields_list:
+    #         if field == 'hpdcomplaint':
+    #             self = self.annotate(hpdcomplaint_count=Count(field, distinct=True))
+    #         if field == 'hpdviolation':
+    #             self = self.annotate(hpdviolation_count=Count(field, distinct=True))
+    #         if field == 'dobcomplaint':
+    #             self = self.annotate(dobcomplaint_count=Count("building__dobcomplaint", distinct=True))
+    #         if field == 'dobviolation':
+    #             self = self.annotate(dobviolation_count=Count(field, distinct=True))
+    #         if field == 'ecbviolation':
+    #             self = self.annotate(ecbviolation_count=Count(field, distinct=True))
+    #         if field == 'permitsissued':
+    #             self = self.annotate(permitsissued_count=Count('dobpermitissuedlegacy',
+    #                                                            distinct=True) + Count('dobpermitissuednow', distinct=True))
+    #         # if field == 'acris':
+    #         #     self = self.annotate(acris_count=Count('acrisreallegal'))
+    #         if field == 'rentstab':
+    #             self = self.annotate(
+    #                 rs2007=F('rentstabilizationrecord__uc2007'),
+    #                 rs2008=F('rentstabilizationrecord__uc2008'),
+    #                 rs2009=F('rentstabilizationrecord__uc2009'),
+    #                 rs2010=F('rentstabilizationrecord__uc2010'),
+    #                 rs2011=F('rentstabilizationrecord__uc2011'),
+    #                 rs2012=F('rentstabilizationrecord__uc2012'),
+    #                 rs2013=F('rentstabilizationrecord__uc2013'),
+    #                 rs2014=F('rentstabilizationrecord__uc2014'),
+    #                 rs2015=F('rentstabilizationrecord__uc2015'),
+    #                 rs2016=F('rentstabilizationrecord__uc2016'),
+    #                 rs2017=F('rentstabilizationrecord__uc2017'),
+    #                 rs2018=F('rentstabilizationrecord__uc2018'),
+    #                 rs2019=F('rentstabilizationrecord__uc2019'),
+    #                 rs2020=F('rentstabilizationrecord__uc2020'))
+    #
+    #     return self
 
 
 class PropertyManager(models.Manager):
@@ -156,6 +162,9 @@ class PropertyManager(models.Manager):
 
     def marketrate(self):
         return self.get_queryset().marketrate().residential()
+
+    def publichousing(self):
+        return self.get_queryset().publichousing().residential()
 
 
 class Property(BaseDatasetModel, models.Model):
