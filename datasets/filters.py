@@ -45,21 +45,22 @@ class TotalWithDateField(django_filters.fields.RangeField):
         super(TotalWithDateField, self).__init__(fields, *args, **kwargs)
 
     def compress(self, data_list):
-        start_date, end_date, lt_value, lte_value, exact_value, gt_value, gte_value = data_list
-        filters = {
-            'dates': (
-                {'__gte': start_date},
-                {'__lte': end_date},
-            ),
-            'totals': (
-                {'__lt': lt_value},
-                {'__lte': lte_value},
-                {'__exact': exact_value},
-                {'__gt': gt_value},
-                {'__gte': gte_value}
-            )
-        }
-        return filters
+        if data_list:
+            start_date, end_date, lt_value, lte_value, exact_value, gt_value, gte_value = data_list
+            filters = {
+                'dates': (
+                    {'__gte': start_date},
+                    {'__lte': end_date},
+                ),
+                'totals': (
+                    {'__lt': lt_value},
+                    {'__lte': lte_value},
+                    {'': exact_value},
+                    {'__gt': gt_value},
+                    {'__gte': gte_value}
+                )
+            }
+            return filters
 
 
 class TotalWithDate(django_filters.Filter):
@@ -74,7 +75,8 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     @property
     def qs(self):
         return super(PropertyFilter, self).qs\
-            .prefetch_related('hpdcomplaint_set')
+            .prefetch_related('hpdcomplaint_set')\
+            .prefetch_related('hpdviolation_set')
 
     housingtype = filters.CharFilter(method='filter_housingtype')
 
@@ -90,6 +92,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     hpdviolations__gte = django_filters.NumberFilter(method='filter_hpdviolations_gte')
     hpdviolations__lt = django_filters.NumberFilter(method='filter_hpdviolations_lt')
     hpdviolations__lte = django_filters.NumberFilter(method='filter_hpdviolations_lte')
+    hpdviolations = TotalWithDate(method="filter_hpdviolations_total_and_dates")
 
     dobcomplaints__exact = django_filters.NumberFilter(method='filter_dobcomplaints_exact')
     dobcomplaints__gt = django_filters.NumberFilter(method='filter_dobcomplaints_gt')
@@ -109,6 +112,21 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     ecbviolations__lt = django_filters.NumberFilter(method='filter_ecbviolations_lt')
     ecbviolations__lte = django_filters.NumberFilter(method='filter_ecbviolations_lte')
 
+    def parse_totaldate_field_values(self, date_prefix, totals_prefix, values):
+        date_filters = {}
+        total_filters = {}
+
+        for item in values['dates']:
+            for k, v in item.items():
+                if v is not None:
+                    date_filters[date_prefix + k] = v
+        for item in values['totals']:
+            for k, v in item.items():
+                if v is not None:
+                    total_filters[totals_prefix + k] = v
+
+        return (date_filters, total_filters)
+
     def filter_housingtype(self, queryset, name, value):
         switcher = {
             "rs": queryset.rentstab(),
@@ -121,28 +139,9 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     # HPD Complaints
 
     def filter_hpdcomplaints_total_and_dates(self, queryset, name, values):
-        date_prefix = 'hpdcomplaint__receiveddate'
-        date_filters = {}
-
-        totals_prefix = 'hpdcomplaints'
-        total_filters = {}
-
-        for item in values['dates']:
-            for k, v in item.items():
-                if v is not None:
-                    date_filters[date_prefix + k] = v
-        for item in values['totals']:
-            for k, v in item.items():
-                if v is not None:
-                    total_filters[totals_prefix + k] = v
-
-        return queryset.prefetch_related('hpdcomplaint_set').filter(**date_filters).annotate(hpdcomplaints=Count('hpdcomplaint', distinct=True)).filter(**total_filters)
-
-    def filter_hpdcomplaints_from(self, queryset, name, value):
-        return queryset.prefetch_related('hpdcomplaint_set').filter(hpdcomplaint__receiveddate__gte=value)
-
-    def filter_hpdcomplaints_to(self, queryset, name, value):
-        return queryset.prefetch_related('hpdcomplaint_set').filter(hpdcomplaint__receiveddate__lte=value)
+        date_filters, total_filters = self.parse_totaldate_field_values(
+            'hpdcomplaint__receiveddate', 'hpdcomplaints', values)
+        return queryset.filter(**date_filters).annotate(hpdcomplaints=Count('hpdcomplaint', distinct=True)).filter(**total_filters)
 
     def filter_hpdcomplaints_exact(self, queryset, name, value):
         return queryset.annotate(hpdcomplaints=Count('hpdcomplaint', distinct=True)).filter(hpdcomplaints=value)
@@ -160,6 +159,11 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         return queryset.annotate(hpdcomplaints=Count('hpdcomplaint', distinct=True)).filter(hpdcomplaints__lte=value)
 
     # HPD Violations
+    def filter_hpdviolations_total_and_dates(self, queryset, name, values):
+        date_filters, total_filters = self.parse_totaldate_field_values(
+            'hpdviolation__approveddate', 'hpdviolations', values)
+        return queryset.filter(**date_filters).annotate(hpdviolations=Count('hpdviolation', distinct=True)).filter(**total_filters)
+
     def filter_hpdviolations_exact(self, queryset, name, value):
         return queryset.annotate(hpdviolations=Count('hpdviolation', distinct=True)).filter(hpdviolations=value)
 
@@ -230,9 +234,4 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
     class Meta:
         model = ds.Property
-        # fields = {
-        #     'yearbuilt': ['exact', 'lt', 'gt', 'gte', 'lte'],
-        #     'council': ['exact'],
-        #     'dates': ['exact']
-        # }
-        fields = ['yearbuilt', 'council', 'hpdcomplaints']
+        fields = ['yearbuilt', 'council', 'hpdcomplaints', 'hpdviolations']
