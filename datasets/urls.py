@@ -158,7 +158,14 @@ properties_router.register(
 properties_router.register(
     'doblegacyfiledpermits',
     v.dobpermitfiledlegacy_views.DOBPermitFiledLegacyViewSet,
-    base_name='property-dobnowfiledpermits',
+    base_name='property-doblegacyfiledpermits',
+    parents_query_lookups=['bbl']
+)
+
+properties_router.register(
+    'publichousingrecords',
+    v.publichousingrecord_views.PublicHousingRecordViewSet,
+    base_name='property-publichousingrecords',
     parents_query_lookups=['bbl']
 )
 
@@ -308,6 +315,7 @@ router.register(r'coredata', v.coresubsidyrecord_views.CoreSubsidyRecordViewSet)
 router.register(r'doblegacyissuedpermits', v.dobpermitissuedlegacy_views.DOBPermitIssuedLegacyViewSet)
 router.register(r'dobnowissuedpermits', v.dobpermitissuednow_views.DOBPermitIssuedNowViewSet)
 router.register(r'doblegacyfiledpermits', v.dobpermitfiledlegacy_views.DOBPermitFiledLegacyViewSet)
+router.register(r'publichousingrecords', v.publichousingrecord_views.PublicHousingRecordViewSet)
 
 custom_routes = format_suffix_patterns([
     path('councils/<int:pk>/housingtype-summary/', council_housingtype_summary, name='council-housingtype-summary'),

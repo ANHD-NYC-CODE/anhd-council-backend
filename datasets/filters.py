@@ -63,12 +63,32 @@ class TotalWithDateField(django_filters.fields.RangeField):
             return filters
 
 
-class TotalWithDate(django_filters.Filter):
+class TotalWithDateFilter(django_filters.Filter):
     """
     Filter to be used for Postgres specific Django field - DateRangeField.
     https://docs.djangoproject.com/en/2.1/ref/contrib/postgres/fields/#daterangefield
     """
     field_class = TotalWithDateField
+
+
+class MultiQueryWidget(django_filters.widgets.CSVWidget):
+    suffixes = ['1', '2', '3']
+
+
+class MultiQueryField(django_filters.fields.RangeField):
+    widget = MultiQueryWidget
+
+    # def compress(self, data_list):
+    #     import pdb
+    #     pdb.set_trace()
+
+
+class MultiQueryFilter(django_filters.Filter):
+    """
+    Filter to be used for Postgres specific Django field - DateRangeField.
+    https://docs.djangoproject.com/en/2.1/ref/contrib/postgres/fields/#daterangefield
+    """
+    field_class = MultiQueryField
 
 
 class PropertyFilter(django_filters.rest_framework.FilterSet):
@@ -78,6 +98,8 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
             .prefetch_related('hpdcomplaint_set')\
             .prefetch_related('hpdviolation_set')
 
+    querygroup = MultiQueryFilter()
+
     housingtype = filters.CharFilter(method='filter_housingtype')
 
     hpdcomplaints__exact = django_filters.NumberFilter(label="HPD Complaints ==", method='filter_hpdcomplaints_exact')
@@ -85,14 +107,14 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     hpdcomplaints__gte = django_filters.NumberFilter(label="HPD Complaints >=", method='filter_hpdcomplaints_gte')
     hpdcomplaints__lt = django_filters.NumberFilter(label="HPD Complaints <", method='filter_hpdcomplaints_lt')
     hpdcomplaints__lte = django_filters.NumberFilter(label="HPD Complaints <=", method='filter_hpdcomplaints_lte')
-    hpdcomplaints = TotalWithDate(method="filter_hpdcomplaints_total_and_dates")
+    hpdcomplaints = TotalWithDateFilter(method="filter_hpdcomplaints_total_and_dates")
 
     hpdviolations__exact = django_filters.NumberFilter(method='filter_hpdviolations_exact')
     hpdviolations__gt = django_filters.NumberFilter(method='filter_hpdviolations_gt')
     hpdviolations__gte = django_filters.NumberFilter(method='filter_hpdviolations_gte')
     hpdviolations__lt = django_filters.NumberFilter(method='filter_hpdviolations_lt')
     hpdviolations__lte = django_filters.NumberFilter(method='filter_hpdviolations_lte')
-    hpdviolations = TotalWithDate(method="filter_hpdviolations_total_and_dates")
+    hpdviolations = TotalWithDateFilter(method="filter_hpdviolations_total_and_dates")
 
     dobcomplaints__exact = django_filters.NumberFilter(method='filter_dobcomplaints_exact')
     dobcomplaints__gt = django_filters.NumberFilter(method='filter_dobcomplaints_gt')
@@ -105,14 +127,14 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     dobviolations__gte = django_filters.NumberFilter(method='filter_dobviolations_gte')
     dobviolations__lt = django_filters.NumberFilter(method='filter_dobviolations_lt')
     dobviolations__lte = django_filters.NumberFilter(method='filter_dobviolations_lte')
-    dobviolations = TotalWithDate(method="filter_dobviolations_total_and_dates")
+    dobviolations = TotalWithDateFilter(method="filter_dobviolations_total_and_dates")
 
     ecbviolations__exact = django_filters.NumberFilter(method='filter_ecbviolations_exact')
     ecbviolations__gt = django_filters.NumberFilter(method='filter_ecbviolations_gt')
     ecbviolations__gte = django_filters.NumberFilter(method='filter_ecbviolations_gte')
     ecbviolations__lt = django_filters.NumberFilter(method='filter_ecbviolations_lt')
     ecbviolations__lte = django_filters.NumberFilter(method='filter_ecbviolations_lte')
-    ecbviolations = TotalWithDate(method="filter_ecbviolations_total_and_dates")
+    ecbviolations = TotalWithDateFilter(method="filter_ecbviolations_total_and_dates")
 
     def parse_totaldate_field_values(self, date_prefix, totals_prefix, values):
         date_filters = {}
@@ -247,4 +269,5 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
     class Meta:
         model = ds.Property
-        fields = ['yearbuilt', 'council', 'hpdcomplaints', 'hpdviolations', 'dobviolations', 'ecbviolations']
+        fields = ['querygroup', 'yearbuilt', 'council', 'hpdcomplaints',
+                  'hpdviolations', 'dobviolations', 'ecbviolations']

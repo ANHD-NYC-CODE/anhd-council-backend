@@ -448,3 +448,15 @@ class BaseTest():
             **kwargs
         )
         return factory
+
+    def publichousingrecord_factory(self, property=None, **kwargs):
+        name = 'PublicHousingRecord'
+
+        if not property:
+            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+
+        factory = d_models.PublicHousingRecord.objects.create(
+            bbl=property,
+            **kwargs
+        )
+        return factory
