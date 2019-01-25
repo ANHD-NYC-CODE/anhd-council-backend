@@ -709,3 +709,32 @@ class DOBPermitFiledTests(BaseTest, TestCase):
         changed_record = ds_models.DOBPermitFiledLegacy.objects.filter(
             job='421677974')[0]
         self.assertEqual(changed_record.jobstatusdescrp, 'PERMIT ISSUED - ENTIRE JOB/WORK')
+
+
+class PublicHousingRecordTests(BaseTest, TestCase):
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_seed_record(self):
+        update = self.update_factory(model_name="PublicHousingRecord",
+                                     file_name="mock_public_housing_record.csv")
+        ds_models.PublicHousingRecord.seed_or_update_self(file_path=update.file.file.path, update=update)
+        self.assertEqual(update.total_rows, 9)
+        self.assertEqual(ds_models.PublicHousingRecord.objects.count(), 9)
+        self.assertEqual(update.rows_created, 9)
+
+    def test_seed_record_after_update(self):
+        update = self.update_factory(model_name="PublicHousingRecord",
+                                     file_name="mock_public_housing_record.csv")
+        ds_models.PublicHousingRecord.seed_or_update_self(file_path=update.file.file.path, update=update)
+
+        new_update = self.update_factory(dataset=update.dataset, model_name="PublicHousingRecord",
+                                         file_name="mock_public_housing_record_diff.csv", previous_file_name="mock_dob_permit_issued_now.csv")
+        ds_models.PublicHousingRecord.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
+        self.assertEqual(ds_models.PublicHousingRecord.objects.count(), 10)
+        self.assertEqual(new_update.rows_created, 10)
+        self.assertEqual(new_update.rows_updated, 0)
+
+        changed_record = ds_models.PublicHousingRecord.objects.filter(
+            address='79GAR WEST 225TH STREET')[0]
+        self.assertEqual(changed_record.facility, 'HOUSE')
