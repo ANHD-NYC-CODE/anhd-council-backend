@@ -105,12 +105,14 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     dobviolations__gte = django_filters.NumberFilter(method='filter_dobviolations_gte')
     dobviolations__lt = django_filters.NumberFilter(method='filter_dobviolations_lt')
     dobviolations__lte = django_filters.NumberFilter(method='filter_dobviolations_lte')
+    dobviolations = TotalWithDate(method="filter_dobviolations_total_and_dates")
 
     ecbviolations__exact = django_filters.NumberFilter(method='filter_ecbviolations_exact')
     ecbviolations__gt = django_filters.NumberFilter(method='filter_ecbviolations_gt')
     ecbviolations__gte = django_filters.NumberFilter(method='filter_ecbviolations_gte')
     ecbviolations__lt = django_filters.NumberFilter(method='filter_ecbviolations_lt')
     ecbviolations__lte = django_filters.NumberFilter(method='filter_ecbviolations_lte')
+    ecbviolations = TotalWithDate(method="filter_ecbviolations_total_and_dates")
 
     def parse_totaldate_field_values(self, date_prefix, totals_prefix, values):
         date_filters = {}
@@ -201,6 +203,11 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
     # DOBViolations
 
+    def filter_dobviolations_total_and_dates(self, queryset, name, values):
+        date_filters, total_filters = self.parse_totaldate_field_values(
+            'dobviolation__issuedate', 'dobviolations', values)
+        return queryset.filter(**date_filters).annotate(dobviolations=Count('dobviolation', distinct=True)).filter(**total_filters)
+
     def filter_dobviolations_exact(self, queryset, name, value):
         return queryset.annotate(dobviolations=Count('dobviolation', distinct=True)).filter(dobviolations=value)
 
@@ -217,6 +224,11 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         return queryset.annotate(dobviolations=Count('dobviolation', distinct=True)).filter(dobviolations__lte=value)
 
     # ECBViolations
+    def filter_ecbviolations_total_and_dates(self, queryset, name, values):
+        date_filters, total_filters = self.parse_totaldate_field_values(
+            'ecbviolation__issuedate', 'ecbviolations', values)
+        return queryset.filter(**date_filters).annotate(ecbviolations=Count('ecbviolation', distinct=True)).filter(**total_filters)
+
     def filter_ecbviolations_exact(self, queryset, name, value):
         return queryset.annotate(ecbviolations=Count('ecbviolation', distinct=True)).filter(ecbviolations=value)
 
@@ -234,4 +246,4 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
     class Meta:
         model = ds.Property
-        fields = ['yearbuilt', 'council', 'hpdcomplaints', 'hpdviolations']
+        fields = ['yearbuilt', 'council', 'hpdcomplaints', 'hpdviolations', 'dobviolations', 'ecbviolations']
