@@ -3,6 +3,7 @@ import rest_framework_filters as filters
 from django.db.models import Count, Q
 import django_filters
 from django import forms
+from copy import deepcopy
 
 HOUSING_TYPE_CHOICES = (
     (0, 'rs'),
@@ -42,6 +43,7 @@ class TotalWithDateField(django_filters.fields.RangeField):
             forms.IntegerField(),
             forms.IntegerField(),
             forms.IntegerField())
+
         super(TotalWithDateField, self).__init__(fields, *args, **kwargs)
 
     def compress(self, data_list):
@@ -71,24 +73,61 @@ class TotalWithDateFilter(django_filters.Filter):
     field_class = TotalWithDateField
 
 
-class MultiQueryWidget(django_filters.widgets.CSVWidget):
-    suffixes = ['1', '2', '3']
+class MultiQueryWidget(django_filters.widgets.SuffixedMultiWidget, django_filters.widgets.CSVWidget):
+    """Date widget to help filter by *_start and *_end."""
+
+    def __init__(self, attrs=None):
+        widgets = (forms.TextInput, forms.TextInput, forms.TextInput)
+        super().__init__(widgets, attrs)
+    suffixes = ['0', '1', '2']
+
+
+# class MultiQueryWidget(django_filters.widgets.CSVWidget):
+#     suffixes = ['1', '2', '3']
 
 
 class MultiQueryField(django_filters.fields.RangeField):
     widget = MultiQueryWidget
 
-    # def compress(self, data_list):
-    #     import pdb
-    #     pdb.set_trace()
+    def __init__(self, *args, **kwargs):
+        fields = (
+            forms.CharField(),
+            forms.CharField(),
+            forms.CharField())
+        super(MultiQueryField, self).__init__(fields, *args, **kwargs)
+
+    def compress(self, data_list):
+        ##
+        # Converts each querygroup into a dict for processing by filter.
+        #
+        # Example:
+        # ?querygroup_1=hpdcomplaint_start=2018-01-01,hpdcomplaint_end=2019-12-31,hpdcomplaint_gte=5
+        # converts to:
+        # { 1: {hpdcomplaint: {start: '2018-01-01', end: '2019-12-31', gte: '5'}}
+        ##
+        if data_list:
+            filter_groups = {}
+            for index, group in enumerate(data_list):
+                if not group:
+                    continue
+                filter_groups[index] = {}
+                for query in group.split(','):
+                    key = query.split('_')[0]
+                    value_lookup = query.split('_')[1].split("=")[0]
+                    value = query.split('=')[1]
+                    if key in filter_groups[index]:
+                        filter_groups[index][key][value_lookup] = value
+                    else:
+                        filter_groups[index][key] = {}
+                        filter_groups[index][key][value_lookup] = value
+            return filter_groups
 
 
-class MultiQueryFilter(django_filters.Filter):
-    """
-    Filter to be used for Postgres specific Django field - DateRangeField.
-    https://docs.djangoproject.com/en/2.1/ref/contrib/postgres/fields/#daterangefield
-    """
+class MultiQueryFilter(filters.Filter):
     field_class = MultiQueryField
+
+    # def __init__(self, *args, **kwargs):
+    #     super(MultiQueryFilter, self).__init__(*args, **kwargs)
 
 
 class PropertyFilter(django_filters.rest_framework.FilterSet):
@@ -96,17 +135,17 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     def qs(self):
         return super(PropertyFilter, self).qs\
             .prefetch_related('hpdcomplaint_set')\
-            .prefetch_related('hpdviolation_set')
+            .prefetch_related('hpdviolation_set')\
 
-    querygroup = MultiQueryFilter()
+    querygroup = MultiQueryFilter(method='filter_querygroups')
 
     housingtype = filters.CharFilter(method='filter_housingtype')
 
-    hpdcomplaints__exact = django_filters.NumberFilter(label="HPD Complaints ==", method='filter_hpdcomplaints_exact')
-    hpdcomplaints__gt = django_filters.NumberFilter(label="HPD Complaints >", method='filter_hpdcomplaints_gt')
-    hpdcomplaints__gte = django_filters.NumberFilter(label="HPD Complaints >=", method='filter_hpdcomplaints_gte')
-    hpdcomplaints__lt = django_filters.NumberFilter(label="HPD Complaints <", method='filter_hpdcomplaints_lt')
-    hpdcomplaints__lte = django_filters.NumberFilter(label="HPD Complaints <=", method='filter_hpdcomplaints_lte')
+    hpdcomplaints__exact = django_filters.NumberFilter(method='filter_hpdcomplaints_exact')
+    hpdcomplaints__gt = django_filters.NumberFilter(method='filter_hpdcomplaints_gt')
+    hpdcomplaints__gte = django_filters.NumberFilter(method='filter_hpdcomplaints_gte')
+    hpdcomplaints__lt = django_filters.NumberFilter(method='filter_hpdcomplaints_lt')
+    hpdcomplaints__lte = django_filters.NumberFilter(method='filter_hpdcomplaints_lte')
     hpdcomplaints = TotalWithDateFilter(method="filter_hpdcomplaints_total_and_dates")
 
     hpdviolations__exact = django_filters.NumberFilter(method='filter_hpdviolations_exact')
@@ -160,6 +199,37 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
             "ph": queryset.publichousing()
         }
         return switcher.get(value, queryset.none())
+
+    # querygroups
+
+    def filter_querygroups(self, queryset, name, values):
+        def format_value(self, filter, value):
+            ##
+            # Makes sure that the value passed to the filter is padded with Null values
+            # corresponding to the widget suffixes
+            ##
+            v = ()
+            for suffix in filter.field.widget.suffixes:
+                if suffix in value.keys():
+                    v = v + (value[suffix],)
+                else:
+                    v = v + (None,)
+            return v
+
+        qs = []
+        for groupkey, groupvalue in values.items():
+
+            gqs = deepcopy(queryset)
+            for key, value in groupvalue.items():
+                formatted_value = format_value(self, self.filters[key], value)
+                # chains querysets on AND
+                gqs = self.filters[key].filter(
+                    gqs, self.filters[key].field.compress(formatted_value))
+
+            qs.append(gqs)
+
+        # perform all queries, combine + return only unique records from all queries
+        return qs.pop().union(*qs)
 
     # HPD Complaints
 
