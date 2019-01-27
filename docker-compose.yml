@@ -66,6 +66,7 @@ services:
       - network1
   postgres:
     image: postgres:11
+    command: ["-c", "shared_buffers=500MB", "-c", "max_connections=200", "-c", "max_wal_size=2GB"]
     shm_size: '2gb'
     environment:
       - POSTGRES_DB=anhd

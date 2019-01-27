@@ -1,6 +1,6 @@
 from datasets import models as ds
 import rest_framework_filters as filters
-from django.db.models import Count, Q
+from django.db.models import Count, Q, OuterRef, Subquery
 import django_filters
 from django import forms
 from copy import deepcopy
@@ -177,19 +177,29 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         big_q = Q(self.read_criteria(
             parsed_values[0], parsed_values, False))
 
-        complex_query = queryset.filter(big_q).distinct().values('bbl')
-        bbl_list = list(complex_query.all().values_list('bbl', flat=True))
+        complex_queryset = queryset.filter(big_q).distinct().values('bbl')
+        bbl_list = list(complex_queryset.all().values_list('bbl', flat=True))
 
-        count_query = queryset.filter(bbl__in=bbl_list).only('bbl')
-        import pdb
-        pdb.set_trace()
+        count_queryset = queryset.filter(bbl__in=bbl_list).only('bbl')
+
         for q_filter in self.q_filters:
-            count_query = count_query.annotate(
-                **{q_filter['dataset'] + 's__count': Count(q_filter['dataset'], filter=q_filter['q'], distinct=True)})
-        import pdb
-        pdb.set_trace()
+            count_key = q_filter['dataset'] + 's__count'
+            count_queryset = count_queryset.annotate(
+                **{count_key: Subquery(
+                    ds.Property.objects.filter(
+                        bbl=OuterRef('bbl')
+                    ).annotate(
+                        sub_count=Count(
+                            q_filter['dataset'],
+                            filter=q_filter['q'],
+                            distinct=True
+                        )
+                    ).values('sub_count')[:1]
+                )
+                }
+            )
         count_q = Q(self.read_criteria(parsed_values[0], parsed_values, True))
-        return count_query.filter(count_q)
+        return count_queryset.prefetch_all_for_count().filter(count_q)
 
     def filter_querygroups(self, queryset, name, values):
         # Values
