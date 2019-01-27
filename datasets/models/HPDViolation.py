@@ -32,7 +32,7 @@ class HPDViolation(BaseDatasetModel, models.Model):
     lot = models.TextField(blank=True, null=True)
     class_name = models.TextField(blank=True, null=True)
     inspectiondate = models.DateTimeField(db_index=True, blank=True, null=True)
-    approveddate = models.DateTimeField(blank=True, null=True)
+    approveddate = models.DateTimeField(db_index=True, blank=True, null=True)
     originalcertifybydate = models.DateTimeField(blank=True, null=True)
     originalcorrectbydate = models.DateTimeField(blank=True, null=True)
     newcertifybydate = models.DateTimeField(blank=True, null=True)

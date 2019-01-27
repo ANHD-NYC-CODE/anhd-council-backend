@@ -25,7 +25,7 @@ class DOBComplaint(BaseDatasetModel, models.Model):
     dispositiondate = models.DateTimeField(db_index=True, blank=True, null=True)
     dispositioncode = models.TextField(db_index=True, blank=True, null=True)
     inspectiondate = models.DateTimeField(db_index=True, blank=True, null=True)
-    dobrundate = models.DateTimeField(blank=True, null=True)
+    dobrundate = models.DateTimeField(db_index=True, blank=True, null=True)
 
     @classmethod
     def download(self):
