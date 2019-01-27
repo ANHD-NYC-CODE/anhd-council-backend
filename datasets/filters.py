@@ -177,29 +177,45 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         big_q = Q(self.read_criteria(
             parsed_values[0], parsed_values, False))
 
-        complex_queryset = queryset.filter(big_q).distinct().values('bbl')
-        bbl_list = list(complex_queryset.all().values_list('bbl', flat=True))
-
-        count_queryset = queryset.filter(bbl__in=bbl_list).only('bbl')
+        complex_queryset = queryset.filter(big_q).distinct()
 
         for q_filter in self.q_filters:
             count_key = q_filter['dataset'] + 's__count'
-            count_queryset = count_queryset.annotate(
-                **{count_key: Subquery(
-                    ds.Property.objects.filter(
-                        bbl=OuterRef('bbl')
-                    ).annotate(
-                        sub_count=Count(
-                            q_filter['dataset'],
-                            filter=q_filter['q'],
-                            distinct=True
-                        )
-                    ).values('sub_count')[:1]
+
+            complex_queryset = complex_queryset.prefetch_related(q_filter['dataset'] + '_set').annotate(
+                **{count_key: Count(
+                    q_filter['dataset'],
+                    filter=q_filter['q'],
+                    distinct=True
                 )
                 }
             )
+
+            ##
+            # Uses a subquery - 1 query per result in complex_queryset -
+            # this saves on Postgres memory and speeds things up
+            # even if inefficient, if lieu of scaled resources.
+            #
+            # But it turns out increasing the cache and work_mem of postgres
+            # in the config fixes the slowness!
+            ##
+            # complex_queryset = complex_queryset.annotate(
+            #     **{count_key: Subquery(
+            #         ds.Property.objects.filter(
+            #             bbl=OuterRef('bbl')
+            #         ).annotate(
+            #             sub_count=Count(
+            #                 q_filter['dataset'],
+            #                 filter=q_filter['q'],
+            #                 distinct=True
+            #             )
+            #         ).values('sub_count')[:1]
+            #     )
+            #     }
+            # )
+
         count_q = Q(self.read_criteria(parsed_values[0], parsed_values, True))
-        return count_queryset.prefetch_all_for_count().filter(count_q)
+        return complex_queryset.filter(count_q)
 
     def filter_querygroups(self, queryset, name, values):
         # Values
