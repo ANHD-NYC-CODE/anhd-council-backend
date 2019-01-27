@@ -4,6 +4,8 @@ from django.db.models import Count, Q
 import django_filters
 from django import forms
 from copy import deepcopy
+from datasets.filter_helpers import MultiQueryFilter, TotalWithDateFilter, AdvancedQueryFilter
+from collections import OrderedDict
 
 HOUSING_TYPE_CHOICES = (
     (0, 'rs'),
@@ -16,127 +18,16 @@ HOUSING_TYPE_CHOICES = (
 from psycopg2.extras import DateRange
 
 
-# class DateExactRangeWidget(django_filters.widgets.DateRangeWidget):
-#     """Date widget to help filter by *_start and *_end."""
-#     suffixes = ('start', 'end')
-
-
-class TotalWithDateWidget(django_filters.widgets.SuffixedMultiWidget):
-    """Date widget to help filter by *_start and *_end."""
-
-    def __init__(self, attrs=None):
-        widgets = (forms.DateInput, forms.DateInput, forms.NumberInput, forms.NumberInput,
-                   forms.NumberInput, forms.NumberInput, forms.NumberInput)
-        super().__init__(widgets, attrs)
-    suffixes = ['start', 'end', 'lt', 'lte', 'exact', 'gt', 'gte']
-
-
-class TotalWithDateField(django_filters.fields.RangeField):
-    widget = TotalWithDateWidget
-
-    def __init__(self, *args, **kwargs):
-        fields = (
-            forms.DateField(),
-            forms.DateField(),
-            forms.IntegerField(),
-            forms.IntegerField(),
-            forms.IntegerField(),
-            forms.IntegerField(),
-            forms.IntegerField())
-
-        super(TotalWithDateField, self).__init__(fields, *args, **kwargs)
-
-    def compress(self, data_list):
-        if data_list:
-            start_date, end_date, lt_value, lte_value, exact_value, gt_value, gte_value = data_list
-            filters = {
-                'dates': (
-                    {'__gte': start_date},
-                    {'__lte': end_date},
-                ),
-                'totals': (
-                    {'__lt': lt_value},
-                    {'__lte': lte_value},
-                    {'': exact_value},
-                    {'__gt': gt_value},
-                    {'__gte': gte_value}
-                )
-            }
-            return filters
-
-
-class TotalWithDateFilter(django_filters.Filter):
-    """
-    Filter to be used for Postgres specific Django field - DateRangeField.
-    https://docs.djangoproject.com/en/2.1/ref/contrib/postgres/fields/#daterangefield
-    """
-    field_class = TotalWithDateField
-
-
-class MultiQueryWidget(django_filters.widgets.SuffixedMultiWidget, django_filters.widgets.CSVWidget):
-    """Date widget to help filter by *_start and *_end."""
-
-    def __init__(self, attrs=None):
-        widgets = (forms.TextInput, forms.TextInput, forms.TextInput)
-        super().__init__(widgets, attrs)
-    suffixes = ['0', '1', '2']
-
-
-# class MultiQueryWidget(django_filters.widgets.CSVWidget):
-#     suffixes = ['1', '2', '3']
-
-
-class MultiQueryField(django_filters.fields.RangeField):
-    widget = MultiQueryWidget
-
-    def __init__(self, *args, **kwargs):
-        fields = (
-            forms.CharField(),
-            forms.CharField(),
-            forms.CharField())
-        super(MultiQueryField, self).__init__(fields, *args, **kwargs)
-
-    def compress(self, data_list):
-        ##
-        # Converts each querygroup into a dict for processing by filter.
-        #
-        # Example:
-        # ?querygroup_1=hpdcomplaint_start=2018-01-01,hpdcomplaint_end=2019-12-31,hpdcomplaint_gte=5
-        # converts to:
-        # { 1: {hpdcomplaint: {start: '2018-01-01', end: '2019-12-31', gte: '5'}}
-        ##
-        if data_list:
-            filter_groups = {}
-            for index, group in enumerate(data_list):
-                if not group:
-                    continue
-                filter_groups[index] = {}
-                for query in group.split(','):
-                    key = query.split('_')[0]
-                    value_lookup = query.split('_')[1].split("=")[0]
-                    value = query.split('=')[1]
-                    if key in filter_groups[index]:
-                        filter_groups[index][key][value_lookup] = value
-                    else:
-                        filter_groups[index][key] = {}
-                        filter_groups[index][key][value_lookup] = value
-            return filter_groups
-
-
-class MultiQueryFilter(filters.Filter):
-    field_class = MultiQueryField
-
-    # def __init__(self, *args, **kwargs):
-    #     super(MultiQueryFilter, self).__init__(*args, **kwargs)
-
-
 class PropertyFilter(django_filters.rest_framework.FilterSet):
+    def __init__(self, *args, **kwargs):
+        self.q_filters = []
+        return super(PropertyFilter, self).__init__(*args, **kwargs)
+
     @property
     def qs(self):
-        return super(PropertyFilter, self).qs\
-            .prefetch_related('hpdcomplaint_set')\
-            .prefetch_related('hpdviolation_set')\
+        return super(PropertyFilter, self).qs
 
+    q = AdvancedQueryFilter(method='filter_advancedquery')
     querygroup = MultiQueryFilter(method='filter_querygroups')
 
     housingtype = filters.CharFilter(method='filter_housingtype')
@@ -200,9 +91,109 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         }
         return switcher.get(value, queryset.none())
 
-    # querygroups
+    def parse_values(self, values):
+        v = ()
+        for value in values.split(' '):
+            v = v + ({
+                'type': value.split('_', 1)[0].lower(),
+                'id': value.split('_', 1)[1].split('=')[0].lower(),
+                'value': value.split('=', 1)[1].lower()
+            },)
+        return v
+
+    def read_criteria_options(self, criteria, values):
+        options = ()
+        for value in values:
+            if 'option' in value['type'] and criteria['id'] in value['id']:
+                options = options + (value,)
+        return options
+
+    def get_next_criteria(self, category_id, values):
+        for value in values:
+            if 'criteria' in value['type'] and value['id'] == category_id:
+                return value
+
+    def construct_option_value_query(self, option, counts=False):
+        parameters = {}
+        for parameter in option['value'].split(','):
+            par = parameter.split('=')
+            if counts:
+                if 'count' in parameter:
+                    parameters[par[0]] = par[1]
+            elif counts == False:
+                if not 'count' in parameter:
+                    parameters[par[0]] = par[1]
+        return parameters
+
+    def construct_option_query(self, option, values, counts=False):
+        if '*criteria' in option['value']:
+            next_id = option['value'].split('_')[1]
+            next_criteria = self.get_next_criteria(next_id, values)
+            q_value = self.read_criteria(next_criteria, values, counts)
+        else:
+            q_value = Q(**self.construct_option_value_query(option, counts))
+            self.q_filters.append({'dataset': option['value'].split('__')[0], 'q': q_value})
+        return q_value
+
+    def read_criteria(self, criteria, values, counts=False):
+        if criteria['value'] == 'all':
+            q_op = Q.AND
+        elif criteria['value'] == 'any':
+            q_op = Q.OR
+        else:
+            raise Exception('invalid criteria: {}'.format(criteria))
+
+        query = None
+
+        options = self.read_criteria_options(criteria, values)
+        or_list = []  # for construcing new Q statements as an OR without default AND
+
+        for option in options:
+            if not query and q_op == Q.OR:
+                or_list.append(Q(self.construct_option_query(option, values, counts)))
+            elif not query and q_op == Q.AND:
+                query = Q(self.construct_option_query(option, values, counts))
+            else:
+                q_filter = self.construct_option_query(option, values, counts)
+                query.add(q_filter, q_op)
+
+        if q_op == Q.OR:
+            query = or_list.pop()
+
+            for item in or_list:
+                query |= item
+
+        return query
+
+    # advanced query
+
+    def filter_advancedquery(self, queryset, name, values):
+        ##
+        # apply complex Q filters on date first
+        # apply annotate for counts
+        # apply complex Q filters on count last
+        ##
+        parsed_values = self.parse_values(values)
+        big_q = Q(self.read_criteria(
+            parsed_values[0], parsed_values, False))
+
+        complex_query = queryset.filter(big_q).distinct().values('bbl')
+        bbl_list = list(complex_query.all().values_list('bbl', flat=True))
+
+        count_query = queryset.filter(bbl__in=bbl_list).only('bbl')
+        import pdb
+        pdb.set_trace()
+        for q_filter in self.q_filters:
+            count_query = count_query.annotate(
+                **{q_filter['dataset'] + 's__count': Count(q_filter['dataset'], filter=q_filter['q'], distinct=True)})
+        import pdb
+        pdb.set_trace()
+        count_q = Q(self.read_criteria(parsed_values[0], parsed_values, True))
+        return count_query.filter(count_q)
 
     def filter_querygroups(self, queryset, name, values):
+        # Values
+        # {1: {'hpdcomplaints': {'end': '2018-01-01', 'exact': '1', 'start': '2017-01-01'}, 'hpdviolations': {'end': '2018-01-01', 'exact': '1', 'start': '2017-01-01'}}, 2: {'hpdcomplaints': {'end': '2018-01-01', 'exact': '1', 'start': '2017-01-01'}, 'dobviolations': {'end': '2018-01-01', 'exact': '1', 'start': '2017-01-01'}}}
         def format_value(self, filter, value):
             ##
             # Makes sure that the value passed to the filter is padded with Null values
@@ -221,6 +212,8 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
             gqs = deepcopy(queryset)
             for key, value in groupvalue.items():
+                # formatted_value
+                # ('2017-01-01', '2018-01-01', None, None, '1', None, None)
                 formatted_value = format_value(self, self.filters[key], value)
                 # chains querysets on AND
                 gqs = self.filters[key].filter(
@@ -340,4 +333,4 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     class Meta:
         model = ds.Property
         fields = ['querygroup', 'yearbuilt', 'council', 'hpdcomplaints',
-                  'hpdviolations', 'dobviolations', 'ecbviolations']
+                  'hpdviolations', 'dobviolations', 'ecbviolations', 'q']

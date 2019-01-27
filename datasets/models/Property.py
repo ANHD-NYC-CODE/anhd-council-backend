@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Q, F, Count, Exists, OuterRef
+from django.db.models import Q, F, Count, Exists, OuterRef, Prefetch
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from datasets.utils.validation_filters import is_null, exceeds_char_length
 from core.utils.transform import from_csv_file_to_gen, with_geo
@@ -98,6 +98,20 @@ class PropertyQuerySet(models.QuerySet):
 
     def publichousing(self):
         return self.residential().publichousing_filter()
+
+    def annotate_all(self):
+        return self.annotate(hpdcomplaints__count=Count('hpdcomplaint', distinct=True), hpdviolations__count=Count('hpdviolation', distinct=True), dobviolations__count=Count('dobviolation', distinct=True), ecbviolations__count=Count('ecbviolation', distinct=True))
+
+    def prefetch_all(self):
+        return self.prefetch_related('building_set', 'hpdcomplaint_set', 'hpdviolation_set', 'building_set__dobcomplaint_set', 'dobviolation_set', 'ecbviolation_set')
+
+    def prefetch_all_for_count(self):
+        return self.prefetch_related(
+            Prefetch('building_set', queryset=ds.Building.objects.only('bbl').all()),
+            Prefetch('hpdcomplaint_set', queryset=ds.HPDComplaint.objects.only('bbl').all()),
+            Prefetch('hpdviolation_set', queryset=ds.HPDViolation.objects.only('bbl').all()),
+            Prefetch('dobviolation_set', queryset=ds.DOBViolation.objects.only('bbl').all()),
+            Prefetch('ecbviolation_set', queryset=ds.ECBViolation.objects.only('bbl').all()))
 
     # def rentstab_annotate(self, fields_list):
     #     unique_fields_list = []
