@@ -66,8 +66,8 @@ services:
       - network1
   postgres:
     image: postgres:11
-    command: ["-c", "effective_cache_size=1024MB", "-c", "work_mem=1GB", "-c", "shared_buffers=512MB", "-c", "max_connections=200", "-c", "max_wal_size=2GB", "-c", "random_page_cost=1"]
-    shm_size: '4GB'
+    command: ["-c", "temp_buffers=128MB", "-c", "effective_cache_size=1024MB", "-c", "work_mem=512MB", "-c", "shared_buffers=1024MB", "-c", "max_connections=200", "-c", "random_page_cost=1"]
+    shm_size: '2GB'
     environment:
       - POSTGRES_DB=anhd
       - POSTGRES_USER=anhd

@@ -127,7 +127,9 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
     def construct_option_query(self, option, values, counts=False):
         if '*criteria' in option['value']:
-            next_id = option['value'].split('_')[1]
+            next_id = option['value'].partition('_')[2]
+            if not next_id:
+                raise Exception("Malformed Query - an option's criteria format should be like: '*criteria_0'")
             next_criteria = self.get_next_criteria(next_id, values)
             q_value = self.read_criteria(next_criteria, values, counts)
         else:
@@ -168,11 +170,6 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     # advanced query
 
     def filter_advancedquery(self, queryset, name, values):
-        ##
-        # apply complex Q filters on date first
-        # apply annotate for counts
-        # apply complex Q filters on count last
-        ##
         parsed_values = self.parse_values(values)
         big_q = Q(self.read_criteria(
             parsed_values[0], parsed_values, False))
@@ -183,15 +180,18 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
             count_key = q_filter['dataset'] + 's__count'
 
             complex_queryset = complex_queryset.prefetch_related(q_filter['dataset'] + '_set').annotate(
-                **{count_key: Count(
-                    q_filter['dataset'],
-                    filter=q_filter['q'],
-                    distinct=True
-                )
+                **{
+                    count_key: Count(
+                        q_filter['dataset'],
+                        filter=q_filter['q'],
+                        distinct=True
+                    )
                 }
             )
 
             ##
+            # Less memory intensive, but less efficient query.
+            #
             # Uses a subquery - 1 query per result in complex_queryset -
             # this saves on Postgres memory and speeds things up
             # even if inefficient, if lieu of scaled resources.
