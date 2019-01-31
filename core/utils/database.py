@@ -17,10 +17,11 @@ import logging
 logger = logging.getLogger('app')
 
 
-def seed_from_csv_diff(original_file_path, new_file_path, model, update):
+def seed_from_csv_diff(original_file_path, new_file_path, model, **kwargs):
     """
-    takes new file, filters it down in size to reduce memory usage, adds to Set()
+    takes new file, filters it down in size, adds to Set()
     takes old file, adds to Set()
+    saves to temporary file for read to avoid high memory usage
 
     Diff Set() = New file Set() - Old file Set()
      - preserves new records
@@ -55,13 +56,15 @@ def seed_from_csv_diff(original_file_path, new_file_path, model, update):
         for row in diff:
             writer.writerow(json.loads(row))
 
-    diff_gen = from_csv_file_to_gen(temp_file_path, update)
+    diff_gen = from_csv_file_to_gen(temp_file_path, kwargs['update'])
     logger.debug(" * Csv diff completed, beginning batch upsert.")
-    batch_upsert_from_gen(model, diff_gen, settings.BATCH_SIZE, update=update)
+    batch_upsert_from_gen(model, diff_gen, settings.BATCH_SIZE, update=kwargs['update'])
     os.remove(temp_file_path)
+    if 'callback' in kwargs and kwargs['callback']:
+        kwargs['callback']()
 
 
-def bulk_insert_from_file(model, file_path, update=None, overwrite=False):
+def bulk_insert_from_file(model, file_path, update=None, overwrite=False, callback=None):
     table_name = model._meta.db_table
 
     # create new csv with cleaned rows
@@ -93,6 +96,9 @@ def bulk_insert_from_file(model, file_path, update=None, overwrite=False):
             batch_upsert_from_gen(model, rows, settings.BATCH_SIZE, update=update)
 
     os.remove(temp_file_path)
+
+    if callback:
+        callback()
 
 
 def upsert_query(table_name, row, primary_key):

@@ -308,11 +308,16 @@ class DOBComplaintTests(BaseTest, TestCase):
         self.clean_tests()
 
     def test_seed_dobcomplaint_first(self):
+        property = self.property_factory(bbl=1)
+        building = self.building_factory(property=property, bin="4298330")
         update = self.update_factory(model_name="DOBComplaint",
                                      file_name="mock_dob_complaints.csv")
         ds_models.DOBComplaint.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds_models.DOBComplaint.objects.count(), 10)
         self.assertEqual(update.rows_created, 10)
+
+        # Adds the BBL from the Building
+        self.assertEqual(ds_models.DOBComplaint.objects.filter(bin="4298330")[0].bbl.pk, '1')
 
     def test_seed_dobcomplaint_after_update(self):
         update = self.update_factory(model_name="DOBComplaint",

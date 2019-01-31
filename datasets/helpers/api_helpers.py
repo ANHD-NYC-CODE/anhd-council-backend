@@ -2,6 +2,7 @@ from django.core.cache import cache
 from django.conf import settings
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
+from collections import OrderedDict
 
 from datasets import models as ds
 from functools import wraps
@@ -12,6 +13,13 @@ logger = logging.getLogger('app')
 
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 100
+
+    def get_paginated_response(self, data):
+        return Response(OrderedDict([
+            ('next', self.get_next_link()),
+            ('previous', self.get_previous_link()),
+            ('results', data)
+        ]))
 
 
 class ApplicationViewSet():

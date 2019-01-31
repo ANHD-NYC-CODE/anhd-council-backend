@@ -99,6 +99,6 @@ class BaseDatasetModel():
         previous_file = kwargs['update'].previous_file
 
         if (previous_file and os.path.isfile(previous_file.file.path)):
-            seed_from_csv_diff(previous_file.file.path, new_file_path, self, kwargs["update"])
+            seed_from_csv_diff(previous_file.file.path, new_file_path, self, **kwargs)
         else:
             return self.bulk_seed(**kwargs)

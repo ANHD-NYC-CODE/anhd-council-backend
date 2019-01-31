@@ -1,7 +1,9 @@
 from django.db import models
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
+from datasets import models as ds
 from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.utils.validation_filters import is_null, is_older_than
+from django.db.models import Subquery, OuterRef
 import logging
 
 logger = logging.getLogger('app')
@@ -11,6 +13,8 @@ class DOBComplaint(BaseDatasetModel, models.Model):
     download_endpoint = "https://nycopendata.socrata.com/api/views/eabe-havv/rows.csv?accessType=DOWNLOAD"
 
     complaintnumber = models.IntegerField(primary_key=True, blank=False, null=False)
+    bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
+                            on_delete=models.SET_NULL, null=True, blank=True)
     bin = models.ForeignKey('Building', db_column='bin', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=True)
     status = models.TextField(db_index=True, blank=True, null=True)
@@ -52,9 +56,19 @@ class DOBComplaint(BaseDatasetModel, models.Model):
         return self.pre_validation_filters(from_csv_file_to_gen(file_path, update))
 
     @classmethod
+    def add_bbls_from_bin(self):
+        bbl = ds.Building.objects.filter(
+            bin=OuterRef('bin')
+        ).values_list(
+            'bbl'
+        )[:1]
+
+        self.objects.prefetch_related('building').all().update(bbl=Subquery(bbl))
+
+    @classmethod
     def seed_or_update_self(self, **kwargs):
         logger.debug("Seeding/Updating {}", self.__name__)
-        return self.seed_or_update_from_set_diff(**kwargs)
+        return self.seed_or_update_from_set_diff(callback=self.add_bbls_from_bin, **kwargs)
 
     def __str__(self):
-        return str(self.violationid)
+        return str(self.complaintnumber)
