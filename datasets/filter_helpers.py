@@ -157,15 +157,15 @@ class PercentWithDateField(django_filters.fields.RangeField):
         if data_list:
             start_year, end_year, lt_value, lte_value, exact_value, gt_value, gte_value = data_list
             filters = {
-                'start_year': 'rs{}'.format(start_year),
-                'end_year': 'rs{}'.format(end_year),
+                'start_year': 'rentstabilizationrecord{}'.format(start_year),
+                'end_year': 'rentstabilizationrecord{}'.format(end_year),
                 'percent_query': get_percent_query()
             }
 
             return filters
 
 
-class PercentWithDateFilter(django_filters.Filter):
+class RSLostPercentWithDateFilter(django_filters.Filter):
     """
     Filter to be used for Postgres specific Django field - DateRangeField.
     https://docs.djangoproject.com/en/2.1/ref/contrib/postgres/fields/#daterangefield
