@@ -58,18 +58,18 @@ def seed_from_csv_diff(original_file_path, new_file_path, model, **kwargs):
 
     diff_gen = from_csv_file_to_gen(temp_file_path, kwargs['update'])
     logger.debug(" * Csv diff completed, beginning batch upsert.")
-    batch_upsert_from_gen(model, diff_gen, settings.BATCH_SIZE, update=kwargs['update'])
+    batch_upsert_from_gen(model, diff_gen, settings.BATCH_SIZE, **kwargs)
     os.remove(temp_file_path)
     if 'callback' in kwargs and kwargs['callback']:
         kwargs['callback']()
 
 
-def bulk_insert_from_file(model, file_path, update=None, overwrite=False, callback=None):
+def bulk_insert_from_file(model, file_path, **kwargs):
     table_name = model._meta.db_table
 
     # create new csv with cleaned rows
     temp_file_path = os.path.join(settings.MEDIA_TEMP_ROOT, str(uuid.uuid4().hex) + '.csv')
-    rows = model.transform_self_from_file(file_path, update)
+    rows = model.transform_self_from_file(file_path, kwargs['update'])
     gen_to_csv(rows, temp_file_path)
 
     with open(temp_file_path, 'r') as temp_file:
@@ -79,26 +79,26 @@ def bulk_insert_from_file(model, file_path, update=None, overwrite=False, callba
         try:
 
             with transaction.atomic():
-                if overwrite:
+                if 'overwrite' in kwargs and kwargs['overwrite']:
                     connection.cursor().execute('DELETE FROM {};'.format(table_name))
                 logger.debug("* Beginning Bulk CSV copy.")
                 connection.cursor().copy_expert(sql, temp_file)
                 logger.debug(" * Bulk CSV copy completed successfully.")
-            if update:
+            if 'update' in kwargs and kwargs['update']:
                 reader = csv.reader(open(temp_file_path, 'r'))
                 next(reader, None)  # skip headers
-                update.rows_created = sum(1 for row in reader)
-                update.save()
+                kwargs['update'].rows_created = sum(1 for row in reader)
+                kwargs['update'].save()
         except Exception as e:
             print(e)
             logger.warning("Database - Bulk Import Error - beginning Batch seeding. Error: {}".format(e))
-            rows = model.transform_self_from_file(file_path, update)
-            batch_upsert_from_gen(model, rows, settings.BATCH_SIZE, update=update)
+            rows = model.transform_self_from_file(file_path, kwargs['update'])
+            batch_upsert_from_gen(model, rows, settings.BATCH_SIZE, **kwargs)
 
     os.remove(temp_file_path)
 
-    if callback:
-        callback()
+    if 'callback' in kwargs and kwargs['callback']:
+        kwargs['callback']()
 
 
 def upsert_query(table_name, row, primary_key):
@@ -139,7 +139,7 @@ def build_pkey_tuple(row, pkey):
     return tup
 
 
-def batch_upsert_from_gen(model, rows, batch_size, update=None, overwrite=False):
+def batch_upsert_from_gen(model, rows, batch_size, **kwargs):
     while True:
         batch = list(itertools.islice(rows, 0, batch_size))
 
@@ -147,7 +147,10 @@ def batch_upsert_from_gen(model, rows, batch_size, update=None, overwrite=False)
             logger.info("Database - Batch upserts completed for {}.".format(model.__name__))
             break
         else:
-            batch_upsert_rows(model, batch, batch_size, update=update)
+            batch_upsert_rows(model, batch, batch_size, update=kwargs['update'])
+
+        if 'callback' in kwargs and kwargs['callback']:
+            kwargs['callback']()
 
 
 def batch_upsert_rows(model, rows, batch_size, update=None):
