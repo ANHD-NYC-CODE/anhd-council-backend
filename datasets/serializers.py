@@ -32,7 +32,7 @@ class PropertySerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Property
         fields = ('bbl', 'council', 'yearbuilt', 'unitsres', 'unitstotal',
-                  'bldgclass', 'numbldgs', 'address', 'lat', 'lng')
+                  'bldgclass', 'numbldgs', 'numfloors', 'address', 'lat', 'lng')
 
 
 class PropertyBuildingsSummary(serializers.ModelSerializer):

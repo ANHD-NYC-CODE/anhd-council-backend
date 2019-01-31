@@ -14,12 +14,12 @@ logger = logging.getLogger('app')
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 100
 
-    def get_paginated_response(self, data):
-        return Response(OrderedDict([
-            ('next', self.get_next_link()),
-            ('previous', self.get_previous_link()),
-            ('results', data)
-        ]))
+    # def get_paginated_response(self, data):
+    #     return Response(OrderedDict([
+    #         ('next', self.get_next_link()),
+    #         ('previous', self.get_previous_link()),
+    #         ('results', data)
+    #     ]))
 
 
 class ApplicationViewSet():
