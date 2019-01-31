@@ -5,7 +5,7 @@ from django.db.models.functions import Cast
 import django_filters
 from django import forms
 from copy import deepcopy
-from datasets.filter_helpers import MultiQueryFilter, TotalWithDateFilter, PercentWithDateFilter, AdvancedQueryFilter
+from datasets.filter_helpers import MultiQueryFilter, TotalWithDateFilter, RSLostPercentWithDateFilter, AdvancedQueryFilter
 from collections import OrderedDict
 from django.conf import settings
 HOUSING_TYPE_CHOICES = (
@@ -68,7 +68,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     ecbviolations__lte = django_filters.NumberFilter(method='filter_ecbviolations_lte')
     ecbviolations = TotalWithDateFilter(method="filter_ecbviolations_total_and_dates")
 
-    rsunitslost = PercentWithDateFilter(method="filter_stabilizedunitslost_percent_and_dates")
+    rsunitslost = RSLostPercentWithDateFilter(method="filter_stabilizedunitslost_percent_and_dates")
 
     def parse_totaldate_field_values(self, date_prefix, totals_prefix, values):
         date_filters = {}
@@ -101,7 +101,8 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
             v = v + ({
                 'type': value.split('_', 1)[0].lower(),
                 'id': value.split('_', 1)[1].split('=')[0].lower(),
-                'value': value.split('=', 1)[1].lower()
+                'value': value.split('=', 1)[1].lower(),
+                'dataset': value.split('=', 1)[1].split(',')[0].split('__', 1)[0].lower()
             },)
         return v
 
@@ -122,10 +123,10 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         for parameter in option['value'].split(','):
             par = parameter.split('=')
             if counts:
-                if 'count' in parameter:
+                if 'count' in parameter or 'percent' in parameter:
                     parameters[par[0]] = par[1]
             elif counts == False:
-                if not 'count' in parameter:
+                if not 'count' in parameter and not 'percent' in parameter:
                     parameters[par[0]] = par[1]
         return parameters
 
@@ -150,7 +151,6 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
             raise Exception('invalid criteria: {}'.format(criteria))
 
         query = None
-
         options = self.read_criteria_options(criteria, values)
         or_list = []  # for construcing new Q statements as an OR without default AND
 
@@ -163,6 +163,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
                 q_filter = self.construct_option_query(option, values, counts)
                 query.add(q_filter, q_op)
 
+        # Constructs a Q entirely of ORs and removes the initial AND
         if q_op == Q.OR:
             query = or_list.pop()
 
@@ -171,8 +172,17 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
         return query
 
-    # advanced query
+    def get_dataset_count_annotation(self, count_key, q_filter):
+        return {
+            count_key: Count(
+                q_filter['dataset'],
+                filter=q_filter['q'],
+                distinct=True
+            )
+        }
 
+    # advanced query
+    # http://localhost:8000/councils/6/properties/?housingtype=rs&q=criteria_0=ALL+option_0A=*criteria_1+option_0B=rentstabilizationrecord__uc2007__gte=0,rentstabilizationrecord__uc2017__gte=0,rentstabilizationrecords__percent__gte=0.5+criteria_1=ANY+option_1A=dobviolation__issuedate__gte=2017-01-01,dobviolation__issuedate__lte=2018-01-01,dobviolations__count__gte=1+option_1B=ecbviolation__issuedate__gte=2017-01-01,ecbviolation__issuedate__lte=2018-01-01,ecbviolations__count__gte=1
     def filter_advancedquery(self, queryset, name, values):
         # 1) filter queryset by model fields first
         # return queryset with only BBL values (to reduce memory overhead)
@@ -182,7 +192,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         # return queryset with all values
 
         parsed_values = self.parse_values(values)
-        big_q = Q(self.read_criteria(
+        dates_q = Q(self.read_criteria(
             parsed_values[0], parsed_values, False))
 
         # 1
@@ -190,24 +200,37 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         filtered_by_model_queryset = ds.Property.objects.filter(bbl__in=initial_bbls)
 
         # 2
-        related_queryset = filtered_by_model_queryset.only('bbl').filter(big_q).distinct()
+        related_queryset = filtered_by_model_queryset.only('bbl').filter(dates_q).distinct()
 
         for q_filter in self.q_filters:
             # Prefetch related datasets and annotate counts
+
             if q_filter['dataset'].lower() not in (model.lower() for model in settings.ACTIVE_MODELS):
                 continue
 
-            count_key = q_filter['dataset'] + 's__count'
-
-            related_queryset = related_queryset.prefetch_related(q_filter['dataset'] + '_set').annotate(
-                **{
-                    count_key: Count(
-                        q_filter['dataset'],
-                        filter=q_filter['q'],
-                        distinct=True
+            # option_0B=rentstabilizationrecord__uc2007__gte=0,rentstabilizationrecord__uc2017__gte=0,rentstabilizationrecords__percent__gte=0.2,rentstabilizationrecords__percent__lte=1
+            # props.council(1).annotate(rslostpercent=ExpressionWrapper(1 - Cast(F('rs2017'), FloatField()) / Cast(F('rs2007'), FloatField()), output_field=FloatField())).filter(rslostpercent__gte=0.9)
+            if q_filter['dataset'] == 'rentstabilizationrecord':
+                rsvalues = list(filter(lambda x: x['dataset'] == 'rentstabilizationrecord', parsed_values))[
+                    0]['value'].split(',')
+                try:
+                    start_year = rsvalues[0].split('__', 2)[1].split('uc', 1)[1]
+                    end_year = rsvalues[1].split('__', 2)[1].split('uc', 1)[1]
+                    related_queryset = related_queryset.annotate(**{'rentstabilizationrecord' + start_year: F('rentstabilizationrecord__uc' + start_year)}).annotate(**{
+                        'rentstabilizationrecord' + end_year: F('rentstabilizationrecord__uc' + end_year)})
+                    related_queryset = related_queryset.annotate(
+                        rentstabilizationrecords__percent=ExpressionWrapper(
+                            1 - Cast(F('rentstabilizationrecord' + end_year), FloatField()) /
+                            Cast(F('rentstabilizationrecord' + start_year), FloatField()), output_field=FloatField()
+                        )
                     )
-                }
-            )
+                except Exception as e:
+                    raise Exception("Malformed rentstabilization parameter. Error: {}".format(e))
+            else:
+                count_key = q_filter['dataset'] + 's__count'
+                related_queryset = related_queryset.prefetch_related(q_filter['dataset'] + '_set').annotate(
+                    **self.get_dataset_count_annotation(count_key, q_filter)
+                )
 
             ##
             # Less memory intensive, but less efficient query.
