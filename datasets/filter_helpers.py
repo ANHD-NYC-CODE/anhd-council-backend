@@ -112,6 +112,67 @@ class TotalWithDateFilter(django_filters.Filter):
     field_class = TotalWithDateField
 
 
+class PercentWithDateWidget(django_filters.widgets.SuffixedMultiWidget):
+    """Date widget to help filter by *_start and *_end."""
+
+    def __init__(self, attrs=None):
+        widgets = (forms.DateInput, forms.DateInput, forms.NumberInput, forms.NumberInput,
+                   forms.NumberInput, forms.NumberInput, forms.NumberInput)
+        super().__init__(widgets, attrs)
+    suffixes = ['_start', '_end', '_lt', '_lte', '_exact', '_gt', '_gte']
+
+
+class PercentWithDateField(django_filters.fields.RangeField):
+    widget = PercentWithDateWidget
+
+    def __init__(self, *args, **kwargs):
+        fields = (
+            forms.IntegerField(),
+            forms.IntegerField(),
+            forms.FloatField(),
+            forms.FloatField(),
+            forms.FloatField(),
+            forms.FloatField(),
+            forms.FloatField()
+        )
+
+        super(PercentWithDateField, self).__init__(fields, *args, **kwargs)
+
+    def compress(self, data_list):
+        def get_percent_query():
+            queries = {}
+            if lt_value:
+                queries['rslostpercent__lt'] = lt_value
+            if lte_value:
+                queries['rslostpercent__lte'] = lte_value
+            if exact_value:
+                queries['rslostpercent'] = exact_value
+            if gt_value:
+                queries['rslostpercent__gt'] = gt_value
+            if gte_value:
+                queries['rslostpercent__gte'] = gte_value
+
+            return queries
+
+        if data_list:
+            start_year, end_year, lt_value, lte_value, exact_value, gt_value, gte_value = data_list
+            filters = {
+                'start_year': 'rs{}'.format(start_year),
+                'end_year': 'rs{}'.format(end_year),
+                'percent_query': get_percent_query()
+            }
+
+            return filters
+
+
+class PercentWithDateFilter(django_filters.Filter):
+    """
+    Filter to be used for Postgres specific Django field - DateRangeField.
+    https://docs.djangoproject.com/en/2.1/ref/contrib/postgres/fields/#daterangefield
+    """
+    field_class = PercentWithDateField
+
+
 class AdvancedQueryField(forms.Field):
     # widget = TotalWithDateWidget
 

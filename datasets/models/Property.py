@@ -102,46 +102,24 @@ class PropertyQuerySet(models.QuerySet):
     def annotate_all(self):
         return self.annotate(hpdcomplaints__count=Count('hpdcomplaint', distinct=True), hpdviolations__count=Count('hpdviolation', distinct=True), dobviolations__count=Count('dobviolation', distinct=True), ecbviolations__count=Count('ecbviolation', distinct=True))
 
-    # def rentstab_annotate(self, fields_list):
-    #     unique_fields_list = []
-    #     for field in fields_list:
-    #         unique_fields_list.append(field.split('__')[0])
-    #     unique_fields_list = list(set(unique_fields_list))
-    #
-    #     for field in unique_fields_list:
-    #         if field == 'hpdcomplaint':
-    #             self = self.annotate(hpdcomplaint_count=Count(field, distinct=True))
-    #         if field == 'hpdviolation':
-    #             self = self.annotate(hpdviolation_count=Count(field, distinct=True))
-    #         if field == 'dobcomplaint':
-    #             self = self.annotate(dobcomplaint_count=Count("building__dobcomplaint", distinct=True))
-    #         if field == 'dobviolation':
-    #             self = self.annotate(dobviolation_count=Count(field, distinct=True))
-    #         if field == 'ecbviolation':
-    #             self = self.annotate(ecbviolation_count=Count(field, distinct=True))
-    #         if field == 'permitsissued':
-    #             self = self.annotate(permitsissued_count=Count('dobpermitissuedlegacy',
-    #                                                            distinct=True) + Count('dobpermitissuednow', distinct=True))
-    #         # if field == 'acris':
-    #         #     self = self.annotate(acris_count=Count('acrisreallegal'))
-    #         if field == 'rentstab':
-    #             self = self.annotate(
-    #                 rs2007=F('rentstabilizationrecord__uc2007'),
-    #                 rs2008=F('rentstabilizationrecord__uc2008'),
-    #                 rs2009=F('rentstabilizationrecord__uc2009'),
-    #                 rs2010=F('rentstabilizationrecord__uc2010'),
-    #                 rs2011=F('rentstabilizationrecord__uc2011'),
-    #                 rs2012=F('rentstabilizationrecord__uc2012'),
-    #                 rs2013=F('rentstabilizationrecord__uc2013'),
-    #                 rs2014=F('rentstabilizationrecord__uc2014'),
-    #                 rs2015=F('rentstabilizationrecord__uc2015'),
-    #                 rs2016=F('rentstabilizationrecord__uc2016'),
-    #                 rs2017=F('rentstabilizationrecord__uc2017'),
-    #                 rs2018=F('rentstabilizationrecord__uc2018'),
-    #                 rs2019=F('rentstabilizationrecord__uc2019'),
-    #                 rs2020=F('rentstabilizationrecord__uc2020'))
-    #
-    #     return self
+    def rs_annotate(self):
+        return self.annotate(
+            rs2007=F('rentstabilizationrecord__uc2007'),
+            rs2008=F('rentstabilizationrecord__uc2008'),
+            rs2009=F('rentstabilizationrecord__uc2009'),
+            rs2010=F('rentstabilizationrecord__uc2010'),
+            rs2011=F('rentstabilizationrecord__uc2011'),
+            rs2012=F('rentstabilizationrecord__uc2012'),
+            rs2013=F('rentstabilizationrecord__uc2013'),
+            rs2014=F('rentstabilizationrecord__uc2014'),
+            rs2015=F('rentstabilizationrecord__uc2015'),
+            rs2016=F('rentstabilizationrecord__uc2016'),
+            rs2017=F('rentstabilizationrecord__uc2017'),
+            rs2018=F('rentstabilizationrecord__uc2018'),
+            rs2019=F('rentstabilizationrecord__uc2019'),
+            rs2020=F('rentstabilizationrecord__uc2020'))
+
+        return self
 
 
 class PropertyManager(models.Manager):
