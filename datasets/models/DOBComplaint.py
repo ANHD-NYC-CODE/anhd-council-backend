@@ -57,6 +57,8 @@ class DOBComplaint(BaseDatasetModel, models.Model):
 
     @classmethod
     def add_bbls_from_bin(self):
+        logger.debug(" * Adding BBLs through building for DOB Complaints.")
+
         bbl = ds.Building.objects.filter(
             bin=OuterRef('bin')
         ).values_list(
