@@ -51,6 +51,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     dobcomplaints__gte = django_filters.NumberFilter(method='filter_dobcomplaints_gte')
     dobcomplaints__lt = django_filters.NumberFilter(method='filter_dobcomplaints_lt')
     dobcomplaints__lte = django_filters.NumberFilter(method='filter_dobcomplaints_lte')
+    dobcomplaints = TotalWithDateFilter(method="filter_dobcomplaints_total_and_dates")
 
     dobviolations__exact = django_filters.NumberFilter(method='filter_dobviolations_exact')
     dobviolations__gt = django_filters.NumberFilter(method='filter_dobviolations_gt')
@@ -170,19 +171,32 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     # advanced query
 
     def filter_advancedquery(self, queryset, name, values):
+        # 1) filter queryset by model fields first
+        # return queryset with only BBL values (to reduce memory overhead)
+        # 2) perform related Q query on date ranges, other ranges
+        # return queryset with only BBL values
+        # 3) perform related Q query on counts
+        # return queryset with all values
+
         parsed_values = self.parse_values(values)
         big_q = Q(self.read_criteria(
             parsed_values[0], parsed_values, False))
 
-        complex_queryset = queryset.filter(big_q).distinct()
+        # 1
+        initial_bbls = queryset.only('bbl').values('bbl')
+        filtered_by_model_queryset = ds.Property.objects.filter(bbl__in=initial_bbls)
+
+        # 2
+        related_queryset = filtered_by_model_queryset.only('bbl').filter(big_q).distinct()
 
         for q_filter in self.q_filters:
+            # Prefetch related datasets and annotate counts
             if q_filter['dataset'].lower() not in (model.lower() for model in settings.ACTIVE_MODELS):
                 continue
 
             count_key = q_filter['dataset'] + 's__count'
 
-            complex_queryset = complex_queryset.prefetch_related(q_filter['dataset'] + '_set').annotate(
+            related_queryset = related_queryset.prefetch_related(q_filter['dataset'] + '_set').annotate(
                 **{
                     count_key: Count(
                         q_filter['dataset'],
@@ -195,14 +209,14 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
             ##
             # Less memory intensive, but less efficient query.
             #
-            # Uses a subquery - 1 query per result in complex_queryset -
+            # Uses a subquery - 1 query per result in related_queryset -
             # this saves on Postgres memory and speeds things up
             # even if inefficient, if lieu of scaled resources.
             #
             # But it turns out increasing the cache and work_mem of postgres
             # in the config fixes the slowness!
             ##
-            # complex_queryset = complex_queryset.annotate(
+            # related_queryset = related_queryset.annotate(
             #     **{count_key: Subquery(
             #         ds.Property.objects.filter(
             #             bbl=OuterRef('bbl')
@@ -217,8 +231,10 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
             #     }
             # )
 
+        # 3
         count_q = Q(self.read_criteria(parsed_values[0], parsed_values, True))
-        return complex_queryset.filter(count_q)
+        final_bbls = related_queryset.filter(count_q).only('bbl').values('bbl')
+        return ds.Property.objects.filter(bbl__in=final_bbls)
 
     def filter_querygroups(self, queryset, name, values):
         # Values
@@ -300,24 +316,27 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         return queryset.annotate(hpdviolations=Count('hpdviolation', distinct=True)).filter(hpdviolations=value)
 
     # DOB Complaints
-    # SLOW
+    def filter_dobcomplaints_total_and_dates(self, queryset, name, values):
+        date_filters, total_filters = self.parse_totaldate_field_values(
+            'dobcomplaint__dateentered', 'dobcomplaints', values)
+        return queryset.filter(**date_filters).annotate(dobcomplaints=Count('dobcomplaint', distinct=True)).filter(**total_filters)
+
     def filter_dobcomplaints_exact(self, queryset, name, value):
-        return queryset.annotate(dobcomplaints=Count('building__dobcomplaint', distinct=True)).filter(dobcomplaints=value)
+        return queryset.annotate(dobcomplaints=Count('dobcomplaint', distinct=True)).filter(dobcomplaints=value)
 
     def filter_dobcomplaints_gt(self, queryset, name, value):
-        return queryset.annotate(dobcomplaints=Count('building__dobcomplaint', distinct=True)).filter(dobcomplaints__gt=value)
+        return queryset.annotate(dobcomplaints=Count('dobcomplaint', distinct=True)).filter(dobcomplaints__gt=value)
 
     def filter_dobcomplaints_gte(self, queryset, name, value):
-        return queryset.annotate(dobcomplaints=Count('building__dobcomplaint', distinct=True)).filter(dobcomplaints__gte=value)
+        return queryset.annotate(dobcomplaints=Count('dobcomplaint', distinct=True)).filter(dobcomplaints__gte=value)
 
     def filter_dobcomplaints_lt(self, queryset, name, value):
-        return queryset.annotate(dobcomplaints=Count('building__dobcomplaint', distinct=True)).filter(dobcomplaints__lt=value)
+        return queryset.annotate(dobcomplaints=Count('dobcomplaint', distinct=True)).filter(dobcomplaints__lt=value)
 
     def filter_dobcomplaints_lte(self, queryset, name, value):
-        return queryset.annotate(dobcomplaints=Count('building__dobcomplaint', distinct=True)).filter(dobcomplaints__lte=value)
+        return queryset.annotate(dobcomplaints=Count('dobcomplaint', distinct=True)).filter(dobcomplaints__lte=value)
 
     # DOBViolations
-
     def filter_dobviolations_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(
             'dobviolation__issuedate', 'dobviolations', values)
@@ -361,5 +380,12 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
     class Meta:
         model = ds.Property
-        fields = ['querygroup', 'yearbuilt', 'council', 'hpdcomplaints',
-                  'hpdviolations', 'dobviolations', 'ecbviolations', 'q']
+        fields = {
+            'council': ['exact'],
+            'yearbuilt': ['exact', 'lt', 'lte', 'gt', 'gte'],
+            'unitsres': ['exact', 'lt', 'lte', 'gt', 'gte'],
+            'unitstotal': ['exact', 'lt', 'lte', 'gt', 'gte'],
+            'bldgclass': ['exact'],
+            'numbldgs': ['exact', 'lt', 'lte', 'gt', 'gte'],
+            'numfloors': ['exact', 'lt', 'lte', 'gt', 'gte'],
+        }

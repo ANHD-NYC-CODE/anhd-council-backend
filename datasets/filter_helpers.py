@@ -67,7 +67,7 @@ class TotalWithDateWidget(django_filters.widgets.SuffixedMultiWidget):
         widgets = (forms.DateInput, forms.DateInput, forms.NumberInput, forms.NumberInput,
                    forms.NumberInput, forms.NumberInput, forms.NumberInput)
         super().__init__(widgets, attrs)
-    suffixes = ['start', 'end', 'lt', 'lte', 'exact', 'gt', 'gte']
+    suffixes = ['_start', '_end', '_lt', '_lte', '_exact', '_gt', '_gte']
 
 
 class TotalWithDateField(django_filters.fields.RangeField):
