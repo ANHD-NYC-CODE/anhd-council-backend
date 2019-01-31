@@ -1,10 +1,11 @@
 from datasets import models as ds
 import rest_framework_filters as filters
-from django.db.models import Count, Q, OuterRef, Subquery
+from django.db.models import Count, Q, OuterRef, Subquery, ExpressionWrapper, F, FloatField
+from django.db.models.functions import Cast
 import django_filters
 from django import forms
 from copy import deepcopy
-from datasets.filter_helpers import MultiQueryFilter, TotalWithDateFilter, AdvancedQueryFilter
+from datasets.filter_helpers import MultiQueryFilter, TotalWithDateFilter, PercentWithDateFilter, AdvancedQueryFilter
 from collections import OrderedDict
 from django.conf import settings
 HOUSING_TYPE_CHOICES = (
@@ -66,6 +67,8 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     ecbviolations__lt = django_filters.NumberFilter(method='filter_ecbviolations_lt')
     ecbviolations__lte = django_filters.NumberFilter(method='filter_ecbviolations_lte')
     ecbviolations = TotalWithDateFilter(method="filter_ecbviolations_total_and_dates")
+
+    rsunitslost = PercentWithDateFilter(method="filter_stabilizedunitslost_percent_and_dates")
 
     def parse_totaldate_field_values(self, date_prefix, totals_prefix, values):
         date_filters = {}
@@ -268,6 +271,12 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
         # perform all queries, combine + return only unique records from all queries
         return qs.pop().union(*qs)
+
+    # Rent stabilized units lost
+
+    # props.council(1).only('bbl', 'council', 'unitsres').annotate(rslostpercent=ExpressionWrapper(1 - Cast(F('rs2017'), FloatField()) / Cast(F('rs2007'), FloatField()), output_field=FloatField())).filter(rslostpercent__gte=0.9)
+    def filter_stabilizedunitslost_percent_and_dates(self, queryset, name, values):
+        return queryset.rs_annotate().annotate(rslostpercent=ExpressionWrapper(1 - Cast(F(values['end_year']), FloatField()) / Cast(F(values['start_year']), FloatField()), output_field=FloatField())).filter(**values['percent_query'])
 
     # HPD Complaints
 
