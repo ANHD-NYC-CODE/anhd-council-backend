@@ -6,7 +6,7 @@ from django import forms
 from copy import deepcopy
 from datasets.filter_helpers import MultiQueryFilter, TotalWithDateFilter, AdvancedQueryFilter
 from collections import OrderedDict
-
+from django.conf import settings
 HOUSING_TYPE_CHOICES = (
     (0, 'rs'),
     (1, 'rr'),
@@ -113,7 +113,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
             if 'criteria' in value['type'] and value['id'] == category_id:
                 return value
 
-    def construct_option_value_query(self, option, counts=False):
+    def construct_rule_query(self, option, counts=False):
         parameters = {}
         for parameter in option['value'].split(','):
             par = parameter.split('=')
@@ -133,7 +133,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
             next_criteria = self.get_next_criteria(next_id, values)
             q_value = self.read_criteria(next_criteria, values, counts)
         else:
-            q_value = Q(**self.construct_option_value_query(option, counts))
+            q_value = Q(**self.construct_rule_query(option, counts))
             self.q_filters.append({'dataset': option['value'].split('__')[0], 'q': q_value})
         return q_value
 
@@ -177,6 +177,9 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         complex_queryset = queryset.filter(big_q).distinct()
 
         for q_filter in self.q_filters:
+            if q_filter['dataset'].lower() not in (model.lower() for model in settings.ACTIVE_MODELS):
+                continue
+
             count_key = q_filter['dataset'] + 's__count'
 
             complex_queryset = complex_queryset.prefetch_related(q_filter['dataset'] + '_set').annotate(
