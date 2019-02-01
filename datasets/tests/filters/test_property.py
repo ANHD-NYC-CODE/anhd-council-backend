@@ -3,8 +3,6 @@ from django.urls import include, path
 from rest_framework.test import APITestCase, URLPatternsTestCase
 from app.tests.base_test import BaseTest
 
-from app.tests.base_test import BaseTest
-
 from datasets import models as ds
 
 import logging
@@ -234,3 +232,38 @@ class PropertyAdvancedFilterTests(BaseTest, APITestCase, URLPatternsTestCase, Te
         self.assertEqual(content[1]['bbl'], '2')
         self.assertEqual(content[2]['bbl'], '3')
         self.assertEqual(content[3]['bbl'], '5')
+
+    def test_multiple_criteria_multi_options_3(self):
+        council = self.council_factory(coundist=1)
+        # 5 HPD Violations and 5 DOB Violations in range
+        property1 = self.property_factory(bbl=1, council=council)
+        # 5 HPD Violations and 5 ECB Violations in range AND 5 HPD Complaints
+        property2 = self.property_factory(bbl=2, council=council)
+        # 5 HPD Violations in range
+        property3 = self.property_factory(bbl=3, council=council)
+        # 5 DOB Violations
+        property4 = self.property_factory(bbl=4, council=council)
+        # 5 HPD Violations and 5 ECB Violations in range
+        property5 = self.property_factory(bbl=5, council=council)
+
+        for i in range(5):
+            self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
+            self.dobviolation_factory(property=property1, issuedate="2018-01-01")
+            self.hpdviolation_factory(property=property2, approveddate="2018-01-01")
+            self.ecbviolation_factory(property=property2, issuedate="2018-01-01")
+            self.hpdcomplaint_factory(property=property2, receiveddate="2018-01-01")
+            self.hpdviolation_factory(property=property3, approveddate="2018-01-01")
+            self.dobviolation_factory(property=property4, issuedate="2018-01-01")
+            self.hpdviolation_factory(property=property5, approveddate="2018-01-01")
+            self.ecbviolation_factory(property=property5, issuedate="2018-01-01")
+
+        # properties with 5 HPD violations b/t 2018- 2019 AND (5 DOB violations b/t 2018-2019 OR (5 ECB violations b/t 2018-2019 AND 5 HPD Complaints b/t 2018-2019))
+        query = '/properties/?q=criteria_0=ALL+option_0A=*criteria_1+option_0B=hpdviolation__approveddate__gte=2018-01-01,hpdviolation__approveddate__lte=2019-01-01,hpdviolations__count__gte=5+criteria_1=ANY+option_1A=*criteria_2+option_1B=dobviolation__issuedate__gte=2018-01-01,dobviolation__issuedate__lte=2019-01-01,dobviolations__count__gte=5+criteria_2=ALL+option_2A=ecbviolation__issuedate__gte=2018-01-01,ecbviolation__issuedate__lte=2019-01-01,ecbviolations__count__gte=5+option_2A=hpdcomplaint__receiveddate__gte=2018-01-01,hpdcomplaint__receiveddate__lte=2019-01-01,hpdcomplaints__count__gte=5'
+
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+        self.assertEqual(content[0]['bbl'], '1')
+        self.assertEqual(content[1]['bbl'], '2')
