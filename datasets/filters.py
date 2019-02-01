@@ -5,7 +5,7 @@ from django.db.models.functions import Cast
 import django_filters
 from django import forms
 from copy import deepcopy
-from datasets.filter_helpers import MultiQueryFilter, TotalWithDateFilter, RSLostPercentWithDateFilter, AdvancedQueryFilter
+from datasets.filter_helpers import TotalWithDateFilter, RSLostPercentWithDateFilter, AdvancedQueryFilter
 from collections import OrderedDict
 from django.conf import settings
 HOUSING_TYPE_CHOICES = (
@@ -29,7 +29,6 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         return super(PropertyFilter, self).qs
 
     q = AdvancedQueryFilter(method='filter_advancedquery')
-    querygroup = MultiQueryFilter(method='filter_querygroups')
 
     housingtype = filters.CharFilter(method='filter_housingtype')
 
@@ -143,9 +142,9 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         return q_value
 
     def read_criteria(self, criteria, values, counts=False):
-        if criteria['value'] == 'all':
+        if criteria['value'].lower() == 'all':
             q_op = Q.AND
-        elif criteria['value'] == 'any':
+        elif criteria['value'].lower() == 'any':
             q_op = Q.OR
         else:
             raise Exception('invalid criteria: {}'.format(criteria))
@@ -262,42 +261,10 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         final_bbls = related_queryset.filter(count_q).only('bbl').values('bbl')
         return ds.Property.objects.filter(bbl__in=final_bbls)
 
-    def filter_querygroups(self, queryset, name, values):
-        # Values
-        # {1: {'hpdcomplaints': {'end': '2018-01-01', 'exact': '1', 'start': '2017-01-01'}, 'hpdviolations': {'end': '2018-01-01', 'exact': '1', 'start': '2017-01-01'}}, 2: {'hpdcomplaints': {'end': '2018-01-01', 'exact': '1', 'start': '2017-01-01'}, 'dobviolations': {'end': '2018-01-01', 'exact': '1', 'start': '2017-01-01'}}}
-        def format_value(self, filter, value):
-            ##
-            # Makes sure that the value passed to the filter is padded with Null values
-            # corresponding to the widget suffixes
-            ##
-            v = ()
-            for suffix in filter.field.widget.suffixes:
-                if suffix in value.keys():
-                    v = v + (value[suffix],)
-                else:
-                    v = v + (None,)
-            return v
-
-        qs = []
-        for groupkey, groupvalue in values.items():
-
-            gqs = deepcopy(queryset)
-            for key, value in groupvalue.items():
-                # formatted_value
-                # ('2017-01-01', '2018-01-01', None, None, '1', None, None)
-                formatted_value = format_value(self, self.filters[key], value)
-                # chains querysets on AND
-                gqs = self.filters[key].filter(
-                    gqs, self.filters[key].field.compress(formatted_value))
-
-            qs.append(gqs)
-
-        # perform all queries, combine + return only unique records from all queries
-        return qs.pop().union(*qs)
-
     # Rent stabilized units lost
 
     # props.council(1).only('bbl', 'council', 'unitsres').annotate(rslostpercent=ExpressionWrapper(1 - Cast(F('rs2017'), FloatField()) / Cast(F('rs2007'), FloatField()), output_field=FloatField())).filter(rslostpercent__gte=0.9)
+
     def filter_stabilizedunitslost_percent_and_dates(self, queryset, name, values):
         return queryset.rs_annotate().annotate(rslostpercent=ExpressionWrapper(1 - Cast(F(values['end_year']), FloatField()) / Cast(F(values['start_year']), FloatField()), output_field=FloatField())).filter(**values['percent_query'])
 
