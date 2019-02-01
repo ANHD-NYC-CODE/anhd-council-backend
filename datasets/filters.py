@@ -61,7 +61,6 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     ecbviolations = TotalWithDateFilter(method="filter_ecbviolations_total_and_dates")
 
     rsunitslost = RSLostPercentWithDateFilter(method="filter_stabilizedunitslost_percent_and_dates")
-    # rentstabilizedunits = TotalWithDateFilter(method="filter_ecbviolations_total_and_dates")
 
     def parse_totaldate_field_values(self, date_prefix, totals_prefix, values):
         date_filters = {}
