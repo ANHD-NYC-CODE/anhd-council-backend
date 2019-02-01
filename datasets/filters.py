@@ -61,6 +61,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     ecbviolations = TotalWithDateFilter(method="filter_ecbviolations_total_and_dates")
 
     rsunitslost = RSLostPercentWithDateFilter(method="filter_stabilizedunitslost_percent_and_dates")
+    # rentstabilizedunits = TotalWithDateFilter(method="filter_ecbviolations_total_and_dates")
 
     def parse_totaldate_field_values(self, date_prefix, totals_prefix, values):
         date_filters = {}
@@ -377,4 +378,21 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
             'bldgclass': ['exact'],
             'numbldgs': ['exact', 'lt', 'lte', 'gt', 'gte'],
             'numfloors': ['exact', 'lt', 'lte', 'gt', 'gte'],
+            'rentstabilizationrecord__uc2007': ['exact', 'lt', 'lte', 'gt', 'gte'],
+            'rentstabilizationrecord__uc2008': ['exact', 'lt', 'lte', 'gt', 'gte'],
+            'rentstabilizationrecord__uc2009': ['exact', 'lt', 'lte', 'gt', 'gte'],
+            'rentstabilizationrecord__uc2010': ['exact', 'lt', 'lte', 'gt', 'gte'],
+            'rentstabilizationrecord__uc2011': ['exact', 'lt', 'lte', 'gt', 'gte'],
+            'rentstabilizationrecord__uc2012': ['exact', 'lt', 'lte', 'gt', 'gte'],
+            'rentstabilizationrecord__uc2013': ['exact', 'lt', 'lte', 'gt', 'gte'],
+            'rentstabilizationrecord__uc2014': ['exact', 'lt', 'lte', 'gt', 'gte'],
+            'rentstabilizationrecord__uc2015': ['exact', 'lt', 'lte', 'gt', 'gte'],
+            'rentstabilizationrecord__uc2017': ['exact', 'lt', 'lte', 'gt', 'gte'],
+            'rentstabilizationrecord__uc2018': ['exact', 'lt', 'lte', 'gt', 'gte'],
+            'rentstabilizationrecord__uc2019': ['exact', 'lt', 'lte', 'gt', 'gte'],
+            'rentstabilizationrecord__uc2020': ['exact', 'lt', 'lte', 'gt', 'gte'],
+            'rentstabilizationrecord__uc2021': ['exact', 'lt', 'lte', 'gt', 'gte'],
+            'rentstabilizationrecord__uc2022': ['exact', 'lt', 'lte', 'gt', 'gte'],
+            'rentstabilizationrecord__uc2023': ['exact', 'lt', 'lte', 'gt', 'gte'],
+            'rentstabilizationrecord__uc2024': ['exact', 'lt', 'lte', 'gt', 'gte'],
         }
