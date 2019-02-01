@@ -71,6 +71,21 @@ class PropertyFilterTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['bbl'], '1')
 
+    def test_rsunitslost_field(self):
+        council = self.council_factory(coundist=1)
+        property1 = self.property_factory(bbl=1, council=council)
+        property2 = self.property_factory(bbl=2, council=council)
+        self.taxbill_factory(property=property1, uc2007=10, uc2017=1)
+        self.taxbill_factory(property=property2, uc2007=10, uc2017=5)
+
+        query = '/properties/?rsunitslost__start=2007&rsunitslost__end=2017&rsunitslost__gte=0.9'
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+        self.assertEqual(content[0]['bbl'], '1')
+
 
 class PropertyAdvancedFilterTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
     urlpatterns = [
@@ -310,7 +325,7 @@ class PropertyAdvancedFilterTests(BaseTest, APITestCase, URLPatternsTestCase, Te
         self.taxbill_factory(property=property4, uc2007=10, uc2017=10)
 
         # properties that sold for over $10,000,000 between 2017-2018
-        query = '/properties/?q=criteria_0=ALL+option_0A=rentstabilizationrecord__uc2007__gt=0,rentstabilizationrecord__uc2017__gt=0,rentstabilizationrecords__percent__gte=0.5'
+        query = '/properties/?q=criteria_0=ALL+option_0A='
 
         response = self.client.get(query, format="json")
         content = response.data['results']
