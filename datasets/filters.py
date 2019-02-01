@@ -8,13 +8,6 @@ from copy import deepcopy
 from datasets.filter_helpers import TotalWithDateFilter, RSLostPercentWithDateFilter, AdvancedQueryFilter
 from collections import OrderedDict
 from django.conf import settings
-HOUSING_TYPE_CHOICES = (
-    (0, 'rs'),
-    (1, 'rr'),
-    (3, 'sh'),
-    (4, 'mr'),
-    (5, 'ph'),
-)
 
 from psycopg2.extras import DateRange
 
@@ -262,9 +255,6 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         return ds.Property.objects.filter(bbl__in=final_bbls)
 
     # Rent stabilized units lost
-
-    # props.council(1).only('bbl', 'council', 'unitsres').annotate(rslostpercent=ExpressionWrapper(1 - Cast(F('rs2017'), FloatField()) / Cast(F('rs2007'), FloatField()), output_field=FloatField())).filter(rslostpercent__gte=0.9)
-
     def filter_stabilizedunitslost_percent_and_dates(self, queryset, name, values):
         return queryset.rs_annotate().annotate(rslostpercent=ExpressionWrapper(1 - Cast(F(values['end_year']), FloatField()) / Cast(F(values['start_year']), FloatField()), output_field=FloatField())).filter(**values['percent_query'])
 
