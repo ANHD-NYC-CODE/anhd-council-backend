@@ -267,3 +267,29 @@ class PropertyAdvancedFilterTests(BaseTest, APITestCase, URLPatternsTestCase, Te
         self.assertEqual(len(content), 2)
         self.assertEqual(content[0]['bbl'], '1')
         self.assertEqual(content[1]['bbl'], '2')
+
+    def test_rentstabilization_rules(self):
+        council = self.council_factory(coundist=1)
+        # loses 90% between 2007 - 2017
+        property1 = self.property_factory(bbl=1, council=council)
+        self.taxbill_factory(property=property1, uc2007=10, uc2017=1)
+        # loses 50% between 2007 - 2017
+        property2 = self.property_factory(bbl=2, council=council)
+        self.taxbill_factory(property=property2, uc2007=10, uc2017=5)
+        # loses 10% between 2007 - 2017
+        property3 = self.property_factory(bbl=3, council=council)
+        self.taxbill_factory(property=property3, uc2007=10, uc2017=9)
+        # loses 0% between 2007 - 2017
+        property4 = self.property_factory(bbl=4, council=council)
+        self.taxbill_factory(property=property4, uc2007=10, uc2017=10)
+
+        # properties with lost over 50% of rent stabilized units between 2007 and 2017
+        query = '/properties/?q=criteria_0=ALL+option_0A=rentstabilizationrecord__uc2007__gt=0,rentstabilizationrecord__uc2017__gt=0,rentstabilizationrecords__percent__gte=0.5'
+
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+        self.assertEqual(content[0]['bbl'], '1')
+        self.assertEqual(content[1]['bbl'], '2')
