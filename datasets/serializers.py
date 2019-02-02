@@ -209,6 +209,12 @@ class DOBPermitIssuedNowSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class DOBPermitIssuedJoinedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.DOBPermitIssuedJoined
+        fields = '__all__'
+
+
 class DOBPermitFiledLegacySerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.DOBPermitFiledLegacy

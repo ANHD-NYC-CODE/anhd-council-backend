@@ -43,23 +43,3 @@ class PropertyViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyM
     def buildings_summary(self, request, *args, **kwargs):
         self.serializer_class = serial.PropertyBuildingsSummary
         return super().retrieve(request, *args, **kwargs)
-
-#
-# @api_view(['GET'])
-# def query(request, councilnum, housingtype, format=None):
-#     cache_key = request.path_info + request.query_params.dict().__str__()
-#     if cache_key in cache:
-#         logger.debug('Serving cache: {}'.format(cache_key))
-#         results_json = cache.get(cache_key)
-#         return Response(results_json, safe=False)
-#     else:
-#         try:
-#             council_housing_results = properties_by_housingtype(
-#                 request, queryset=ds.Property.objects.council(councilnum))
-#             property_filter = PropertyFilter(request.GET, queryset=council_housing_results.all())
-#             results_json = json.dump(property_query_serializer(property_filter.qs.all()))
-#             logger.debug('Caching: {}'.format(cache_key))
-#             cache.set(cache_key, results_json, timeout=settings.CACHE_TTL)
-#             return JsonResponse(results_json, safe=False)
-#         except Exception as e:
-#             return JsonResponse(e.args, status=status.HTTP_500_INTERNAL_SERVER_ERROR, safe=False)

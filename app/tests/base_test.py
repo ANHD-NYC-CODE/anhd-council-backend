@@ -316,9 +316,11 @@ class BaseTest():
         )
         return factory
 
-    def permitissuednow_factory(self, jobfilingnumber=None, workpermit=1, issueddate=None, property=None, building=None, **kwargs):
+    def permitissuednow_factory(self, jobfilingnumber=None, workpermit=None, issueddate=None, property=None, building=None, **kwargs):
         name = 'DOBPermitIssuedNow'
 
+        if not workpermit:
+            workpermit = random.randint(1, 100000)
         if not jobfilingnumber:
             jobfilingnumber = random.randint(1, 100000)
 
@@ -339,10 +341,12 @@ class BaseTest():
         )
         return factory
 
-    def permitissuedlegacy_factory(self, job=None, permitsino=1, property=None, building=None, **kwargs):
+    def permitissuedlegacy_factory(self, job=None, permitsino=None, property=None, building=None, **kwargs):
         name = 'DOBPermitIssuedLegacy'
         if not job:
             job = random.randint(1, 100000)
+        if not permitsino:
+            permitsino = random.randint(1, 100000)
         if not property:
             property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
         if not building:

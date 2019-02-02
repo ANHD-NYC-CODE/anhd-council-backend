@@ -4,27 +4,15 @@ from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.tasks import async_download_file
 from datasets.utils.validation_filters import is_null, is_older_than
 
-# ACRIS
-# combines Real Properties Master (has mortages)
-# and Real Properties Legal (has bbl)
-# into 1 table
-# joined on document_id
-# and linked to buildings with FK bbl
-# Duplicate document IDs are removed from legals
-# Master = a deed / sale
-# legals = a property associated with the deed
-# ####
-# Optimal seed method is Master first, legals second.
-
 
 class AcrisRealLegal(BaseDatasetModel, models.Model):
     download_endpoint = 'https://data.cityofnewyork.us/api/views/8h5j-fqxa/rows.csv?accessType=DOWNLOAD'
 
     documentid = models.ForeignKey('AcrisRealMaster', db_column='documentid', db_constraint=False,
-                                   on_delete=models.SET_NULL, null=True, blank=False)
+                                   on_delete=models.SET_NULL, null=True, blank=True)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
-                            on_delete=models.SET_NULL, null=True, blank=False)
-    recordtype = models.TextField(db_index=True, blank=True, null=True)
+                            on_delete=models.SET_NULL, null=True, blank=True)
+    recordtype = models.TextField(blank=True, null=True)
     borough = models.SmallIntegerField(blank=True, null=True)
     block = models.IntegerField(blank=True, null=True)
     lot = models.IntegerField(blank=True, null=True)

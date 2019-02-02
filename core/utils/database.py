@@ -17,6 +17,15 @@ import logging
 logger = logging.getLogger('app')
 
 
+def execute(sql):
+    with connection.cursor() as curs:
+        try:
+            with transaction.atomic():
+                curs.execute(sql)
+        except Exception as e:
+            logger.error("Database - Execute error: {}".format(e))
+
+
 def seed_from_csv_diff(original_file_path, new_file_path, model, **kwargs):
     """
     takes new file, filters it down in size, adds to Set()

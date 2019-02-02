@@ -66,7 +66,8 @@ services:
       - network1
   postgres:
     image: postgres:11
-    command: ["-c","huge_pages=try", "-c","effective_io_concurrency=1", "-c", "max_stack_depth=6MB", "-c", "maintenance_work_mem=256MB", "-c", "temp_buffers=128MB", "-c", "shared_buffers=1024MB", "-c", "max_wal_size=2048MB", "-c", "effective_cache_size=1024MB", "-c", "work_mem=512MB", "-c", "max_connections=200", "-c", "random_page_cost=1"]
+    # https://blog.2ndquadrant.com/basics-of-tuning-checkpoints/
+    command: ["-c","huge_pages=try", "-c","effective_io_concurrency=1", "-c", "max_stack_depth=6MB", "-c", "maintenance_work_mem=512MB", "-c", "temp_buffers=128MB", "-c", "shared_buffers=1024MB", "-c", "checkpoint_timeout=30min", "-c", "checkpoint_completion_target=0.93", "-c", "max_wal_size=2048MB", "-c", "effective_cache_size=1024MB", "-c", "work_mem=512MB", "-c", "max_connections=200", "-c", "random_page_cost=1"]
     shm_size: '2GB'
     environment:
       - POSTGRES_DB=anhd
