@@ -4,28 +4,16 @@ from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.tasks import async_download_file
 from datasets.utils.validation_filters import is_null, is_older_than
 
-# ACRIS
-# combines Real Properties Master (has mortages)
-# and Real Properties Legal (has bbl)
-# into 1 table
-# joined on document_id
-# and linked to buildings with FK bbl
-# Duplicate document IDs are removed from legals
-# Master = a deed / sale
-# legals = a property associated with the deed
-# ####
-# Optimal seed method is Master first, legals second.
-
 
 class AcrisRealMaster(BaseDatasetModel, models.Model):
     download_endpoint = 'https://data.cityofnewyork.us/api/views/bnx9-e6tj/rows.csv?accessType=DOWNLOAD'
 
     documentid = models.TextField(primary_key=True, blank=False, null=False)
-    recordtype = models.TextField(db_index=True, blank=True, null=True)
+    recordtype = models.TextField(blank=True, null=True)
     crfn = models.TextField(blank=True, null=True)
     borough = models.TextField(blank=True, null=True)
-    doctype = models.TextField(blank=True, null=True)
-    docdate = models.DateTimeField(blank=True, null=True)
+    doctype = models.TextField(db_index=True, blank=True, null=True)
+    docdate = models.DateTimeField(db_index=True, blank=True, null=True)
     docamount = models.BigIntegerField(db_index=True, blank=True, null=True)
     recordedfiled = models.DateTimeField(db_index=True, blank=True, null=True)
     modifieddate = models.DateTimeField(blank=True, null=True)
@@ -58,7 +46,7 @@ class AcrisRealMaster(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        return self.bulk_seed(**kwargs, overwrite=True)
+        return self.seed_with_upsert(**kwargs)
 
     def __str__(self):
         return self.documentid

@@ -114,8 +114,8 @@ class DOBPermitFiledLegacy(BaseDatasetModel, models.Model):
     gisntaname = models.TextField(blank=True, null=True)
     gisbin = models.TextField(blank=True, null=True)
 
-    class Meta:
-        unique_together = ('job', 'jobs1no',)
+    # class Meta:
+    #     unique_together = ('job', 'jobs1no',)
 
     @classmethod
     def download(self):

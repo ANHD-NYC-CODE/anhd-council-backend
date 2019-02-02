@@ -56,8 +56,8 @@ class DOBPermitIssuedNow(BaseDatasetModel, models.Model):
     ownerstate = models.TextField(blank=True, null=True)
     ownerzipcode = models.TextField(blank=True, null=True)
 
-    class Meta:
-        unique_together = ('jobfilingnumber', 'workpermit', 'issueddate')
+    # class Meta:
+    #     unique_together = ('jobfilingnumber', 'workpermit', 'issueddate')
 
     @classmethod
     def download(self):

@@ -37,9 +37,6 @@ class Dataset(models.Model):
         update = Update.objects.create(dataset=self, file=file)
         return update
 
-    def transform_dataset(self, file_path, update=None):
-        return getattr(dataset_models, self.model_name).transform_self(file_path, update)
-
     def seed_dataset(self, **kwargs):
         getattr(dataset_models, self.model_name).seed_or_update_self(**kwargs)
         self.delete_old_files()
@@ -93,10 +90,11 @@ def auto_delete_file_on_delete(sender, instance, **kwargs):
 
 class Update(models.Model):
     file = models.ForeignKey(DataFile, related_name='current_file',
-                             on_delete=models.SET_NULL, null=True)
+                             on_delete=models.SET_NULL, null=True, blank=True, help_text="File is required for standard updates, Dataset Name required for join table updates")
     previous_file = models.ForeignKey(DataFile, related_name='previous_file',
                                       on_delete=models.SET_NULL, null=True, blank=True)
-    dataset = models.ForeignKey(Dataset, on_delete=models.SET_NULL, null=True, blank=True)
+    dataset = models.ForeignKey(Dataset, on_delete=models.SET_NULL, null=True, blank=True,
+                                help_text="File is required for standard updates, Dataset Name required for join table updates")
     rows_updated = models.IntegerField(blank=True, null=True, default=0)
     rows_created = models.IntegerField(blank=True, null=True, default=0)
     total_rows = models.IntegerField(blank=True, null=True)

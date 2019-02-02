@@ -309,28 +309,43 @@ class PropertyAdvancedFilterTests(BaseTest, APITestCase, URLPatternsTestCase, Te
         self.assertEqual(content[0]['bbl'], '1')
         self.assertEqual(content[1]['bbl'], '2')
 
-    def test_acris_rules_1(self):
-        council = self.council_factory(coundist=1)
-        # loses 90% between 2007 - 2017
-        property1 = self.property_factory(bbl=1, council=council)
-        self.taxbill_factory(property=property1, uc2007=10, uc2017=1)
-        # loses 50% between 2007 - 2017
-        property2 = self.property_factory(bbl=2, council=council)
-        self.taxbill_factory(property=property2, uc2007=10, uc2017=5)
-        # loses 10% between 2007 - 2017
-        property3 = self.property_factory(bbl=3, council=council)
-        self.taxbill_factory(property=property3, uc2007=10, uc2017=9)
-        # loses 0% between 2007 - 2017
-        property4 = self.property_factory(bbl=4, council=council)
-        self.taxbill_factory(property=property4, uc2007=10, uc2017=10)
+    # def test_acris_rules_1(self):
+    #     council = self.council_factory(coundist=1)
+    #
+    #     acrismaster1 = self.acrismaster_factory(documentid="a", docamount=10000000, docdate="2018-01-01")
+    #     property1 = self.property_factory(bbl=1, council=council)
+    #     self.acrislegal_factory(property=property1, master=acrismaster1)
+    #     acrismaster2 = self.acrismaster_factory(documentid="b", docamount=100000, docdate="2018-01-01")
+    #     property2 = self.property_factory(bbl=2, council=council)
+    #     self.acrislegal_factory(property=property2, master=acrismaster2)
+    #     # loses 10% between 2007 - 2017
+    #
+    #     # properties that sold for over $10,000,000 between 2017-2018
+    #     query = '/properties/?q=criteria_0=ALL+option_0A=acrisreallegal__acrisrealmaster__docamount__gte=10000000'
+    #
+    #     response = self.client.get(query, format="json")
+    #     content = response.data['results']
+    #
+    #     self.assertEqual(response.status_code, 200)
+    #     self.assertEqual(len(content), 2)
+    #     self.assertEqual(content[0]['bbl'], '1')
+    #     self.assertEqual(content[1]['bbl'], '2')
 
-        # properties that sold for over $10,000,000 between 2017-2018
-        query = '/properties/?q=criteria_0=ALL+option_0A='
-
-        response = self.client.get(query, format="json")
-        content = response.data['results']
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(content), 2)
-        self.assertEqual(content[0]['bbl'], '1')
-        self.assertEqual(content[1]['bbl'], '2')
+    # def test_permitsissued_rules_1(self):
+    #     council = self.council_factory(coundist=1)
+    #
+    #     property1 = self.property_factory(bbl=1, council=council)
+    #
+    #     property2 = self.property_factory(bbl=2, council=council)
+    #     # loses 10% between 2007 - 2017
+    #
+    #     # properties that sold for over $10,000,000 between 2017-2018
+    #     query = '/properties/?q=criteria_0=ALL+option_0A=acrisreallegal__acrisrealmaster__docamount__gte=10000000'
+    #
+    #     response = self.client.get(query, format="json")
+    #     content = response.data['results']
+    #
+    #     self.assertEqual(response.status_code, 200)
+    #     self.assertEqual(len(content), 2)
+    #     self.assertEqual(content[0]['bbl'], '1')
+    #     self.assertEqual(content[1]['bbl'], '2')

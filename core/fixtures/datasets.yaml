@@ -156,3 +156,9 @@
     model_name: PublicHousingRecord
     automated: False
     update_instructions: "1) Download csv from https://github.com/JustFixNYC/nycha-scraper/blob/master/Block-and-Lot-Guide-08272018.csv 2) Upload file to app. 3) Create Update."
+- model: core.dataset
+  pk: 26
+  fields:
+    name: DOB Permits Issued (Joined)
+    model_name: DOBPermitIssuedJoined
+    automated: True

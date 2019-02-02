@@ -78,8 +78,8 @@ class DOBPermitIssuedLegacy(BaseDatasetModel, models.Model):
     censustract = models.TextField(blank=True, null=True)
     ntaname = models.TextField(blank=True, null=True)
 
-    class Meta:
-        unique_together = ('job', 'permitsino',)
+    # class Meta:
+    #     unique_together = ('job', 'permitsino',)
 
     @classmethod
     def download(self):
