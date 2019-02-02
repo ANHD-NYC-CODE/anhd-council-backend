@@ -679,6 +679,33 @@ class DOBPermitIssuedJoinedTests(BaseTest, TestCase):
         ds.DOBPermitIssuedJoined.seed_or_update_self(update=update)
         self.assertEqual(ds.DOBPermitIssuedJoined.objects.count(), 10)
 
+    def test_seed_joined_table_with_update(self):
+        update = self.update_factory(model_name="DOBPermitIssuedJoined")
+
+        changed_record_legacy = self.permitissuedlegacy_factory(job="a", permitsino="1", jobtype="A1")
+        changed_record_now = self.permitissuednow_factory(jobfilingnumber="b", workpermit="1", jobdescription="Hi")
+
+        for i in range(5):
+            self.permitissuedlegacy_factory()
+            self.permitissuednow_factory()
+
+        ds.DOBPermitIssuedJoined.seed_or_update_self(update=update)
+        update2 = self.update_factory(dataset=update.dataset, model_name="DOBPermitIssuedJoined")
+        changed_record_legacy.jobtype = "B1"
+        changed_record_legacy.save()
+        changed_record_now.jobdescription = "bye"
+        changed_record_now.save()
+
+        for i in range(5):
+            self.permitissuedlegacy_factory()
+            self.permitissuednow_factory()
+
+        ds.DOBPermitIssuedJoined.seed_or_update_self(update=update2)
+
+        self.assertEqual(ds.DOBPermitIssuedJoined.objects.count(), 22)
+        self.assertEqual(ds.DOBPermitIssuedJoined.objects.get(key="a1").jobdescription, "B1")
+        self.assertEqual(ds.DOBPermitIssuedJoined.objects.get(key="b1").jobdescription, "bye")
+
 
 class DOBPermitFiledTests(BaseTest, TestCase):
     def tearDown(self):

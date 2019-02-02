@@ -234,6 +234,17 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
+    def test_property_dobjoinedpermitissued(self):
+        property = self.property_factory(bbl="1")
+        self.permitissuedjoined_factory(property=property)
+        self.permitissuedjoined_factory(property=property)
+
+        response = self.client.get('/properties/1/dobjoinedissuedpermits/')
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
     def test_property_doblegacypermitfiled(self):
         property = self.property_factory(bbl="1")
         self.permitfiledlegacy_factory(property=property)

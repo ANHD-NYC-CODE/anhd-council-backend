@@ -27,8 +27,8 @@ class BaseTest():
     def update_factory(self, dataset=None, model_name=None, file_name=None, previous_file_name=None):
         if not dataset:
             dataset = c_models.Dataset.objects.create(name=model_name, model_name=model_name)
-        file = c_models.DataFile.objects.create(file=self.get_file(file_name), dataset=dataset)
 
+        file = c_models.DataFile.objects.create(file=self.get_file(file_name), dataset=dataset) if file_name else None
         previous_file = c_models.DataFile.objects.create(file=self.get_file(
             previous_file_name), dataset=dataset) if previous_file_name else None
         update = c_models.Update.objects.create(dataset=dataset, file=file, previous_file=previous_file)
@@ -335,6 +335,31 @@ class BaseTest():
             jobfilingnumber=jobfilingnumber,
             workpermit=workpermit,
             issueddate=issueddate,
+            bbl=property,
+            bin=building,
+            **kwargs
+        )
+        return factory
+
+    def permitissuedjoined_factory(self, jobfilingnumber=None, workpermit=None, property=None, building=None, **kwargs):
+        name = 'DOBPermitIssuedJoined'
+
+        if not workpermit:
+            workpermit = random.randint(1, 100000)
+        if not jobfilingnumber:
+            jobfilingnumber = random.randint(1, 100000)
+
+        key = "{}{}".format(workpermit, jobfilingnumber)
+
+        if not property:
+            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+        if not building:
+            building = self.building_factory(bin=random.randint(1, 100000), property=property, boro=property.borough,
+                                             block=property.block, lot=property.lot)
+        factory = d_models.DOBPermitIssuedJoined.objects.create(
+            key=key,
+            jobfilingnumber=jobfilingnumber,
+            workpermit=workpermit,
             bbl=property,
             bin=building,
             **kwargs

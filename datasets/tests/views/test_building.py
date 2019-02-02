@@ -135,6 +135,17 @@ class BuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
+    def test_building_dobjoinedissuedpermits(self):
+        building = self.building_factory(bin="1")
+        self.permitissuedjoined_factory(building=building)
+        self.permitissuedjoined_factory(building=building)
+
+        response = self.client.get('/buildings/1/dobjoinedissuedpermits/')
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
     def test_building_doblegacyfiledpermits(self):
         building = self.building_factory(bin="1")
         self.permitfiledlegacy_factory(building=building)
