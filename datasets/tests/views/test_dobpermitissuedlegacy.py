@@ -20,17 +20,17 @@ class DOBPermitIssuedLegacyTests(BaseTest, APITestCase, URLPatternsTestCase, Tes
         self.permitissuedlegacy_factory()
         self.permitissuedlegacy_factory()
 
-        response = self.client.get('/doblegacyissuedpermits/', format="json")
+        response = self.client.get('/dobissuedpermitslegacy/', format="json")
         content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
     def test_retrieve(self):
-        doblegacyissuedpermits = self.permitissuedlegacy_factory()
+        dobissuedpermitslegacy = self.permitissuedlegacy_factory()
 
-        response = self.client.get('/doblegacyissuedpermits/{}/'.format(doblegacyissuedpermits.id))
+        response = self.client.get('/dobissuedpermitslegacy/{}/'.format(dobissuedpermitslegacy.id))
         content = response.data
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(content["id"], doblegacyissuedpermits.id)
+        self.assertEqual(content["id"], dobissuedpermitslegacy.id)

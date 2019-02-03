@@ -217,7 +217,7 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.permitissuedlegacy_factory(property=property)
         self.permitissuedlegacy_factory(property=property)
 
-        response = self.client.get('/properties/1/doblegacyissuedpermits/')
+        response = self.client.get('/properties/1/dobissuedpermitslegacy/')
         content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
@@ -228,7 +228,7 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.permitissuednow_factory(property=property)
         self.permitissuednow_factory(property=property)
 
-        response = self.client.get('/properties/1/dobnowissuedpermits/')
+        response = self.client.get('/properties/1/dobissuedpermitsnow/')
         content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
@@ -239,7 +239,7 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.permitissuedjoined_factory(property=property)
         self.permitissuedjoined_factory(property=property)
 
-        response = self.client.get('/properties/1/dobjoinedissuedpermits/')
+        response = self.client.get('/properties/1/dobdobissuedpermitsjoined/')
         content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
@@ -250,7 +250,7 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.permitfiledlegacy_factory(property=property)
         self.permitfiledlegacy_factory(property=property)
 
-        response = self.client.get('/properties/1/doblegacyfiledpermits/')
+        response = self.client.get('/properties/1/dobfiledpermitslegacy/')
         content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
