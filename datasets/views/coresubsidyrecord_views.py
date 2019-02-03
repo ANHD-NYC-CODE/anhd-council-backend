@@ -3,6 +3,8 @@ from rest_framework_extensions.mixins import NestedViewSetMixin
 from rest_framework.settings import api_settings
 from rest_framework_csv import renderers as rf_csv
 from datasets.helpers.api_helpers import cache_me, ApplicationViewSet
+from datasets.filters import CoreSubsidyRecordFilter
+from django_filters.rest_framework import DjangoFilterBackend
 
 from datasets import serializers as serial
 from datasets import models as ds
@@ -12,6 +14,8 @@ class CoreSubsidyRecordViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
     queryset = ds.CoreSubsidyRecord.objects.all().order_by('pk')
     serializer_class = serial.CoreSubsidyRecordSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = CoreSubsidyRecordFilter
 
     @cache_me()
     def list(self, request, *args, **kwargs):

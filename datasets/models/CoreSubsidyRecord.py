@@ -52,7 +52,10 @@ class CoreSubsidyRecord(BaseDatasetModel, models.Model):
 
     @classmethod
     def pre_validation_filters(self, gen_rows):
-        return gen_rows
+        for row in gen_rows:
+            if '421-a' in row['programname']:
+                row['programname'] = row['programname'].replace('421-a', '421a')
+            yield row
 
     @classmethod
     def transform_self(self, file_path, update=None):
