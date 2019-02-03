@@ -20,17 +20,17 @@ class DOBPermitIssuedNowTests(BaseTest, APITestCase, URLPatternsTestCase, TestCa
         self.permitissuednow_factory()
         self.permitissuednow_factory()
 
-        response = self.client.get('/dobissuedpermitsnow/', format="json")
+        response = self.client.get('/dobpermitissuednow/', format="json")
         content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
     def test_retrieve(self):
-        dobissuedpermitsnow = self.permitissuednow_factory()
+        dobpermitissuednow = self.permitissuednow_factory()
 
-        response = self.client.get('/dobissuedpermitsnow/{}/'.format(dobissuedpermitsnow.id))
+        response = self.client.get('/dobpermitissuednow/{}/'.format(dobpermitissuednow.id))
         content = response.data
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(content["id"], dobissuedpermitsnow.id)
+        self.assertEqual(content["id"], dobpermitissuednow.id)

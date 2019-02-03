@@ -113,45 +113,45 @@ class BuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
-    def test_building_dobissuedpermitslegacy(self):
+    def test_building_dobpermitissuedlegacy(self):
         building = self.building_factory(bin="1")
         self.permitissuedlegacy_factory(building=building)
         self.permitissuedlegacy_factory(building=building)
 
-        response = self.client.get('/buildings/1/dobissuedpermitslegacy/')
+        response = self.client.get('/buildings/1/dobpermitissuedlegacy/')
         content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
-    def test_building_dobissuedpermitsnow(self):
+    def test_building_dobpermitissuednow(self):
         building = self.building_factory(bin="1")
         self.permitissuednow_factory(building=building)
         self.permitissuednow_factory(building=building)
 
-        response = self.client.get('/buildings/1/dobissuedpermitsnow/')
+        response = self.client.get('/buildings/1/dobpermitissuednow/')
         content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
-    def test_building_dobdobissuedpermitsjoined(self):
+    def test_building_dobdobpermitissuedjoined(self):
         building = self.building_factory(bin="1")
         self.permitissuedjoined_factory(building=building)
         self.permitissuedjoined_factory(building=building)
 
-        response = self.client.get('/buildings/1/dobdobissuedpermitsjoined/')
+        response = self.client.get('/buildings/1/dobdobpermitissuedjoined/')
         content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
-    def test_building_dobfiledpermitslegacy(self):
+    def test_building_dobpermitfiledlegacy(self):
         building = self.building_factory(bin="1")
         self.permitfiledlegacy_factory(building=building)
         self.permitfiledlegacy_factory(building=building)
 
-        response = self.client.get('/buildings/1/dobfiledpermitslegacy/')
+        response = self.client.get('/buildings/1/dobpermitfiledlegacy/')
         content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
