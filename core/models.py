@@ -4,7 +4,7 @@ from django.dispatch import receiver
 from django.apps import apps
 from django.conf import settings
 from django_celery_results.models import TaskResult
-from core.tasks import async_seed_file
+from core.tasks import async_seed_file, async_seed_table
 from datasets import models as dataset_models
 from core import models as c_models
 from django.utils import timezone
@@ -116,25 +116,30 @@ def auto_seed_on_create(sender, instance, created, **kwargs):
 
     def on_commit():
         print("commit")
-        if created and not instance.dataset:
-            instance.dataset = instance.file.dataset
-        if created and instance.file and os.path.isfile(instance.file.file.path):
-            worker = async_seed_file.delay(instance.file.file.path, instance.id)
+        if created:
+            if not instance.dataset and not instance.file:
+                raise Exception("File not present")
+            elif not instance.dataset:
+                instance.dataset = instance.file.dataset
+
+            if instance.file:
+                worker = async_seed_file.delay(instance.file.file.path, instance.id)
+            else:
+                worker = async_seed_table.delay(instance.id)
+
             instance.task_id = worker.id
             instance.save()
-        elif created:
-            raise Exception("File not present")
     transaction.on_commit(lambda: on_commit())
 
 
 @receiver(models.signals.post_save, sender=TaskResult)
 def add_task_result_to_update(sender, instance, created, **kwargs):
     def on_commit():
-        if created:
-            u = Update.objects.filter(task_id=instance.task_id).first()
-            if u:
+        u = Update.objects.filter(task_id=instance.task_id).first()
+        if u:
+            u.task_result = instance
+            if not created:
                 u.completed_date = timezone.now
-                u.task_result = instance
-                u.save()
+            u.save()
 
     transaction.on_commit(lambda: on_commit())

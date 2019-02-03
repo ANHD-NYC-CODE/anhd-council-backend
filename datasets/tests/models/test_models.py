@@ -678,6 +678,9 @@ class DOBPermitIssuedJoinedTests(BaseTest, TestCase):
 
         ds.DOBPermitIssuedJoined.seed_or_update_self(update=update)
         self.assertEqual(ds.DOBPermitIssuedJoined.objects.count(), 10)
+        self.assertEqual(update.total_rows, 10)
+        self.assertEqual(update.rows_created, 10)
+        self.assertEqual(update.rows_updated, 0)
 
     def test_seed_joined_table_with_update(self):
         update = self.update_factory(model_name="DOBPermitIssuedJoined")
@@ -705,6 +708,9 @@ class DOBPermitIssuedJoinedTests(BaseTest, TestCase):
         self.assertEqual(ds.DOBPermitIssuedJoined.objects.count(), 22)
         self.assertEqual(ds.DOBPermitIssuedJoined.objects.get(key="a1").jobdescription, "B1")
         self.assertEqual(ds.DOBPermitIssuedJoined.objects.get(key="b1").jobdescription, "bye")
+        self.assertEqual(update2.total_rows, 22)
+        self.assertEqual(update2.rows_created, 10)
+        self.assertEqual(update2.rows_updated, 12)
 
 
 class DOBPermitFiledTests(BaseTest, TestCase):
