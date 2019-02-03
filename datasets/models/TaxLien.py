@@ -2,7 +2,7 @@ from django.db import models
 from django.utils import timezone
 
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
-from core.utils.transform import from_xlsx_file_to_gen, with_bbl
+from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.utils.validation_filters import is_null, is_older_than
 import logging
 import datetime
@@ -12,7 +12,8 @@ logger = logging.getLogger('app')
 # Update process: Manual
 # Update strategy: Overwrite
 #
-# Combine all borough files downloaded from DOF into single xlsx file under a worksheet named "Web File"
+# Combine all borough xlsx files downloaded from DOF into single csv file
+# Add a "year" column and enter the year for every row in the CSV
 # https://www1.nyc.gov/site/finance/taxes/property-lien-sales.page
 # upload file through admin, then update
 
@@ -30,6 +31,7 @@ class TaxLien(BaseDatasetModel, models.Model):
     streetname = models.TextField(blank=True, null=True)
     zipcode = models.TextField(blank=True, null=True)
     waterdebtonly = models.TextField(blank=True, null=True)
+    year = models.SmallIntegerField(db_index=True, blank=True, null=True)
 
     @classmethod
     def pre_validation_filters(self, gen_rows):
@@ -37,7 +39,7 @@ class TaxLien(BaseDatasetModel, models.Model):
 
     @classmethod
     def transform_self(self, file_path, update=None):
-        return self.pre_validation_filters(with_bbl(from_xlsx_file_to_gen(file_path, 'Web File', update)))
+        return self.pre_validation_filters(with_bbl(from_csv_file_to_gen(file_path, update)))
 
     @classmethod
     def seed_or_update_self(self, **kwargs):

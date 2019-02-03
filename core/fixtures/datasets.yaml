@@ -162,3 +162,10 @@
     name: DOB Permits Issued (Joined)
     model_name: DOBPermitIssuedJoined
     automated: True
+- model: core.dataset
+  pk: 27
+  fields:
+    name: Tax Liens
+    model_name: TaxLien
+    automated: False
+    update_instructions: "1) Download every borough's .xlsx file for the current year from https://www1.nyc.gov/site/finance/taxes/property-lien-sales.page 2) Create a .csv file with all borough data. 3) Add a 'year' column to the file and provide the appropriate year value for each row. 4) Upload file to app. 5) Create Update."

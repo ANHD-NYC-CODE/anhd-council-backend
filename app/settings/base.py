@@ -267,5 +267,6 @@ ACTIVE_MODELS = [
     'RentStabilizationRecord',
     'SubsidyJ51',
     'Subsidy421a',
-    'PublicHousingRecord'
+    'PublicHousingRecord',
+    'TaxLien'
 ]
