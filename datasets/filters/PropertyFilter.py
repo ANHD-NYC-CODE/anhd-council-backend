@@ -68,6 +68,12 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     dobpermitissuedjoined = TotalWithDateFilter(method="filter_dobpermitissuedjoined_total_and_dates")
     eviction = TotalWithDateFilter(method="filter_eviction_total_and_dates")
 
+    taxlien = django_filters.NumberFilter(field_name='taxlien__year', lookup_expr='exact')
+    taxlien__lt = django_filters.NumberFilter(field_name='taxlien__year', lookup_expr='lt')
+    taxlien__lte = django_filters.NumberFilter(field_name='taxlien__year', lookup_expr='lte')
+    taxlien__gt = django_filters.NumberFilter(field_name='taxlien__year', lookup_expr='gt')
+    taxlien__gte = django_filters.NumberFilter(field_name='taxlien__year', lookup_expr='gte')
+
     def parse_totaldate_field_values(self, date_prefix, totals_prefix, values):
         date_filters = {}
         total_filters = {}

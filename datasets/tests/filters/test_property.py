@@ -185,6 +185,27 @@ class PropertyFilterTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['bbl'], '1')
 
+    def test_taxlien_field(self):
+        council = self.council_factory(coundist=1)
+        # has tax lien in 2018
+        property1 = self.property_factory(bbl=1, council=council)
+        # has tax lien in 2017
+        property2 = self.property_factory(bbl=2, council=council)
+        # has no tax liens
+        property3 = self.property_factory(bbl=3, council=council)
+
+        self.taxlien_factory(property=property1, year="2018")
+        self.taxlien_factory(property=property2, year="2017")
+
+        # any buildings with tax liens in 2018
+        query = '/properties/?taxlien=2018'
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+        self.assertEqual(content[0]['bbl'], '1')
+
 
 class PropertyAdvancedFilterTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
     urlpatterns = [
@@ -513,6 +534,28 @@ class PropertyAdvancedFilterTests(BaseTest, APITestCase, URLPatternsTestCase, Te
 
         # 10 permits between 2017-2018
         query = '/properties/?q=criteria_0=ALL+option_0A=eviction__executeddate__gte=2017-01-01+option_0B=eviction__executeddate__lte=2018-01-01+option_0C=eviction__count__gte=10'
+
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+        self.assertEqual(content[0]['bbl'], '1')
+
+    def test_taxlien_rules(self):
+        council = self.council_factory(coundist=1)
+        # has tax lien in 2018
+        property1 = self.property_factory(bbl=1, council=council)
+        # has tax lien in 2017
+        property2 = self.property_factory(bbl=2, council=council)
+        # has no tax liens
+        property3 = self.property_factory(bbl=3, council=council)
+
+        self.taxlien_factory(property=property1, year="2018")
+        self.taxlien_factory(property=property2, year="2011")
+
+        # 10 permits between 2017-2018
+        query = '/properties/?q=criteria_0=ALL+option_0A=taxlien__year__exact=2018'
 
         response = self.client.get(query, format="json")
         content = response.data['results']
