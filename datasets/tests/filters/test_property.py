@@ -206,6 +206,28 @@ class PropertyFilterTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['bbl'], '1')
 
+    def test_subsidy_field(self):
+        council = self.council_factory(coundist=1)
+        # has lihtc ending 2018
+        property1 = self.property_factory(bbl=1, council=council)
+        # has j-51 ending 2018
+        property2 = self.property_factory(bbl=2, council=council)
+        # has lihtc ending 2025
+        property3 = self.property_factory(bbl=3, council=council)
+
+        self.coredata_factory(property=property1, enddate="2018-01-01", programname="lihtc")
+        self.coredata_factory(property=property2, enddate="2018-01-01", programname="j-51")
+        self.coredata_factory(property=property3, enddate="2025-01-01", programname="lihtc")
+
+        # any lihtc buildings ending 2018
+        query = '/properties/?subsidy__programname=lihtc&subsidy__enddate__lte=2018-01-01'
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+        self.assertEqual(content[0]['bbl'], '1')
+
 
 class PropertyAdvancedFilterTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
     urlpatterns = [
@@ -453,7 +475,7 @@ class PropertyAdvancedFilterTests(BaseTest, APITestCase, URLPatternsTestCase, Te
         self.acrislegal_factory(property=property4, master=acrismaster4)
 
         # properties that sold for over $5 between 2017-2018
-        query = '/properties/?q=criteria_0=ALL+option_0A=acrisreallegal__documentid__docdate__gte=2017-01-01+option_0C=acrisreallegal__documentid__docdate__lte=2018-01-01+option_0C=acrisreallegal__documentid__docamount__gte=5'
+        query = '/properties/?q=criteria_0=ALL+option_0A=acrisreallegal__documentid__docdate__gte=2017-01-01,acrisreallegal__documentid__docdate__lte=2018-01-01,acrisreallegal__documentid__docamount__gte=5'
 
         response = self.client.get(query, format="json")
         content = response.data['results']
@@ -477,7 +499,7 @@ class PropertyAdvancedFilterTests(BaseTest, APITestCase, URLPatternsTestCase, Te
         self.acrislegal_factory(property=property2, master=acrismaster2)
 
         # properties with 5 sales between 2017-2018
-        query = '/properties/?q=criteria_0=ALL+option_0A=acrisreallegal__documentid__docdate__gte=2017-01-01+option_0C=acrisreallegal__documentid__docdate__lte=2018-01-01+option_0C=acrisreallegal__documentid__count__gte=5'
+        query = '/properties/?q=criteria_0=ALL+option_0A=acrisreallegal__documentid__docdate__gte=2017-01-01,acrisreallegal__documentid__docdate__lte=2018-01-01,acrisreallegal__documentid__count__gte=5'
 
         response = self.client.get(query, format="json")
         content = response.data['results']
@@ -505,7 +527,7 @@ class PropertyAdvancedFilterTests(BaseTest, APITestCase, URLPatternsTestCase, Te
             self.permitissuedjoined_factory(property=property3, issuedate="2018-01-01")
 
         # 10 permits between 2017-2018
-        query = '/properties/?q=criteria_0=ALL+option_0A=dobpermitissuedjoined__issuedate__gte=2017-01-01+option_0B=dobpermitissuedjoined__issuedate__lte=2018-01-01+option_0C=dobpermitissuedjoined__count__gte=10'
+        query = '/properties/?q=criteria_0=ALL+option_0A=dobpermitissuedjoined__issuedate__gte=2017-01-01,dobpermitissuedjoined__issuedate__lte=2018-01-01,dobpermitissuedjoined__count__gte=10'
 
         response = self.client.get(query, format="json")
         content = response.data['results']
@@ -533,7 +555,7 @@ class PropertyAdvancedFilterTests(BaseTest, APITestCase, URLPatternsTestCase, Te
             self.eviction_factory(property=property3, executeddate="2018-01-01")
 
         # 10 permits between 2017-2018
-        query = '/properties/?q=criteria_0=ALL+option_0A=eviction__executeddate__gte=2017-01-01+option_0B=eviction__executeddate__lte=2018-01-01+option_0C=eviction__count__gte=10'
+        query = '/properties/?q=criteria_0=ALL+option_0A=eviction__executeddate__gte=2017-01-01,eviction__executeddate__lte=2018-01-01,eviction__count__gte=10'
 
         response = self.client.get(query, format="json")
         content = response.data['results']
@@ -557,6 +579,28 @@ class PropertyAdvancedFilterTests(BaseTest, APITestCase, URLPatternsTestCase, Te
         # 10 permits between 2017-2018
         query = '/properties/?q=criteria_0=ALL+option_0A=taxlien__year__exact=2018'
 
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+        self.assertEqual(content[0]['bbl'], '1')
+
+    def test_subsidy_rules(self):
+        council = self.council_factory(coundist=1)
+        # has lihtc ending 2018
+        property1 = self.property_factory(bbl=1, council=council)
+        # has j-51 ending 2018
+        property2 = self.property_factory(bbl=2, council=council)
+        # has lihtc ending 2025
+        property3 = self.property_factory(bbl=3, council=council)
+
+        self.coredata_factory(property=property1, enddate="2018-01-01", programname="lihtc")
+        self.coredata_factory(property=property2, enddate="2018-01-01", programname="j-51")
+        self.coredata_factory(property=property3, enddate="2025-01-01", programname="lihtc")
+
+        # any lihtc buildings ending 2018
+        query = '/properties/?q=criteria_0=ALL+option_0A=coresubsidyrecord__programname__icontains=lihtc,coresubsidyrecord__enddate__lte=2018-01-01'
         response = self.client.get(query, format="json")
         content = response.data['results']
 

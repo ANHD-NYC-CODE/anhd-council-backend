@@ -74,6 +74,14 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     taxlien__gt = django_filters.NumberFilter(field_name='taxlien__year', lookup_expr='gt')
     taxlien__gte = django_filters.NumberFilter(field_name='taxlien__year', lookup_expr='gte')
 
+    subsidy__enddate__lte = django_filters.DateFilter(field_name='coresubsidyrecord__enddate', lookup_expr='date__lte')
+    subsidy__enddate__lt = django_filters.DateFilter(field_name='coresubsidyrecord__enddate', lookup_expr='date__lt')
+    subsidy__enddate = django_filters.DateFilter(field_name='coresubsidyrecord__enddate', lookup_expr='date__exact')
+    subsidy__enddate__gte = django_filters.DateFilter(field_name='coresubsidyrecord__enddate', lookup_expr='date__gte')
+    subsidy__enddate__gt = django_filters.DateFilter(field_name='coresubsidyrecord__enddate', lookup_expr='date__gt')
+    subsidy__programname = django_filters.CharFilter(
+        field_name='coresubsidyrecord__programname', lookup_expr='icontains')
+
     def parse_totaldate_field_values(self, date_prefix, totals_prefix, values):
         date_filters = {}
         total_filters = {}

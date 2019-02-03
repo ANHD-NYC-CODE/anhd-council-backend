@@ -514,23 +514,23 @@ class TaxLienTests(BaseTest, TestCase):
 
     def test_seed_record(self):
         update = self.update_factory(model_name="TaxLien",
-                                     file_name="mock_tax_liens.xlsx")
+                                     file_name="mock_tax_liens.csv")
         ds.TaxLien.seed_or_update_self(file_path=update.file.file.path, update=update)
-        self.assertEqual(ds.TaxLien.objects.count(), 10)
-        self.assertEqual(update.total_rows, 10)
-        self.assertEqual(update.rows_created, 10)
+        self.assertEqual(ds.TaxLien.objects.count(), 9)
+        self.assertEqual(update.total_rows, 9)
+        self.assertEqual(update.rows_created, 9)
 
     def test_seed_record_after_overwrite(self):
         update = self.update_factory(model_name="TaxLien",
-                                     file_name="mock_tax_liens.xlsx")
+                                     file_name="mock_tax_liens.csv")
         ds.TaxLien.seed_or_update_self(file_path=update.file.file.path, update=update)
-        self.assertEqual(ds.TaxLien.objects.count(), 10)
+        self.assertEqual(ds.TaxLien.objects.count(), 9)
 
         new_update = self.update_factory(dataset=update.dataset, model_name="TaxLien",
-                                         file_name="mock_tax_liens.xlsx", previous_file_name="mock_tax_liens.xlsx")
+                                         file_name="mock_tax_liens.csv", previous_file_name="mock_tax_liens.csv")
         ds.TaxLien.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
-        self.assertEqual(ds.TaxLien.objects.count(), 10)
-        self.assertEqual(new_update.rows_created, 10)
+        self.assertEqual(ds.TaxLien.objects.count(), 9)
+        self.assertEqual(new_update.rows_created, 9)
         self.assertEqual(new_update.rows_updated, 0)
 
 
