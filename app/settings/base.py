@@ -253,6 +253,7 @@ ACTIVE_MODELS = [
     'DOBPermitFiledLegacy',
     'DOBPermitIssuedLegacy',
     'DOBPermitIssuedNow',
+    'DOBPermitIssuedJoined',
     'DOBViolation',
     'ECBViolation',
     'Eviction',
