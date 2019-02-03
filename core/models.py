@@ -138,8 +138,7 @@ def add_task_result_to_update(sender, instance, created, **kwargs):
         u = Update.objects.filter(task_id=instance.task_id).first()
         if u:
             u.task_result = instance
-            if not created:
-                u.completed_date = timezone.now
+            u.completed_date = instance.date_done
             u.save()
 
     transaction.on_commit(lambda: on_commit())
