@@ -5,7 +5,7 @@ from django.db.models.functions import Cast
 import django_filters
 from django import forms
 from copy import deepcopy
-from datasets.filter_helpers import TotalWithDateFilter, RSLostPercentWithDateFilter, AdvancedQueryFilter
+from datasets.filter_helpers import construct_or_q, TotalWithDateFilter, RSLostPercentWithDateFilter, AdvancedQueryFilter
 from collections import OrderedDict
 from django.conf import settings
 
@@ -160,15 +160,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
         # Constructs a Q entirely of ORs and removes the initial AND
         if q_op == Q.OR:
-            query = self.construct_or_q(or_list)
-        return query
-
-    def construct_or_q(self, query_list):
-        query = query_list.pop()
-
-        for item in query_list:
-            query |= item
-
+            query = construct_or_q(or_list)
         return query
 
     def get_dataset_count_annotation(self, count_key, q_filter):
@@ -201,14 +193,17 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         # 2
         related_queryset = filtered_by_model_queryset.only('bbl').filter(dates_q).distinct()
 
+        # Prefetch related datasets and annotate counts
         for q_filter in self.q_filters:
-            # Prefetch related datasets and annotate counts
-
+            # remove q_filters that don't have a matching dataset (like model fields yearbuilt, etc)
             if q_filter['dataset'].lower() not in (model.lower() for model in settings.ACTIVE_MODELS):
                 continue
 
-            # option_0B=rentstabilizationrecord__uc2007__gte=0,rentstabilizationrecord__uc2017__gte=0,rentstabilizationrecords__percent__gte=0.2,rentstabilizationrecords__percent__lte=1
-            # props.council(1).annotate(rslostpercent=ExpressionWrapper(1 - Cast(F('rs2017'), FloatField()) / Cast(F('rs2007'), FloatField()), output_field=FloatField())).filter(rslostpercent__gte=0.9)
+            # filter only for acris sales/deeds/mortgages
+            if q_filter['dataset'].lower() == 'acrisreallegal':
+                related_queryset = related_queryset.filter(
+                    ds.AcrisRealMaster.construct_sales_query('acrisreallegal__documentid'))
+
             if q_filter['dataset'] == 'rentstabilizationrecord':
                 rsvalues = list(filter(lambda x: x['dataset'] == 'rentstabilizationrecord', parsed_values))[
                     0]['value'].split(',')
@@ -277,11 +272,9 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         for type in ds.AcrisRealMaster.SALE_DOC_TYPES:
             q_list.append(Q(**{'acrisreallegal__documentid__doctype': type}))
 
-        sales_filter = self.construct_or_q(q_list)
-
         date_filters, total_filters = self.parse_totaldate_field_values(
             'acrisreallegal__documentid__docdate', 'acrisrealmasters', values)
-        return queryset.filter(**date_filters).annotate(acrisrealmasters=Count('acrisreallegal__documentid', filter=sales_filter, distinct=True)).filter(**total_filters)
+        return queryset.filter(**date_filters).annotate(acrisrealmasters=Count('acrisreallegal__documentid', filter=ds.AcrisRealMaster.construct_sales_query('acrisreallegal__documentid'), distinct=True)).filter(**total_filters)
 
     # HPD Complaints
 
