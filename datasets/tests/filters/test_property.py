@@ -147,10 +147,37 @@ class PropertyFilterTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
             self.permitissuedjoined_factory(property=property2, issuedate="2010-01-01")
 
         for i in range(5):
-            self.permitissuedjoined_factory(property=property2, issuedate="2018-01-01")
+            self.permitissuedjoined_factory(property=property3, issuedate="2018-01-01")
 
         # 10 permits between 2017-2018
         query = '/properties/?dobpermitissuedjoined__start=2017-01-01&dobpermitissuedjoined__end=2018-01-01&dobpermitissuedjoined__gte=10'
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+        self.assertEqual(content[0]['bbl'], '1')
+
+    def test_eviction_field(self):
+        council = self.council_factory(coundist=1)
+        # 10 in range
+        property1 = self.property_factory(bbl=1, council=council)
+        # 10 out of range
+        property2 = self.property_factory(bbl=2, council=council)
+        # 5 in range
+        property3 = self.property_factory(bbl=3, council=council)
+
+        for i in range(10):
+            self.eviction_factory(property=property1, executeddate="2018-01-01")
+
+        for i in range(10):
+            self.eviction_factory(property=property2, executeddate="2010-01-01")
+
+        for i in range(5):
+            self.eviction_factory(property=property3, executeddate="2018-01-01")
+
+        # 10 permits between 2017-2018
+        query = '/properties/?eviction__start=2017-01-01&eviction__end=2018-01-01&eviction__gte=10'
         response = self.client.get(query, format="json")
         content = response.data['results']
 
@@ -454,10 +481,38 @@ class PropertyAdvancedFilterTests(BaseTest, APITestCase, URLPatternsTestCase, Te
             self.permitissuedjoined_factory(property=property2, issuedate="2010-01-01")
 
         for i in range(5):
-            self.permitissuedjoined_factory(property=property2, issuedate="2018-01-01")
+            self.permitissuedjoined_factory(property=property3, issuedate="2018-01-01")
 
         # 10 permits between 2017-2018
         query = '/properties/?q=criteria_0=ALL+option_0A=dobpermitissuedjoined__issuedate__gte=2017-01-01+option_0B=dobpermitissuedjoined__issuedate__lte=2018-01-01+option_0C=dobpermitissuedjoined__count__gte=10'
+
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+        self.assertEqual(content[0]['bbl'], '1')
+
+    def test_eviction_rules(self):
+        council = self.council_factory(coundist=1)
+        # 10 in range
+        property1 = self.property_factory(bbl=1, council=council)
+        # 10 out of range
+        property2 = self.property_factory(bbl=2, council=council)
+        # 5 in range
+        property3 = self.property_factory(bbl=3, council=council)
+
+        for i in range(10):
+            self.eviction_factory(property=property1, executeddate="2018-01-01")
+
+        for i in range(10):
+            self.eviction_factory(property=property2, executeddate="2010-01-01")
+
+        for i in range(5):
+            self.eviction_factory(property=property3, executeddate="2018-01-01")
+
+        # 10 permits between 2017-2018
+        query = '/properties/?q=criteria_0=ALL+option_0A=eviction__executeddate__gte=2017-01-01+option_0B=eviction__executeddate__lte=2018-01-01+option_0C=eviction__count__gte=10'
 
         response = self.client.get(query, format="json")
         content = response.data['results']
