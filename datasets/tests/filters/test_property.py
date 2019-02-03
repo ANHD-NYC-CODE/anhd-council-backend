@@ -131,6 +131,33 @@ class PropertyFilterTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['bbl'], '1')
 
+    def test_dobpermitissuedjoineds_field(self):
+        council = self.council_factory(coundist=1)
+        # 10 in range
+        property1 = self.property_factory(bbl=1, council=council)
+        # 10 out of range
+        property2 = self.property_factory(bbl=2, council=council)
+        # 5 in range
+        property3 = self.property_factory(bbl=3, council=council)
+
+        for i in range(10):
+            self.permitissuedjoined_factory(property=property1, issuedate="2018-01-01")
+
+        for i in range(10):
+            self.permitissuedjoined_factory(property=property2, issuedate="2010-01-01")
+
+        for i in range(5):
+            self.permitissuedjoined_factory(property=property2, issuedate="2018-01-01")
+
+        # 10 permits between 2017-2018
+        query = '/properties/?dobpermitissuedjoined__start=2017-01-01&dobpermitissuedjoined__end=2018-01-01&dobpermitissuedjoined__gte=10'
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+        self.assertEqual(content[0]['bbl'], '1')
+
 
 class PropertyAdvancedFilterTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
     urlpatterns = [

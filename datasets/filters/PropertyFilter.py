@@ -65,6 +65,8 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     acrisrealmasteramounts = TotalWithDateFilter(method="filter_acrisrealmasteramounts_total_and_dates")
     acrisrealmastersales = TotalWithDateFilter(method="filter_acrisrealmastersales_total_and_dates")
 
+    dobpermitissuedjoined = TotalWithDateFilter(method="filter_dobpermitissuedjoined_total_and_dates")
+
     def parse_totaldate_field_values(self, date_prefix, totals_prefix, values):
         date_filters = {}
         total_filters = {}
@@ -284,6 +286,11 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         date_filters, total_filters = self.parse_totaldate_field_values(
             'acrisreallegal__documentid__docdate', 'acrisrealmasters', values)
         return queryset.filter(**date_filters).annotate(acrisrealmasters=Count('acrisreallegal__documentid', filter=ds.AcrisRealMaster.construct_sales_query('acrisreallegal__documentid'), distinct=True)).filter(**total_filters)
+
+    def filter_dobpermitissuedjoined_total_and_dates(self, queryset, name, values):
+        date_filters, total_filters = self.parse_totaldate_field_values(
+            'dobpermitissuedjoined__issuedate', 'dobpermitissuedjoineds', values)
+        return queryset.filter(**date_filters).annotate(dobpermitissuedjoineds=Count('dobpermitissuedjoined', distinct=True)).filter(**total_filters)
 
     # HPD Complaints
 
