@@ -62,6 +62,8 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
     rsunitslost = RSLostPercentWithDateFilter(method="filter_stabilizedunitslost_percent_and_dates")
 
+    acrisrealmastersamount = TotalWithDateFilter(method="filter_acrisrealmastersamounts_total_and_dates")
+
     def parse_totaldate_field_values(self, date_prefix, totals_prefix, values):
         date_filters = {}
         total_filters = {}
@@ -257,6 +259,11 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     # Rent stabilized units lost
     def filter_stabilizedunitslost_percent_and_dates(self, queryset, name, values):
         return queryset.rs_annotate().annotate(rslostpercent=ExpressionWrapper(1 - Cast(F(values['end_year']), FloatField()) / Cast(F(values['start_year']), FloatField()), output_field=FloatField())).filter(**values['percent_query'])
+
+    def filter_acrisrealmastersamounts_total_and_dates(self, queryset, name, values):
+        date_filters, total_filters = self.parse_totaldate_field_values(
+            'acrisreallegal__documentid__docdate', 'acrisreallegal__documentid__docamount', values)
+        return queryset.filter(**date_filters).annotate(acrisrealmasters=Count('acrisreallegal__documentid', filter=Q(**total_filters), distinct=True)).filter(acrisrealmasters__gte=1)
 
     # HPD Complaints
 
