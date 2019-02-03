@@ -86,7 +86,7 @@ class PropertyFilterTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['bbl'], '1')
 
-    def test_acrisrealmastersamount_field(self):
+    def test_acrisrealmasteramount_field(self):
         council = self.council_factory(coundist=1)
         property1 = self.property_factory(bbl=1, council=council)
         property2 = self.property_factory(bbl=2, council=council)
@@ -95,7 +95,35 @@ class PropertyFilterTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.acrislegal_factory(master=acrismaster1, property=property1)
         self.acrislegal_factory(master=acrismaster2, property=property2)
 
-        query = '/properties/?acrisrealmastersamount__start=2018-01-01&acrisrealmastersamount__end=2018-01-01&acrisrealmastersamount__gte=5'
+        query = '/properties/?acrisrealmasteramounts__start=2017-01-01&acrisrealmasteramounts__end=2018-01-01&acrisrealmasteramounts__gte=5'
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+        self.assertEqual(content[0]['bbl'], '1')
+
+    def test_acrisrealmastersales_field(self):
+        council = self.council_factory(coundist=1)
+        # 5 in range
+        property1 = self.property_factory(bbl=1, council=council)
+        # only 1
+        property2 = self.property_factory(bbl=2, council=council)
+        # dates out of range
+        property3 = self.property_factory(bbl=3, council=council)
+        acrismaster2 = self.acrismaster_factory(docamount=1, docdate="2018-01-01")
+        self.acrislegal_factory(master=acrismaster2, property=property2)
+
+        for i in range(5):
+            am = self.acrismaster_factory(doctype="MTGE", docdate="2018-01-01")
+            self.acrislegal_factory(master=am, property=property1)
+
+        for i in range(5):
+            am = self.acrismaster_factory(doctype="MTGE", docdate="2010-01-01")
+            self.acrislegal_factory(master=am, property=property3)
+
+        # 5 sales between 2017-2018
+        query = '/properties/?acrisrealmastersales__start=2017-01-01&acrisrealmastersales__end=2018-01-01&acrisrealmastersales__gte=5'
         response = self.client.get(query, format="json")
         content = response.data['results']
 

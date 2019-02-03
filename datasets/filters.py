@@ -62,7 +62,8 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
     rsunitslost = RSLostPercentWithDateFilter(method="filter_stabilizedunitslost_percent_and_dates")
 
-    acrisrealmastersamount = TotalWithDateFilter(method="filter_acrisrealmastersamounts_total_and_dates")
+    acrisrealmasteramounts = TotalWithDateFilter(method="filter_acrisrealmasteramounts_total_and_dates")
+    acrisrealmastersales = TotalWithDateFilter(method="filter_acrisrealmastersales_total_and_dates")
 
     def parse_totaldate_field_values(self, date_prefix, totals_prefix, values):
         date_filters = {}
@@ -159,10 +160,14 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
         # Constructs a Q entirely of ORs and removes the initial AND
         if q_op == Q.OR:
-            query = or_list.pop()
+            query = self.construct_or_q(or_list)
+        return query
 
-            for item in or_list:
-                query |= item
+    def construct_or_q(self, query_list):
+        query = query_list.pop()
+
+        for item in query_list:
+            query |= item
 
         return query
 
@@ -261,10 +266,22 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     def filter_stabilizedunitslost_percent_and_dates(self, queryset, name, values):
         return queryset.rs_annotate().annotate(rslostpercent=ExpressionWrapper(1 - Cast(F(values['end_year']), FloatField()) / Cast(F(values['start_year']), FloatField()), output_field=FloatField())).filter(**values['percent_query'])
 
-    def filter_acrisrealmastersamounts_total_and_dates(self, queryset, name, values):
+    def filter_acrisrealmasteramounts_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(
             'acrisreallegal__documentid__docdate', 'acrisreallegal__documentid__docamount', values)
         return queryset.filter(**date_filters).annotate(acrisrealmasters=Count('acrisreallegal__documentid', filter=Q(**total_filters), distinct=True)).filter(acrisrealmasters__gte=1)
+
+    def filter_acrisrealmastersales_total_and_dates(self, queryset, name, values):
+        sale_doc_types = ("MTGE", "AGMT")
+        q_list = []
+        for type in sale_doc_types:
+            q_list.append(Q(**{'acrisreallegal__documentid__doctype': type}))
+
+        sales_filter = self.construct_or_q(q_list)
+
+        date_filters, total_filters = self.parse_totaldate_field_values(
+            'acrisreallegal__documentid__docdate', 'acrisrealmasters', values)
+        return queryset.filter(**date_filters).annotate(acrisrealmasters=Count('acrisreallegal__documentid', filter=sales_filter, distinct=True)).filter(**total_filters)
 
     # HPD Complaints
 
