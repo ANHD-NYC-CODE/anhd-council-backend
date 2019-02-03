@@ -134,7 +134,14 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
             q_value = self.read_criteria(next_criteria, values, counts)
         else:
             q_value = Q(**self.construct_rule_query(option, counts))
-            self.q_filters.append({'dataset': option['value'].split('__')[0], 'q': q_value})
+            rules = option['value'].split(',')
+            option_split = option['value'].split('__')
+            self.q_filters.append({
+                'dataset': option_split[0],
+                'full_related_path': '__'.join(rules[0].split('__')[:-2]),
+                'type': 'annotate' if counts else 'field',
+                'q': q_value
+            })
         return q_value
 
     def read_criteria(self, criteria, values, counts=False):
@@ -166,7 +173,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     def get_dataset_count_annotation(self, count_key, q_filter):
         return {
             count_key: Count(
-                q_filter['dataset'],
+                q_filter['full_related_path'],
                 filter=q_filter['q'],
                 distinct=True
             )
@@ -221,7 +228,10 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
                 except Exception as e:
                     raise Exception("Malformed rentstabilization parameter. Error: {}".format(e))
             else:
-                count_key = q_filter['dataset'] + 's__count'
+                # only annotate for count types
+                # if q_filter['type'] is not 'annotate':
+                #     continue
+                count_key = q_filter['full_related_path'] + '__count'
                 related_queryset = related_queryset.prefetch_related(q_filter['dataset'] + '_set').annotate(
                     **self.get_dataset_count_annotation(count_key, q_filter)
                 )
@@ -252,7 +262,6 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
             # )
 
         # 3
-
         count_q = Q(self.read_criteria(parsed_values[0], parsed_values, True))
         final_bbls = related_queryset.filter(count_q).only('bbl').values('bbl')
         return ds.Property.objects.filter(bbl__in=final_bbls)
