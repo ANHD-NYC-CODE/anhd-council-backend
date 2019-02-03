@@ -517,6 +517,7 @@ class TaxLienTests(BaseTest, TestCase):
                                      file_name="mock_tax_liens.xlsx")
         ds.TaxLien.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds.TaxLien.objects.count(), 10)
+        self.assertEqual(update.total_rows, 10)
         self.assertEqual(update.rows_created, 10)
 
     def test_seed_record_after_overwrite(self):
