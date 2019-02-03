@@ -115,19 +115,20 @@ def auto_seed_on_create(sender, instance, created, **kwargs):
     """
 
     def on_commit():
-        print("commit")
-        if created:
+        if created == True:
             if not instance.dataset and not instance.file:
                 raise Exception("File not present")
             elif not instance.dataset:
                 instance.dataset = instance.file.dataset
 
+            logger.debug("Creating Worker for update {}".format(instance.id))
             if instance.file:
-                worker = async_seed_file.delay(instance.file.file.path, instance.id)
+                worker = async_seed_file.apply_async(args=[instance.file.file.path, instance.id], countdown=2)
             else:
-                worker = async_seed_table.delay(instance.id)
+                worker = async_seed_table.apply_async(args=[instance.id], countdown=2)
 
             instance.task_id = worker.id
+            logger.debug("Linking Worker {} to update {}".format(worker.id, instance.id))
             instance.save()
     transaction.on_commit(lambda: on_commit())
 
@@ -135,10 +136,13 @@ def auto_seed_on_create(sender, instance, created, **kwargs):
 @receiver(models.signals.post_save, sender=TaskResult)
 def add_task_result_to_update(sender, instance, created, **kwargs):
     def on_commit():
-        u = Update.objects.filter(task_id=instance.task_id).first()
-        if u:
-            u.task_result = instance
-            u.completed_date = instance.date_done
-            u.save()
+        try:
+            u = Update.objects.get(task_id=instance.task_id)
+            if u:
+                u.task_result = instance
+                u.completed_date = instance.date_done
+                u.save()
+        except Exception as e:
+            logger.warning("Unable to sync TaskResult {} to Update".format(instance.id))
 
     transaction.on_commit(lambda: on_commit())

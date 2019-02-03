@@ -121,6 +121,10 @@ def from_xlsx_file_to_gen(file_path, worksheet, update):
         values = [c.value for c in row]
         yield dict(zip(headers, values))
 
+    if update:
+        update.total_rows = len(list(worksheet.rows))
+        update.save()
+
 
 def from_csv_file_to_gen(file_path_or_generator, update=None, cleaner=None):
     """

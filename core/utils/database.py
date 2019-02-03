@@ -213,10 +213,7 @@ def upsert_single_rows(model, rows, update=None):
                                  build_row_values(row) + build_pkey_tuple(row, pkey))
                     rows_updated = rows_updated + 1
             except Exception as e:
-                import pdb
-                pdb.set_trace()
                 logger.error("Database Error * - unable to upsert single record. Error: {}".format(e))
-                print(e)
                 continue
 
     if update:
