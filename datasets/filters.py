@@ -252,6 +252,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
             # )
 
         # 3
+
         count_q = Q(self.read_criteria(parsed_values[0], parsed_values, True))
         final_bbls = related_queryset.filter(count_q).only('bbl').values('bbl')
         return ds.Property.objects.filter(bbl__in=final_bbls)
