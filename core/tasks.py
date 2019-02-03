@@ -21,6 +21,13 @@ def async_seed_file(self, file_path, update_id):
 
 
 @app.task(bind=True)
+def async_seed_table(self, update_id):
+    update = c.Update.objects.get(id=update_id)
+    logger.info("Beginning async seeding - {} - c.Update: {}".format(update.dataset.name, update.id))
+    update.dataset.seed_dataset(update=update)
+
+
+@app.task(bind=True)
 def async_download_start(self, dataset_id):
     dataset = c.Dataset.objects.filter(id=dataset_id).first()
     logger.info("Starting async download for dataset: {}".format(dataset.name))
