@@ -130,3 +130,12 @@ class AdvancedQueryField(forms.Field):
 
 class AdvancedQueryFilter(django_filters.Filter):
     field_class = AdvancedQueryField
+
+
+def construct_or_q(query_list):
+    query = query_list.pop()
+
+    for item in query_list:
+        query |= item
+
+    return query

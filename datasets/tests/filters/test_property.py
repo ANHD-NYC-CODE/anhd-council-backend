@@ -358,22 +358,22 @@ class PropertyAdvancedFilterTests(BaseTest, APITestCase, URLPatternsTestCase, Te
         council = self.council_factory(coundist=1)
 
         # sold for $10 in date range
-        acrismaster1 = self.acrismaster_factory(documentid="a", docamount=10, docdate="2018-01-01")
+        acrismaster1 = self.acrismaster_factory(documentid="a", doctype="DEED", docamount=10, docdate="2018-01-01")
         property1 = self.property_factory(bbl=1, council=council)
         self.acrislegal_factory(property=property1, master=acrismaster1)
 
         # sold for $1 in date range
-        acrismaster2 = self.acrismaster_factory(documentid="b", docamount=1, docdate="2018-01-01")
+        acrismaster2 = self.acrismaster_factory(documentid="b", doctype="DEED", docamount=1, docdate="2018-01-01")
         property2 = self.property_factory(bbl=2, council=council)
         self.acrislegal_factory(property=property2, master=acrismaster2)
 
         # sold for $10 out of date range
-        acrismaster3 = self.acrismaster_factory(documentid="c", docamount=10, docdate="2011-01-01")
+        acrismaster3 = self.acrismaster_factory(documentid="c", doctype="DEED", docamount=10, docdate="2011-01-01")
         property3 = self.property_factory(bbl=3, council=council)
         self.acrislegal_factory(property=property3, master=acrismaster3)
 
-        # sold for $10 in date range
-        acrismaster4 = self.acrismaster_factory(documentid="d", docamount=10, docdate="2017-01-01")
+        # tax document for $10 in date range
+        acrismaster4 = self.acrismaster_factory(documentid="d", doctype="RPTT", docamount=10, docdate="2017-01-01")
         property4 = self.property_factory(bbl=4, council=council)
         self.acrislegal_factory(property=property4, master=acrismaster4)
 
@@ -384,9 +384,8 @@ class PropertyAdvancedFilterTests(BaseTest, APITestCase, URLPatternsTestCase, Te
         content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(content), 2)
+        self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['bbl'], '1')
-        self.assertEqual(content[1]['bbl'], '4')
 
     # def test_permitsissued_rules_1(self):
     #     council = self.council_factory(coundist=1)

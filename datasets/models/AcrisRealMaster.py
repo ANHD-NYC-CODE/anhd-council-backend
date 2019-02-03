@@ -3,6 +3,8 @@ from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.tasks import async_download_file
 from datasets.utils.validation_filters import is_null, is_older_than
+from datasets.filter_helpers import construct_or_q
+from django.db.models import Q
 
 
 class AcrisRealMaster(BaseDatasetModel, models.Model):
@@ -27,6 +29,15 @@ class AcrisRealMaster(BaseDatasetModel, models.Model):
     SALE_DOC_TYPES = ("DEED", "DEEDO", "DEED, LE", "DEED, RC", "DEED, TS", "MTGE", "CORRM", "ASPM",
                       "AGMT", "SPRD", "AL&R", "M&CON")
     LEASE_DOC_TYPES = ("LEAS", "ASSTO", "MLEA1")
+
+    @classmethod
+    def construct_sales_query(self, relation_path):
+        q_list = []
+        for type in self.SALE_DOC_TYPES:
+            q_list.append(Q(**{relation_path + '__doctype': type}))
+
+        sales_filter = construct_or_q(q_list)
+        return sales_filter
 
     @classmethod
     def download(self):
