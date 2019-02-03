@@ -208,11 +208,17 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
             if q_filter['dataset'].lower() not in (model.lower() for model in settings.ACTIVE_MODELS):
                 continue
 
+            ##
+            # Pre-filters
+            #
             # filter only for acris sales/deeds/mortgages
             if q_filter['dataset'].lower() == 'acrisreallegal':
                 related_queryset = related_queryset.filter(
                     ds.AcrisRealMaster.construct_sales_query('acrisreallegal__documentid'))
 
+            ##
+            # Special annotations
+            #
             if q_filter['dataset'] == 'rentstabilizationrecord':
                 rsvalues = list(filter(lambda x: x['dataset'] == 'rentstabilizationrecord', parsed_values))[
                     0]['value'].split(',')
@@ -233,6 +239,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
                 # only annotate for count types
                 # if q_filter['type'] is not 'annotate':
                 #     continue
+
                 count_key = q_filter['full_related_path'] + '__count'
                 related_queryset = related_queryset.prefetch_related(q_filter['dataset'] + '_set').annotate(
                     **self.get_dataset_count_annotation(count_key, q_filter)
@@ -264,8 +271,9 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
             # )
 
         # 3
-        count_q = Q(self.read_criteria(parsed_values[0], parsed_values, True))
-        final_bbls = related_queryset.filter(count_q).only('bbl').values('bbl')
+
+        annotation_q = Q(self.read_criteria(parsed_values[0], parsed_values, True))
+        final_bbls = related_queryset.filter(annotation_q).only('bbl').values('bbl')
         return ds.Property.objects.filter(bbl__in=final_bbls)
 
     # Rent stabilized units lost

@@ -438,21 +438,30 @@ class PropertyAdvancedFilterTests(BaseTest, APITestCase, URLPatternsTestCase, Te
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['bbl'], '1')
 
-    # def test_permitsissued_rules_1(self):
-    #     council = self.council_factory(coundist=1)
-    #
-    #     property1 = self.property_factory(bbl=1, council=council)
-    #
-    #     property2 = self.property_factory(bbl=2, council=council)
-    #     # loses 10% between 2007 - 2017
-    #
-    #     # properties that sold for over $10,000,000 between 2017-2018
-    #     query = '/properties/?q=criteria_0=ALL+option_0A=acrisreallegal__acrisrealmaster__docamount__gte=10000000'
-    #
-    #     response = self.client.get(query, format="json")
-    #     content = response.data['results']
-    #
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(len(content), 2)
-    #     self.assertEqual(content[0]['bbl'], '1')
-    #     self.assertEqual(content[1]['bbl'], '2')
+    def test_permitissuedjoined_rules(self):
+        council = self.council_factory(coundist=1)
+        # 10 in range
+        property1 = self.property_factory(bbl=1, council=council)
+        # 10 out of range
+        property2 = self.property_factory(bbl=2, council=council)
+        # 5 in range
+        property3 = self.property_factory(bbl=3, council=council)
+
+        for i in range(10):
+            self.permitissuedjoined_factory(property=property1, issuedate="2018-01-01")
+
+        for i in range(10):
+            self.permitissuedjoined_factory(property=property2, issuedate="2010-01-01")
+
+        for i in range(5):
+            self.permitissuedjoined_factory(property=property2, issuedate="2018-01-01")
+
+        # 10 permits between 2017-2018
+        query = '/properties/?q=criteria_0=ALL+option_0A=dobpermitissuedjoined__issuedate__gte=2017-01-01+option_0B=dobpermitissuedjoined__issuedate__lte=2018-01-01+option_0C=dobpermitissuedjoined__count__gte=10'
+
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+        self.assertEqual(content[0]['bbl'], '1')
