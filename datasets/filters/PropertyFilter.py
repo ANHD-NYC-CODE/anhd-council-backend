@@ -272,9 +272,9 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         return queryset.filter(**date_filters).annotate(acrisrealmasters=Count('acrisreallegal__documentid', filter=Q(**total_filters), distinct=True)).filter(acrisrealmasters__gte=1)
 
     def filter_acrisrealmastersales_total_and_dates(self, queryset, name, values):
-        sale_doc_types = ("MTGE", "AGMT")
+
         q_list = []
-        for type in sale_doc_types:
+        for type in ds.AcrisRealMaster.SALE_DOC_TYPES:
             q_list.append(Q(**{'acrisreallegal__documentid__doctype': type}))
 
         sales_filter = self.construct_or_q(q_list)

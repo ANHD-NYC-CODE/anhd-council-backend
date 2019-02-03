@@ -305,6 +305,14 @@ router.register(r'ecbviolations', v.ecbviolation_views.ECBViolationViewSet)
 acrisrealmasters_router = router.register(r'acrisrealmasters', v.acrisrealmaster_views.AcrisRealMasterViewSet)
 
 acrisrealmasters_router.register(
+    'acrisreallegals',
+    v.acrisreallegal_views.AcrisRealLegalViewSet,
+    base_name='acrisrealmaster-acrisreallegals',
+    parents_query_lookups=['documentid']
+)
+
+
+acrisrealmasters_router.register(
     'acrisrealparties',
     v.acrisrealparty_views.AcrisRealPartyViewSet,
     base_name='acrisrealmaster-acrisrealparties',
