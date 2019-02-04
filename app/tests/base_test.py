@@ -1,19 +1,36 @@
 from datasets import models as d_models
 from core import models as c_models
+from users.models import CustomUser
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.files import File
 from django.conf import settings
+from rest_framework.test import APITestCase, URLPatternsTestCase
+from django.urls import include, path
+from rest_framework_simplejwt import views as jwt_views
+
 import os
 import zipfile
 from django.utils import timezone
 import random
 
 
-class BaseTest():
+class BaseTest(APITestCase, URLPatternsTestCase):
+    urlpatterns = [
+        path('', include('datasets.urls')),
+        path('api/token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
+        path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
+    ]
+
     def clean_tests(self):
         from django_redis import get_redis_connection
         get_redis_connection("default").flushall()
         c_models.DataFile.objects.all().delete()
+
+    def get_access_token(self, username=None, password=None):
+        response = self.client.post('/api/token/', {'username': username, 'password': password}, format="json")
+        # content = response.data['results']
+        import pdb
+        pdb.set_trace()
 
     def get_file_path(self, name):
         return os.path.join(settings.BASE_DIR, "app/tests/mocks/" + name)
@@ -23,6 +40,20 @@ class BaseTest():
         file = File(open(file_path, 'rb'))
         file.name = name
         return file
+
+    def user_factory(self, username=None, password=None, **kwargs):
+        if not username:
+            username = random.randint(1, 1000000)
+        if not password:
+            password = random.randint(1, 1000000),
+
+        factory = CustomUser.objects.create(
+            username=username,
+            password=password,
+            is_active=True,
+            **kwargs
+        )
+        return factory
 
     def update_factory(self, dataset=None, model_name=None, file_name=None, previous_file_name=None):
         if not dataset:
@@ -485,6 +516,20 @@ class BaseTest():
             property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
 
         factory = d_models.PublicHousingRecord.objects.create(
+            bbl=property,
+            **kwargs
+        )
+        return factory
+
+    def foreclosure_factory(self, key=None, property=None, **kwargs):
+        name = 'Foreclosure'
+        if not key:
+            key = random.randint(1, 1000000)
+        if not property:
+            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+
+        factory = d_models.Foreclosure.objects.create(
+            key=key,
             bbl=property,
             **kwargs
         )

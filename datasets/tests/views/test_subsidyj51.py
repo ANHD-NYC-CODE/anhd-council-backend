@@ -8,10 +8,7 @@ import logging
 logging.disable(logging.CRITICAL)
 
 
-class SubsidyJ51Tests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
-    urlpatterns = [
-        path('', include('datasets.urls')),
-    ]
+class SubsidyJ51Tests(BaseTest, TestCase):
 
     def tearDown(self):
         self.clean_tests()

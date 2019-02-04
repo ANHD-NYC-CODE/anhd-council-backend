@@ -8,10 +8,7 @@ import logging
 logging.disable(logging.CRITICAL)
 
 
-class DOBPermitIssuedJoinedTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
-    urlpatterns = [
-        path('', include('datasets.urls')),
-    ]
+class DOBPermitIssuedJoinedTests(BaseTest, TestCase):
 
     def tearDown(self):
         self.clean_tests()

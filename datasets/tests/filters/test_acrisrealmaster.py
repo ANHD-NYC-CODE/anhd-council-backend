@@ -9,7 +9,7 @@ import logging
 logging.disable(logging.CRITICAL)
 
 
-class PropertyFilterTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
+class PropertyFilterTests(BaseTest, TestCase):
     urlpatterns = [
         path('', include('datasets.urls')),
     ]

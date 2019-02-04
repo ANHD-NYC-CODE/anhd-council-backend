@@ -8,10 +8,7 @@ import logging
 logging.disable(logging.CRITICAL)
 
 
-class AcrisRealLegalViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
-    urlpatterns = [
-        path('', include('datasets.urls')),
-    ]
+class AcrisRealLegalViewTests(BaseTest, TestCase):
 
     def tearDown(self):
         self.clean_tests()

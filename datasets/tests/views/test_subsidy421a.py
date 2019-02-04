@@ -8,10 +8,7 @@ import logging
 logging.disable(logging.CRITICAL)
 
 
-class Subsidy421aTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
-    urlpatterns = [
-        path('', include('datasets.urls')),
-    ]
+class Subsidy421aTests(BaseTest, TestCase):
 
     def tearDown(self):
         self.clean_tests()
