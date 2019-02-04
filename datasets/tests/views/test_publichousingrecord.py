@@ -8,10 +8,7 @@ import logging
 logging.disable(logging.CRITICAL)
 
 
-class PublicHousingRecordTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
-    urlpatterns = [
-        path('', include('datasets.urls')),
-    ]
+class PublicHousingRecordTests(BaseTest, TestCase):
 
     def tearDown(self):
         self.clean_tests()

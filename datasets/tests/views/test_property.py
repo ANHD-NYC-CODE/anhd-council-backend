@@ -8,10 +8,7 @@ import logging
 logging.disable(logging.CRITICAL)
 
 
-class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
-    urlpatterns = [
-        path('', include('datasets.urls')),
-    ]
+class PropertyViewTests(BaseTest, TestCase):
 
     def test_list(self):
         self.property_factory(bbl="1")
@@ -266,6 +263,12 @@ class PropertyViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
+
+    def test_property_foreclosures(self):
+
+        response = self.client.get('/properties/1/foreclosures/')
+
+        self.assertEqual(response.status_code, 401)
 
     def test_property_buildings_summary(self):
         property = self.property_factory(bbl="1")

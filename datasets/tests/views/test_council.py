@@ -8,10 +8,7 @@ import logging
 logging.disable(logging.CRITICAL)
 
 
-class CouncilViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
-    urlpatterns = [
-        path('', include('datasets.urls')),
-    ]
+class CouncilViewTests(BaseTest, TestCase):
 
     def tearDown(self):
         self.clean_tests()
@@ -50,7 +47,7 @@ class CouncilViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         council = self.council_factory(coundist=1)
         self.property_factory(council=council)
 
-        response = self.client.get('/councils/1/housingtype-summary/')
+        response = self.client.get('/councils/1/summary/')
         content = response.data
 
         self.assertEqual(response.status_code, 200)

@@ -9,7 +9,7 @@ import logging
 logging.disable(logging.CRITICAL)
 
 
-class PropertyFilterTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
+class PropertyFilterTests(BaseTest, TestCase):
     urlpatterns = [
         path('', include('datasets.urls')),
     ]
@@ -229,7 +229,7 @@ class PropertyFilterTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
         self.assertEqual(content[0]['bbl'], '1')
 
 
-class PropertyAdvancedFilterTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
+class PropertyAdvancedFilterTests(BaseTest, TestCase):
     urlpatterns = [
         path('', include('datasets.urls')),
     ]

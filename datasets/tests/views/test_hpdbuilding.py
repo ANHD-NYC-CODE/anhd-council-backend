@@ -8,10 +8,7 @@ import logging
 logging.disable(logging.CRITICAL)
 
 
-class HPDBuildingViewTests(BaseTest, APITestCase, URLPatternsTestCase, TestCase):
-    urlpatterns = [
-        path('', include('datasets.urls')),
-    ]
+class HPDBuildingViewTests(BaseTest, TestCase):
 
     def tearDown(self):
         self.clean_tests()
