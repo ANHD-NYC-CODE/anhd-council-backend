@@ -104,8 +104,10 @@ def date(x):
     # Filters bad string entries
     elif len(x.strip()) == 1:
         return None
-    elif len(x.strip()) == 10 and len(x.split('/')) == 3:
-        # checks for 12/31/2018 date input
+    elif (len(x.strip()) == 8 or len(x.strip()) == 9 or len(x.strip()) == 10) and len(x.split('/')) == 3:
+        # checks for 1/1/2018 date input
+        # checks for 1/01/2018 date input
+        # checks for 01/01/2018 date input
         return mm_dd_yyyy(x)
     elif len(x.strip()) == 22 and len(x[0:10].split('/')) == 3:
         # checks for 12/31/2018 12:00:00 AM date input

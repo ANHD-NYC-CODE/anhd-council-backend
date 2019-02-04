@@ -13,6 +13,7 @@ import math
 import os
 import json
 import logging
+import shutil
 
 logger = logging.getLogger('app')
 
@@ -40,6 +41,10 @@ def seed_from_csv_diff(original_file_path, new_file_path, model, **kwargs):
     seeds Diff Set() in batches
 
     """
+
+    # Make sure temp dir is empty first
+    shutil.rmtree(settings.MEDIA_TEMP_ROOT)
+
     original_diff_set = set()
     new_diff_set = set()
     new_file = open(new_file_path, 'r')

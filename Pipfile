@@ -28,6 +28,7 @@ django-filter = "==2.1.0"
 drf-extensions = "*"
 djangorestframework-filters = "*"
 django-debug-toolbar = "*"
+djangorestframework-simplejwt = "*"
 
 [requires]
 python_version = "3.5"

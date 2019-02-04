@@ -18,13 +18,15 @@ from django.urls import path
 from django.conf.urls import url, include
 from rest_framework.documentation import include_docs_urls
 from django.conf import settings
+from rest_framework_simplejwt import views as jwt_views
 
 from datasets import views as datasets
-
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('docs/', include_docs_urls(title='API', description='API Documentation')),
+    path('api/token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
     path('', include('datasets.urls'))
 ]
 

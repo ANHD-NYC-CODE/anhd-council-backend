@@ -16,6 +16,8 @@ from datasets.filters import PropertyFilter
 from datasets import serializers as serial
 from django_filters.rest_framework import DjangoFilterBackend
 
+from rest_framework.permissions import IsAuthenticated
+
 
 from datasets import models as ds
 import logging
@@ -30,6 +32,7 @@ class PropertyViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyM
     serializer_class = serial.PropertySerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = PropertyFilter
+    # permission_classes = (IsAuthenticated,)
 
     @cache_me()
     def list(self, request, *args, **kwargs):
@@ -37,6 +40,13 @@ class PropertyViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyM
 
     @cache_me()
     def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+
+    def property_summary(self, request, *args, **kwargs):
+        if request.user and request.user.is_authenticated:
+            self.serializer_class = serial.AuthenticatedPropertySummarySerializer
+        else:
+            self.serializer_class = serial.PropertySummarySerializer
         return super().retrieve(request, *args, **kwargs)
 
     @cache_me()
