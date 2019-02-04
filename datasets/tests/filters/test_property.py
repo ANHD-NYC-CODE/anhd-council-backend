@@ -177,7 +177,7 @@ class PropertyFilterTests(BaseTest, TestCase):
             self.eviction_factory(property=property3, executeddate="2018-01-01")
 
         # 10 permits between 2017-2018
-        query = '/properties/?eviction__start=2017-01-01&eviction__end=2018-01-01&eviction__gte=10'
+        query = '/properties/?evictions__start=2017-01-01&evictions__end=2018-01-01&evictions__gte=10'
         response = self.client.get(query, format="json")
         content = response.data['results']
 
