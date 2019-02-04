@@ -35,6 +35,194 @@ class PropertySerializer(serializers.ModelSerializer):
                   'bldgclass', 'numbldgs', 'numfloors', 'address', 'lat', 'lng')
 
 
+class PropertySummarySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.Property
+        fields = (
+            'bbl', 'council', 'yearbuilt', 'unitsres', 'unitstotal',
+            'bldgclass', 'numbldgs', 'numfloors', 'address', 'lat', 'lng',
+            'hpdviolations', 'hpdcomplaints', 'dobcomplaints', 'dobviolations', 'ecbviolations',
+            'acrisrealmasters', 'hpdregistration', 'hpdregistrationcontacts',
+            'coresubsidyrecords', 'dobpermitsissued', 'dobpermitfiled',
+            'housinglitigations', 'taxliens', 'evictions', 'taxbill', 'foreclosures', 'buildings'
+        )
+
+    hpdcomplaints = serializers.SerializerMethodField()
+
+    def get_hpdcomplaints(self, obj):
+        hpdcomplaints = ds.HPDComplaint.objects.filter(bbl=obj).all()
+
+        return {
+            "count": len(hpdcomplaints)
+        }
+
+    hpdviolations = serializers.SerializerMethodField()
+
+    def get_hpdviolations(self, obj):
+        hpdviolations = ds.HPDViolation.objects.filter(bbl=obj).all()
+
+        return {
+            "count": len(hpdviolations)
+        }
+
+    dobcomplaints = serializers.SerializerMethodField()
+
+    def get_dobcomplaints(self, obj):
+        dobcomplaints = ds.DOBComplaint.objects.filter(bbl=obj).all()
+
+        return {
+            "count": len(dobcomplaints)
+        }
+
+    dobviolations = serializers.SerializerMethodField()
+
+    def get_dobviolations(self, obj):
+        dobviolations = ds.DOBViolation.objects.filter(bbl=obj).all()
+
+        return {
+            "count": len(dobviolations)
+        }
+
+    ecbviolations = serializers.SerializerMethodField()
+
+    def get_ecbviolations(self, obj):
+        ecbviolations = ds.ECBViolation.objects.filter(bbl=obj).all()
+
+        return {
+            "count": len(ecbviolations)
+        }
+
+    acrisrealmasters = serializers.SerializerMethodField()
+
+    def get_acrisrealmasters(self, obj):
+        acrisrealmasters = ds.AcrisRealMaster.objects.prefetch_related(
+            'acrisreallegal_set').filter(acrisreallegal__bbl=obj).all()
+
+        return {
+            "count": len(acrisrealmasters)
+        }
+
+    hpdregistration = serializers.SerializerMethodField()
+
+    def get_hpdregistration(self, obj):
+        hpdregistration = ds.HPDRegistration.objects.filter(bbl=obj).all()
+
+        return {
+            "count": len(hpdregistration)
+        }
+
+    hpdregistrationcontacts = serializers.SerializerMethodField()
+
+    def get_hpdregistrationcontacts(self, obj):
+        hpdregistrationcontacts = ds.HPDContact.objects.filter(registrationid__bbl=obj).all()
+
+        return {
+            "count": len(hpdregistrationcontacts)
+        }
+
+    coresubsidyrecords = serializers.SerializerMethodField()
+
+    def get_coresubsidyrecords(self, obj):
+        coresubsidyrecords = ds.CoreSubsidyRecord.objects.filter(bbl=obj).all()
+
+        return {
+            "count": len(coresubsidyrecords)
+        }
+
+    dobpermitsissued = serializers.SerializerMethodField()
+
+    def get_dobpermitsissued(self, obj):
+        dobpermitsissued = ds.DOBPermitIssuedJoined.objects.filter(bbl=obj).all()
+
+        return {
+            "count": len(dobpermitsissued)
+        }
+
+    dobpermitfiled = serializers.SerializerMethodField()
+
+    def get_dobpermitfiled(self, obj):
+        dobpermitfiled = ds.DOBPermitFiledLegacy.objects.filter(bbl=obj).all()
+
+        return {
+            "count": len(dobpermitfiled)
+        }
+
+    housinglitigations = serializers.SerializerMethodField()
+
+    def get_housinglitigations(self, obj):
+        housinglitigations = ds.HousingLitigation.objects.filter(bbl=obj).all()
+
+        return {
+            "count": len(housinglitigations)
+        }
+
+    taxliens = serializers.SerializerMethodField()
+
+    def get_taxliens(self, obj):
+        taxliens = ds.TaxLien.objects.filter(bbl=obj).all()
+
+        return {
+            "count": len(taxliens)
+        }
+
+    evictions = serializers.SerializerMethodField()
+
+    def get_evictions(self, obj):
+        evictions = ds.Eviction.objects.filter(bbl=obj).all()
+
+        return {
+            "count": len(evictions)
+        }
+
+    taxbill = serializers.SerializerMethodField()
+
+    def get_taxbill(self, obj):
+        taxbill = ds.RentStabilizationRecord.objects.filter(ucbbl=obj).all()
+
+        return {
+            "count": len(taxbill)
+        }
+
+    foreclosures = serializers.SerializerMethodField()
+
+    buildings = serializers.SerializerMethodField()
+
+    def get_house_number(self, building):
+        if (building.lhnd == building.hhnd):
+            return building.lhnd
+        elif (building.lhnd and building.hhnd):
+            return "{}-{}".format(building.lhnd, building.hhnd)
+        else:
+            return building.lhnd
+
+    def get_buildings(self, obj):
+        property_buildings = ds.Building.objects.filter(bbl=obj.pk)
+
+        return {
+            "items": list({
+                "bin": building.bin,
+                "house_number": self.get_house_number(building)
+            } for building in property_buildings)
+        }
+
+    def get_foreclosures(self, obj):
+        return {
+            "count": 0,
+            "message": "Please sign in to view Foreclosures",
+            "items": []
+        }
+
+
+class AuthenticatedPropertySummarySerializer(PropertySummarySerializer, serializers.ModelSerializer):
+
+    def get_foreclosures(self, obj):
+        foreclosures = ds.Foreclosure.objects.filter(bbl=obj).all()
+
+        return {
+            "count": len(foreclosures)
+        }
+
+
 class PropertyBuildingsSummary(serializers.ModelSerializer):
     class Meta:
         model = ds.Property
@@ -224,6 +412,12 @@ class DOBPermitFiledLegacySerializer(serializers.ModelSerializer):
 class PublicHousingRecordSerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.PublicHousingRecord
+        fields = '__all__'
+
+
+class ForeclosureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.Foreclosure
         fields = '__all__'
 
 

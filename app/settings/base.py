@@ -45,8 +45,10 @@ INSTALLED_APPS = [
     'rest_framework_filters',
     'core',
     'datasets',
-    'users'
+    'users.apps.UsersConfig'
 ]
+
+AUTH_USER_MODEL = 'users.CustomUser'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -87,6 +89,9 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': (
         'rest_framework_filters.backends.RestFrameworkFilterBackend',
     ),
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
     # 'DEFAULT_PAGINATION_CLASS': 'apps.core.pagination.StandardResultsSetPagination'
     # 'DEFAULT_RENDERER_CLASSES': (
     #     'rest_framework_csv.renderers.CSVRenderer',
@@ -268,5 +273,7 @@ ACTIVE_MODELS = [
     'SubsidyJ51',
     'Subsidy421a',
     'PublicHousingRecord',
-    'TaxLien'
+    'TaxLien',
+    'Foreclosure',
+    'ForeclosureComment'
 ]

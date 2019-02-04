@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Council, Property, Building
+from datasets.models import Council, Property, Building
 
 
 admin.site.register(Council)

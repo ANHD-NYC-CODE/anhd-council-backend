@@ -169,3 +169,17 @@
     model_name: TaxLien
     automated: False
     update_instructions: "1) Download every borough's .xlsx file for the current year from https://www1.nyc.gov/site/finance/taxes/property-lien-sales.page 2) Create a .csv file with all borough data. 3) Add a 'year' column to the file and provide the appropriate year value for each row. 4) Upload file to app. 5) Create Update."
+- model: core.dataset
+  pk: 28
+  fields:
+    name: Foreclosures
+    model_name: Foreclosure
+    automated: False
+    update_instructions: "1) merge all boroughs into single file - lp_foreclosures_<month><year>.csv - use these headers: KEY,BBL,ENTEREDDATE,ZIP,BC,FILEDDATE,INDEX,DEBTOR,CR,ATTORNEY,Third Party,SAT DATE,SAT TYPE,DISP 2) upload file to app 3) update"
+- model: core.dataset
+  pk: 29
+  fields:
+    name: Foreclosure Comments
+    model_name: ForeclosureComment
+    automated: False
+    update_instructions: "1) merge all boroughs into single file - lp_foreclosures_comments_<month><year>.csv - use these headers: KEY,DATE-COMMENTS 2) Clean extra columns out 3) upload file to app 4) update"

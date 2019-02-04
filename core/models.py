@@ -25,6 +25,7 @@ class Dataset(models.Model):
     model_name = models.CharField(unique=True, max_length=255, blank=False, null=False, choices=ACTIVE_MODELS_CHOICES)
     automated = models.BooleanField(blank=True, null=True)
     update_instructions = models.TextField(blank=True, null=True)
+    download_endpoint = models.TextField(blank=True, null=True)
 
     def model(self):
         return getattr(dataset_models, self.model_name)
