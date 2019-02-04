@@ -27,10 +27,14 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         c_models.DataFile.objects.all().delete()
 
     def get_access_token(self, username=None, password=None):
+        if not username or not password:
+            username = "test"
+            password = "test1234!"
+            user = self.user_factory(email="test@test.com",  username=username, password=password)
+
         response = self.client.post('/api/token/', {'username': username, 'password': password}, format="json")
         # content = response.data['results']
-        import pdb
-        pdb.set_trace()
+        return response.data['access']
 
     def get_file_path(self, name):
         return os.path.join(settings.BASE_DIR, "app/tests/mocks/" + name)
@@ -47,7 +51,7 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         if not password:
             password = random.randint(1, 1000000),
 
-        factory = CustomUser.objects.create(
+        factory = CustomUser.objects.create_user(
             username=username,
             password=password,
             is_active=True,
