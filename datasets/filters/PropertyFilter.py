@@ -66,7 +66,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     acrisrealmastersales = TotalWithDateFilter(method="filter_acrisrealmastersales_total_and_dates")
 
     dobpermitissuedjoined = TotalWithDateFilter(method="filter_dobpermitissuedjoined_total_and_dates")
-    eviction = TotalWithDateFilter(method="filter_eviction_total_and_dates")
+    evictions = TotalWithDateFilter(method="filter_eviction_total_and_dates")
 
     taxlien = django_filters.NumberFilter(field_name='taxlien__year', lookup_expr='exact')
     taxlien__lt = django_filters.NumberFilter(field_name='taxlien__year', lookup_expr='lt')
