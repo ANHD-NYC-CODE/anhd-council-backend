@@ -18,7 +18,7 @@ logger = logging.getLogger('app')
 # Extract ZIP and upload bobaadr.csv file through admin, then update
 
 
-class AddressSearch(BaseDatasetModel, models.Model):
+class AddressRecord(BaseDatasetModel, models.Model):
     bbl = models.ForeignKey('Property', on_delete=models.SET_NULL, null=True,
                             db_column='bbl', db_constraint=False)
     bin = models.ForeignKey('Building', on_delete=models.SET_NULL, null=True,
@@ -48,19 +48,22 @@ class AddressSearch(BaseDatasetModel, models.Model):
         cursor = int(low)
         step = 2
         while(cursor < int(high)):
-            rangelist.append(str(prefix) + str(cursor))
+            number = str(prefix) + str(cursor) if prefix else str(cursor)
+            rangelist.append(number)
             cursor = cursor + step
 
-        rangelist.append(str(prefix) + str(high))
+        number = str(prefix) + str(cursor) if prefix else str(cursor)
+        rangelist.append(number)
         return rangelist
 
     @classmethod
     def split_number_letter(self, house):
         split = re.split('(\d*)', house)
-        return (split[0], split[1])
+        # 1a outputs: ('', '1', 'a')
+        return (split[1], split[2])
 
     @classmethod
-    def seed_or_update_self(self, **kwargs):
+    def build_table(self, **kwargs):
 
         logger.debug("Seeding/Updating {}", self.__name__)
 
@@ -69,26 +72,28 @@ class AddressSearch(BaseDatasetModel, models.Model):
             hhnd_split = building.hhnd.split('-')
             if len(lhnd_split) <= 1:
                 # numbers formatted: 50
-                low_letter, low_number = self.split_number_letter(building.lhnd)
-                high_letter, high_number = self.split_number_letter(building.hhnd)
+                low_number, low_letter = self.split_number_letter(building.lhnd)
+                high_number, high_letter = self.split_number_letter(building.hhnd)
                 # create rangelist
                 if int(low_number) != int(high_number):
                     house_numbers = self.generate_rangelist(int(low_number), int(high_number))
                     for number in house_numbers:
-                        self.create_address_from_building(number, None, building)
+                        self.create_address_from_building(number=number, letter='', building=building)
                 else:
-                    self.create_address_from_building(low_number, low_letter, building)
+                    self.create_address_from_building(number=low_number, letter=low_letter, building=building)
 
             else:
                 # numbers formatted: 50-10
-                low_numbers = (self.split_number_letter(lhnd_split[0])[0], self.split_number_letter(lhnd_split[0])[1])
-                high_numbers = (self.split_number_letter(hhnd_split[0])[0], self.split_number_letter(hhnd_split[0])[1])
+                low_numbers = (self.split_number_letter(lhnd_split[0]), self.split_number_letter(lhnd_split[1]))
+                # outputs: ((1, a), (2, a))
+                high_numbers = (self.split_number_letter(hhnd_split[0]), self.split_number_letter(hhnd_split[1]))
                 # create rangelist
                 if int(low_numbers[1][0]) != int(high_numbers[1][0]):
                     house_numbers = self.generate_rangelist(
-                        int(low_numbers[1][0]), int(high_numbers[1][0]), prefix=low_numbers[0][0])
+                        int(low_numbers[1][0]), int(high_numbers[1][0]), prefix=low_numbers[0][0] + '-')
                     for number in house_numbers:
-                        self.create_address_from_building(number, None, building)
+                        self.create_address_from_building(number=number, letter='', building=building)
                 else:
                     combined_number = low_numbers[0][0] + "-" + low_numbers[1][0]
-                    self.create_address_from_building(combined_number, low_numbers[0][1], building)
+                    self.create_address_from_building(
+                        number=combined_number, letter='', building=building)
