@@ -6,12 +6,17 @@ from datasets.helpers.api_helpers import cache_me, ApplicationViewSet
 
 from datasets import serializers as serial
 from datasets import models as ds
+from datasets.filters import BuildingFilter
+
+from django_filters.rest_framework import DjangoFilterBackend
 
 
 class BuildingViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
     queryset = ds.Building.objects.all().order_by('pk')
     serializer_class = serial.BuildingSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = BuildingFilter
 
     @cache_me()
     def list(self, request, *args, **kwargs):
