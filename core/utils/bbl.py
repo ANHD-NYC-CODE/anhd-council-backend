@@ -8,6 +8,18 @@ queens_values = ['queens', 'qn', '4', 4]
 staten_island_values = ['staten island', 'si', '5', 5]
 
 
+def code_to_boro(code):
+    mapping = {
+        '1': 'Manhattan',
+        '2': 'Bronx',
+        '3': 'Brooklyn',
+        '4': 'Queens',
+        '5': 'Staten Island'
+    }
+
+    return mapping[code]
+
+
 def boro_to_code(boro):
     if isinstance(boro, str):
         b = boro.strip().lower()

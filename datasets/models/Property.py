@@ -4,6 +4,8 @@ from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from datasets.utils.validation_filters import is_null, exceeds_char_length
 from core.utils.transform import from_csv_file_to_gen, with_geo
 from core.utils.csv_helpers import extract_csvs_from_zip
+from core.utils.address import normalize_street
+
 from datasets import models as ds
 
 import logging
@@ -198,7 +200,6 @@ class Property(BaseDatasetModel, models.Model):
     sanitdistrict = models.SmallIntegerField(blank=True, null=True)
     sanitsub = models.TextField(blank=True, null=True)
     address = models.TextField(blank=True, null=True)
-    original_address = models.TextField(blank=True, null=True)
     zonedist1 = models.TextField(blank=True, null=True)
     zonedist2 = models.TextField(blank=True, null=True)
     zonedist3 = models.TextField(blank=True, null=True)
@@ -282,6 +283,7 @@ class Property(BaseDatasetModel, models.Model):
         for row in gen_rows:
             if is_null(row['bbl']) or exceeds_char_length(row['bbl'], 10):
                 continue
+            row['address'] = normalize_street(row['address'])
             yield row
 
     @classmethod

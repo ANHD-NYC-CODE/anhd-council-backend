@@ -7,7 +7,7 @@ import re
 STREETS = [
     (r'(?<= )AVE(NUE)?', 'AVENUE'),
     (r'(?<= )(STREET|STR|(ST\.?))', 'STREET'),
-    (r'(?<= )PL(ACE)?', 'PLACE'),
+    (r'(?<= )PL(ACE)?', 'PLACE'),  # plaza / place?
     (r'(?<= )(ROAD|(?<!\d)RD\.?)', 'ROAD'),
     (r'(?<= )(LA(NE)?|LN)', 'LANE'),
     (r'(?<= )CT|CRT', 'COURT'),

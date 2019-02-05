@@ -3,6 +3,15 @@ from datasets import models as ds
 from django.forms.models import model_to_dict
 
 
+def get_house_number(building):
+    if (building.lhnd == building.hhnd):
+        return building.lhnd
+    elif (building.lhnd and building.hhnd):
+        return "{}-{}".format(building.lhnd, building.hhnd)
+    else:
+        return building.lhnd
+
+
 class CouncilSerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Council
@@ -187,21 +196,13 @@ class PropertySummarySerializer(serializers.ModelSerializer):
 
     buildings = serializers.SerializerMethodField()
 
-    def get_house_number(self, building):
-        if (building.lhnd == building.hhnd):
-            return building.lhnd
-        elif (building.lhnd and building.hhnd):
-            return "{}-{}".format(building.lhnd, building.hhnd)
-        else:
-            return building.lhnd
-
     def get_buildings(self, obj):
         property_buildings = ds.Building.objects.filter(bbl=obj.pk)
 
         return {
             "items": list({
                 "bin": building.bin,
-                "house_number": self.get_house_number(building)
+                "house_number": get_house_number(building)
             } for building in property_buildings)
         }
 
@@ -230,21 +231,13 @@ class PropertyBuildingsSummary(serializers.ModelSerializer):
 
     buildings = serializers.SerializerMethodField()
 
-    def get_house_number(self, building):
-        if (building.lhnd == building.hhnd):
-            return building.lhnd
-        elif (building.lhnd and building.hhnd):
-            return "{}-{}".format(building.lhnd, building.hhnd)
-        else:
-            return building.lhnd
-
     def get_buildings(self, obj):
         property_buildings = ds.Building.objects.filter(bbl=obj.pk)
 
         return {
             "items": list({
                 "bin": building.bin,
-                "house_number": self.get_house_number(building)
+                "house_number": get_house_number(building)
             } for building in property_buildings)
         }
 
@@ -253,6 +246,17 @@ class BuildingSerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Building
         fields = '__all__'
+
+
+class BuildingSearchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.Building
+        fields = ('bin', 'bbl', 'boro', 'lhnd', 'hhnd', 'stname', 'zipcode', 'housenumber')
+
+    housenumber = serializers.SerializerMethodField()
+
+    def get_housenumber(self, obj):
+        return get_house_number(obj)
 
 
 class HPDBuildingSerializer(serializers.ModelSerializer):
@@ -430,14 +434,6 @@ def property_lookup_serializer(property):
     buildings = property.building_set.all()
     hpdcomplaints = property.hpdcomplaint_set.all()
     hpdviolations = property.hpdviolation_set.all()
-
-    def get_house_number(building):
-        if (building.lhnd == building.hhnd):
-            return building.lhnd
-        elif (building.lhnd and building.hhnd):
-            return "{}-{}".format(building.lhnd, building.hhnd)
-        else:
-            return building.lhnd
 
     property_dict["buildings"] = {
         "total": buildings.count(),
