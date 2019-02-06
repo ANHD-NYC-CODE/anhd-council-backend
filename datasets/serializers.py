@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from datasets import models as ds
 from django.forms.models import model_to_dict
+from core.utils.bbl import code_to_boro
 
 
 def get_house_number(building):
@@ -250,13 +251,21 @@ class BuildingSerializer(serializers.ModelSerializer):
 
 class BuildingSearchSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ds.Building
-        fields = ('bin', 'bbl', 'boro', 'lhnd', 'hhnd', 'stname', 'zipcode', 'housenumber')
+        model = ds.AddressRecord
+        fields = ('bin', 'bbl', 'rank', 'borough', 'number', 'housenumber', 'street', 'zipcode')
 
     housenumber = serializers.SerializerMethodField()
+    street = serializers.SerializerMethodField()
+    rank = serializers.SerializerMethodField()
+
+    def get_rank(self, obj):
+        return obj.rank
 
     def get_housenumber(self, obj):
-        return get_house_number(obj)
+        return get_house_number(obj.bin)
+
+    def get_street(self, obj):
+        return obj.bin.stname
 
 
 class HPDBuildingSerializer(serializers.ModelSerializer):

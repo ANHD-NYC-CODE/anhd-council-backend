@@ -154,17 +154,26 @@ def build_pkey_tuple(row, pkey):
 
 
 def batch_upsert_from_gen(model, rows, batch_size, **kwargs):
-    while True:
-        batch = list(itertools.islice(rows, 0, batch_size))
+    table_name = model._meta.db_table
 
-        if len(batch) == 0:
-            logger.info("Database - Batch upserts completed for {}.".format(model.__name__))
-            break
-        else:
-            batch_upsert_rows(model, batch, batch_size, update=kwargs['update'])
+    with connection.cursor() as curs:
+        try:
+            with transaction.atomic():
+                while True:
+                    batch = list(itertools.islice(rows, 0, batch_size))
 
-        if 'callback' in kwargs and kwargs['callback']:
-            kwargs['callback']()
+                    if len(batch) == 0:
+                        logger.info("Database - Batch upserts completed for {}.".format(model.__name__))
+                        break
+                    else:
+                        update = kwargs['update'] if 'update' in kwargs else None
+                        batch_upsert_rows(model, batch, batch_size, update=update)
+
+                    if 'callback' in kwargs and kwargs['callback']:
+                        kwargs['callback']()
+        except Exception as e:
+            logger.warning("Unable to batch upsert: {}".format(e))
+            raise e
 
 
 def batch_upsert_rows(model, rows, batch_size, update=None):
@@ -186,18 +195,8 @@ def batch_upsert_rows(model, rows, batch_size, update=None):
                 update.save()
 
         except Exception as e:
-            new_batch_size = math.ceil(batch_size / 10)
-            logger.info(
-                'Database - error upserting rows. Switching reducing batch size to {} - Error: {}'.format(new_batch_size, e))
-            while True:
-                rows = list(itertools.islice(rows, 0, new_batch_size))
-                if len(rows) >= 10:
-                    batch_upsert_rows(model, rows,
-                                      new_batch_size, update=update)
-                else:
-                    logger.info('Database - error upserting rows. Switching to single row upsert. - Error: {}'.format(e))
-                    upsert_single_rows(model, rows, update=update)
-                    break
+            logger.info('Database - error upserting rows. Ro single row upsert. - Error: {}'.format(e))
+            upsert_single_rows(model, rows, update=update)
 
 
 def upsert_single_rows(model, rows, update=None):

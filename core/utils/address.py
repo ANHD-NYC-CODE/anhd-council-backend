@@ -5,18 +5,18 @@ in HPD contacts data
 import re
 
 STREETS = [
-    (r'(?<= )AVE(NUE)?', 'AVENUE'),
+    (r'(?<= )AVE(NUE)?$', 'AVENUE'),
     (r'(?<= )(STREET|STR|(ST\.?))', 'STREET'),
-    (r'(?<= )PL(ACE)?', 'PLACE'),  # plaza / place?
+    (r'(?<= )PL(ACE)?$', 'PLACE'),  # plaza / place?
     (r'(?<= )(ROAD|(?<!\d)RD\.?)', 'ROAD'),
     (r'(?<= )(LA(NE)?|LN)', 'LANE'),
     (r'(?<= )CT|CRT', 'COURT'),
-    (r'(?<= )DR', 'DRIVE'),
+    (r'(?<= )DR(IVE)?$', 'DRIVE'),
     (r'(?<= )(BOULEVARD|BLVD)', 'BOULEVARD'),
     (r'(?<= )(PKWY|PARKWY)', 'PARKWAY'),
-    (r'(?<= )(PK)', 'PARK'),
-    (r'(?<= )(BCH)', 'BEACH'),
-    (r'(?<= )(TERR)', 'TERRACE'),
+    (r'(?<= )PK$', 'PARK'),
+    (r'(?<= )BCH$', 'BEACH'),
+    (r'(?<= )TERR(ACE)?$', 'TERRACE'),
     (r'(^|(?<= ))(BDWAY|BDWY|BROAD WAY)', 'BROADWAY')
 ]
 
@@ -62,9 +62,9 @@ def replace_func(pattern, replacement):
 ALIASES_FUNCS = list(map(lambda x: replace_func(*x), ALIASES))
 REGEX_FUNCS = list(map(lambda x: replace_func(*x), REGEX_REPLACEMENTS))
 
-WORD_NUMBERS = ['ZEROTH', 'FIRST', 'SECOND', 'THIRD',
-                'FOURTH', 'FIFTH', 'SIXTH', 'SEVENTH',
-                'EIGHTH', 'NINTH', 'TENTH']
+WORD_NUMBERS = ['0TH', '1ST', '2ND', '3RD',
+                '4TH', '5TH', '6TH', '7TH',
+                '8TH', '9TH', '10TH']
 SUFFIXES = {
     '0': 'TH',
     '1': 'ST',

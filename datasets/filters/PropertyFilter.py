@@ -8,7 +8,6 @@ from copy import deepcopy
 from datasets.filter_helpers import construct_or_q, TotalWithDateFilter, RSLostPercentWithDateFilter, AdvancedQueryFilter
 from collections import OrderedDict
 from django.conf import settings
-
 from psycopg2.extras import DateRange
 
 

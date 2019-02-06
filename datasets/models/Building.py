@@ -6,6 +6,7 @@ from core.utils.transform import from_csv_file_to_gen, with_bbl
 from core.utils.address import normalize_street
 from django.contrib.postgres.search import SearchVector, SearchVectorField
 import logging
+from datasets import models as ds
 
 logger = logging.getLogger('app')
 
@@ -25,12 +26,10 @@ class Building(BaseDatasetModel, models.Model):
     block = models.TextField(blank=False, null=False)
     lot = models.TextField(blank=False, null=False)
     lhnd = models.TextField(blank=False, null=False)  # low house number
-    low_search = SearchVectorField()
     lhns = models.TextField(blank=True, null=True)
     lcontpar = models.TextField(blank=True, null=True)
     lsos = models.TextField(blank=True, null=True)
     hhnd = models.TextField(blank=False, null=False)  # high house number
-    high_search = SearchVectorField()
     hhns = models.TextField(blank=True, null=True)
     hcontpar = models.TextField(blank=True, null=True)
     hsos = models.TextField(blank=True, null=True)
@@ -38,7 +37,6 @@ class Building(BaseDatasetModel, models.Model):
     sc5 = models.IntegerField(blank=True, null=True)
     sclgc = models.TextField(blank=True, null=True)
     stname = models.TextField(blank=True, null=True)
-    street_search = SearchVectorField()
     addrtype = models.TextField(blank=True, null=True)
     realb7sc = models.TextField(blank=True, null=True)
     validlgcs = models.TextField(blank=True, null=True)
@@ -49,7 +47,6 @@ class Building(BaseDatasetModel, models.Model):
     segid = models.IntegerField(blank=True, null=True)
     zipcode = models.IntegerField(blank=True, null=True)
     physicalid = models.IntegerField(blank=True, null=True)
-    address_search = SearchVectorField()
 
     @classmethod
     def pre_validation_filters(self, gen_rows):
@@ -64,7 +61,7 @@ class Building(BaseDatasetModel, models.Model):
                 continue
             if is_null(row['lhnd']):
                 continue
-            # row['stname'] = normalize_street(row['stname'])
+            row['stname'] = normalize_street(row['stname'])
             yield row
 
     # trims down new update files to preserve memory
@@ -81,14 +78,7 @@ class Building(BaseDatasetModel, models.Model):
     def seed_or_update_self(self, **kwargs):
         logger.debug("Seeding/Updating {}", self.__name__)
         self.bulk_seed(**kwargs, overwrite=True)
-        low_vector = SearchVector('lhnd')
-        high_vector = SearchVector('hhnd')
-        street_vector = SearchVector('stname')
-        address_vector = SearchVector('lhnd', 'hhnd', 'stname')
-        self.objects.update(low_search=low_vector)
-        self.objects.update(high_search=high_vector)
-        self.objects.update(street_search=street_vector)
-        self.objects.update(address_search=address_vector)
+        ds.AddressRecord.build_table()
 
     def __str__(self):
         return str(self.bin)
