@@ -1,10 +1,14 @@
 from django.db import models
 from django.db.models import Q
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
+from core.utils.database import batch_upsert_from_gen
 from core.utils.address import normalize_street
 from django.contrib.postgres.search import SearchVector, SearchVectorField
 from datasets import models as ds
 from core.utils.bbl import code_to_boro
+from django.conf import settings
+from django.contrib.postgres.indexes import GinIndex
+
 import logging
 import re
 
@@ -19,6 +23,7 @@ logger = logging.getLogger('app')
 
 
 class AddressRecord(BaseDatasetModel, models.Model):
+    key = models.TextField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Property', on_delete=models.SET_NULL, null=True,
                             db_column='bbl', db_constraint=False)
     bin = models.ForeignKey('Building', on_delete=models.SET_NULL, null=True,
@@ -28,19 +33,32 @@ class AddressRecord(BaseDatasetModel, models.Model):
     street = models.TextField(blank=True, null=True)
     borough = models.TextField(blank=True, null=True)
     zipcode = models.TextField(blank=True, null=True)
-    address = SearchVectorField()
+    address = SearchVectorField(blank=True, null=True)
+
+    class Meta:
+        indexes = [GinIndex(fields=['address'])]
 
     @classmethod
     def create_address_from_building(self, number=None, letter=None, building=None):
-        record = self.objects.create()
-        record.bbl = building.bbl
-        record.bin = building
-        record.zipcode = building.zipcode
-        record.borough = code_to_boro(building.boro)
-        record.street = building.stname
-        record.letter = letter
-        record.number = number
-        record.save()
+        try:
+            record = {}
+            record['key'] = "{}{}{}{}{}{}".format(number, letter, "".join(
+                building.stname.split()), building.boro, building.zipcode, building.bin)
+            record['bbl'] = building.bbl.bbl
+            record['bin'] = building.bin
+            record['zipcode'] = building.zipcode
+            record['borough'] = code_to_boro(building.boro)
+            record['street'] = building.stname
+            record['letter'] = letter
+            record['number'] = number
+            return record
+        except ds.Property.DoesNotExist as e:
+            return
+        except ds.Building.DoesNotExist as e:
+            return
+        except Exception as e:
+            logger.warning("* Unable to create address for building Table: {}", building)
+            return
 
     @classmethod
     def generate_rangelist(self, low, high, prefix=None):
@@ -63,9 +81,9 @@ class AddressRecord(BaseDatasetModel, models.Model):
         return (split[1], split[2])
 
     @classmethod
-    def build_table(self, **kwargs):
+    def build_table_gen(self, **kwargs):
 
-        logger.debug("Seeding/Updating {}", self.__name__)
+        logger.debug("Building Table: {}", self.__name__)
 
         for building in ds.Building.objects.all():
             lhnd_split = building.lhnd.split('-')
@@ -78,9 +96,13 @@ class AddressRecord(BaseDatasetModel, models.Model):
                 if int(low_number) != int(high_number):
                     house_numbers = self.generate_rangelist(int(low_number), int(high_number))
                     for number in house_numbers:
-                        self.create_address_from_building(number=number, letter='', building=building)
+                        address = self.create_address_from_building(number=number, letter=None, building=building)
+                        if address:
+                            yield address
                 else:
-                    self.create_address_from_building(number=low_number, letter=low_letter, building=building)
+                    address = self.create_address_from_building(number=low_number, letter=low_letter, building=building)
+                    if address:
+                        yield address
 
             else:
                 # numbers formatted: 50-10
@@ -92,8 +114,25 @@ class AddressRecord(BaseDatasetModel, models.Model):
                     house_numbers = self.generate_rangelist(
                         int(low_numbers[1][0]), int(high_numbers[1][0]), prefix=low_numbers[0][0] + '-')
                     for number in house_numbers:
-                        self.create_address_from_building(number=number, letter='', building=building)
+                        address = self.create_address_from_building(number=number, letter=None, building=building)
+                    if address:
+                        yield address
                 else:
                     combined_number = low_numbers[0][0] + "-" + low_numbers[1][0]
-                    self.create_address_from_building(
-                        number=combined_number, letter='', building=building)
+                    address = self.create_address_from_building(
+                        number=combined_number, letter=None, building=building)
+                    if address:
+                        yield address
+
+    @classmethod
+    def build_table(self, **kwargs):
+        rows = self.build_table_gen(**kwargs)
+        batch_upsert_from_gen(self, rows, settings.BATCH_SIZE)
+        self.build_search()
+
+    @classmethod
+    def build_search(self):
+        logger.debug("Updating address search vector: {}".format(self.__name__))
+        address_vector = SearchVector('number', weight='A') + SearchVector('letter', weight='D') + SearchVector(
+            'street', weight='B') + SearchVector('borough', rank='C') + SearchVector('zipcode', rank='C')
+        self.objects.update(address=address_vector)
