@@ -39,7 +39,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
         indexes = [GinIndex(fields=['address'])]
 
     @classmethod
-    def create_address_from_building(self, number=None, letter=None, building=None):
+    def create_address_from_building(self, number='', letter='', building=None):
         try:
             record = {}
             record['key'] = "{}{}{}{}{}{}".format(number, letter, "".join(
@@ -53,8 +53,10 @@ class AddressRecord(BaseDatasetModel, models.Model):
             record['number'] = number
             return record
         except ds.Property.DoesNotExist as e:
+            logger.debug("AddressRecord build - property does not exist")
             return
         except ds.Building.DoesNotExist as e:
+            logger.debug("AddressRecord build - building does not exist")
             return
         except Exception as e:
             logger.warning("* Unable to create address for building Table: {}", building)
@@ -96,7 +98,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
                 if int(low_number) != int(high_number):
                     house_numbers = self.generate_rangelist(int(low_number), int(high_number))
                     for number in house_numbers:
-                        address = self.create_address_from_building(number=number, letter=None, building=building)
+                        address = self.create_address_from_building(number=number, letter='', building=building)
                         if address:
                             yield address
                 else:
@@ -114,9 +116,9 @@ class AddressRecord(BaseDatasetModel, models.Model):
                     house_numbers = self.generate_rangelist(
                         int(low_numbers[1][0]), int(high_numbers[1][0]), prefix=low_numbers[0][0] + '-')
                     for number in house_numbers:
-                        address = self.create_address_from_building(number=number, letter=None, building=building)
-                    if address:
-                        yield address
+                        address = self.create_address_from_building(number=number, letter='', building=building)
+                        if address:
+                            yield address
                 else:
                     combined_number = low_numbers[0][0] + "-" + low_numbers[1][0]
                     address = self.create_address_from_building(

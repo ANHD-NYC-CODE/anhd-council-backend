@@ -71,7 +71,7 @@ class BuildingTests(BaseTest, TestCase):
         ds.Building.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds.Building.objects.count(), 10)
         self.assertEqual(new_update.rows_created, 1)
-        self.assertEqual(new_update.rows_updated, 1)
+        self.assertEqual(new_update.rows_updated, 10)
         self.assertEqual(ds.Building.objects.get(
             bin="1086410").hhnd, "25")
         changed_record = ds.Building.objects.get(bin="1086412")
