@@ -1,0 +1,27 @@
+- model: django_celery_beat.crontabschedule
+  pk: 1
+  fields:
+    hour: "23" # 11pm
+    day_of_week: "6" # q Saturday
+    timezone: "US/Eastern"
+- model: django_celery_beat.crontabschedule
+  pk: 2
+  fields:
+    hour: "23" # 11pm
+    day_of_month: "5" # q 5th of the month
+    timezone: "US/Eastern"
+- model: django_celery_beat.crontabschedule
+  pk: 3
+  fields:
+    hour: "23" # q 11pm
+    timezone: "US/Eastern"
+- model: django_celery_beat.periodictask
+  pk: 1
+  fields:
+    name: "Update stuff"
+    description: "Updates a lot"
+    task: "idk"
+    crontab: 1
+    args: "{}"
+    kwargs: "{}"
+    date_changed: "2019-01-01"

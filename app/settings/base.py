@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
+from kombu import Exchange, Queue
 
 BATCH_SIZE = 1000000
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -151,7 +152,22 @@ USE_TZ = True
 
 CELERY_ENABLE_UTC = True
 CELERY_TIMEZONE = "America/New_York"
-
+# https://stackoverflow.com/questions/19853378/how-to-keep-multiple-independent-celery-queues
+# https://stackoverflow.com/questions/23129967/django-celery-multiple-queues-on-localhost-routing-not-working
+# celery queues setup
+CELERY_DEFAULT_QUEUE = 'celery'
+CELERY_DEFAULT_EXCHANGE_TYPE = 'tasks'
+CELERY_DEFAULT_ROUTING_KEY = 'celery'
+CELERY_QUEUES = (
+    Queue('celery', Exchange('tasks'), routing_key='celery'),
+    Queue('red', Exchange('feeds'), routing_key='long_tasks'),
+)
+CELERY_ROUTES = {
+    'app.tasks.add': {
+        'queue': 'red',
+        'routing_key': 'long_tasks',
+    },
+}
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/

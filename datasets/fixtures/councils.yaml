@@ -1,0 +1,204 @@
+- model: datasets.council
+  pk: 1
+  fields:
+    council_member_name: Margaret S. Chin
+- model: datasets.council
+  pk: 2
+  fields:
+    council_member_name: Carlina Rivera
+- model: datasets.council
+  pk: 3
+  fields:
+    council_member_name: Corey Johnson
+- model: datasets.council
+  pk: 4
+  fields:
+    council_member_name: Keith Powers
+- model: datasets.council
+  pk: 5
+  fields:
+    council_member_name: Ben Kallos
+- model: datasets.council
+  pk: 6
+  fields:
+    council_member_name: Helen Rosenthal
+- model: datasets.council
+  pk: 7
+  fields:
+    council_member_name: Mark Levine
+- model: datasets.council
+  pk: 8
+  fields:
+    council_member_name: Diana Ayala
+- model: datasets.council
+  pk: 9
+  fields:
+    council_member_name: Bill Perkins
+- model: datasets.council
+  pk: 10
+  fields:
+    council_member_name: Ydanis Rodriguez
+- model: datasets.council
+  pk: 11
+  fields:
+    council_member_name: Andrew Cohen
+- model: datasets.council
+  pk: 12
+  fields:
+    council_member_name: Andy King
+- model: datasets.council
+  pk: 13
+  fields:
+    council_member_name: Mark Gjonaj
+- model: datasets.council
+  pk: 14
+  fields:
+    council_member_name: Fernando Cabrera
+- model: datasets.council
+  pk: 15
+  fields:
+    council_member_name: Ritchie J. Torres
+- model: datasets.council
+  pk: 16
+  fields:
+    council_member_name: Vanessa L. Gibson
+- model: datasets.council
+  pk: 17
+  fields:
+    council_member_name: Rafael Salamanca Jr.
+- model: datasets.council
+  pk: 18
+  fields:
+    council_member_name: Ruben Diaz, Sr.
+- model: datasets.council
+  pk: 19
+  fields:
+    council_member_name: Paul Vallone
+- model: datasets.council
+  pk: 20
+  fields:
+    council_member_name: Peter Koo
+- model: datasets.council
+  pk: 21
+  fields:
+    council_member_name: Francisco Moya
+- model: datasets.council
+  pk: 22
+  fields:
+    council_member_name: Costa Constantinides
+- model: datasets.council
+  pk: 23
+  fields:
+    council_member_name: Barry Grodenchik
+- model: datasets.council
+  pk: 24
+  fields:
+    council_member_name: Rory I. Lancman
+- model: datasets.council
+  pk: 25
+  fields:
+    council_member_name: Daniel Dromm
+- model: datasets.council
+  pk: 26
+  fields:
+    council_member_name: Jimmy Van Bramer
+- model: datasets.council
+  pk: 27
+  fields:
+    council_member_name: I. Daneek Miller
+- model: datasets.council
+  pk: 28
+  fields:
+    council_member_name: Adrienne E. Adams
+- model: datasets.council
+  pk: 29
+  fields:
+    council_member_name: Karen Koslowitz
+- model: datasets.council
+  pk: 30
+  fields:
+    council_member_name: Robert Holden
+- model: datasets.council
+  pk: 31
+  fields:
+    council_member_name: Donovan J. Richards
+- model: datasets.council
+  pk: 32
+  fields:
+    council_member_name: Eric A. Ulrich
+- model: datasets.council
+  pk: 33
+  fields:
+    council_member_name: Stephen T. Levin
+- model: datasets.council
+  pk: 34
+  fields:
+    council_member_name: Antonio Reynoso
+- model: datasets.council
+  pk: 35
+  fields:
+    council_member_name: Laurie A. Cumbo
+- model: datasets.council
+  pk: 36
+  fields:
+    council_member_name: Robert E. Cornegy, Jr.
+- model: datasets.council
+  pk: 37
+  fields:
+    council_member_name: Rafael L. Espinal Jr.
+- model: datasets.council
+  pk: 38
+  fields:
+    council_member_name: Carlos Menchaca
+- model: datasets.council
+  pk: 39
+  fields:
+    council_member_name: Brad Lander
+- model: datasets.council
+  pk: 40
+  fields:
+    council_member_name: Mathieu Eugene
+- model: datasets.council
+  pk: 41
+  fields:
+    council_member_name: Alicka Ampry-Samuel
+- model: datasets.council
+  pk: 42
+  fields:
+    council_member_name: Inez Barron
+- model: datasets.council
+  pk: 43
+  fields:
+    council_member_name: Justin Brannan
+- model: datasets.council
+  pk: 44
+  fields:
+    council_member_name: Kalman Yeger
+- model: datasets.council
+  pk: 45
+  fields:
+    council_member_name: Jumaane D. Williams
+- model: datasets.council
+  pk: 46
+  fields:
+    council_member_name: Alan N. Maisel
+- model: datasets.council
+  pk: 47
+  fields:
+    council_member_name: Mark Treyger
+- model: datasets.council
+  pk: 48
+  fields:
+    council_member_name: Chaim M. Deutsch
+- model: datasets.council
+  pk: 49
+  fields:
+    council_member_name: Deborah Rose
+- model: datasets.council
+  pk: 50
+  fields:
+    council_member_name: Steven Matteo
+- model: datasets.council
+  pk: 51
+  fields:
+    council_member_name: Joseph C. Borelli

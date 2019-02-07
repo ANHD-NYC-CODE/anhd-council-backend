@@ -1,7 +1,6 @@
 from django.db import models
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.transform import from_csv_file_to_gen, with_bbl
-from datasets.tasks import async_download_file
 from datasets.utils.validation_filters import is_null, is_older_than
 from datasets.filter_helpers import construct_or_q
 from django.db.models import Q
