@@ -252,20 +252,14 @@ class BuildingSerializer(serializers.ModelSerializer):
 class BuildingSearchSerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.AddressRecord
-        fields = ('bin', 'bbl', 'rank', 'borough', 'number', 'housenumber', 'street', 'zipcode')
+        fields = ('bin', 'bbl', 'borough', 'number', 'housenumber', 'street', 'zipcode')
 
     housenumber = serializers.SerializerMethodField()
-    street = serializers.SerializerMethodField()
-    rank = serializers.SerializerMethodField()
-
-    def get_rank(self, obj):
-        return obj.rank
+    # street = serializers.SerializerMethodField()
+    # rank = serializers.SerializerMethodField()
 
     def get_housenumber(self, obj):
         return get_house_number(obj.bin)
-
-    def get_street(self, obj):
-        return obj.bin.stname
 
 
 class HPDBuildingSerializer(serializers.ModelSerializer):

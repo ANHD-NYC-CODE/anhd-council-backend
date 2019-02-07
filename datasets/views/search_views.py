@@ -16,51 +16,47 @@ class SearchViewSet(ApplicationViewSet, viewsets.ReadOnlyModelViewSet):
         search_term = None
         if 'fts' in request.query_params:
             search_term = request.query_params['fts'].replace(',', '')
-            # terms = []
-            # for term in list(search_term.split(' ')):
-            #     terms.append(SearchQuery(term + ':*'))
-            #
-            # queries = construct_and_q(terms)
 
-            #
-            # self.queryset = ds.AddressRecord.objects.annotate(rank=SearchRank(F('address'), queries)).filter(
-            #     address=queries, rank__gte=0).order_by('-rank')[:5]
+            def construct_search_query(search_term, prefix_first=False):
+                split_terms = search_term.split(' ')
 
-            # https://czep.net/17/full-text-search.html
+                ##
+                # Transforms
+                # 100 grand st
+                # to
+                # 100:* | grand:* | st:*
+                if len(split_terms) <= 1:
+                    terms = ':*'.join(split_terms)
+                else:
+                    first_term = split_terms.pop(0)
+                    if prefix_first:
+                        terms = ':* & '.join([first_term] + split_terms)
+                        terms = terms + ':*'
+                    else:
+                        terms = first_term + ' & ' + ':* & '.join(split_terms)
+                        terms = terms + ':*'
 
-            STREET_ABBREVIATIONS = ('ln', 'pl', 'dr', 'rd', 'st', 'ave', 'blvd')
+                # https://czep.net/17/full-text-search.html
+                rank_normalization = 16 if prefix_first else 32
+                rank_field = 'rank'
+                vector_column = '"datasets_addressrecord"."address"'
+                ts_query = "(to_tsquery('%s'))" % terms
+                where_q = "\"datasets_addressrecord\".\"address\" @@ %s" % (ts_query + '= true')
+                select = {}
+                select[rank_field] = 'ts_rank( "datasets_addressrecord"."address", %s, %d )' % (
+                    ts_query, rank_normalization)
+                order = ['-%s' % rank_field]
 
-            ##
-            # Transforms
-            # 100 grand st
-            # to
-            # 100:* | grand:* | st:*
-            terms = search_term.split(' ')
-            if len(terms) <= 1:
-                terms = ':*'.join(terms)
-            else:
-                first_term = terms.pop(0) + ' & '
-                terms = first_term + ':* & '.join(terms)
-                terms = terms + ':*'
+                return ds.AddressRecord.objects.extra(
+                    select=select, where=[where_q], order_by=order
+                )[:4]
 
-            rank_normalization = 1
-            rank_field = 'rank'
-            vector_column = '"datasets_addressrecord"."address"'
-            ts_query = "(to_tsquery('%s'))" % terms
-            where_q = "\"datasets_addressrecord\".\"address\" @@ %s" % (ts_query + '= true')
-            select = {}
-            select[rank_field] = 'ts_rank( "datasets_addressrecord"."address", %s, %d )' % (
-                ts_query, rank_normalization)
-            order = ['-%s' % rank_field]
+                # return ds.Building.objects.filter(bin__in=bins).annotate(rank=bins['rank'])
 
-            # bins_list = [doc['bin'] for doc in ds.AddressRecord.objects.extra(
-            #     select=select, where=[where_q], order_by=order
-            # )[:5].values('bin')]
-
-            # self.queryset = ds.Building.objects.filter(bin__in=bins_list).all()
-            self.queryset = ds.AddressRecord.objects.extra(
-                select=select, where=[where_q], order_by=order
-            )[:5]
+            qs = construct_search_query(search_term, True).union(
+                construct_search_query(search_term, False)).order_by('-rank')[:4]
+            keys = list(doc.key for doc in qs)
+            self.queryset = ds.AddressRecord.objects.filter(key__in=keys).distinct('bin')
 
         else:
             self.queryset = ds.Building.objects.all().order_by('pk')

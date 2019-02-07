@@ -125,6 +125,22 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         )
         return factory
 
+    def address_factory(self, building=None, property=None, **kwargs):
+        name = 'AddressRecord'
+        if not property:
+            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+        if not building:
+            building = self.building_factory(bin=random.randint(1, 1000000), property=property, boro=property.borough,
+                                             block=property.block, lot=property.lot)
+
+        factory = d_models.AddressRecord.objects.create(
+            key=str(random.randint(1, 1000000)),
+            bbl=property,
+            bin=building,
+            **kwargs
+        )
+        return factory
+
     def hpdbuilding_factory(self, buildingid=None, property=None, building=None, **kwargs):
         name = 'HPDBuildingRecord'
         if not buildingid:
