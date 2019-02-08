@@ -33,6 +33,9 @@ class Dataset(models.Model):
     def download(self):
         return getattr(dataset_models, self.model_name).download()
 
+    def update(self):
+        return Update.objects.create(dataset=self)
+
     def download_and_update(self):
         file = getattr(dataset_models, self.model_name).download()
         update = Update.objects.create(dataset=self, file=file)

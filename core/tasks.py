@@ -6,8 +6,6 @@ from django.conf import settings
 from app.mailer import send_update_error_mail
 
 import os
-# TODO - setup auth for flower
-# https://stackoverflow.com/questions/19689510/celery-flower-security-in-production
 
 import logging
 
@@ -17,6 +15,21 @@ logger = logging.getLogger('app')
 @app.task(bind=True, queue='celery')
 def async_send_update_error_mail(self, error):
     return send_update_error_mail(error)
+
+
+@app.task(bind=True, queue='celery')
+def async_create_update(self, dataset_id):
+    try:
+        dataset = c.Dataset.objects.filter(id=dataset_id).first()
+        logger.info("Starting async download for dataset: {}".format(dataset.name))
+        if dataset:
+            dataset.update()
+        else:
+            logger.error("*ERROR* - Task Failure - No dataset found in async_download_start")
+            raise Exception("No dataset.")
+    except Exception as e:
+        logger.error('Error during task: {}'.format(e))
+        async_send_update_error_mail.delay(str(e))
 
 
 @app.task(bind=True, queue='update')

@@ -150,6 +150,11 @@ USE_L10N = True
 
 USE_TZ = True
 
+##
+# TODO - setup flower auth
+# https://flower.readthedocs.io/en/latest/reverse-proxy.html#reverse-proxy
+##
+
 # Start celery workers with environmental variables
 # Requires SENDGRID_API_KEY and EMAIL_USER
 # SENDGRID_API_KEY=<variable> EMAIL_USER=<variable> celery -A app...
