@@ -30,6 +30,7 @@ djangorestframework-filters = "*"
 django-debug-toolbar = "*"
 djangorestframework-simplejwt = "*"
 sendgrid = "*"
+django-dotenv = "*"
 
 [requires]
 python_version = "3.5"
