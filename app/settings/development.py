@@ -11,7 +11,7 @@ EMAIL_PORT = 465
 EMAIL_USE_TLS = True
 
 ADMINS = (
-    ('Dev', 'xxstarcat@gmail.com'),
+    ('Dev', 'anhd.tech@gmail.com'),
 )
 
 # Database
