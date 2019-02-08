@@ -29,6 +29,7 @@ drf-extensions = "*"
 djangorestframework-filters = "*"
 django-debug-toolbar = "*"
 djangorestframework-simplejwt = "*"
+sendgrid = "*"
 
 [requires]
 python_version = "3.5"

@@ -144,6 +144,6 @@ def add_task_result_to_update(sender, instance, created, **kwargs):
                 u.completed_date = instance.date_done
                 u.save()
         except Exception as e:
-            logger.warning("Unable to sync TaskResult {} to Update".format(instance.id))
+            logger.warning("TaskResult {} not synced to Update".format(instance.id))
 
     transaction.on_commit(lambda: on_commit())

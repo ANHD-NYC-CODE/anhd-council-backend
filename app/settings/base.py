@@ -10,13 +10,14 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
+
 import os
 from kombu import Exchange, Queue
 
 BATCH_SIZE = 1000000
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
+SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY', '')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
@@ -149,6 +150,8 @@ USE_L10N = True
 
 USE_TZ = True
 
+# celery -A app worker -Q celery -l info -n celery_worker --concurrency=2
+# celery -A app worker -Q update -l info -n update_worker --concurrency=1
 
 CELERY_ENABLE_UTC = True
 CELERY_TIMEZONE = "America/New_York"
@@ -156,18 +159,12 @@ CELERY_TIMEZONE = "America/New_York"
 # https://stackoverflow.com/questions/23129967/django-celery-multiple-queues-on-localhost-routing-not-working
 # celery queues setup
 CELERY_DEFAULT_QUEUE = 'celery'
-CELERY_DEFAULT_EXCHANGE_TYPE = 'tasks'
+CELERY_DEFAULT_EXCHANGE_TYPE = 'celery'
 CELERY_DEFAULT_ROUTING_KEY = 'celery'
 CELERY_QUEUES = (
-    Queue('celery', Exchange('tasks'), routing_key='celery'),
-    Queue('red', Exchange('feeds'), routing_key='long_tasks'),
+    Queue('celery', Exchange('celery'), routing_key='celery'),
+    Queue('update', Exchange('updates'), routing_key='updates'),
 )
-CELERY_ROUTES = {
-    'app.tasks.add': {
-        'queue': 'red',
-        'routing_key': 'long_tasks',
-    },
-}
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
