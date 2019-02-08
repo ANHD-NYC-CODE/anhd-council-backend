@@ -33,7 +33,7 @@ class HPDBuildingViewTests(BaseTest, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(content["buildingid"], 1)
 
-    def test_hpdbuilding_violations(self):
+    def mock_hpdbuilding_violations(self):
         hpdbuilding = self.hpdbuilding_factory(buildingid="1")
         self.hpdviolation_factory(hpdbuilding=hpdbuilding)
         self.hpdviolation_factory(hpdbuilding=hpdbuilding)
@@ -44,7 +44,7 @@ class HPDBuildingViewTests(BaseTest, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
-    def test_hpdbuilding_complaints(self):
+    def mock_hpdbuilding_complaints(self):
         hpdbuilding = self.hpdbuilding_factory(buildingid="1")
         self.hpdcomplaint_factory(hpdbuilding=hpdbuilding)
         self.hpdcomplaint_factory(hpdbuilding=hpdbuilding)
@@ -55,7 +55,7 @@ class HPDBuildingViewTests(BaseTest, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
-    def test_hpdbuilding_registrations(self):
+    def mock_hpdbuilding_registrations(self):
         hpdbuilding = self.hpdbuilding_factory(buildingid="1")
         self.hpdregistration_factory(hpdbuilding=hpdbuilding)
         self.hpdregistration_factory(hpdbuilding=hpdbuilding)
