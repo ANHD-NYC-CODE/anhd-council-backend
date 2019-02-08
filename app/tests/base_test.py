@@ -25,6 +25,14 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         from django_redis import get_redis_connection
         get_redis_connection("default").flushall()
         c_models.DataFile.objects.all().delete()
+        self.clean_mock_files()
+
+    def clean_mock_files(self):
+        path = settings.MEDIA_ROOT
+        files = [i for i in os.listdir(path)
+                 if os.path.isfile(os.path.join(path, i)) and 'mock' in i]
+        for file in files:
+            os.remove(os.path.join(path, file))
 
     def get_access_token(self, username=None, password=None):
         if not username or not password:
