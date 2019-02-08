@@ -13,7 +13,7 @@ class PropertyTests(BaseTest, TestCase):
 
     def test_seed_properties(self):
         update = self.update_factory(model_name="Property",
-                                     file_name="test_pluto_17v1.zip")
+                                     file_name="mock_pluto_17v1.zip")
 
         ds.Property.seed_or_update_self(file_path=update.file.file.path, update=update)
 
@@ -22,11 +22,11 @@ class PropertyTests(BaseTest, TestCase):
 
     def test_seed_properties_update(self):
         update = self.update_factory(model_name="Property",
-                                     file_name="test_pluto_17v1.zip")
+                                     file_name="mock_pluto_17v1.zip")
         ds.Property.seed_or_update_self(file_path=update.file.file.path, update=update)
 
         new_update = self.update_factory(dataset=update.dataset, model_name="Property",
-                                         file_name="test_pluto_18v1.zip")
+                                         file_name="mock_pluto_18v1.zip")
         ds.Property.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
 
         self.assertEqual(ds.Property.objects.count(), 3)
