@@ -32,7 +32,7 @@ class HPDComplaintViewTests(BaseTest, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(content["complaintid"], 1)
 
-    def test_hpdcomplaint_hpdproblems(self):
+    def mock_hpdcomplaint_hpdproblems(self):
         complaint = self.hpdcomplaint_factory(complaintid="1")
         self.hpdproblem_factory(complaint=complaint)
         self.hpdproblem_factory(complaint=complaint)

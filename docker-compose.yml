@@ -32,21 +32,21 @@ services:
   #   links:
   #       - postgres
   #       - redis
-  celery-beat:
-    build: .
-    command: celery -A app beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
-    environment:
-        - DJANGO_SETTINGS_MODULE=app.settings.production
-    networks:
-      - network1
-    depends_on:
-      - postgres
-      - redis
-    volumes:
-      - ./data:/data
-    links:
-        - postgres
-        - redis
+  # celery-beat:
+  #   build: .
+  #   command: celery -A app beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+  #   environment:
+  #       - DJANGO_SETTINGS_MODULE=app.settings.production
+  #   networks:
+  #     - network1
+  #   depends_on:
+  #     - postgres
+  #     - redis
+  #   volumes:
+  #     - ./data:/data
+  #   links:
+  #       - postgres
+  #       - redis
   # https://www.distributedpython.com/2018/10/13/flower-docker/
   flower:
     image: mher/flower

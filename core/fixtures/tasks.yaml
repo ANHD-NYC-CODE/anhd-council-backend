@@ -1,52 +1,49 @@
+# Crontabs in UTC time because of an error with
+# celery beat
+# https://github.com/celery/celery/pull/4173
+
 - model: django_celery_beat.crontabschedule
   pk: 1
   fields:
     # 830pm Saturdays
     minute: "30"
-    hour: "8"
+    hour: "3"
     day_of_week: "6"
-    timezone: "US/Eastern"
 - model: django_celery_beat.crontabschedule
   pk: 2
   fields:
     # 930pm Saturdays
     minute: "30"
-    hour: "9"
+    hour: "4"
     day_of_week: "6"
-    timezone: "US/Eastern"
 - model: django_celery_beat.crontabschedule
   pk: 3
   fields:
     # 1030pm Saturdays
     minute: "30"
-    hour: "10"
+    hour: "5"
     day_of_week: "6"
-    timezone: "US/Eastern"
 - model: django_celery_beat.crontabschedule
   pk: 4
   fields:
     # midnight on 7th of every month
-    hour: "0"
+    hour: "19"
     day_of_month: "7"
-    timezone: "US/Eastern"
 - model: django_celery_beat.crontabschedule
   pk: 5
   fields:
     # 9pm every night
-    hour: "21"
-    timezone: "US/Eastern"
+    hour: "16"
 - model: django_celery_beat.crontabschedule
   pk: 6
   fields:
     # 10pm every night
-    hour: "22"
-    timezone: "US/Eastern"
+    hour: "17"
 - model: django_celery_beat.crontabschedule
   pk: 7
   fields:
     # 11pm every night
-    hour: "23"
-    timezone: "US/Eastern"
+    hour: "18"
 - model: django_celery_beat.periodictask
   pk: 1
   fields:
