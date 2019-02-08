@@ -14,6 +14,11 @@ import logging
 logger = logging.getLogger('app')
 
 
+@app.task(bind=True, queue='celery')
+def async_send_update_error_mail(self, error):
+    return send_update_error_mail(error)
+
+
 @app.task(bind=True, queue='update')
 def async_seed_file(self, file_path, update_id):
     try:
@@ -23,7 +28,7 @@ def async_seed_file(self, file_path, update_id):
         update.file.dataset.seed_dataset(file_path=file_path, update=update)
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
-        send_update_error_mail(e)
+        async_send_update_error_mail.delay(str(e))
 
 
 @app.task(bind=True, queue='update')
@@ -34,7 +39,7 @@ def async_seed_table(self, update_id):
         update.dataset.seed_dataset(update=update)
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
-        send_update_error_mail(e)
+        async_send_update_error_mail.delay(str(e))
 
 
 @app.task(bind=True, queue='celery')
@@ -49,7 +54,7 @@ def async_download_start(self, dataset_id):
             raise Exception("No dataset.")
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
-        send_update_error_mail(e)
+        async_send_update_error_mail.delay(str(e))
 
 
 @app.task(bind=True, queue='update')
@@ -64,4 +69,4 @@ def async_download_and_update(self, dataset_id):
             raise Exception("No dataset.")
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
-        send_update_error_mail(e)
+        async_send_update_error_mail.delay(str(e))

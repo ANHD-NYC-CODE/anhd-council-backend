@@ -150,6 +150,10 @@ USE_L10N = True
 
 USE_TZ = True
 
+# Start celery workers with environmental variables
+# Requires SENDGRID_API_KEY and EMAIL_USER
+# SENDGRID_API_KEY=<variable> EMAIL_USER=<variable> celery -A app...
+##
 # celery -A app worker -Q celery -l info -n celery_worker --concurrency=2
 # celery -A app worker -Q update -l info -n update_worker --concurrency=1
 
