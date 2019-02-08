@@ -32,7 +32,7 @@ class HPDRegistrationViewTests(BaseTest, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(content["registrationid"], 1)
 
-    def test_hpdregistration_hpdcontacts(self):
+    def mock_hpdregistration_hpdcontacts(self):
         registration = self.hpdregistration_factory(registrationid="1")
         self.hpdcontact_factory(registration=registration)
         self.hpdcontact_factory(registration=registration)

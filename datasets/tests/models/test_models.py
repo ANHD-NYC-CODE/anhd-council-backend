@@ -27,7 +27,7 @@ class PropertyTests(BaseTest, TestCase):
 
     def test_seed_properties(self):
         update = self.update_factory(model_name="Property",
-                                     file_name="test_pluto_17v1.zip")
+                                     file_name="mock_pluto_17v1.zip")
 
         ds.Property.seed_or_update_self(file_path=update.file.file.path, update=update)
 
@@ -36,11 +36,11 @@ class PropertyTests(BaseTest, TestCase):
 
     def test_seed_properties_update(self):
         update = self.update_factory(model_name="Property",
-                                     file_name="test_pluto_17v1.zip")
+                                     file_name="mock_pluto_17v1.zip")
         ds.Property.seed_or_update_self(file_path=update.file.file.path, update=update)
 
         new_update = self.update_factory(dataset=update.dataset, model_name="Property",
-                                         file_name="test_pluto_18v1.zip")
+                                         file_name="mock_pluto_18v1.zip")
         ds.Property.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
 
         self.assertEqual(ds.Property.objects.count(), 3)
@@ -85,7 +85,7 @@ class HPDViolationTests(BaseTest, TestCase):
     def test_seed_hpdviolation_first(self):
 
         update = self.update_factory(model_name="HPDViolation",
-                                     file_name="test_hpd_violations.csv")
+                                     file_name="mock_hpd_violations.csv")
 
         ds.HPDViolation.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds.HPDViolation.objects.count(), 4)
@@ -93,11 +93,11 @@ class HPDViolationTests(BaseTest, TestCase):
 
     def test_seed_hpdviolation_after_update(self):
         update = self.update_factory(model_name="HPDViolation",
-                                     file_name="test_hpd_violations.csv")
+                                     file_name="mock_hpd_violations.csv")
         ds.HPDViolation.seed_or_update_self(file_path=update.file.file.path, update=update)
 
         new_update = self.update_factory(dataset=update.dataset, model_name='HPDViolation',
-                                         file_name="test_hpd_violations_diff.csv", previous_file_name="test_hpd_violations.csv")
+                                         file_name="mock_hpd_violations_diff.csv", previous_file_name="mock_hpd_violations.csv")
         ds.HPDViolation.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds.HPDViolation.objects.count(), 6)
         self.assertEqual(new_update.rows_created, 2)
