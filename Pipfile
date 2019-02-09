@@ -31,6 +31,7 @@ django-debug-toolbar = "*"
 djangorestframework-simplejwt = "*"
 sendgrid = "*"
 django-dotenv = "*"
+djangorestframework-csv = "*"
 
 [requires]
 python_version = "3.5"
