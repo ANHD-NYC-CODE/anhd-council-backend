@@ -19,5 +19,5 @@ before_script:
   - psql -c "CREATE DATABASE anhd;" -U postgres
 
 script:
-  - pipenv shell
+  - pipenv install
   - python manage.py test
