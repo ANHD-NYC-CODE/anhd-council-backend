@@ -25,6 +25,8 @@ services:
       - network1
     volumes:
       - ./:/app
+      - static_volume:/usr/src/app/static
+      - data_volume:/usr/src/app/data
     env_file: .env
     # entrypoint: /app/docker-entrypoint.sh
   # celery:
