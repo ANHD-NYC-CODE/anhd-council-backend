@@ -5,8 +5,8 @@ WORKDIR /app/
 RUN pip3 install pipenv==2018.11.26
 COPY Pipfile Pipfile
 COPY Pipfile.lock Pipfile.lock
+COPY ./docker-entrypoint.sh docker-entrypoint.sh
 RUN pipenv install --deploy --system
 
 EXPOSE 8001
-COPY ./docker-entrypoint.sh /
-ENTRYPOINT ["/docker-entrypoint.sh"]
+ENTRYPOINT ["docker-entrypoint.sh"]
