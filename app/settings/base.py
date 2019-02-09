@@ -86,6 +86,30 @@ TEMPLATES = [
     },
 ]
 
+# Database
+# https://docs.djangoproject.com/en/2.1/ref/settings/#databases
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'anhd',
+        'HOST': 'postgres',
+        'USER': 'anhd',
+        'PORT': '5432'
+    }
+}
+
+CACHES = {
+    "default": {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://redis',
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        },
+        "KEY_PREFIX": "DAP"
+    }
+}
+
 
 REST_FRAMEWORK = {
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
@@ -110,7 +134,7 @@ SESSION_CACHE_ALIAS = "default"
 CACHES = {
     "default": {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:6379/',
+        'LOCATION': 'redis://redis',
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         },
@@ -187,6 +211,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'data')
 MEDIA_TEMP_ROOT = os.path.join(MEDIA_ROOT, 'temp')
 LOG_ROOT = os.path.join(BASE_DIR, 'logs')
 
+FLOWER_URL = "localhost:8888"
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://redis')
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_BACKEND = 'rpc://'
 
