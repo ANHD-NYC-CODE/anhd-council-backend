@@ -23,8 +23,5 @@ before_install:
   - sudo service postgresql restart
   - sleep 1
 
-# before_script:
-#   - psql -c "CREATE DATABASE anhd;" -U postgres
-
 script:
   - python manage.py test
