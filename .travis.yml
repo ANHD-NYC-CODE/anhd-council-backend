@@ -5,16 +5,15 @@ install:
   - 'pip install pipenv'
   - 'pipenv sync'
 
-services: postgresql
 addons:
-  postgresql: "11"
+  postgresql: "10"
   apt:
     packages:
-    - postgresql-11
-    - postgresql-client-11
+    - postgresql-10
+    - postgresql-client-10
 env:
   global:
-  - PGPORT=5432
+  - PGPORT=5433
 before_install:
   - export DJANGO_SETTINGS_MODULE=app.settings.travis
 
