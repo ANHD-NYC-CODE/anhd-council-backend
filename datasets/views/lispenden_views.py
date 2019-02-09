@@ -10,10 +10,10 @@ from datasets import models as ds
 from rest_framework.permissions import IsAuthenticated
 
 
-class ForeclosureViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
+class LisPendenViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
-    queryset = ds.Foreclosure.objects.all().order_by('pk')
-    serializer_class = serial.ForeclosureSerializer
+    queryset = ds.LisPenden.objects.filter(type="foreclosure").all().order_by('pk')
+    serializer_class = serial.LisPendenSerializer
     permission_classes = (IsAuthenticated,)
 
     @cache_me()

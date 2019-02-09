@@ -19,6 +19,6 @@ class CouncilViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyMo
         return super().retrieve(request, *args, **kwargs)
 
     @cache_me()
-    def housingtype_summary(self, request, *args, **kwargs):
+    def council_summary(self, request, *args, **kwargs):
         self.serializer_class = serial.CouncilHousingTypeSummarySerializer
         return super().retrieve(request, *args, **kwargs)

@@ -3,7 +3,7 @@ from app.celery import app
 from core import models as c
 from django_celery_results.models import TaskResult
 from django.conf import settings
-from app.mailer import send_update_error_mail
+from app.mailer import send_update_error_mail, send_update_success_mail
 
 import os
 
@@ -15,6 +15,12 @@ logger = logging.getLogger('app')
 @app.task(bind=True, queue='celery')
 def async_send_update_error_mail(self, error):
     return send_update_error_mail(error)
+
+
+@app.task(bind=True, queue='celery')
+def async_send_update_success_mail(self, update_id):
+    update = c.Update.objects.get(id=update_id)
+    return send_update_success_mail(update)
 
 
 @app.task(bind=True, queue='celery')
@@ -70,16 +76,29 @@ def async_download_start(self, dataset_id):
         async_send_update_error_mail.delay(str(e))
 
 
-@app.task(bind=True, queue='update')
+@app.task(bind=True, queue='celery')
 def async_download_and_update(self, dataset_id):
     try:
         dataset = c.Dataset.objects.filter(id=dataset_id).first()
         logger.info("Starting async download and update for dataset: {}".format(dataset.name))
         if dataset:
-            dataset.download_and_update()
+            file = dataset.download()
+            async_update_from_file.delay(file.id)
         else:
             logger.error("*ERROR* - Task Failure - No dataset found in async_download_start")
             raise Exception("No dataset.")
+    except Exception as e:
+        logger.error('Error during task: {}'.format(e))
+        async_send_update_error_mail.delay(str(e))
+
+
+@app.task(bind=True, queue='update')
+def async_update_from_file(self, file_id):
+    try:
+        file = c.DataFile.objects.get(id=file_id)
+        dataset = file.dataset
+        logger.info("Starting async update for dataset: {}".format(dataset.name))
+        update = c.Update.objects.create(dataset=dataset, file=file)
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
         async_send_update_error_mail.delay(str(e))

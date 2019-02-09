@@ -7,10 +7,10 @@ import logging
 logger = logging.getLogger('app')
 
 # Instructions:
-# 1) merge all boroughs into single file - lp_foreclosures_<month><year>.csv - use these headers: KEY,BBL,ENTEREDDATE,ZIP,BC,FILEDDATE,INDEX,DEBTOR,CR,ATTORNEY,Third Party,SAT DATE,SAT TYPE,DISP 2) upload file to app 3) update
+# 1) merge all boroughs into single file - lp_lispendens_<month><year>.csv - use these headers: KEY,BBL,ENTEREDDATE,ZIP,BC,FILEDDATE,INDEX,DEBTOR,CR,ATTORNEY,Third Party,SAT DATE,SAT TYPE,DISP 2) upload file to app 3) update
 
 
-class Foreclosure(BaseDatasetModel, models.Model):
+class LisPenden(BaseDatasetModel, models.Model):
     key = models.TextField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
@@ -26,6 +26,7 @@ class Foreclosure(BaseDatasetModel, models.Model):
     satdate = models.DateTimeField(db_index=True, blank=True, null=True)
     sattype = models.TextField(blank=True, null=True)
     disp = models.TextField(blank=True, null=True)
+    type = models.TextField(blank=True, null=True)
 
     @classmethod
     def pre_validation_filters(self, gen_rows):

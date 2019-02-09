@@ -297,6 +297,6 @@ ACTIVE_MODELS = [
     'Subsidy421a',
     'PublicHousingRecord',
     'TaxLien',
-    'Foreclosure',
-    'ForeclosureComment'
+    'LisPenden',
+    'LisPendenComment'
 ]

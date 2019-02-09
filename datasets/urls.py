@@ -6,8 +6,8 @@ from rest_framework import renderers
 
 from datasets import views as v
 
-council_housingtype_summary = v.council_views.CouncilViewSet.as_view({
-    'get': 'housingtype_summary',
+council_summary = v.council_views.CouncilViewSet.as_view({
+    'get': 'council_summary',
 })
 
 property_summary = v.property_views.PropertyViewSet.as_view({
@@ -187,7 +187,7 @@ properties_router.register(
 
 properties_router.register(
     'foreclosures',
-    v.foreclosure_views.ForeclosureViewSet,
+    v.lispenden_views.LisPendenViewSet,
     base_name='property-foreclosures',
     parents_query_lookups=['bbl']
 )
@@ -356,10 +356,10 @@ router.register(r'dobpermitissuednow', v.dobpermitissuednow_views.DOBPermitIssue
 router.register(r'dobdobpermitissuedjoined', v.dobpermitissuedjoined_view.DOBPermitIssuedJoinedViewSet)
 router.register(r'dobpermitfiledlegacy', v.dobpermitfiledlegacy_views.DOBPermitFiledLegacyViewSet)
 router.register(r'publichousingrecords', v.publichousingrecord_views.PublicHousingRecordViewSet)
-router.register(r'foreclosures', v.foreclosure_views.ForeclosureViewSet)
+router.register(r'foreclosures', v.lispenden_views.LisPendenViewSet)
 
 custom_routes = format_suffix_patterns([
-    path('councils/<int:pk>/summary/', council_housingtype_summary, name='council-housingtype-summary'),
+    path('councils/<int:pk>/summary/', council_summary, name='council-housingtype-summary'),
     path('properties/<str:pk>/buildings-summary/', property_buildings_summary, name='property-buildings-summary'),
     path('properties/<str:pk>/summary/', property_summary, name='property-summary'),
     path('search/buildings/', building_search, name='buildings-search'),

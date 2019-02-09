@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import os
 import sys
-from app.mailer import send_hello_world_email
 import dotenv
 
 if __name__ == '__main__':
@@ -17,4 +16,3 @@ if __name__ == '__main__':
             "forget to activate a virtual environment?"
         ) from exc
     execute_from_command_line(sys.argv)
-    send_hello_world_email()

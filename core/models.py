@@ -4,7 +4,7 @@ from django.dispatch import receiver
 from django.apps import apps
 from django.conf import settings
 from django_celery_results.models import TaskResult
-from core.tasks import async_seed_file, async_seed_table
+from core.tasks import async_seed_file, async_seed_table, async_send_update_success_mail
 from datasets import models as dataset_models
 from core import models as c_models
 from django.utils import timezone
@@ -35,11 +35,6 @@ class Dataset(models.Model):
 
     def update(self):
         return Update.objects.create(dataset=self)
-
-    def download_and_update(self):
-        file = getattr(dataset_models, self.model_name).download()
-        update = Update.objects.create(dataset=self, file=file)
-        return update
 
     def seed_dataset(self, **kwargs):
         getattr(dataset_models, self.model_name).seed_or_update_self(**kwargs)
@@ -146,6 +141,8 @@ def add_task_result_to_update(sender, instance, created, **kwargs):
                 u.task_result = instance
                 u.completed_date = instance.date_done
                 u.save()
+                async_send_update_success_mail.delay(u.id)
+
         except Exception as e:
             logger.warning("TaskResult {} not synced to Update".format(instance.id))
 

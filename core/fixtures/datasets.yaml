@@ -172,14 +172,14 @@
 - model: core.dataset
   pk: 28
   fields:
-    name: Foreclosures
-    model_name: Foreclosure
+    name: LisPendens
+    model_name: LisPenden
     automated: False
-    update_instructions: "1) merge all boroughs into single file - lp_foreclosures_<month><year>.csv - use these headers: KEY,BBL,ENTEREDDATE,ZIP,BC,FILEDDATE,INDEX,DEBTOR,CR,ATTORNEY,Third Party,SAT DATE,SAT TYPE,DISP 2) upload file to app 3) update"
+    update_instructions: "1) merge all boroughs into single file - lp_lispendens_<month><year>.csv - use these headers: KEY,BBL,ENTEREDDATE,ZIP,BC,FILEDDATE,INDEX,DEBTOR,CR,ATTORNEY,Third Party,SAT DATE,SAT TYPE,DISP 2) upload file to app 3) update"
 - model: core.dataset
   pk: 29
   fields:
-    name: Foreclosure Comments
-    model_name: ForeclosureComment
+    name: LisPenden Comments
+    model_name: LisPendenComment
     automated: False
-    update_instructions: "1) merge all boroughs into single file - lp_foreclosures_comments_<month><year>.csv - use these headers: KEY,DATE-COMMENTS 2) Clean extra columns out 3) upload file to app 4) update"
+    update_instructions: "1) merge all boroughs into single file - lp_lispendens_comments_<month><year>.csv - use these headers: KEY,DATE-COMMENTS 2) Clean extra columns out 3) upload file to app 4) update"
