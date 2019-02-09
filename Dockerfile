@@ -9,4 +9,4 @@ RUN pipenv install --deploy --system
 ADD docker-entrypoint.sh docker-entrypoint.sh
 
 EXPOSE 8000
-ENTRYPOINT ["sh", "docker-entrypoint.sh"]
+ENTRYPOINT ["sh", "/app/docker-entrypoint.sh"]
