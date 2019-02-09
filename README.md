@@ -23,7 +23,8 @@
 
 1) `pipenv shell`
 2) `python manage.py runserver`
-3) `docker-compose up`
+3) `docker-compose up -d`
+4 ) You can view logs with `docker-compose logs -f app`
 
 
 ## Starting celery works and celery beat

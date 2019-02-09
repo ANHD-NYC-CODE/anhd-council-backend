@@ -33,6 +33,7 @@ sendgrid = "*"
 django-dotenv = "*"
 djangorestframework-csv = "*"
 gunicorn = "*"
+dotenv = "*"
 
 [requires]
 python_version = "3.6"
