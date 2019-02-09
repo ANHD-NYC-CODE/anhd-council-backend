@@ -5,7 +5,7 @@ services:
     restart: always
     build: .
     expose:
-      - "8000"
+      - "8001"
     # command: python manage.py start
     container_name: "app"
     image: debian/latest
@@ -19,7 +19,7 @@ services:
         - postgres
         - redis
     ports:
-      - '8000:8000'
+      - '8001:8000'
     networks:
       - network1
     volumes:
