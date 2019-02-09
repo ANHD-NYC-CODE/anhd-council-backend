@@ -4,3 +4,14 @@ python:
 install:
   - 'pip install pipenv'
   - 'pipenv sync'
+
+services: postgresql
+
+before_install:
+  - export DJANGO_SETTINGS_MODULE=app.settings.development
+
+before_script:
+  - psql -c "CREATE DATABASE anhd;" -U anhd
+
+script:
+  - python manage.py test
