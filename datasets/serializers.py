@@ -54,7 +54,7 @@ class PropertySummarySerializer(serializers.ModelSerializer):
             'hpdviolations', 'hpdcomplaints', 'dobcomplaints', 'dobviolations', 'ecbviolations',
             'acrisrealmasters', 'hpdregistration', 'hpdregistrationcontacts',
             'coresubsidyrecords', 'dobpermitsissued', 'dobpermitfiled',
-            'housinglitigations', 'taxliens', 'evictions', 'taxbill', 'foreclosures', 'buildings'
+            'housinglitigations', 'taxliens', 'evictions', 'taxbill', 'lispendens', 'buildings'
         )
 
     hpdcomplaints = serializers.SerializerMethodField()
@@ -193,7 +193,7 @@ class PropertySummarySerializer(serializers.ModelSerializer):
             "count": len(taxbill)
         }
 
-    foreclosures = serializers.SerializerMethodField()
+    lispendens = serializers.SerializerMethodField()
 
     buildings = serializers.SerializerMethodField()
 
@@ -207,21 +207,21 @@ class PropertySummarySerializer(serializers.ModelSerializer):
             } for building in property_buildings)
         }
 
-    def get_foreclosures(self, obj):
+    def get_lispendens(self, obj):
         return {
             "count": 0,
-            "message": "Please sign in to view Foreclosures",
+            "message": "Please sign in to view LisPendens",
             "items": []
         }
 
 
 class AuthenticatedPropertySummarySerializer(PropertySummarySerializer, serializers.ModelSerializer):
 
-    def get_foreclosures(self, obj):
-        foreclosures = ds.Foreclosure.objects.filter(bbl=obj).all()
+    def get_lispendens(self, obj):
+        lispendens = ds.LisPenden.objects.filter(bbl=obj).all()
 
         return {
-            "count": len(foreclosures)
+            "count": len(lispendens)
         }
 
 
@@ -422,9 +422,9 @@ class PublicHousingRecordSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class ForeclosureSerializer(serializers.ModelSerializer):
+class LisPendenSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ds.Foreclosure
+        model = ds.LisPenden
         fields = '__all__'
 
 

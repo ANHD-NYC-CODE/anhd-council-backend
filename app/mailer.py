@@ -34,3 +34,12 @@ def send_update_error_mail(error):
     for admin in settings.ADMINS:
         to = admin[1]
         send_mail(to, subject, content)
+
+
+def send_update_success_mail(update):
+    subject = "{} update complete".format(update.dataset.name)
+    content = "Rows created: {} \n\n Rows updated: {}".format(update.rows_created, update.rows_updated)
+
+    for admin in settings.ADMINS:
+        to = admin[1]
+        send_mail(to, subject, content)
