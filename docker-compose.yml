@@ -97,6 +97,6 @@ services:
 volumes:
   pg_vol1:
   static_volume:
-  data_volumne:
+  data_volume:
 networks:
   network1:
