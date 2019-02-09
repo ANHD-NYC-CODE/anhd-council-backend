@@ -14,7 +14,7 @@ addons:
     - postgresql-client-11
 env:
   global:
-  - PGPORT=5433
+  - PGPORT=5432
 before_install:
   - export DJANGO_SETTINGS_MODULE=app.settings.travis
 
