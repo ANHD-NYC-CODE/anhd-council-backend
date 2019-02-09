@@ -6,6 +6,7 @@ RUN pip3 install pipenv==2018.11.26
 COPY Pipfile Pipfile
 COPY Pipfile.lock Pipfile.lock
 RUN pipenv install --deploy --system
+
 EXPOSE 8001
-CMD python3.6 manage.py migrate
-CMD python 3.6 manage.py collectstatic
+COPY ./docker-entrypoint.sh /
+ENTRYPOINT ["/docker-entrypoint.sh"]

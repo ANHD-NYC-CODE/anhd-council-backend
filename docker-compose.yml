@@ -25,7 +25,7 @@ services:
     volumes:
       - ./:/app
     env_file: .env
-    command: /usr/local/bin/gunicorn app.wsgi:application -w 2 -b :8000 --reload
+    entrypoint: docker-entrypoint.sh
   # celery:
   #   build: .
   #   command: celery -A app worker -l info
