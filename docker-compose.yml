@@ -24,8 +24,8 @@ services:
       - nginx_network
     volumes:
       - ./:/app
-      - static_volume:/usr/src/app/static
-      - data_volume:/usr/src/app/data
+      - static_volume:/app/static
+      - data_volume:/app/data
     env_file: .env
   # celery:
   #   build: .
@@ -95,6 +95,8 @@ services:
       - "0.0.0.0:80:80"
     volumes:
       - ./nginx:/app/nginx
+      - static_volume:/static
+      - data_volume:/data
     depends_on:
       - app
     networks:
