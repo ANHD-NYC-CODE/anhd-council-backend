@@ -1,22 +1,30 @@
 version: '2'
 services:
-  # app:
-  #   build: .
-  #   command: python manage.py start
-  #   container_name: "app"
-  #   image: debian/latest
-  #   environment:
-  #       - ENVIRONMENT=production
-  #   links:
-  #       - postgres
-  #       - redis
-  #   depends_on:
-  #       - postgres
-  #       - redis
-  #   ports:
-  #     - '8000:8000'
-  #   networks:
-  #     - network1
+  app:
+    restart: always
+    build: .
+    expose:
+      - "8000"
+    # command: python manage.py start
+    container_name: "app"
+    image: debian/latest
+    environment:
+        - ENVIRONMENT=production
+        - DJANGO_SETTINGS_MODULE=app.settings.production
+    links:
+        - postgres:postgres
+        - redis:redis
+    depends_on:
+        - postgres
+        - redis
+    ports:
+      - '8000:8000'
+    networks:
+      - network1
+    volumes:
+      - .:/code
+    env_file: .env
+    command: /usr/local/bin/gunicorn app.wsgi:application -w 2 -b :8000 --reload
   # celery:
   #   build: .
   #   command: celery -A app worker -l info
