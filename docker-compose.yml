@@ -1,12 +1,10 @@
 version: '2'
 services:
-  # https://blog.devartis.com/django-development-with-docker-a-completed-development-cycle-7322ad8ba508
   app:
     restart: always
     build: .
     expose:
       - "8000"
-    # command: python manage.py start
     container_name: "app"
     image: debian/latest
     environment:
@@ -29,7 +27,6 @@ services:
       - static_volume:/usr/src/app/static
       - data_volume:/usr/src/app/data
     env_file: .env
-    # entrypoint: /app/docker-entrypoint.sh
   # celery:
   #   build: .
   #   command: celery -A app worker -l info
@@ -94,6 +91,8 @@ services:
     build: ./nginx
     ports:
       - 1337:80
+    volumes:
+      - ./nginx:/app/nginx
     depends_on:
       - app
     networks:
