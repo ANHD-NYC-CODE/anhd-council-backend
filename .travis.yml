@@ -8,7 +8,7 @@ install:
 services: postgresql
 addons:
   postgresql: "9.6"
-  
+
 before_install:
   - export DJANGO_SETTINGS_MODULE=app.settings.travis
   - sudo sed -i -e '/local.*peer/s/postgres/all/' -e 's/peer\|md5/trust/g' /etc/postgresql/*/main/pg_hba.conf
@@ -19,4 +19,5 @@ before_script:
   - psql -c "CREATE DATABASE anhd;" -U postgres
 
 script:
+  - pipenv install
   - python manage.py test
