@@ -23,6 +23,7 @@ services:
       - '8000:8000'
     networks:
       - network1
+      - nginx_network
     volumes:
       - ./:/app
       - static_volume:/usr/src/app/static
@@ -69,6 +70,7 @@ services:
       - 8888:8888
     networks:
       - network1
+      - nginx_network
   redis:
     hostname: redis
     image: redis:alpine
@@ -94,9 +96,13 @@ services:
       - 1337:80
     depends_on:
       - app
+    networks:
+      - nginx_network
 volumes:
   pg_vol1:
   static_volume:
   data_volume:
 networks:
   network1:
+  nginx_network:
+    driver: bridge
