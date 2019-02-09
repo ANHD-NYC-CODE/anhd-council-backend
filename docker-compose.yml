@@ -86,12 +86,12 @@ services:
       - 5678:5432
     networks:
       - network1
-    nginx:
-      build: ./nginx
-      ports:
-        - 1337:80
-      depends_on:
-        - app
+  nginx:
+    build: ./nginx
+    ports:
+      - 1337:80
+    depends_on:
+      - app
 volumes:
   pg_vol1:
 networks:
