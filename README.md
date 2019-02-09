@@ -46,4 +46,4 @@ SENDGRID_API_KEY=<variable> EMAIL_USER=<variable> celery -A app...
 ## Continuous deployment
 
 Shell into app container `docker exec -i -t app /bin/bash`
-<!-- Make sure entrypoint is executable `chmod +x /var/www/anhd-council-backend/docker-entrypoint.sh` -->
+Make sure entrypoint is executable `chmod +x /var/www/anhd-council-backend/docker-entrypoint.sh`

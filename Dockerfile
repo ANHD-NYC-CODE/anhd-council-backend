@@ -9,4 +9,5 @@ RUN pipenv install --deploy --system
 ADD docker-entrypoint.sh docker-entrypoint.sh
 
 EXPOSE 8000
-ENTRYPOINT ["/var/www/anhd-council-backend/docker-entrypoint.sh"]
+RUN chmod +x docker-entrypoint.sh
+ENTRYPOINT ["docker-entrypoint.sh"]
