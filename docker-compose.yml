@@ -12,6 +12,7 @@ services:
     environment:
         - ENVIRONMENT=production
         - DJANGO_SETTINGS_MODULE=app.settings.production
+        - DATABASE=postgres
     links:
         - postgres:postgres
         - redis:redis

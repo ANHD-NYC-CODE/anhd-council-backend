@@ -21,7 +21,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'anhd',
-        'HOST': 'postgres',
+        'HOST': os.environ.get('DATABASE', 'postgres'),
         'USER': 'anhd',
         'PORT': '5432'
     }
