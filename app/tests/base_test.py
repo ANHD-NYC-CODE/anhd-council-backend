@@ -559,6 +559,7 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         factory = d_models.LisPenden.objects.create(
             key=key,
             bbl=property,
+            type="foreclosure",
             **kwargs
         )
         return factory

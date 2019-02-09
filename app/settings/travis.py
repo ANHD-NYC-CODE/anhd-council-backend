@@ -1,5 +1,5 @@
 from app.settings.base import *
-CELERY_BROKER_URL = 'redis://localhost:6378'
+CELERY_BROKER_URL = 'redis://localhost:6379'
 DEBUG = True
 DATABASES = {
     'default': {
