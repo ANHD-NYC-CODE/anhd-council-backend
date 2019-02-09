@@ -19,11 +19,11 @@
 4) Install docker https://docs.docker.com/install/linux/docker-ce/ubuntu/#install-docker-ce and docker compose `sudo apt-get install docker-compose`
 
 
-## Starting
+## Local Dev
 
-1) `pipenv shell`
-2) `python manage.py runserver`
-3) `docker-compose up -d`
+<!-- 1) `pipenv shell` -->
+2) `docker-compose -f docker-compose.yml -f docker-compose.dev.yml up` - start postgres, redis and flower
+<!-- 3) `python manage.py runserver` -->
 4 ) You can view logs with `docker-compose logs -f app`
 
 
@@ -43,7 +43,15 @@ SENDGRID_API_KEY=<variable> EMAIL_USER=<variable> celery -A app...
 3) `celery -A app beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler`
 
 
-## Continuous deployment
+## Production Starting
 
-Shell into app container `docker exec -i -t app /bin/bash`
-Make sure entrypoint is executable `chmod +x /var/www/anhd-council-backend/docker-entrypoint.sh`
+1) Pull from repo
+2) `docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d` - daemonize docker for redis / postgres / flower / django
+3) Start celery workers / celery beat
+4) Shell into app container `docker exec -i -t app /bin/bash` and  
+ - create super user `python3.6 manage.py createsuperuser`
+ - seed datasets `python3.6 manage.py loaddata /app/core/fixtures/datasets.yaml`
+ - seed automation tasks `python3.6 manage.py loaddata /app/core/fixtures/tasks.yaml`
+
+
+## Continuous deployment

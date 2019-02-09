@@ -1,0 +1,24 @@
+version: '2'
+services:
+  app:
+    environment:
+      - CELERY_BROKER_URL=redis://redis
+      - ENVIRONMENT=development
+      - DJANGO_SETTINGS_MODULE=app.settings.development
+      - DATABASE=postgres
+  celery_default:
+    environment:
+      - CELERY_BROKER_URL=redis://redis
+      - SENDGRID_API_KEY=""
+      - EMAIL_USER=""
+      - DJANGO_SETTINGS_MODULE=app.settings.development
+  celery_update:
+    environment:
+      - CELERY_BROKER_URL=redis://redis
+      - SENDGRID_API_KEY=""
+      - EMAIL_USER=""
+      - DJANGO_SETTINGS_MODULE=app.settings.development
+  celerybeat:
+    environment:
+      - CELERY_BROKER_URL=redis://redis
+      - DJANGO_SETTINGS_MODULE=app.settings.development

@@ -1,0 +1,37 @@
+version: '2'
+services:
+  app:
+    environment:
+      - CELERY_BROKER_URL=redis://redis
+      - ENVIRONMENT=production
+      - DJANGO_SETTINGS_MODULE=app.settings.production
+      - DATABASE=postgres
+  celery_default:
+    environment:
+      - CELERY_BROKER_URL=redis://redis
+      - SENDGRID_API_KEY=""
+      - EMAIL_USER=""
+      - DJANGO_SETTINGS_MODULE=app.settings.production
+  celery_update:
+    environment:
+      - CELERY_BROKER_URL=redis://redis
+      - SENDGRID_API_KEY=""
+      - EMAIL_USER=""
+      - DJANGO_SETTINGS_MODULE=app.settings.production
+  celerybeat:
+    environment:
+      - CELERY_BROKER_URL=redis://redis
+      - DJANGO_SETTINGS_MODULE=app.settings.production
+  # https://www.digitalocean.com/community/tutorials/how-to-secure-a-containerized-node-js-application-with-nginx-let-s-encrypt-and-docker-compose
+  nginx:
+    restart: always
+    build: ./nginx
+    ports:
+      - "0.0.0.0:80:80"
+    volumes:
+      - ./nginx:/app/nginx
+      - static_volume:/static
+    depends_on:
+      - app
+    networks:
+      - nginx_network

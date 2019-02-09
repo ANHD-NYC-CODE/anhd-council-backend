@@ -7,16 +7,12 @@ services:
       - "8000"
     container_name: "app"
     image: debian/latest
-    environment:
-        - ENVIRONMENT=production
-        - DJANGO_SETTINGS_MODULE=app.settings.production
-        - DATABASE=postgres
     links:
-        - postgres:postgres
-        - redis:redis
+      - postgres:postgres
+      - redis:redis
     depends_on:
-        - postgres
-        - redis
+      - postgres
+      - redis
     ports:
       - '8000:8000'
     networks:
@@ -24,59 +20,86 @@ services:
       - nginx_network
     volumes:
       - ./:/app
+      - ./data:/app/data
       - static_volume:/app/static
-      - data_volume:/app/data
     env_file: .env
-  # celery:
-  #   build: .
-  #   command: celery -A app worker -l info
-  #   environment:
-  #       - DJANGO_SETTINGS_MODULE=app.settings.production
-  #   networks:
-  #     - network1
-  #   depends_on:
-  #     - postgres
-  #     - redis
-  #   volumes:
-  #     - ./data:/data
-  #   links:
-  #       - postgres
-  #       - redis
-  # celery-beat:
-  #   build: .
-  #   command: celery -A app beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
-  #   environment:
-  #       - DJANGO_SETTINGS_MODULE=app.settings.production
-  #   networks:
-  #     - network1
-  #   depends_on:
-  #     - postgres
-  #     - redis
-  #   volumes:
-  #     - ./data:/data
-  #   links:
-  #       - postgres
-  #       - redis
+    entrypoint: ["sh", "/app/docker-entrypoint.sh"]
+  celery_default:
+    restart: always
+    build: .
+    container_name: "celery_default"
+    entrypoint: "celery -A app worker -Q celery -l info -n celery_worker --concurrency=2"
+    networks:
+      - network1
+    depends_on:
+      - postgres
+      - redis
+      - app
+      - celerybeat
+    volumes:
+      - ./data:/app/data
+    links:
+      - app:app
+      - postgres:postgres
+      - redis:redis
+  celery_update:
+    restart: always
+    build: .
+    container_name: "celery_update"
+    entrypoint: "celery -A app worker -Q update -l info -n update_worker --concurrency=1"
+    networks:
+      - network1
+    depends_on:
+      - postgres
+      - redis
+      - app
+      - celerybeat
+    volumes:
+      - ./data:/app/data
+    links:
+      - app:app
+      - postgres:postgres
+      - redis:redis
+  celerybeat:
+    restart: always
+    build: .
+    container_name: "celerybeat"
+    entrypoint: "celery -A app beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler"
+    networks:
+      - network1
+    depends_on:
+      - app
+      - postgres
+      - redis
+    links:
+      - app:app
+      - postgres:postgres
+      - redis:redis
   # https://www.distributedpython.com/2018/10/13/flower-docker/
   flower:
     image: mher/flower
+    container_name: "flower"
     environment:
-    - CELERY_BROKER_URL=redis://redis
-    - FLOWER_PORT=8888
+      - CELERY_BROKER_URL=redis://redis
+      - FLOWER_PORT=8888
     ports:
       - 8888:8888
     networks:
       - network1
       - nginx_network
+    depends_on:
+      - redis
   redis:
     hostname: redis
+    container_name: "redis"
     image: redis:alpine
     ports:
-        - 6378:6379
+      - 6378:6379
     networks:
       - network1
   postgres:
     image: postgres:11
+    container_name: "postgres"
     # https://blog.2ndquadrant.com/basics-of-tuning-checkpoints/
     command: ["-c","huge_pages=try", "-c","effective_io_concurrency=1", "-c", "max_stack_depth=6MB", "-c", "maintenance_work_mem=512MB", "-c", "temp_buffers=128MB", "-c", "shared_buffers=1024MB", "-c", "checkpoint_timeout=30min", "-c", "checkpoint_completion_target=0.93", "-c", "max_wal_size=2048MB", "-c", "effective_cache_size=1024MB", "-c", "work_mem=512MB", "-c", "max_connections=200", "-c", "random_page_cost=1"]
     shm_size: '2GB'
@@ -84,27 +107,12 @@ services:
       - POSTGRES_DB=anhd
       - POSTGRES_USER=anhd
     ports:
-      - 5678:5432
+      - 1111:5432
     networks:
       - network1
-  # https://www.digitalocean.com/community/tutorials/how-to-secure-a-containerized-node-js-application-with-nginx-let-s-encrypt-and-docker-compose
-  nginx:
-    restart: always
-    build: ./nginx
-    ports:
-      - "0.0.0.0:80:80"
-    volumes:
-      - ./nginx:/app/nginx
-      - static_volume:/static
-      - data_volume:/data
-    depends_on:
-      - app
-    networks:
-      - nginx_network
 volumes:
   pg_vol1:
   static_volume:
-  data_volume:
 networks:
   network1:
   nginx_network:

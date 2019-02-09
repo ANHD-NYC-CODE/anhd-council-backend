@@ -3,3 +3,4 @@ app/data**
 app/tests/mocks/**
 
 celerybeat-schedule.db
+docker-entrypoint.sh
