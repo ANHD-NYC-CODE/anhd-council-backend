@@ -12,12 +12,12 @@ class LisPendenViewTests(BaseTest, TestCase):
         self.clean_tests()
 
     def test_unauthorized_list(self):
-        response = self.client.get('/lispendens/', format="json")
+        response = self.client.get('/foreclosures/', format="json")
 
         self.assertEqual(response.status_code, 401)
 
     def test_unauthorized_retrieve(self):
-        response = self.client.get('/lispendens/1/')
+        response = self.client.get('/foreclosures/1/')
 
         self.assertEqual(response.status_code, 401)
 
@@ -28,7 +28,7 @@ class LisPendenViewTests(BaseTest, TestCase):
         token = self.get_access_token()
 
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
-        response = self.client.get('/lispendens/', format="json")
+        response = self.client.get('/foreclosures/', format="json")
         content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
@@ -39,7 +39,7 @@ class LisPendenViewTests(BaseTest, TestCase):
         token = self.get_access_token()
 
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
-        response = self.client.get('/lispendens/1/')
+        response = self.client.get('/foreclosures/1/')
 
         content = response.data
 
