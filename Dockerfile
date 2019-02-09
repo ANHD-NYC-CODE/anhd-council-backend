@@ -8,5 +8,5 @@ COPY Pipfile.lock Pipfile.lock
 COPY ./docker-entrypoint.sh docker-entrypoint.sh
 RUN pipenv install --deploy --system
 
-EXPOSE 8001
+EXPOSE 8000
 ENTRYPOINT ["sh", "docker-entrypoint.sh"]
