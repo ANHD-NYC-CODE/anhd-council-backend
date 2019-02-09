@@ -288,8 +288,8 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
-        self.assertEqual(content[0]['bbl'], '1')
-        self.assertEqual(content[1]['bbl'], '3')
+        self.assertEqual(any(d['bbl'] == '1' for d in content), True)
+        self.assertEqual(any(d['bbl'] == '3' for d in content), True)
 
     def test_single_all_criteria_multi_options(self):
         council = self.council_factory(coundist=1)
@@ -317,8 +317,8 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
-        self.assertEqual(content[0]['bbl'], '1')
-        self.assertEqual(content[1]['bbl'], '3')
+        self.assertEqual(any(d['bbl'] == '1' for d in content), True)
+        self.assertEqual(any(d['bbl'] == '3' for d in content), True)
 
     def test_multiple_criteria_multi_options_1(self):
         council = self.council_factory(coundist=1)
