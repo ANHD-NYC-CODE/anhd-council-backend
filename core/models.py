@@ -19,6 +19,8 @@ logger = logging.getLogger('app')
 
 ACTIVE_MODELS_CHOICES = list(map(lambda model: (model, model), settings.ACTIVE_MODELS))
 
+#
+
 
 class Dataset(models.Model):
     name = models.CharField(unique=True, max_length=255, blank=False, null=False)
@@ -26,7 +28,6 @@ class Dataset(models.Model):
     automated = models.BooleanField(blank=True, null=True)
     update_instructions = models.TextField(blank=True, null=True)
     download_endpoint = models.TextField(blank=True, null=True)
-    test = models.DateTimeField(blank=True, null=True)
 
     def model(self):
         return getattr(dataset_models, self.model_name)

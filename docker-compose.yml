@@ -1,5 +1,6 @@
 version: '2'
 services:
+  # https://blog.devartis.com/django-development-with-docker-a-completed-development-cycle-7322ad8ba508
   app:
     restart: always
     build: .
@@ -22,7 +23,7 @@ services:
     networks:
       - network1
     volumes:
-      - .:/code
+      - ./:/app
     env_file: .env
     command: /usr/local/bin/gunicorn app.wsgi:application -w 2 -b :8000 --reload
   # celery:
