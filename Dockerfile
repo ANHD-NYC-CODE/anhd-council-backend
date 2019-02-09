@@ -9,4 +9,4 @@ COPY ./docker-entrypoint.sh docker-entrypoint.sh
 RUN pipenv install --deploy --system
 
 EXPOSE 8001
-ENTRYPOINT ["docker-entrypoint.sh"]
+ENTRYPOINT ["sh", "docker-entrypoint.sh"]
