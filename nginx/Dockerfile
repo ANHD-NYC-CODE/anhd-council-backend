@@ -2,4 +2,4 @@
 
 FROM nginx:1.15.0-alpine
 
-ADD ./app/nginx/nginx.conf /etc/nginx/nginx.conf
+ADD nginx.conf /etc/nginx/nginx.conf
