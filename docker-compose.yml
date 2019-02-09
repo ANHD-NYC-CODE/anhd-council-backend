@@ -96,5 +96,7 @@ services:
       - app
 volumes:
   pg_vol1:
+  static_volume:
+  data_volumne:
 networks:
   network1:
