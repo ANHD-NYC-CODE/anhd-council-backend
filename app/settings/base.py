@@ -27,7 +27,7 @@ SECRET_KEY = '%h(!920-v_1e6)%+@)$l9t5955a4m9v&_ipgawllvk-^_$2%=0'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
-ALLOWED_HOSTS = ['localhost']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
