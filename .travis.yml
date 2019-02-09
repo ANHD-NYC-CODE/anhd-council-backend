@@ -5,23 +5,17 @@ install:
   - 'pip install pipenv'
   - 'pipenv sync'
 
-addons:
-  postgresql: "10"
-  apt:
-    packages:
-      - postgresql-10
-      - postgresql-client-10
-env:
-  global:
-    - PGPORT=5432
-    - PGDATABASE=anhd
-    - PGUSER=postgres
-    - PGHOST=localhost
+services: postgresql
+
 before_install:
   - export DJANGO_SETTINGS_MODULE=app.settings.travis
   - sudo sed -i -e '/local.*peer/s/postgres/all/' -e 's/peer\|md5/trust/g' /etc/postgresql/*/main/pg_hba.conf
   - sudo service postgresql restart
   - sleep 1
+
+before_script:
+  - psql -U postgres -c "create extension jsonb"
+  - psql -c "CREATE DATABASE anhd;" -U postgres
 
 script:
   - python manage.py test
