@@ -87,10 +87,11 @@ services:
       - 5678:5432
     networks:
       - network1
+  # https://www.digitalocean.com/community/tutorials/how-to-secure-a-containerized-node-js-application-with-nginx-let-s-encrypt-and-docker-compose
   nginx:
     build: ./nginx
     ports:
-      - 1337:80
+      - "0.0.0.0:80:80"
     volumes:
       - ./nginx:/app/nginx
     depends_on:
