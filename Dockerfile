@@ -6,4 +6,4 @@ RUN pip3 install pipenv==2018.11.26
 COPY Pipfile Pipfile
 COPY Pipfile.lock Pipfile.lock
 RUN pipenv install --deploy --system
-EXPOSE 8000
+EXPOSE 8001

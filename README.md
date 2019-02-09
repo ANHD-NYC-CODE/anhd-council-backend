@@ -16,7 +16,7 @@
  - `sudo -H pip install -U pipenv`
 3) Install git and get app
  - `pipenv install`
-4) Install docker https://docs.docker.com/install/linux/docker-ce/ubuntu/#install-docker-ce
+4) Install docker https://docs.docker.com/install/linux/docker-ce/ubuntu/#install-docker-ce and docker compose `sudo apt-get install docker-compose`
 
 
 ## Starting
