@@ -41,3 +41,8 @@ SENDGRID_API_KEY=<variable> EMAIL_USER=<variable> celery -A app...
 2) `<env variables> celery -A app worker -Q update -l info -n update_worker --concurrency=1`
 
 3) `celery -A app beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler`
+
+
+## Continuous deployment
+
+Shell into app container `docker exec -i -t app /bin/bash`
