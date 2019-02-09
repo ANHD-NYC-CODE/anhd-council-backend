@@ -1,6 +1,6 @@
 FROM python:3.6.5
-COPY . /app
-WORKDIR /app
+COPY . /app/
+WORKDIR /app/
 # Latest version of pipenv, currently broken with default version
 RUN pip3 install pipenv==2018.11.26
 COPY Pipfile Pipfile
