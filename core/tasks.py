@@ -12,19 +12,19 @@ import logging
 logger = logging.getLogger('app')
 
 
-@app.task(bind=True, queue='celery')
+@app.task(bind=True, queue='celery', default_retry_delay=30, max_retries=3)
 def async_send_update_error_mail(self, error):
     return send_update_error_mail(error)
 
 
-@app.task(bind=True, queue='celery')
+@app.task(bind=True, queue='celery', default_retry_delay=30, max_retries=3)
 def async_send_update_success_mail(self, update_id):
     update = c.Update.objects.get(id=update_id)
     return send_update_success_mail(update)
 
 
 @app.task(bind=True, queue='celery')
-def async_create_update(self, dataset_id):
+def async_create_update(self, dataset_id, default_retry_delay=60 * 3, max_retries=1):
     try:
         dataset = c.Dataset.objects.filter(id=dataset_id).first()
         logger.info("Starting async download for dataset: {}".format(dataset.name))
@@ -38,7 +38,7 @@ def async_create_update(self, dataset_id):
         async_send_update_error_mail.delay(str(e))
 
 
-@app.task(bind=True, queue='update')
+@app.task(bind=True, queue='update', default_retry_delay=60 * 3, max_retries=1)
 def async_seed_file(self, file_path, update_id):
     try:
         update = c.Update.objects.get(id=update_id)
@@ -50,7 +50,7 @@ def async_seed_file(self, file_path, update_id):
         async_send_update_error_mail.delay(str(e))
 
 
-@app.task(bind=True, queue='update')
+@app.task(bind=True, queue='update', default_retry_delay=60 * 3, max_retries=1)
 def async_seed_table(self, update_id):
     try:
         update = c.Update.objects.get(id=update_id)
@@ -62,7 +62,7 @@ def async_seed_table(self, update_id):
 
 
 @app.task(bind=True, queue='celery')
-def async_download_start(self, dataset_id):
+def async_download_start(self, dataset_id, default_retry_delay=60 * 3, max_retries=1):
     try:
         dataset = c.Dataset.objects.filter(id=dataset_id).first()
         logger.info("Starting async download for dataset: {}".format(dataset.name))
@@ -77,7 +77,7 @@ def async_download_start(self, dataset_id):
 
 
 @app.task(bind=True, queue='celery')
-def async_download_and_update(self, dataset_id):
+def async_download_and_update(self, dataset_id, default_retry_delay=60 * 3, max_retries=1):
     try:
         dataset = c.Dataset.objects.filter(id=dataset_id).first()
         logger.info("Starting async download and update for dataset: {}".format(dataset.name))
@@ -93,7 +93,7 @@ def async_download_and_update(self, dataset_id):
 
 
 @app.task(bind=True, queue='update')
-def async_update_from_file(self, file_id):
+def async_update_from_file(self, file_id, default_retry_delay=60 * 3, max_retries=1):
     try:
         file = c.DataFile.objects.get(id=file_id)
         dataset = file.dataset
