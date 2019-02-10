@@ -22,6 +22,7 @@ services:
       - ./:/app
       - ./data:/app/data
       - static_volume:/app/static
+      - ./logs:/app/logs
     entrypoint: ["sh", "/app/docker-entrypoint.sh"]
     env_file:
       - .env
@@ -39,6 +40,7 @@ services:
     volumes:
       - ./:/app
       - ./data:/app/data
+      - ./logs:/app/logs
     links:
       - postgres
       - redis
@@ -58,6 +60,7 @@ services:
     volumes:
       - ./:/app
       - ./data:/app/data
+      - ./logs:/app/logs
     links:
       - app:app
       - postgres

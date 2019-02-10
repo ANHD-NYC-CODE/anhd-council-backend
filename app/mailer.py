@@ -12,10 +12,11 @@ def send_mail(to_email, subject, content_string):
     from_email = Email(os.environ.get('EMAIL_USER', ''))
     to_email = Email(to_email)
     content = Content("text/plain", content_string)
-
+    if settings.DEBUG:
+        subject = "(DEVELOPMENT) " + subject
     mail = Mail(from_email, subject, to_email, content)
     response = sg.client.mail.send.post(request_body=mail.get())
-    logger.debug('Sending mail from {} to {} subject {}'.format(from_email, to_email, subject))
+    logger.info('Mail sent from {} to {} subject {}'.format(from_email, to_email, subject))
     return response
 
 
