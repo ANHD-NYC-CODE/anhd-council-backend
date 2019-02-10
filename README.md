@@ -41,6 +41,8 @@ SENDGRID_API_KEY=<variable> EMAIL_USER=<variable> celery -A app...
 
 ## Continuous deployment
 
+1) ssh anhd@45.55.44.160 'echo "rootpass" | sudo -Sv && bash -s' < pull.sh
+
 1) Run the deploy script `sh deploy.sh`
   - pulls from master
   - restarts app
