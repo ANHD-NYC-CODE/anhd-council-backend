@@ -182,6 +182,9 @@ CELERY_TIMEZONE = "America/New_York"
 
 DJANGO_CELERY_BEAT_TZ_AWARE = True  # potential fix for beat spamming tasks?
 CELERY_ENABLE_UTC = False
+
+CELERY_ACKS_LATE = True  # causes tasks to restart if worker was shut down
+
 # https://stackoverflow.com/questions/19853378/how-to-keep-multiple-independent-celery-queues
 # https://stackoverflow.com/questions/23129967/django-celery-multiple-queues-on-localhost-routing-not-working
 # celery queues setup
