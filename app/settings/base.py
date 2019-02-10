@@ -166,13 +166,13 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = "America/New_York"
 
 USE_I18N = True
 
 USE_L10N = True
 
 USE_TZ = True
+TIME_ZONE = "utc"  # possible fix for celery-django-beat tz bug
 
 ##
 # TODO - setup flower auth
