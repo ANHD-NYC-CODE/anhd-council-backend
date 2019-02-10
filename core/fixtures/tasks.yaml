@@ -49,6 +49,11 @@
   fields:
     # 1pm every afternoon
     hour: "8"
+- model: django_celery_beat.crontabschedule
+  pk: 9
+  fields:
+    # 8am every morning
+    hour: "3"
 - model: django_celery_beat.periodictask
   pk: 1
   fields:
@@ -236,6 +241,16 @@
     description: "Maintainence task."
     task: "app.tasks.clean_temp_directory"
     crontab: 8
+    args: "[]"
+    kwargs: "{}"
+    date_changed: "2019-01-01"
+- model: django_celery_beat.periodictask
+  pk: 20
+  fields:
+    name: "Clean cache after updates"
+    description: "Maintainence task."
+    task: "app.tasks.clear_cache"
+    crontab: 9
     args: "[]"
     kwargs: "{}"
     date_changed: "2019-01-01"

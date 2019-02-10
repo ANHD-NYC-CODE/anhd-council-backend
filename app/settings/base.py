@@ -127,7 +127,7 @@ REST_FRAMEWORK = {
 
 
 WSGI_APPLICATION = 'app.wsgi.application'
-CACHE_TTL = 60 * 60 * 24  # cache for 24 hours
+CACHE_TTL = 60 * 60 * 12  # cache for 12 hours
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
 
