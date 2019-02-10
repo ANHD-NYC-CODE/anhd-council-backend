@@ -9,6 +9,7 @@
     minute: "30"
     hour: "3"
     day_of_week: "6"
+    timezone: "America/New_York"
 - model: django_celery_beat.crontabschedule
   pk: 2
   fields:
@@ -16,6 +17,7 @@
     minute: "30"
     hour: "4"
     day_of_week: "6"
+    timezone: "America/New_York"
 - model: django_celery_beat.crontabschedule
   pk: 3
   fields:
@@ -23,12 +25,14 @@
     minute: "30"
     hour: "5"
     day_of_week: "6"
+    timezone: "America/New_York"
 - model: django_celery_beat.crontabschedule
   pk: 4
   fields:
     # midnight on 7th of every month
     hour: "19"
     day_of_month: "7"
+    timezone: "America/New_York"
 - model: django_celery_beat.crontabschedule
   pk: 5
   fields:
@@ -39,21 +43,25 @@
   fields:
     # 10pm every night
     hour: "17"
+    timezone: "America/New_York"
 - model: django_celery_beat.crontabschedule
   pk: 7
   fields:
     # 11pm every night
     hour: "18"
+    timezone: "America/New_York"
 - model: django_celery_beat.crontabschedule
   pk: 8
   fields:
     # 1pm every afternoon
     hour: "8"
+    timezone: "America/New_York"
 - model: django_celery_beat.crontabschedule
   pk: 9
   fields:
     # 8am every morning
     hour: "3"
+    timezone: "America/New_York"
 - model: django_celery_beat.periodictask
   pk: 1
   fields:
