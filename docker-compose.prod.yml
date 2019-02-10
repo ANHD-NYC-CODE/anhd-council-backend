@@ -19,6 +19,7 @@ services:
   nginx:
     restart: always
     build: ./nginx
+    container_name: "nginx"
     ports:
       - "0.0.0.0:80:80"
     volumes:
