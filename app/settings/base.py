@@ -173,7 +173,7 @@ USE_L10N = True
 
 USE_TZ = True
 TIME_ZONE = "America/New_York"
-CELERY_TIMEZONE = "America/New_York""
+CELERY_TIMEZONE = "America/New_York"
 
 ##
 # TODO - setup flower auth
