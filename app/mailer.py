@@ -3,7 +3,7 @@ from django.conf import settings
 from sendgrid.helpers.mail import *
 import os
 import logging
-
+from users import models as us
 logger = logging.getLogger('app')
 
 
@@ -32,8 +32,8 @@ def send_update_error_mail(error):
     subject = "* Error * During Council Portal Update"
     content = "An update failed with error: \n\n{}".format(error)
 
-    for admin in settings.ADMINS:
-        to = admin[1]
+    for user in us.CustomUser.objects.filter(is_staff=True):
+        to = user.email
         send_mail(to, subject, content)
 
 
