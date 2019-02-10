@@ -8,8 +8,8 @@ services:
     container_name: "app"
     image: debian/latest
     links:
-      - postgres:postgres
-      - redis:redis
+      - postgres
+      - redis
     depends_on:
       - postgres
       - redis
@@ -22,13 +22,11 @@ services:
       - ./:/app
       - ./data:/app/data
       - static_volume:/app/static
-    env_file: .env
     entrypoint: ["sh", "/app/docker-entrypoint.sh"]
   celery_default:
     restart: always
     build: .
     container_name: "celery_default"
-    entrypoint: "celery -A app worker -Q celery -l info -n celery_worker --concurrency=2"
     networks:
       - network1
     depends_on:
@@ -37,16 +35,15 @@ services:
       - app
       - celerybeat
     volumes:
+      - ./:/app
       - ./data:/app/data
     links:
-      - app:app
-      - postgres:postgres
-      - redis:redis
+      - postgres
+      - redis
   celery_update:
     restart: always
     build: .
     container_name: "celery_update"
-    entrypoint: "celery -A app worker -Q update -l info -n update_worker --concurrency=1"
     networks:
       - network1
     depends_on:
@@ -55,11 +52,12 @@ services:
       - app
       - celerybeat
     volumes:
+      - ./:/app
       - ./data:/app/data
     links:
       - app:app
-      - postgres:postgres
-      - redis:redis
+      - postgres
+      - redis
   celerybeat:
     restart: always
     build: .
@@ -73,8 +71,10 @@ services:
       - redis
     links:
       - app:app
-      - postgres:postgres
-      - redis:redis
+      - postgres
+      - redis
+    volumes:
+      - ./:/app
   # https://www.distributedpython.com/2018/10/13/flower-docker/
   flower:
     image: mher/flower
@@ -107,9 +107,11 @@ services:
       - POSTGRES_DB=anhd
       - POSTGRES_USER=anhd
     ports:
-      - 1111:5432
+      - 5678:5432
     networks:
       - network1
+    volumes:
+      - pg_vol1:/var/lib/postgresql/data
 volumes:
   pg_vol1:
   static_volume:
