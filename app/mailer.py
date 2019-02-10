@@ -29,7 +29,7 @@ def send_hello_world_email():
 
 
 def send_update_error_mail(error):
-    subject = "Council Portal Admin Update Error!"
+    subject = "* Error * During Council Portal Update"
     content = "An update failed with error: \n\n{}".format(error)
 
     for admin in settings.ADMINS:
@@ -39,7 +39,7 @@ def send_update_error_mail(error):
 
 def send_update_success_mail(update):
     subject = "{} update complete".format(update.dataset.name)
-    content = "!@#$Table: {} \n\n Rows created: {} \n\n Rows updated: {} \n\n:)".format(
+    content = "Table: {} \n\n Rows created: {} \n\n Rows updated: {} \n\n:)".format(
         update.dataset.name, update.rows_created, update.rows_updated)
 
     for admin in settings.ADMINS:
