@@ -71,7 +71,7 @@ services:
       - redis
     env_file:
       - .env
-    entrypoint: "celery -A app worker -Q update -l debug -n update_worker --concurrency=1 --logfile=./celery/logs/update.log"
+    entrypoint: "celery -A app worker -Q update -l debug -n update_worker --concurrency=2 --logfile=./celery/logs/update.log"
   celerybeat:
     restart: always
     build: .
