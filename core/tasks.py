@@ -23,7 +23,7 @@ def async_send_update_success_mail(self, update_id):
     return send_update_success_mail(update)
 
 
-@app.task(bind=True, queue='celery', default_retry_delay=60 * 3, max_retries=1)
+@app.task(bind=True, queue='celery', default_retry_delay=60 * 5, max_retries=2)
 def async_create_update(self, dataset_id):
     try:
         dataset = c.Dataset.objects.filter(id=dataset_id).first()
@@ -38,7 +38,7 @@ def async_create_update(self, dataset_id):
         async_send_update_error_mail.delay(str(e))
 
 
-@app.task(bind=True, queue='update', default_retry_delay=60 * 3, max_retries=1)
+@app.task(bind=True, queue='update', default_retry_delay=60 * 5, max_retries=2)
 def async_seed_file(self, file_path, update_id):
     try:
         update = c.Update.objects.get(id=update_id)
@@ -50,7 +50,7 @@ def async_seed_file(self, file_path, update_id):
         async_send_update_error_mail.delay(str(e))
 
 
-@app.task(bind=True, queue='update', default_retry_delay=60 * 3, max_retries=1)
+@app.task(bind=True, queue='update', default_retry_delay=60 * 5, max_retries=2)
 def async_seed_table(self, update_id):
     try:
         update = c.Update.objects.get(id=update_id)
@@ -61,7 +61,7 @@ def async_seed_table(self, update_id):
         async_send_update_error_mail.delay(str(e))
 
 
-@app.task(bind=True, queue='celery', default_retry_delay=60 * 3, max_retries=1)
+@app.task(bind=True, queue='celery', default_retry_delay=60 * 5, max_retries=2)
 def async_download_start(self, dataset_id):
     try:
         dataset = c.Dataset.objects.filter(id=dataset_id).first()
@@ -76,7 +76,7 @@ def async_download_start(self, dataset_id):
         async_send_update_error_mail.delay(str(e))
 
 
-@app.task(bind=True, queue='celery', default_retry_delay=60 * 3, max_retries=1)
+@app.task(bind=True, queue='celery', default_retry_delay=60 * 5, max_retries=2)
 def async_download_and_update(self, dataset_id):
     try:
         dataset = c.Dataset.objects.filter(id=dataset_id).first()
@@ -92,7 +92,7 @@ def async_download_and_update(self, dataset_id):
         async_send_update_error_mail.delay(str(e))
 
 
-@app.task(bind=True, queue='update', default_retry_delay=60 * 3, max_retries=1)
+@app.task(bind=True, queue='update', default_retry_delay=60 * 5, max_retries=2)
 def async_update_from_file(self, file_id):
     try:
         file = c.DataFile.objects.get(id=file_id)
