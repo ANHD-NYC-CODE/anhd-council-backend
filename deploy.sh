@@ -10,4 +10,4 @@ docker-compose restart app
 docker-compose restart celery_default
 docker-compose restart celery_update
 docker-compose restart celerybeat
-docker-compose restart nginx
+docker container restart nginx_server

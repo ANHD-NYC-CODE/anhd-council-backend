@@ -79,7 +79,7 @@ services:
       - postgres
       - redis
     links:
-      - app:app
+      - app
       - postgres
       - redis
     volumes:
