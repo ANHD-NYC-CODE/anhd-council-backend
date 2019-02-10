@@ -26,10 +26,9 @@ SENDGRID_API_KEY=<variable> EMAIL_USER=<variable> celery -A app...
 ## Production Starting
 
 1) Clone repo
-2) Create a `docker-compose.env.yml` file (ask dev) and `.env` file (ask dev)
-3) Build - `docker-compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.env.yml build`
-4) Daemonize `docker-compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.env.yml up -d`
-5) Shell into app container `docker exec -i -t app /bin/bash` and  
+2) Get `.env` file from dev.
+3) Run build script `sh build.prod.sh` or `sh build.dev.sh` depending on your environment
+4) (first time startup) Shell into app container `docker exec -i -t app /bin/bash` and  
  - create super user `python3.6 manage.py createsuperuser`
  - seed datasets `python3.6 manage.py loaddata /app/core/fixtures/datasets.yaml`
  - seed automation tasks `python3.6 manage.py loaddata /app/core/fixtures/tasks.yaml`
@@ -41,3 +40,9 @@ SENDGRID_API_KEY=<variable> EMAIL_USER=<variable> celery -A app...
 - `docker exec -i CONTAINER_ID /bin/bash -c "export VAR1=VAL1 && export VAR2=VAL2 && your_cmd"`
 
 ## Continuous deployment
+
+1) Run the deploy script `sh deploy.sh`
+  - pulls from master
+  - restarts app
+  - restarts celery workers
+  - restarts nginx

@@ -18,6 +18,8 @@ from django.urls import path
 from django.conf.urls import url, include
 from rest_framework.documentation import include_docs_urls
 from django.conf import settings
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+
 from rest_framework_simplejwt import views as jwt_views
 
 from datasets import views as datasets
@@ -34,4 +36,4 @@ if settings.DEBUG:
     import debug_toolbar
     urlpatterns = [
         path('__debug__/', include(debug_toolbar.urls)),
-    ] + urlpatterns
+    ] + urlpatterns + staticfiles_urlpatterns()

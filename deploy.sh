@@ -1,7 +1,13 @@
 cd /var/www/anhd-council-backend
 git pull origin master
 
-# Need to restart celery workers
+docker-compose build app
+docker-compose build celery_default
+docker-compose build celery_update
+docker-compose build celerybeat
+
+docker-compose restart app
 docker-compose restart celery_default
 docker-compose restart celery_update
 docker-compose restart celerybeat
+docker-compose restart nginx

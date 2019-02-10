@@ -1,12 +1,13 @@
 #!/bin/sh
 
-# Collect static files
-echo "Collect static files"
-python3.6 manage.py collectstatic --noinput
 
 # Apply database migrations
 echo "Apply database migrations"
 python3.6 manage.py migrate
+
+# Collect static files
+echo "Collect static files"
+python3.6 manage.py collectstatic --noinput
 
 # Start server
 echo "Starting server"
