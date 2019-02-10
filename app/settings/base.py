@@ -172,7 +172,7 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-TIME_ZONE = "utc"  # possible fix for celery-django-beat tz bug
+TIME_ZONE = "UTC"  # possible fix for celery-django-beat tz bug
 
 ##
 # TODO - setup flower auth
@@ -181,7 +181,7 @@ TIME_ZONE = "utc"  # possible fix for celery-django-beat tz bug
 
 DJANGO_CELERY_BEAT_TZ_AWARE = False  # potential fix for beat spamming tasks?
 CELERY_ENABLE_UTC = True
-CELERY_TIMEZONE = "utc"
+CELERY_TIMEZONE = "UTC"
 # https://stackoverflow.com/questions/19853378/how-to-keep-multiple-independent-celery-queues
 # https://stackoverflow.com/questions/23129967/django-celery-multiple-queues-on-localhost-routing-not-working
 # celery queues setup
