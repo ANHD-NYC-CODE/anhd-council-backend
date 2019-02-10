@@ -28,7 +28,7 @@ class NestedDefaultRouter(NestedRouterMixin, DefaultRouter):
 
 
 router = NestedDefaultRouter()
-councils_router = router.register(r'councils', v.council_views.CouncilViewSet)
+councils_router = router.register(r'councils1', v.council_views.CouncilViewSet)
 councils_router.register(
     'properties',
     v.property_views.PropertyViewSet,
