@@ -1,6 +1,3 @@
-cd /var/www/anhd-council-backend
-git pull origin master
-
 docker-compose exec app pipenv install
 docker-compose exec celery_default pipenv install
 docker-compose exec celery_default pipenv install
@@ -9,9 +6,9 @@ docker-compose exec celerybeat pipenv install
 docker-compose restart app
 docker-compose restart nginx_server
 
-# gracefully shutdown and restart workers after tasks completed
+# gracefully shutdown and restart workers after tasks completed (propogates to all workers)
 
-docker-compose exec docker-compose exec celery_update celery control pool_restart
+docker-compose exec celery_default celery control shutdown
 
 
 # docker-compose exec celery_default pkill 'celery'
