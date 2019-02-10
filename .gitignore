@@ -82,7 +82,9 @@ celerybeat-schedule
 *.sage.py
 
 # Environments
+docker-compose.env.yml
 .env
+env.sh
 .venv
 env/
 venv/

@@ -6,18 +6,11 @@ services:
       - ENVIRONMENT=production
       - DJANGO_SETTINGS_MODULE=app.settings.production
       - DATABASE=postgres
-  celery_default:
-    environment:
-      - CELERY_BROKER_URL=redis://redis
-      - SENDGRID_API_KEY=""
-      - EMAIL_USER=""
-      - DJANGO_SETTINGS_MODULE=app.settings.production
   celery_update:
     environment:
       - CELERY_BROKER_URL=redis://redis
-      - SENDGRID_API_KEY=""
-      - EMAIL_USER=""
-      - DJANGO_SETTINGS_MODULE=app.settings.production
+      - DJANGO_SETTINGS_MODULE=app.settings.development
+    entrypoint: "celery -A app worker -Q update -l info -n update_worker --concurrency=1"
   celerybeat:
     environment:
       - CELERY_BROKER_URL=redis://redis

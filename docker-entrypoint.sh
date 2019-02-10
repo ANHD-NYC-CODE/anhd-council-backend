@@ -1,7 +1,5 @@
 #!/bin/sh
 
-python3.6 manage.py flush --no-input
-
 # Collect static files
 echo "Collect static files"
 python3.6 manage.py collectstatic --noinput
