@@ -127,6 +127,10 @@ services:
       - pg_vol1:/var/lib/postgresql/data
     env_file:
       - .env
+  nginx:
+    restart: always
+    build: ./nginx
+    container_name: "nginx_server"
 volumes:
   pg_vol1:
   static_volume:

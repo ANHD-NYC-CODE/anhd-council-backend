@@ -22,9 +22,6 @@ services:
       - DJANGO_SETTINGS_MODULE=app.settings.production
   # https://www.digitalocean.com/community/tutorials/how-to-secure-a-containerized-node-js-application-with-nginx-let-s-encrypt-and-docker-compose
   nginx:
-    restart: always
-    build: ./nginx
-    container_name: "nginx_server"
     ports:
       - "0.0.0.0:80:80"
     volumes:
