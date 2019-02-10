@@ -23,6 +23,8 @@ services:
       - ./data:/app/data
       - static_volume:/app/static
     entrypoint: ["sh", "/app/docker-entrypoint.sh"]
+    env_file:
+      - .env
   celery_default:
     restart: always
     build: .
@@ -40,6 +42,8 @@ services:
     links:
       - postgres
       - redis
+    env_file:
+      - .env
   celery_update:
     restart: always
     build: .
@@ -58,6 +62,8 @@ services:
       - app:app
       - postgres
       - redis
+    env_file:
+      - .env
   celerybeat:
     restart: always
     build: .
@@ -75,6 +81,8 @@ services:
       - redis
     volumes:
       - ./:/app
+    env_file:
+      - .env
   # https://www.distributedpython.com/2018/10/13/flower-docker/
   flower:
     image: mher/flower
@@ -97,6 +105,8 @@ services:
       - 6378:6379
     networks:
       - network1
+    env_file:
+      - .env
   postgres:
     image: postgres:11
     container_name: "postgres"
@@ -112,6 +122,8 @@ services:
       - network1
     volumes:
       - pg_vol1:/var/lib/postgresql/data
+    env_file:
+      - .env
 volumes:
   pg_vol1:
   static_volume:

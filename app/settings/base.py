@@ -290,6 +290,11 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': True,
         },
+        'django.template': {
+            'handlers': ['logfile'],
+            'level': 'INFO',
+            'propagate': True,
+        },
         'app': {
             'handlers': ['console', 'logfile', 'errorfile'],
             'level': 'DEBUG',
