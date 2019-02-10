@@ -4,7 +4,7 @@ docker-compose exec celery_default pipenv install
 docker-compose exec celerybeat pipenv install
 
 docker-compose restart app
-docker-compose restart nginx_server
+docker-compose restart nginx
 
 # gracefully shutdown and restart workers after tasks completed (propogates to all workers)
 
