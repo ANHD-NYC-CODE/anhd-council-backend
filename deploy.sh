@@ -3,7 +3,7 @@ docker-compose exec celery_default pipenv install
 docker-compose exec celery_default pipenv install
 docker-compose exec celerybeat pipenv install
 
-docker-compose restart app
+docker-compose exec app python manage.py migrate
 docker-compose restart nginx
 
 # gracefully shutdown and restart workers after tasks completed (propogates to all workers)

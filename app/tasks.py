@@ -11,6 +11,13 @@ def add(x, y):
     return x + y
 
 
+@app.task(bind=True)
+def shutdown(self):
+    # Add shutdown task to queue to shutdown workers / restart after all tasks done
+    app.control.revoke(self.id)  # prevent this task from being executed again
+    app.control.shutdown()  # send shutdown signal to all workers
+
+
 @app.task(bind=True, queue='celery', default_retry_delay=60, max_retries=1)
 def clean_temp_directory():
     try:
