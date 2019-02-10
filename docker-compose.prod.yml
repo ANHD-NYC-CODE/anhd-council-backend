@@ -6,10 +6,15 @@ services:
       - ENVIRONMENT=production
       - DJANGO_SETTINGS_MODULE=app.settings.production
       - DATABASE=postgres
+  celery_default:
+    environment:
+      - CELERY_BROKER_URL=redis://redis
+      - DJANGO_SETTINGS_MODULE=app.settings.production
+    entrypoint: "celery -A app worker -Q celery -l info -n celery_worker --concurrency=2"
   celery_update:
     environment:
       - CELERY_BROKER_URL=redis://redis
-      - DJANGO_SETTINGS_MODULE=app.settings.development
+      - DJANGO_SETTINGS_MODULE=app.settings.production
     entrypoint: "celery -A app worker -Q update -l info -n update_worker --concurrency=1"
   celerybeat:
     environment:
@@ -19,7 +24,7 @@ services:
   nginx:
     restart: always
     build: ./nginx
-    container_name: "nginx"
+    container_name: "nginx_server"
     ports:
       - "0.0.0.0:80:80"
     volumes:
