@@ -9,7 +9,9 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "app.settings.development")
 
 app = Celery('app', broker=settings.CELERY_BROKER_URL,
              backend=settings.CELERY_BACKEND, include=['app.tasks'])
-
+app.conf.update(
+    worker_pool_restarts=True,
+)
 # Using a string here means the worker doesn't have to serialize
 # the configuration object to child processes.
 # - namespace='CELERY' means all celery-related configuration keys
