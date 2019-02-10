@@ -179,13 +179,6 @@ USE_TZ = True
 # https://flower.readthedocs.io/en/latest/reverse-proxy.html#reverse-proxy
 ##
 
-# Start celery workers with environmental variables
-# Requires SENDGRID_API_KEY and EMAIL_USER
-# SENDGRID_API_KEY=<variable> EMAIL_USER=<variable> celery -A app...
-##
-# celery -A app worker -Q celery -l info -n celery_worker --concurrency=2
-# celery -A app worker -Q update -l info -n update_worker --concurrency=1
-
 CELERY_ENABLE_UTC = True
 CELERY_TIMEZONE = "America/New_York"
 # https://stackoverflow.com/questions/19853378/how-to-keep-multiple-independent-celery-queues
@@ -198,6 +191,10 @@ CELERY_QUEUES = (
     Queue('celery', Exchange('celery'), routing_key='celery'),
     Queue('update', Exchange('updates'), routing_key='updates'),
 )
+
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
@@ -212,9 +209,14 @@ MEDIA_TEMP_ROOT = os.path.join(MEDIA_ROOT, 'temp')
 LOG_ROOT = os.path.join(BASE_DIR, 'logs')
 
 FLOWER_URL = "localhost:8888"
-CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://redis')
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://redis:6379/0')
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_BACKEND = 'rpc://'
+# Sensible settings for celery
+CELERY_ALWAYS_EAGER = False
+CELERY_ACKS_LATE = True
+CELERY_TASK_PUBLISH_RETRY = True
+CELERY_DISABLE_RATE_LIMITS = False
 
 LOGGING = {
     'version': 1,

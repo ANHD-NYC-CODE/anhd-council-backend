@@ -32,6 +32,10 @@ services:
     container_name: "celery_default"
     networks:
       - network1
+    links:
+      - app
+      - redis
+      - postgres
     depends_on:
       - postgres
       - redis
@@ -41,11 +45,10 @@ services:
       - ./:/app
       - ./data:/app/data
       - ./logs:/app/logs
-    links:
-      - postgres
-      - redis
+      - ./celery:/app/celery
     env_file:
       - .env
+    entrypoint: "celery -A app worker -Q celery -l info -n celery_worker --concurrency=2 --pidfile=./celery/pids/default.pid --logfile=./celery/logs/default.log"
   celery_update:
     restart: always
     build: .
@@ -61,17 +64,19 @@ services:
       - ./:/app
       - ./data:/app/data
       - ./logs:/app/logs
+      - ./celery/logs:/app/celery/logs
     links:
       - app:app
       - postgres
       - redis
     env_file:
       - .env
+    entrypoint: "celery -A app worker -Q update -l info -n update_worker --concurrency=1 --pidfile=./celery/pids/update.pid --logfile=./celery/logs/update.log"
   celerybeat:
     restart: always
     build: .
     container_name: "celerybeat"
-    entrypoint: "celery -A app beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler"
+    entrypoint: "celery -A app beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler --logfile=./celery/logs/beat.log"
     networks:
       - network1
     depends_on:
@@ -84,6 +89,7 @@ services:
       - redis
     volumes:
       - ./:/app
+      - ./celery:/app/celery
     env_file:
       - .env
   # https://www.distributedpython.com/2018/10/13/flower-docker/
@@ -104,8 +110,6 @@ services:
     hostname: redis
     container_name: "redis"
     image: redis:alpine
-    ports:
-      - 6378:6379
     networks:
       - network1
     env_file:
@@ -119,8 +123,6 @@ services:
     environment:
       - POSTGRES_DB=anhd
       - POSTGRES_USER=anhd
-    ports:
-      - 5678:5432
     networks:
       - network1
     volumes:
@@ -128,7 +130,6 @@ services:
     env_file:
       - .env
   nginx:
-    restart: always
     build: ./nginx
     container_name: "nginx_server"
 volumes:
