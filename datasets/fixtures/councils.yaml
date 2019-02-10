@@ -2,203 +2,254 @@
   pk: 1
   fields:
     council_member_name: Margaret S. Chin
+    neighborhood_list: "Battery Park City, Civic Center, Chinatown, Financial District, Little Italy, the Lower East Side, NoHo, SoHo, South Street Seaport, South Village, TriBeCa & Washington Square"
 - model: datasets.council
   pk: 2
   fields:
     council_member_name: Carlina Rivera
+    neighborhood_list: "East Village, Gramercy Park, Kips Bay, Lower East Side, Murray Hill, Rose Hill"
 - model: datasets.council
   pk: 3
   fields:
     council_member_name: Corey Johnson
+    neighborhood_list: "Chelsea, Hell’s Kitchen, Greenwich Village, West SoHo, Hudson Square, Times Square, Garment District, Flatiron, Upper West Side"
 - model: datasets.council
   pk: 4
   fields:
     council_member_name: Keith Powers
+    neighborhood_list: "Upper East Side, Carnegie Hill, Yorkville, Central Park South, Midtown East, Times Square, Koreatown, Peter Cooper Village and Stuyvesant Town, Waterside Plaza, Tudor City, Turtle Bay, Murray Hill, Sutton Place"
 - model: datasets.council
   pk: 5
   fields:
     council_member_name: Ben Kallos
+    neighborhood_list: "Upper East Side's Yorkville, Lenox Hill, Carnegie Hill, Roosevelt Island, Midtown East, Sutton Place, El Barrio in East Harlem"
 - model: datasets.council
   pk: 6
   fields:
     council_member_name: Helen Rosenthal
+    neighborhood_list: "Central Park, Lincoln Square, Upper West Side, Clinton"
 - model: datasets.council
   pk: 7
   fields:
     council_member_name: Mark Levine
+    neighborhood_list: "Manhattan Valley, Manhattanville, Morningside Heights, Hamilton Heights"
 - model: datasets.council
   pk: 8
   fields:
     council_member_name: Diana Ayala
+    neighborhood_list: "El Barrio/East Harlem, Mott Haven, Highbridge, Concourse, Longwood, Port Morris"
 - model: datasets.council
   pk: 9
   fields:
     council_member_name: Bill Perkins
+    neighborhood_list: "Central Harlem, Morningside Heights, Upper West Side, East Harlem"
 - model: datasets.council
   pk: 10
   fields:
     council_member_name: Ydanis Rodriguez
+    neighborhood_list: "Washington Heights, Inwood, Marble Hill"
 - model: datasets.council
   pk: 11
   fields:
     council_member_name: Andrew Cohen
+    neighborhood_list: "Bedford Park, Kingsbridge, Riverdale, Norwood, Van Cortlandt Village, Wakefield, Woodlawn"
 - model: datasets.council
   pk: 12
   fields:
     council_member_name: Andy King
+    neighborhood_list: "Wakefield, Olinville, Edenwald, Eastchester, Williamsbridge, Baychester, Co-op City"
 - model: datasets.council
   pk: 13
   fields:
     council_member_name: Mark Gjonaj
+    neighborhood_list: "Allerton, City Island, Country Club, Edgewater Park, Ferry Point, Locust Point, Morris Park, Pelham Bay, Pelham Gardens, Pelham Parkway, Schuylerville, Silver Beach, Spencer Estates, Throggs Neck, Van Nest, Waterbury LaSalle, Westchester Square, Zerega"
 - model: datasets.council
   pk: 14
   fields:
     council_member_name: Fernando Cabrera
+    neighborhood_list: "Morris Heights, University Heights, Fordham, Kingsbridge"
 - model: datasets.council
   pk: 15
   fields:
     council_member_name: Ritchie J. Torres
+    neighborhood_list: "Bedford Park, Fordham, Mount Hope, Bathgate, Belmont, East Tremont, West Farms, Van Nest, Allerton, Olinville"
 - model: datasets.council
   pk: 16
   fields:
     council_member_name: Vanessa L. Gibson
+    neighborhood_list: "Claremont, Concourse, Concourse Village, Highbridge, Morris Heights, Mount Eden, Morrisania"
 - model: datasets.council
   pk: 17
   fields:
     council_member_name: Rafael Salamanca Jr.
+    neighborhood_list: "Concourse Village, Crotona Park East, East Tremont, Hunts Point, Longwood, Melrose, Morrisania, Port Morris, West Farms, North Brother Island, South Brother Island"
 - model: datasets.council
   pk: 18
   fields:
     council_member_name: Ruben Diaz, Sr.
+    neighborhood_list: "Soundview, Castle Hill, Parkchester, Clason Point, Harding Park"
 - model: datasets.council
   pk: 19
   fields:
     council_member_name: Paul Vallone
+    neighborhood_list: "Auburndale, Bay Terrace, Bayside, Beechhurst, College Point, Douglaston, Flushing, Little Neck, Malba, Whitestone"
 - model: datasets.council
   pk: 20
   fields:
     council_member_name: Peter Koo
+    neighborhood_list: "Downtown Flushing, Murray Hill, Queensboro Hill"
 - model: datasets.council
   pk: 21
   fields:
     council_member_name: Francisco Moya
+    neighborhood_list: "East Elmhurst, Elmhurst, Jackson Heights, and Corona in Queens, including Flushing Meadows Corona Park, Lefrak City and LaGuardia Airport"
 - model: datasets.council
   pk: 22
   fields:
     council_member_name: Costa Constantinides
+    neighborhood_list: "Astoria, East Elmhurst, Jackson Heights, Woodside"
 - model: datasets.council
   pk: 23
   fields:
     council_member_name: Barry Grodenchik
+    neighborhood_list: "Bayside Hills, Bellerose, Douglaston, Floral Park, Fresh Meadows, Glen Oaks, Hollis, Hollis Hills, Holliswood, Little Neck, New Hyde Park, Oakland Gardens, Queens Village"
 - model: datasets.council
   pk: 24
   fields:
     council_member_name: Rory I. Lancman
+    neighborhood_list: "Kew Gardens Hills, Pomonok, Electchester, Fresh Meadows, Hillcrest, Jamaica Estates, Briarwood, Parkway Village, Jamaica Hills, Jamaica"
 - model: datasets.council
   pk: 25
   fields:
     council_member_name: Daniel Dromm
+    neighborhood_list: "Elmhurst, Jackson Heights"
 - model: datasets.council
   pk: 26
   fields:
     council_member_name: Jimmy Van Bramer
+    neighborhood_list: "Sunnyside, Woodside, Long Island City, Astoria, Dutch Kills"
 - model: datasets.council
   pk: 27
   fields:
     council_member_name: I. Daneek Miller
+    neighborhood_list: "Cambria Heights, Hollis, Jamaica, St. Albans, Queens Village, and Springfield Gardens"
 - model: datasets.council
   pk: 28
   fields:
     council_member_name: Adrienne E. Adams
+    neighborhood_list: "Jamaica, Richmond Hill, Rochdale Village, South Ozone Park"
 - model: datasets.council
   pk: 29
   fields:
     council_member_name: Karen Koslowitz
+    neighborhood_list: "Rego Park, Forest Hills, Kew Gardens, Richmond Hill"
 - model: datasets.council
   pk: 30
   fields:
     council_member_name: Robert Holden
+    neighborhood_list: "Glendale, Maspeth, Middle Village, Ridgewood, Woodhaven, Woodside"
 - model: datasets.council
   pk: 31
   fields:
     council_member_name: Donovan J. Richards
+    neighborhood_list: "Arverne, Brookville, Edgemere, Far Rockaway, Laurelton, Rosedale, Springfield Gardens"
 - model: datasets.council
   pk: 32
   fields:
     council_member_name: Eric A. Ulrich
+    neighborhood_list: "Belle Harbor, Breezy Point, Broad Channel, Howard Beach, Lindenwood, Neponsit, Ozone Park, Richmond Hill, Rockaway Park, Roxbury, South Ozone Park, West Hamilton Beach, Woodhaven"
 - model: datasets.council
   pk: 33
   fields:
     council_member_name: Stephen T. Levin
+    neighborhood_list: "Boerum Hill, Brooklyn Heights, Brooklyn Navy Yard, Downtown Brooklyn, Dumbo, Fulton Ferry, Greenpoint, Vinegar Hill, Williamsburg"
 - model: datasets.council
   pk: 34
   fields:
     council_member_name: Antonio Reynoso
+    neighborhood_list: "Williamsburg, Bushwick, Ridgewood"
 - model: datasets.council
   pk: 35
   fields:
     council_member_name: Laurie A. Cumbo
+    neighborhood_list: "Fort Greene, Clinton Hill, Crown Heights, Prospect Heights, Bedford Stuyvesant"
 - model: datasets.council
   pk: 36
   fields:
     council_member_name: Robert E. Cornegy, Jr.
+    neighborhood_list: "Bedford Stuyvesant, Northern Crown Heights"
 - model: datasets.council
   pk: 37
   fields:
     council_member_name: Rafael L. Espinal Jr.
+    neighborhood_list: "Cypress Hills, Bushwick, City Line, Ocean Hill, Brownsville, East New York"
 - model: datasets.council
   pk: 38
   fields:
     council_member_name: Carlos Menchaca
+    neighborhood_list: "Red Hook, Sunset Park, Greenwood Heights and portions of Windsor Terrace, Dyker Heights, and Boro Park"
 - model: datasets.council
   pk: 39
   fields:
     council_member_name: Brad Lander
+    neighborhood_list: "Cobble Hill, Carroll Gardens, Columbia Waterfront, Gowanus, Park Slope, Windsor Terrace, Borough Park, Kensington"
 - model: datasets.council
   pk: 40
   fields:
     council_member_name: Mathieu Eugene
+    neighborhood_list: "Crown Heights, East Flatbush, Flatbush, Kensington, Midwood, Prospect Park, and Prospect Lefferts Gardens"
 - model: datasets.council
   pk: 41
   fields:
     council_member_name: Alicka Ampry-Samuel
+    neighborhood_list: "Bedford-Stuyvesant, Ocean Hill-Brownsville, East Flatbush, Crown Heights"
 - model: datasets.council
   pk: 42
   fields:
     council_member_name: Inez Barron
+    neighborhood_list: "East New York, New Lots, Remsen Village, Spring Creek, Starrett City"
 - model: datasets.council
   pk: 43
   fields:
     council_member_name: Justin Brannan
+    neighborhood_list: "Bay Ridge, Dyker Heights, Bensonhurst, Bath Beach"
 - model: datasets.council
   pk: 44
   fields:
     council_member_name: Kalman Yeger
+    neighborhood_list: "Bensonhurst, Borough Park, Midwood, Ocean Parkway"
 - model: datasets.council
   pk: 45
   fields:
     council_member_name: Jumaane D. Williams
+    neighborhood_list: "Flatbush, East Flatbush, Flatlands, Midwood, Canarsie"
 - model: datasets.council
   pk: 46
   fields:
     council_member_name: Alan N. Maisel
+    neighborhood_list: "Bergen Beach, Canarsie, Flatlands, Georgetown, Gerritsen Beach, Marine Park, Mill Basin, Mill Island, Sheepshead Bay"
 - model: datasets.council
   pk: 47
   fields:
     council_member_name: Mark Treyger
+    neighborhood_list: "Bensonhurst, Coney Island, Gravesend, Sea Gate"
 - model: datasets.council
   pk: 48
   fields:
     council_member_name: Chaim M. Deutsch
+    neighborhood_list: "Brighton Beach, Manhattan Beach, Sheepshead Bay, Homecrest, Trump Village, Luna Park, Brightwater Towers, Midwood"
 - model: datasets.council
   pk: 49
   fields:
     council_member_name: Deborah Rose
+    neighborhood_list: "Arlington, Clifton, Clove Lakes, Concord, Elm Park, Graniteville, Livingston, Mariners Harbor, New Brighton, Port Richmond, Randall Manor, Rosebank, St. George, Snug Harbor, Silver Lake, Stapleton, Sunnyside, West Brighton and Tompkinsville"
 - model: datasets.council
   pk: 50
   fields:
     council_member_name: Steven Matteo
+    neighborhood_list: "Arrochar, Bloomfield, Bulls Head, Chelsea, Concord, Dongan Hills, Egbertville, Emerson Hill, Grant City, Grasmere, Lighthouse Hill, Manor Heights, Midland Beach, New Dorp, New Dorp Beach, New Springville, Oakwood, Old Town, Richmond Town, South Beach, Todt Hill, Travis, Westerleigh"
 - model: datasets.council
   pk: 51
   fields:
     council_member_name: Joseph C. Borelli
+    neighborhood_list: "Annadale, Arden Heights, Bay Terrace, Charleston, Eltingville, Great Kills, Greenridge, Heartland Village, Huguenot, New Springville, Pleasant Plains, Prince’s Bay, Richmond Valley, Rossville, Tottenville, Woodrow"

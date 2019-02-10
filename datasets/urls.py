@@ -360,7 +360,6 @@ router.register(r'foreclosures', v.lispenden_views.LisPendenViewSet)
 
 custom_routes = format_suffix_patterns([
     path('councils/<int:pk>/summary/', council_summary, name='council-housingtype-summary'),
-    path('properties/<str:pk>/buildings-summary/', property_buildings_summary, name='property-buildings-summary'),
     path('properties/<str:pk>/summary/', property_summary, name='property-summary'),
     path('search/buildings/', building_search, name='buildings-search'),
 ])
