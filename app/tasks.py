@@ -1,8 +1,9 @@
 from __future__ import absolute_import, unicode_literals
-from .celery import app
+from app.celery import app
 import shutil
 from app.mailer import send_update_error_mail
 from django.core import cache
+import celery
 
 
 @app.task(queue='celery')
