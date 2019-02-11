@@ -29,7 +29,6 @@ SECRET_KEY = '%h(!920-v_1e6)%+@)$l9t5955a4m9v&_ipgawllvk-^_$2%=0'
 
 ALLOWED_HOSTS = ['*']
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -93,16 +92,16 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'anhd',
-        'HOST': 'postgres',
+        'HOST':  os.environ.get('DATABASE_HOST', 'localhost'),
         'USER': 'anhd',
-        'PORT': '5432'
+        'PORT':  os.environ.get('DATABASE_PORT', 5678)
     }
 }
 
 CACHES = {
     "default": {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://redis',
+        'LOCATION': os.environ.get('REDIS_URL', 'localhost:6378'),
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         },
@@ -131,16 +130,6 @@ CACHE_TTL = 60 * 60 * 12  # cache for 12 hours
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
 
-CACHES = {
-    "default": {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://redis',
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-        },
-        "KEY_PREFIX": "DAP"
-    }
-}
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
@@ -159,6 +148,12 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+EMAIL_HOST = 'smtp.sendgrid.net'
+EMAIL_HOST_USER = os.environ.get("EMAIL_USER", '')
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_PASSWORD", '')
+EMAIL_PORT = 465
+EMAIL_USE_TLS = True
 
 
 # Internationalization
@@ -213,7 +208,7 @@ MEDIA_TEMP_ROOT = os.path.join(MEDIA_ROOT, 'temp')
 LOG_ROOT = os.path.join(BASE_DIR, 'logs')
 
 FLOWER_URL = "localhost:8888"
-CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://redis:6379/0')
+CELERY_BROKER_URL = os.environ.get('REDIS_URL', "localhost:6378")
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_BACKEND = 'rpc://'
 # Sensible settings for celery
