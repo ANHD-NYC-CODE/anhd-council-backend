@@ -1,6 +1,31 @@
 version: '2'
 services:
   app:
+    restart: always
+    build: .
+    expose:
+      - "8000"
+    container_name: "app"
+    image: debian/latest
+    links:
+      - postgres
+      - redis
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - '8000:8000'
+    networks:
+      - network1
+      - nginx_network
+    volumes:
+      - ./:/app
+      - ./data:/app/data
+      - static_volume:/app/static
+      - ./logs:/app/logs
+    entrypoint: ["sh", "/app/docker-entrypoint.sh"]
+    env_file:
+      - .env
     environment:
       - DJANGO_SETTINGS_MODULE=app.settings.production
   # https://www.digitalocean.com/community/tutorials/how-to-secure-a-containerized-node-js-application-with-nginx-let-s-encrypt-and-docker-compose
