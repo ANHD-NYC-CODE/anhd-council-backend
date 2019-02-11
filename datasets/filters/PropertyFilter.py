@@ -432,6 +432,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         model = ds.Property
         fields = {
             'council': ['exact'],
+            'cd': ['exact'],
             'yearbuilt': ['exact', 'lt', 'lte', 'gt', 'gte'],
             'unitsres': ['exact', 'lt', 'lte', 'gt', 'gte'],
             'unitstotal': ['exact', 'lt', 'lte', 'gt', 'gte'],
