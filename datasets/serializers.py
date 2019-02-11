@@ -35,6 +35,7 @@ class CouncilHousingTypeSummarySerializer(serializers.ModelSerializer):
             "rent_regulated_count": council_properties.rentreg().count(),
             "small_homes_count": council_properties.smallhome().count(),
             "market_rate_count": council_properties.marketrate().count(),
+            "public_housing_count": council_properties.publichousingcount().count()
         }
 
 
@@ -42,7 +43,7 @@ class PropertySerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Property
         fields = ('bbl', 'council', 'yearbuilt', 'unitsres', 'unitstotal',
-                  'bldgclass', 'numbldgs', 'numfloors', 'address', 'lat', 'lng')
+                  'bldgclass', 'numbldgs', 'numfloors', 'address', 'lat', 'lng', 'cb2010', 'ct2010')
 
 
 class PropertySummarySerializer(serializers.ModelSerializer):
@@ -50,7 +51,7 @@ class PropertySummarySerializer(serializers.ModelSerializer):
         model = ds.Property
         fields = (
             'bbl', 'council', 'yearbuilt', 'unitsres', 'unitstotal',
-            'bldgclass', 'numbldgs', 'numfloors', 'address', 'lat', 'lng',
+            'bldgclass', 'numbldgs', 'numfloors', 'address', 'lat', 'lng', 'cb2010', 'ct2010',
             'hpdviolations', 'hpdcomplaints', 'dobcomplaints', 'dobviolations', 'ecbviolations',
             'acrisrealmasters', 'hpdregistration', 'hpdregistrationcontacts',
             'coresubsidyrecords', 'dobpermitsissued', 'dobpermitfiled',
@@ -222,24 +223,6 @@ class AuthenticatedPropertySummarySerializer(PropertySummarySerializer, serializ
 
         return {
             "count": len(lispendens)
-        }
-
-
-class PropertyBuildingsSummary(serializers.ModelSerializer):
-    class Meta:
-        model = ds.Property
-        fields = ('pk', 'buildings')
-
-    buildings = serializers.SerializerMethodField()
-
-    def get_buildings(self, obj):
-        property_buildings = ds.Building.objects.filter(bbl=obj.pk)
-
-        return {
-            "items": list({
-                "bin": building.bin,
-                "house_number": get_house_number(building)
-            } for building in property_buildings)
         }
 
 
