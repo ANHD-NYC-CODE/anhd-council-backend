@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "311fd45cb8bc3d16b6072246193d8ac4bce413f0cc07cf3940baebb26d1b2e60"
+            "sha256": "677bc3f8cad9f2ca9b1028bd97cd902816013885a33d8fa4c40cb4c7acd89c2f"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -134,6 +134,14 @@
             ],
             "index": "pypi",
             "version": "==2.1.0"
+        },
+        "django-polymorphic": {
+            "hashes": [
+                "sha256:1fb5505537bcaf71cfc951ff94c4e3ba83c761eaca04b7b2ce9cb63937634ea5",
+                "sha256:79e7df455fdc8c3d28d38b7ab8323fc21d109a162b8ca282119e0e9ce8db7bdb"
+            ],
+            "index": "pypi",
+            "version": "==2.0.3"
         },
         "django-postgres-copy": {
             "hashes": [

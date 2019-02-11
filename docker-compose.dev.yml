@@ -3,3 +3,9 @@ services:
   app:
     environment:
       - DJANGO_SETTINGS_MODULE=app.settings.development
+  redis:
+    ports:
+      - '6378:6379'
+  postgres:
+    ports:
+      - '5678:5432'
