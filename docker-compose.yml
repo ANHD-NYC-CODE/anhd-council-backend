@@ -132,6 +132,8 @@ services:
   nginx:
     build: ./nginx
     container_name: "nginx_server"
+    depends_on:
+      - app
 volumes:
   pg_vol1:
   static_volume:
