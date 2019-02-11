@@ -82,8 +82,10 @@ def async_download_and_update(self, dataset_id):
         dataset = c.Dataset.objects.filter(id=dataset_id).first()
         logger.info("Starting async download and update for dataset: {}".format(dataset.name))
         if dataset:
+            previous_file = dataset.latest_file()
             file = dataset.download()
-            async_update_from_file.delay(file.id)
+            async_update_from_file.delay(file.id, previous_file.id)
+            dataset.delete_old_files()
         else:
             logger.error("*ERROR* - Task Failure - No dataset found in async_download_start")
             raise Exception("No dataset.")
@@ -93,12 +95,13 @@ def async_download_and_update(self, dataset_id):
 
 
 @app.task(bind=True, acks_late=True, queue='update', default_retry_delay=60 * 5, max_retries=2)
-def async_update_from_file(self, file_id):
+def async_update_from_file(self, file_id, previous_file_id):
     try:
         file = c.DataFile.objects.get(id=file_id)
+        previous_file = c.DataFile.objects.filter(id=previous_file_id)[0]
         dataset = file.dataset
         logger.info("Starting async update for dataset: {}".format(dataset.name))
-        update = c.Update.objects.create(dataset=dataset, file=file)
+        update = c.Update.objects.create(dataset=dataset, file=file, previous_file=previous_file)
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
         async_send_update_error_mail.delay(str(e))
