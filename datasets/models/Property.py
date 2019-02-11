@@ -187,7 +187,7 @@ class Property(BaseDatasetModel, models.Model):
     borough = models.TextField(blank=True, null=True)
     block = models.TextField(blank=True, null=True)
     lot = models.TextField(blank=True, null=True)
-    cd = models.SmallIntegerField(blank=True, null=True)
+    cd = models.SmallIntegerField(db_index=True, blank=True, null=True)
     ct2010 = models.TextField(blank=True, null=True)
     cb2010 = models.TextField(blank=True, null=True)
     schooldist = models.SmallIntegerField(blank=True, null=True)
