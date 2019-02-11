@@ -41,7 +41,8 @@ SENDGRID_API_KEY=<variable> EMAIL_USER=<variable> celery -A app...
 
 ## Continuous deployment
 
- - Nothing fancy here. Run this remote task to update the production server.
+ - Run this remote task to update the production server.
+ - Updating the server will interrupt any running workers. When the workers restart, they will have to restart the task from the beginning. Keep this in mind if any long running tasks are currently running.
 
 1) `ssh -t anhd@45.55.44.160 "cd /var/www/anhd-council-backend && sudo sh pull.sh"`
 
@@ -50,3 +51,10 @@ SENDGRID_API_KEY=<variable> EMAIL_USER=<variable> celery -A app...
   - restarts app
   - restarts nginx
   - restarts celery workers
+
+
+# Opening a live shell
+
+1) ssh into the server
+2) open a shell into the container - `sudo docker exec -it app /bin/bash`
+3) open a django shell - `python manage.py shell`

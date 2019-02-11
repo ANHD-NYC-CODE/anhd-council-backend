@@ -43,7 +43,7 @@ class CustomUserAdmin(auth_admin.UserAdmin):
     form = CustomUserChangeForm
     add_form = CustomUserCreationForm
     change_password_form = auth_admin.AdminPasswordChangeForm
-    list_display = ('email', 'first_name', 'last_name', 'is_superuser')
+    list_display = ('email', 'username', 'first_name', 'last_name', 'is_superuser')
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups')
     search_fields = ('first_name', 'last_name', 'email')
     ordering = ('email',)
