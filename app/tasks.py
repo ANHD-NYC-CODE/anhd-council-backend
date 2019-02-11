@@ -1,7 +1,7 @@
 from __future__ import absolute_import, unicode_literals
 from app.celery import app
 import shutil
-from app.mailer import send_update_error_mail
+from core.tasks import async_send_update_error_mail
 from django.core import cache
 import celery
 
@@ -25,7 +25,7 @@ def clean_temp_directory():
         shutil.rmtree(settings.MEDIA_TEMP_ROOT)
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
-        async_send_update_error_mail.delay(str(e))
+        async_send_general_task_error_mail.delay(str(e))
 
 
 @app.task(bind=True, queue='celery', default_retry_delay=60, max_retries=1)
@@ -34,4 +34,4 @@ def clear_cache():
         cache.clear()
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
-        async_send_update_error_mail.delay(str(e))
+        async_send_general_task_error_mail.delay(str(e))

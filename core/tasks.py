@@ -3,13 +3,18 @@ from app.celery import app
 from core import models as c
 from django_celery_results.models import TaskResult
 from django.conf import settings
-from app.mailer import send_update_error_mail, send_update_success_mail
+from app.mailer import send_update_error_mail, send_update_success_mail, send_general_task_error_mail
 
 import os
 
 import logging
 
 logger = logging.getLogger('app')
+
+
+@app.task(bind=True, queue='celery', default_retry_delay=30, max_retries=3)
+def async_send_general_task_error_mail(self, error):
+    return send_general_task_error_mail(error)
 
 
 @app.task(bind=True, queue='celery', default_retry_delay=30, max_retries=3)
@@ -35,7 +40,7 @@ def async_create_update(self, dataset_id):
             raise Exception("No dataset.")
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
-        async_send_update_error_mail.delay(str(e))
+        async_send_general_task_error_mail.delay(str(e))
 
 
 @app.task(bind=True, acks_late=True, queue='update', default_retry_delay=60 * 5, max_retries=2)
@@ -47,7 +52,10 @@ def async_seed_file(self, file_path, update_id):
         update.file.dataset.seed_dataset(file_path=file_path, update=update)
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
-        async_send_update_error_mail.delay(str(e))
+        if update:
+            async_send_update_error_mail.delay(update, str(e))
+        else:
+            async_send_general_task_error_mail.delay(str(e))
 
 
 @app.task(bind=True, acks_late=True, queue='update', default_retry_delay=60 * 5, max_retries=2)
@@ -58,7 +66,10 @@ def async_seed_table(self, update_id):
         update.dataset.seed_dataset(update=update)
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
-        async_send_update_error_mail.delay(str(e))
+        if update:
+            async_send_update_error_mail.delay(update, str(e))
+        else:
+            async_send_general_task_error_mail.delay(str(e))
 
 
 @app.task(bind=True, acks_late=True, queue='celery', default_retry_delay=60 * 5, max_retries=2)
@@ -73,7 +84,7 @@ def async_download_start(self, dataset_id):
             raise Exception("No dataset.")
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
-        async_send_update_error_mail.delay(str(e))
+        async_send_general_task_error_mail.delay(str(e))
 
 
 @app.task(bind=True, acks_late=True, queue='celery', default_retry_delay=60 * 5, max_retries=2)
@@ -91,7 +102,7 @@ def async_download_and_update(self, dataset_id):
             raise Exception("No dataset.")
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
-        async_send_update_error_mail.delay(str(e))
+        async_send_general_task_error_mail.delay(str(e))
 
 
 @app.task(bind=True, acks_late=True, queue='update', default_retry_delay=60 * 5, max_retries=2)
@@ -104,4 +115,7 @@ def async_update_from_file(self, file_id, previous_file_id):
         update = c.Update.objects.create(dataset=dataset, file=file, previous_file=previous_file)
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
-        async_send_update_error_mail.delay(str(e))
+        if update:
+            async_send_update_error_mail.delay(update, str(e))
+        else:
+            async_send_general_task_error_mail.delay(str(e))

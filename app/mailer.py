@@ -28,9 +28,19 @@ def send_hello_world_email():
         send_mail(to, subject, content)
 
 
-def send_update_error_mail(error):
+def send_general_task_error_mail(update, error):
     subject = "* Error * During Council Portal Update"
-    content = "An update failed with error: \n\n{}".format(error)
+    content = "A task error occurred: \n\n{} \n\n Please visit the task manager to investigate.".format(
+        update.id, update.dataset, error)
+
+    for user in us.CustomUser.objects.filter(is_staff=True):
+        to = user.email
+        send_mail(to, subject, content)
+
+
+def send_update_error_mail(update, error):
+    subject = "* Error * During Council Portal Update"
+    content = "Update {} for {} failed with error: \n\n{}".format(update.id, update.dataset, error)
 
     for user in us.CustomUser.objects.filter(is_staff=True):
         to = user.email
