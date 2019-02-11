@@ -170,17 +170,7 @@ class Property(BaseDatasetModel, models.Model):
     current = CurrentPropertyManager()
     obsolete = ObsoletePropertyManager()
 
-    # 763178 +- records for residential properties.
-    # Current version: Pluto18v1
-    # To update to latest Pluto version,
-    # Compare the columns between the next Pluto version and this.
-    # Add, but do not delete any columns if different.
-    # Create a django migration to add new columns.
-    # Create an Update with the latest pluto zip file in admin panel.
-    # Existing properties will be overritten with latest values.
-    # New properties will be added.
-    # Old properties will not be removed automatically, need manual removal.
-    # Property.obsolete.all().delete()
+    # https://www1.nyc.gov/assets/planning/download/pdf/data-maps/open-data/pluto_datadictionary.pdf?r=18v1
     bbl = models.CharField(primary_key=True, max_length=10, blank=False, null=False)
     council = models.ForeignKey('Council', on_delete=models.SET_NULL, null=True,
                                 db_column='council', db_constraint=False)
