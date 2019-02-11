@@ -1,31 +1,5 @@
 version: '2'
 services:
-  app:
-    restart: always
-    build: .
-    expose:
-      - "8000"
-    container_name: "app"
-    image: debian/latest
-    links:
-      - postgres
-      - redis
-    depends_on:
-      - postgres
-      - redis
-    ports:
-      - '8000:8000'
-    networks:
-      - network1
-      - nginx_network
-    volumes:
-      - ./:/app
-      - ./data:/app/data
-      - static_volume:/app/static
-      - ./logs:/app/logs
-    entrypoint: ["sh", "/app/docker-entrypoint.sh"]
-    env_file:
-      - .env
   celery_default:
     restart: always
     build: .
@@ -33,13 +7,11 @@ services:
     networks:
       - network1
     links:
-      - app
       - redis
       - postgres
     depends_on:
       - postgres
       - redis
-      - app
       - celerybeat
     volumes:
       - ./:/app
@@ -58,7 +30,6 @@ services:
     depends_on:
       - postgres
       - redis
-      - app
       - celerybeat
     volumes:
       - ./:/app
@@ -66,7 +37,6 @@ services:
       - ./logs:/app/logs
       - ./celery/logs:/app/celery/logs
     links:
-      - app:app
       - postgres
       - redis
     env_file:
@@ -80,11 +50,9 @@ services:
     networks:
       - network1
     depends_on:
-      - app
       - postgres
       - redis
     links:
-      - app
       - postgres
       - redis
     volumes:
@@ -132,8 +100,6 @@ services:
   nginx:
     build: ./nginx
     container_name: "nginx_server"
-    depends_on:
-      - app
 volumes:
   pg_vol1:
   static_volume:

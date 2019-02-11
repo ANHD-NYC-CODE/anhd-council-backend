@@ -1,8 +1,5 @@
 version: '2'
 services:
-  app:
-    environment:
-      - DJANGO_SETTINGS_MODULE=app.settings.development
   redis:
     ports:
       - '6378:6379'

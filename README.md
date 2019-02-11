@@ -23,7 +23,7 @@ SENDGRID_API_KEY=<variable> EMAIL_USER=<variable> celery -A app...
 3) `celery -A app beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler`
 
 
-## Production Starting
+## Production Statup
 
 1) Clone repo
 2) Get `.env` file from dev.
@@ -32,6 +32,20 @@ SENDGRID_API_KEY=<variable> EMAIL_USER=<variable> celery -A app...
  - create super user `python3.6 manage.py createsuperuser`
  - seed datasets `python3.6 manage.py loaddata /app/core/fixtures/datasets.yaml`
  - seed automation tasks `python3.6 manage.py loaddata /app/core/fixtures/tasks.yaml`
+ - seed council info `python3.6 manage.py loaddata /app/core/fixtures/councils.yaml`
+5) Upload initial datafiles and update
+  - councils
+  - pluto properties
+  - buildings
+  - hpdbuildings
+  - tax liens
+  - coredata
+  - public housing data
+  - taxbills
+  - j51 data
+  - 421a data
+
+
 
 
 **You can view logs with `docker-compose logs -f app`**
