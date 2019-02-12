@@ -5,6 +5,7 @@ services:
     restart: always
     ports:
       - "0.0.0.0:80:80"
+      - "0.0.0.0:443:443"
     volumes:
       - ./nginx:/app/nginx
       - ./data/certbot/conf:/etc/letsencrypt
