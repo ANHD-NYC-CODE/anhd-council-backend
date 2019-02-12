@@ -79,7 +79,7 @@ services:
     container_name: "redis"
     image: redis:alpine
     volumes:
-      - redis-data:/data
+      - redis_data:/data
     networks:
       - network1
     env_file:
