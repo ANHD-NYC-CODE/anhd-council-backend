@@ -1,5 +1,8 @@
 version: '2'
 services:
+  flower:
+    ports:
+      - '8888:8888'
   redis:
     ports:
       - '6378:6379'
