@@ -95,8 +95,6 @@ services:
     environment:
       - CELERY_BROKER_URL=redis://redis
       - FLOWER_PORT=8888
-    ports:
-      - '8888:8888'
     networks:
       - network1
       - nginx_network
