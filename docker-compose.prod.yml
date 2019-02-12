@@ -5,7 +5,6 @@ services:
     restart: always
     ports:
       - "0.0.0.0:80:80"
-      - "0.0.0.0:8888:8888"
     volumes:
       - ./nginx:/app/nginx
       - static_volume:/static
