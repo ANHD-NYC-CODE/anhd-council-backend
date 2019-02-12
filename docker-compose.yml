@@ -134,6 +134,7 @@ services:
     container_name: "nginx_server"
   # https://medium.com/@pentacent/nginx-and-lets-encrypt-with-docker-in-less-than-5-minutes-b4b8a60d3a71
   certbot:
+    container_name: "certbot"
     image: certbot/certbot
     volumes:
       - ./nginx/certbot/conf:/etc/letsencrypt
