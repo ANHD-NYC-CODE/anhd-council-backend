@@ -4,6 +4,5 @@ WORKDIR /app/
 # Latest version of pipenv, currently broken with default version
 RUN pip3 install pipenv==2018.11.26
 ADD Pipfile Pipfile
-ADD Pipfile.lock Pipfile.lock
 RUN pipenv install --deploy --system
 EXPOSE 8000
