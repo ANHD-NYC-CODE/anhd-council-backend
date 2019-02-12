@@ -1,4 +1,6 @@
 FROM python:3.6.5
+# for pipenv click issue
+# https://github.com/pypa/pipenv/issues/1151
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 COPY . /app/
