@@ -1,6 +1,6 @@
 FROM python:3.6.5
-ENV LC_ALL=en_US.UTF-8
-ENV LANG=en_US.UTF-8
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
 COPY . /app/
 WORKDIR /app/
 # Latest version of pipenv, currently broken with default version
