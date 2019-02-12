@@ -1,6 +1,6 @@
 #!/bin/bash
 
-domains=(api.displacementalert.org, tasks.displacementalert.org)
+domains=(api.displacementalert.org tasks.displacementalert.org)
 rsa_key_size=4096
 data_path="./data/certbot"
 email="anhd.tech@gmail.com" # Adding a valid address is strongly recommended
