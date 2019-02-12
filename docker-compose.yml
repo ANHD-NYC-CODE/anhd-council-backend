@@ -78,6 +78,8 @@ services:
     hostname: redis
     container_name: "redis"
     image: redis:alpine
+    volumes:
+      - redis-data:/data
     networks:
       - network1
     env_file:
@@ -102,6 +104,7 @@ services:
     container_name: "nginx_server"
 volumes:
   pg_vol1:
+  redis_data:
   static_volume:
 networks:
   network1:

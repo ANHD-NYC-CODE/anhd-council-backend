@@ -14,10 +14,12 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "app.settings.development")
 
 app = Celery('app', broker=settings.CELERY_BROKER_URL,
              backend=settings.CELERY_BACKEND, include=['app.tasks'])
+
+app.conf.broker_transport_options = {'visibility_timeout': 36000}  # 10 hours
 app.conf.update(
     worker_pool_restarts=True,
-    result_backend_transport_options={'visibility_timeout': 36000}  # 10 hours
 )
+
 
 # Restart interrupted tasks with late_acks enabled
 # https://gist.github.com/mlavin/6671079
