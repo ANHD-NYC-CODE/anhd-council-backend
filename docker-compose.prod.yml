@@ -7,9 +7,16 @@ services:
       - "0.0.0.0:80:80"
     volumes:
       - ./nginx:/app/nginx
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
       - static_volume:/static
     depends_on:
       - app
       - flower
     networks:
       - nginx_network
+  certbot:
+    image: certbot/certbot
+    volumes:
+  - ./data/certbot/conf:/etc/letsencrypt
+  - ./data/certbot/www:/var/www/certbot
