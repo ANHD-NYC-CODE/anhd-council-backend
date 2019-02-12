@@ -132,6 +132,11 @@ services:
   nginx:
     build: ./nginx
     container_name: "nginx_server"
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
 volumes:
   pg_vol1:
   redis_data:
