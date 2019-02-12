@@ -5,5 +5,7 @@ celery/**
 !celery/pids/**
 app/tests/mocks/**
 
+nginx/**
+
 celerybeat-schedule.db
 docker-entrypoint.sh
