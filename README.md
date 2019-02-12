@@ -23,7 +23,7 @@ SENDGRID_API_KEY=<variable> EMAIL_USER=<variable> celery -A app...
 3) `celery -A app beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler`
 
 
-## Production Statup
+## Production Startup
 
 1) Clone repo
 2) Get `.env` file from dev.
@@ -45,6 +45,10 @@ SENDGRID_API_KEY=<variable> EMAIL_USER=<variable> celery -A app...
   - j51 data
   - 421a data
 
+## Development Startup
+1) You can follow the same steps for production (using `sh build.dev.sh` for step 2), however you may want to have a non-dockerized version of the app running for debugging purposes.
+2) stop the docker app `docker-compose stop app`
+3) start the app in terminal `python manage.py runserver`
 
 
 
