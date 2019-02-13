@@ -3,7 +3,7 @@ from django.utils import timezone
 
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.transform import from_csv_file_to_gen, with_bbl
-from datasets.utils.validation_filters import is_null, is_older_than
+from datasets.utils.validation_filters import is_null
 import logging
 import datetime
 logger = logging.getLogger('app')

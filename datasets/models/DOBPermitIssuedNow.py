@@ -75,7 +75,7 @@ class DOBPermitIssuedNow(BaseDatasetModel, models.Model):
     @classmethod
     def update_set_filter(self, csv_reader, headers):
         for row in csv_reader:
-            if is_older_than(row[headers.index('Issued Date')], 1):
+            if headers.index('Issued Date') and is_older_than(row[headers.index('Issued Date')], 1):
                 continue
             yield row
 
