@@ -111,7 +111,7 @@ def async_update_from_file(self, file_id, previous_file_id):
     try:
         update = None
         file = c.DataFile.objects.get(id=file_id)
-        previous_file = c.DataFile.objects.filter(id=previous_file_id)[0]
+        previous_file = c.DataFile.objects.filter(id=previous_file_id).first()
         dataset = file.dataset
         logger.info("Starting async update for dataset: {}".format(dataset.name))
         update = c.Update.objects.create(dataset=dataset, file=file, previous_file=previous_file)
