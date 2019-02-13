@@ -41,8 +41,7 @@ class BaseTest(APITestCase, URLPatternsTestCase):
             user = self.user_factory(email="test@test.com",  username=username, password=password)
 
         response = self.client.post('/api/token/', {'username': username, 'password': password}, format="json")
-        # import pdb
-        # pdb.set_trace()
+
         return response.data['access']
 
     def get_file_path(self, name):

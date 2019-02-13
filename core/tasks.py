@@ -105,9 +105,10 @@ def async_download_and_update(self, dataset_id):
         async_send_general_task_error_mail.delay(str(e))
 
 
-@app.task(bind=True, acks_late=True, queue='update', default_retry_delay=60 * 5, max_retries=2)
+@app.task(bind=True, queue='update', default_retry_delay=60 * 5, max_retries=2)
 def async_update_from_file(self, file_id, previous_file_id):
     try:
+        update = None
         file = c.DataFile.objects.get(id=file_id)
         previous_file = c.DataFile.objects.filter(id=previous_file_id)[0]
         dataset = file.dataset
