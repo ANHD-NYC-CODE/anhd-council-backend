@@ -11,6 +11,7 @@ services:
       - ./nginx:/app/nginx
       - ./nginx/certbot/conf:/etc/letsencrypt
       - ./nginx/certbot/www:/var/www/certbot
+      - ../anhd-council-client/build:/client
       - static_volume:/static
     depends_on:
       - app
