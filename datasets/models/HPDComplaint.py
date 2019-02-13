@@ -45,7 +45,7 @@ class HPDComplaint(BaseDatasetModel, models.Model):
     @classmethod
     def update_set_filter(self, csv_reader, headers):
         for row in csv_reader:
-            if is_older_than(row[headers.index('StatusDate')], 4):
+            if headers.index('StatusDate') and is_older_than(row[headers.index('StatusDate')], 4):
                 continue
             yield row
 

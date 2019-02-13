@@ -47,7 +47,7 @@ class DOBComplaint(BaseDatasetModel, models.Model):
     @classmethod
     def update_set_filter(self, csv_reader, headers):
         for row in csv_reader:
-            if is_older_than(row[headers.index('Date Entered')], 4):
+            if headers.index('Date Entered') and is_older_than(row[headers.index('Date Entered')], 4):
                 continue
             yield row
 
