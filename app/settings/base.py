@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'rest_framework_filters',
     'core',
     'datasets',
-    'users.apps.UsersConfig'
+    'users.apps.UsersConfig',
+    'celerybeat_status'
 ]
 
 AUTH_USER_MODEL = 'users.CustomUser'
@@ -177,6 +178,7 @@ CELERY_TIMEZONE = "America/New_York"
 
 DJANGO_CELERY_BEAT_TZ_AWARE = True  # potential fix for beat spamming tasks?
 CELERY_ENABLE_UTC = False
+CELERYBEAT_SCHEDULER = 'django_celery_beat.schedulers.DatabaseScheduler'
 
 CELERY_ACKS_LATE = True  # causes tasks to restart if worker was shut down
 
