@@ -11,7 +11,7 @@
 # docker-compose exec celery_default celery control shutdown
 #
 
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d --force-recreate --build
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d --force-recreate --build --remove-orphans
 echo "Deploy complete!"
 
 # docker-compose exec celery_default pkill 'celery'
