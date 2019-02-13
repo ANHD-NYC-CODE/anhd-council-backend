@@ -28,6 +28,10 @@ class LisPenden(BaseDatasetModel, models.Model):
     disp = models.TextField(blank=True, null=True)
     type = models.TextField(blank=True, null=True)
 
+    LISPENDEN_TYPES = {
+        'foreclosure': 'foreclosure'
+    }
+
     @classmethod
     def pre_validation_filters(self, gen_rows):
         for row in gen_rows:

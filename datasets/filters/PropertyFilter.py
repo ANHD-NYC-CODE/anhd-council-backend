@@ -204,7 +204,6 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         # return queryset with only BBL values
         # 3) perform related Q query on counts
         # return queryset with all values
-
         parsed_values = self.parse_values(values)
         dates_q = Q(self.read_criteria(
             parsed_values[0], parsed_values, False))

@@ -41,7 +41,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
             user = self.user_factory(email="test@test.com",  username=username, password=password)
 
         response = self.client.post('/api/token/', {'username': username, 'password': password}, format="json")
-        # content = response.data['results']
+        # import pdb
+        # pdb.set_trace()
         return response.data['access']
 
     def get_file_path(self, name):
@@ -559,7 +560,7 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         factory = d_models.LisPenden.objects.create(
             key=key,
             bbl=property,
-            type="foreclosure",
+            # type="foreclosure",
             **kwargs
         )
         return factory
