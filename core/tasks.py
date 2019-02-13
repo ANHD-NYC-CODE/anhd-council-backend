@@ -18,7 +18,8 @@ def async_send_general_task_error_mail(self, error):
 
 
 @app.task(bind=True, queue='celery', default_retry_delay=30, max_retries=3)
-def async_send_update_error_mail(self, update, error):
+def async_send_update_error_mail(self, update_id, error):
+    update = c.Update.objects.get(id=update_id)
     return send_update_error_mail(update, error)
 
 
@@ -117,6 +118,6 @@ def async_update_from_file(self, file_id, previous_file_id):
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
         if update:
-            async_send_update_error_mail.delay(update, str(e))
+            async_send_update_error_mail.delay(update.id, str(e))
         else:
             async_send_general_task_error_mail.delay(str(e))
