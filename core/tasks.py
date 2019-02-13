@@ -18,8 +18,8 @@ def async_send_general_task_error_mail(self, error):
 
 
 @app.task(bind=True, queue='celery', default_retry_delay=30, max_retries=3)
-def async_send_update_error_mail(self, error):
-    return send_update_error_mail(error)
+def async_send_update_error_mail(self, update, error):
+    return send_update_error_mail(update, error)
 
 
 @app.task(bind=True, queue='celery', default_retry_delay=30, max_retries=3)
