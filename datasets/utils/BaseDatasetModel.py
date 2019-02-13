@@ -90,11 +90,6 @@ class BaseDatasetModel():
         return batch_upsert_from_gen(self, rows, settings.BATCH_SIZE, update=kwargs['update'])
 
     @classmethod
-    def join_tables(self, **kwargs):
-        import pdb
-        pdb.set_trace()
-
-    @classmethod
     def bulk_seed(self, **kwargs):
         bulk_insert_from_file(self, **kwargs)
 

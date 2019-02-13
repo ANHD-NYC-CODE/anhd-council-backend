@@ -230,10 +230,6 @@ class PropertyFilterTests(BaseTest, TestCase):
 
 
 class PropertyAdvancedFilterTests(BaseTest, TestCase):
-    urlpatterns = [
-        path('', include('datasets.urls')),
-    ]
-
     def tearDown(self):
         self.clean_tests()
 
@@ -607,3 +603,50 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['bbl'], '1')
+
+    def test_foreclosure_rules_authorized(self):
+        council = self.council_factory(coundist=1)
+        # has lihtc ending 2018
+        property1 = self.property_factory(bbl=1, council=council)
+        # has j-51 ending 2018
+        property2 = self.property_factory(bbl=2, council=council)
+        # has lihtc ending 2025
+        property3 = self.property_factory(bbl=3, council=council)
+
+        self.lispenden_factory(property=property1, fileddate='2017-01-01',
+                               type=ds.LisPenden.LISPENDEN_TYPES['foreclosure'])
+        self.lispenden_factory(property=property2, fileddate='2018-01-01')
+        self.lispenden_factory(property=property3, fileddate='2016-01-01',
+                               type=ds.LisPenden.LISPENDEN_TYPES['foreclosure'])
+
+        # any properties with >= 1 foreclosures since ending 2017
+        query = '/properties/?q=criteria_0=ALL+option_0A=lispenden__count__gte=1,lispenden__fileddate__gte=2017-01-01,lispenden__type=foreclosure'
+        token = self.get_access_token()
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+        self.assertEqual(content[0]['bbl'], '1')
+
+    def test_foreclosure_rules_unauthorized(self):
+        council = self.council_factory(coundist=1)
+        # has lihtc ending 2018
+        property1 = self.property_factory(bbl=1, council=council)
+        # has j-51 ending 2018
+        property2 = self.property_factory(bbl=2, council=council)
+        # has lihtc ending 2025
+        property3 = self.property_factory(bbl=3, council=council)
+
+        self.lispenden_factory(property=property1, fileddate='2017-01-01',
+                               type=ds.LisPenden.LISPENDEN_TYPES['foreclosure'])
+        self.lispenden_factory(property=property2, fileddate='2018-01-01')
+        self.lispenden_factory(property=property3, fileddate='2016-01-01',
+                               type=ds.LisPenden.LISPENDEN_TYPES['foreclosure'])
+
+        # any properties with >= 1 foreclosures since ending 2017
+        query = '/properties/?q=criteria_0=ALL+option_0A=lispenden__count__gte=1,lispenden__fileddate__gte=2017-01-01,lispenden__type=foreclosure'
+        response = self.client.get(query, format="json")
+
+        self.assertEqual(response.status_code, 401)

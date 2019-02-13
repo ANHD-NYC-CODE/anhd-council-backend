@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.urls import include, path
 from rest_framework.test import APITestCase, URLPatternsTestCase
 from app.tests.base_test import BaseTest
-
+from datasets import models as ds
 from datasets import views as v
 import logging
 logging.disable(logging.CRITICAL)
@@ -271,8 +271,8 @@ class PropertyViewTests(BaseTest, TestCase):
 
     def test_property_lispendens(self):
         property = self.property_factory(bbl="1")
-        self.lispenden_factory(property=property)
-        self.lispenden_factory(property=property)
+        self.lispenden_factory(property=property, type=ds.LisPenden.LISPENDEN_TYPES['foreclosure'])
+        self.lispenden_factory(property=property, type=ds.LisPenden.LISPENDEN_TYPES['foreclosure'])
 
         token = self.get_access_token()
 
@@ -282,15 +282,3 @@ class PropertyViewTests(BaseTest, TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
-
-    def test_property_buildings_summary(self):
-        property = self.property_factory(bbl="1")
-        building1 = self.building_factory(property=property, bin="10a", lhnd="100", hhnd="100")
-        building2 = self.building_factory(property=property, bin="10b", lhnd="102", hhnd="102")
-
-        response = self.client.get('/properties/1/buildings-summary/')
-        content = response.data
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(content["buildings"]["items"]), 2)
-        self.assertEqual(content["buildings"]["items"][0]["house_number"], "102")

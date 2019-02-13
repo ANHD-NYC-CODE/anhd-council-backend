@@ -35,7 +35,7 @@ class CouncilHousingTypeSummarySerializer(serializers.ModelSerializer):
             "rent_regulated_count": council_properties.rentreg().count(),
             "small_homes_count": council_properties.smallhome().count(),
             "market_rate_count": council_properties.marketrate().count(),
-            "public_housing_count": council_properties.publichousingcount().count()
+            "public_housing_count": council_properties.publichousing().count()
         }
 
 

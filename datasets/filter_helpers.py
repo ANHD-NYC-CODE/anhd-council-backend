@@ -122,11 +122,6 @@ class AdvancedQueryField(forms.Field):
     def __init__(self, *args, **kwargs):
         super(AdvancedQueryField, self).__init__(*args, **kwargs)
 
-    def compress(self, data_list):
-        if data_list:
-            import pdb
-            pdb.set_trace()
-
 
 class AdvancedQueryFilter(django_filters.Filter):
     field_class = AdvancedQueryField
