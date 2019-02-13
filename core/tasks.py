@@ -54,7 +54,7 @@ def async_seed_file(self, file_path, update_id):
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
         if update:
-            async_send_update_error_mail.delay(update, str(e))
+            async_send_update_error_mail.delay(update.id, str(e))
         else:
             async_send_general_task_error_mail.delay(str(e))
 
@@ -68,7 +68,7 @@ def async_seed_table(self, update_id):
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
         if update:
-            async_send_update_error_mail.delay(update, str(e))
+            async_send_update_error_mail.delay(update.id, str(e))
         else:
             async_send_general_task_error_mail.delay(str(e))
 
