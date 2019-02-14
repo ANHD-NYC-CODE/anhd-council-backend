@@ -176,7 +176,7 @@ TIME_ZONE = "America/New_York"
 # https://flower.readthedocs.io/en/latest/reverse-proxy.html#reverse-proxy
 ##
 
-DJANGO_CELERY_BEAT_TZ_AWARE = False  # potential fix for beat spamming tasks?
+DJANGO_CELERY_BEAT_TZ_AWARE = True  # potential fix for beat spamming tasks?
 CELERY_ENABLE_UTC = False
 CELERYBEAT_SCHEDULER = 'django_celery_beat.schedulers.DatabaseScheduler'
 
