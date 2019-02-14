@@ -29,7 +29,7 @@ def async_send_update_success_mail(self, update_id):
     return send_update_success_mail(update)
 
 
-@app.task(bind=True, queue='celery', max_retries=0)
+@app.task(bind=True, queue='celery', acks_late=True, max_retries=1)
 def async_create_update(self, dataset_id):
     try:
         dataset = c.Dataset.objects.filter(id=dataset_id).first()
@@ -45,7 +45,7 @@ def async_create_update(self, dataset_id):
         raise e
 
 
-@app.task(bind=True, queue='update', max_retries=0)
+@app.task(bind=True, queue='update', acks_late=True, max_retries=1)
 def async_seed_file(self, file_path, update_id):
     try:
         update = c.Update.objects.get(id=update_id)
@@ -61,7 +61,7 @@ def async_seed_file(self, file_path, update_id):
         raise e
 
 
-@app.task(bind=True, queue='update', max_retries=0)
+@app.task(bind=True, queue='update', acks_late=True, max_retries=1)
 def async_seed_table(self, update_id):
     try:
         update = c.Update.objects.get(id=update_id)
@@ -76,7 +76,7 @@ def async_seed_table(self, update_id):
         raise e
 
 
-@app.task(bind=True, queue='celery', max_retries=0)
+@app.task(bind=True, queue='celery', acks_late=True, max_retries=1)
 def async_download_start(self, dataset_id):
     try:
         dataset = c.Dataset.objects.filter(id=dataset_id).first()
@@ -92,7 +92,7 @@ def async_download_start(self, dataset_id):
         raise e
 
 
-@app.task(bind=True, queue='celery', max_retries=0)
+@app.task(bind=True, queue='celery', acks_late=True, max_retries=1)
 def async_download_and_update(self, dataset_id):
     try:
         dataset = c.Dataset.objects.filter(id=dataset_id).first()
@@ -111,7 +111,7 @@ def async_download_and_update(self, dataset_id):
         raise e
 
 
-@app.task(bind=True, queue='update', max_retries=0)
+@app.task(bind=True, queue='update', acks_late=True, max_retries=1)
 def async_update_from_file(self, file_id, previous_file_id):
     try:
         update = None
