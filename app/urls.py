@@ -29,7 +29,6 @@ urlpatterns = [
     path('docs/', include_docs_urls(title='API', description='API Documentation')),
     path('api/token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
-    url(r'^admin/statuscheck/', include('celerybeat_status.urls')),
     path('', include('datasets.urls')),
 
 ]

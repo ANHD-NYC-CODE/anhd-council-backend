@@ -34,7 +34,6 @@ django-dotenv = "*"
 djangorestframework-csv = "*"
 gunicorn = "*"
 django-polymorphic = "*"
-django-celerybeat-status = "*"
 
 [requires]
 python_version = "3.6.5"

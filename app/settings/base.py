@@ -48,7 +48,6 @@ INSTALLED_APPS = [
     'core',
     'datasets',
     'users.apps.UsersConfig',
-    'celerybeat_status'
 ]
 
 AUTH_USER_MODEL = 'users.CustomUser'
@@ -214,9 +213,12 @@ CELERY_RESULT_BACKEND = 'django-db'
 CELERY_BACKEND = 'rpc://'
 # Sensible settings for celery
 CELERY_ALWAYS_EAGER = False
-CELERY_ACKS_LATE = True
+CELERY_ACKS_LATE = False
 CELERY_TASK_PUBLISH_RETRY = True
 CELERY_DISABLE_RATE_LIMITS = False
+CELERY_BROKER_TRANSPORT_OPTIONS = {
+    'visibility_timeout': 36000  # 10 hours
+}
 
 LOGGING = {
     'version': 1,

@@ -63,6 +63,12 @@
     # 8am every morning
     hour: "8"
     timezone: "America/New_York"
+- model: django_celery_beat.crontabschedule
+  pk: 10
+  fields:
+    # every minute
+    minute: "*"
+    timezone: "America/New_York"
 - model: django_celery_beat.periodictask
   pk: 1
   fields:
@@ -261,5 +267,15 @@
     task: "app.tasks.clear_cache"
     crontab: 9
     args: "[]"
+    kwargs: "{}"
+    date_changed: "2019-01-01"
+- model: django_celery_beat.periodictask
+  pk: 21
+  fields:
+    name: "Test"
+    description: "test task."
+    task: "app.tasks.add"
+    crontab: 10
+    args: "[1, 2]"
     kwargs: "{}"
     date_changed: "2019-01-01"
