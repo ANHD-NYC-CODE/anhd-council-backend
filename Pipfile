@@ -36,7 +36,7 @@ gunicorn = "*"
 django-polymorphic = "*"
 
 [requires]
-python_version = "3.6.5"
+python_version = "3.5.6"
 
 [pipenv]
 allow_prereleases = true

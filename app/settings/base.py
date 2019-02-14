@@ -169,7 +169,7 @@ USE_L10N = True
 USE_TZ = True
 TIME_ZONE = "America/New_York"
 # https://github.com/celery/django-celery-beat/issues/95
-# CELERY_TIMEZONE = "America/New_York"
+CELERY_TIMEZONE = "America/New_York"
 
 ##
 # TODO - setup flower auth
