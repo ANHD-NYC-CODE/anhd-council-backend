@@ -169,15 +169,9 @@ USE_L10N = True
 USE_TZ = True
 TIME_ZONE = "America/New_York"
 # https://github.com/celery/django-celery-beat/issues/95
-CELERY_TIMEZONE = "America/New_York"
-
-##
-# TODO - setup flower auth
-# https://flower.readthedocs.io/en/latest/reverse-proxy.html#reverse-proxy
-##
-
+# CELERY_TIMEZONE = TIME_ZONE
+CELERY_ENABLE_UTC = True
 DJANGO_CELERY_BEAT_TZ_AWARE = True  # potential fix for beat spamming tasks?
-CELERY_ENABLE_UTC = False
 CELERYBEAT_SCHEDULER = 'django_celery_beat.schedulers.DatabaseScheduler'
 
 # https://stackoverflow.com/questions/19853378/how-to-keep-multiple-independent-celery-queues
