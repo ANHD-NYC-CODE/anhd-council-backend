@@ -330,5 +330,6 @@ ACTIVE_MODELS = [
     'PublicHousingRecord',
     'TaxLien',
     'LisPenden',
-    'LisPendenComment'
+    'LisPendenComment',
+    'AddressRecord'
 ]
