@@ -1,10 +1,12 @@
 from django.db import models
 from django.db.models import Q
+from core import models as c
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from datasets.utils.validation_filters import is_null, exceeds_char_length
 from core.utils.transform import from_csv_file_to_gen, with_bbl
 from core.utils.address import normalize_street
 from django.contrib.postgres.search import SearchVector, SearchVectorField
+from core.tasks import async_create_update
 import logging
 from datasets import models as ds
 
@@ -78,7 +80,7 @@ class Building(BaseDatasetModel, models.Model):
     def seed_or_update_self(self, **kwargs):
         logger.debug("Seeding/Updating {}", self.__name__)
         self.bulk_seed(**kwargs, overwrite=True)
-        ds.AddressRecord.build_table(overwrite=True)
+        async_create_update.delay(c.Dataset.objects.get(model_name='AddressRecord').id)
 
     def __str__(self):
         return str(self.bin)

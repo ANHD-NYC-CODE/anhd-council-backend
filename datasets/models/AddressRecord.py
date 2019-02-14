@@ -132,6 +132,10 @@ class AddressRecord(BaseDatasetModel, models.Model):
         return temp_file_path
 
     @classmethod
+    def seed_or_update_self(self, **kwargs):
+        self.build_table(overwrite=True)
+
+    @classmethod
     def build_table(self, **kwargs):
         csv_path = self.build_table_csv(**kwargs)
         copy_insert_from_csv(self._meta.db_table, csv_path, **kwargs)

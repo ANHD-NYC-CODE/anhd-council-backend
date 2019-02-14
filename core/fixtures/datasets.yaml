@@ -183,3 +183,9 @@
     model_name: LisPendenComment
     automated: False
     update_instructions: "1) merge all boroughs into single file - lp_lispendens_comments_<month><year>.csv - use these headers: KEY,DATE-COMMENTS 2) Clean extra columns out 3) upload file to app 4) update"
+- model: core.dataset
+  pk: 30
+  fields:
+    name: Address Record
+    model_name: AddressRecord
+    automated: True

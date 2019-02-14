@@ -61,6 +61,16 @@ def async_seed_file(self, file_path, update_id):
         raise e
 
 
+@app.task(bind=True, queue='update', acks_late=True, max_retires=1)
+def async_build_addresses(self):
+    try:
+        ds.AddressRecord.build_table(overwrite=True)
+    except Exception as e:
+        logger.error('Error during task: {}'.format(e))
+        async_send_general_task_error_mail.delay(str(e))
+        raise e
+
+
 @app.task(bind=True, queue='update', acks_late=True, max_retries=1)
 def async_seed_table(self, update_id):
     try:
