@@ -1,4 +1,4 @@
-FROM python:3.6.5
+FROM python:3.5.6
 COPY . /app/
 WORKDIR /app/
 # Latest version of pipenv, currently broken with default version
