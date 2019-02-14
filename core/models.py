@@ -118,7 +118,7 @@ def auto_seed_on_create(sender, instance, created, **kwargs):
     def on_commit():
         if created == True:
             if not instance.dataset and not instance.file:
-                raise Exception("File not present")
+                raise Exception("File and dataset not present")
             elif not instance.dataset:
                 instance.dataset = instance.file.dataset
 
