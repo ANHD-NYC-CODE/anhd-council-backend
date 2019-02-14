@@ -42,6 +42,7 @@ def async_create_update(self, dataset_id):
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
         async_send_general_task_error_mail.delay(str(e))
+        raise e
 
 
 @app.task(bind=True, queue='update', max_retries=0)
@@ -57,6 +58,7 @@ def async_seed_file(self, file_path, update_id):
             async_send_update_error_mail.delay(update.id, str(e))
         else:
             async_send_general_task_error_mail.delay(str(e))
+        raise e
 
 
 @app.task(bind=True, queue='update', max_retries=0)
@@ -71,6 +73,7 @@ def async_seed_table(self, update_id):
             async_send_update_error_mail.delay(update.id, str(e))
         else:
             async_send_general_task_error_mail.delay(str(e))
+        raise e
 
 
 @app.task(bind=True, queue='celery', max_retries=0)
@@ -86,6 +89,7 @@ def async_download_start(self, dataset_id):
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
         async_send_general_task_error_mail.delay(str(e))
+        raise e
 
 
 @app.task(bind=True, queue='celery', max_retries=0)
@@ -104,6 +108,7 @@ def async_download_and_update(self, dataset_id):
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
         async_send_general_task_error_mail.delay(str(e))
+        raise e
 
 
 @app.task(bind=True, queue='update', max_retries=0)
@@ -121,3 +126,4 @@ def async_update_from_file(self, file_id, previous_file_id):
             async_send_update_error_mail.delay(update.id, str(e))
         else:
             async_send_general_task_error_mail.delay(str(e))
+        raise e
