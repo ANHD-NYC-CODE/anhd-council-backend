@@ -275,13 +275,3 @@
     args: "[]"
     kwargs: "{}"
     date_changed: "2019-01-01"
-- model: django_celery_beat.periodictask
-  pk: 21
-  fields:
-    name: "Test"
-    description: "test task."
-    task: "app.tasks.add"
-    crontab: 10
-    args: "[1, 2]"
-    kwargs: "{}"
-    date_changed: "2019-01-01"

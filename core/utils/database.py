@@ -87,18 +87,7 @@ def bulk_insert_from_file(model, file_path, **kwargs):
         sql = copy_query(table_name, columns)
 
         try:
-
-            with transaction.atomic():
-                if 'overwrite' in kwargs and kwargs['overwrite']:
-                    connection.cursor().execute('DELETE FROM {};'.format(table_name))
-                logger.debug("* Beginning Bulk CSV copy.")
-                connection.cursor().copy_expert(sql, temp_file)
-                logger.debug(" * Bulk CSV copy completed successfully.")
-            if 'update' in kwargs and kwargs['update']:
-                reader = csv.reader(open(temp_file_path, 'r'))
-                next(reader, None)  # skip headers
-                kwargs['update'].rows_created = sum(1 for row in reader)
-                kwargs['update'].save()
+            copy_insert_from_csv(table_name, temp_file_path, **kwargs)
         except Exception as e:
             print(e)
             logger.warning("Database - Bulk Import Error - beginning Batch seeding. Error: {}".format(e))
@@ -109,6 +98,25 @@ def bulk_insert_from_file(model, file_path, **kwargs):
 
     if 'callback' in kwargs and kwargs['callback']:
         kwargs['callback']()
+
+
+def copy_insert_from_csv(table_name, temp_file_path, **kwargs):
+    with open(temp_file_path, 'r') as temp_file:
+        columns = temp_file.readline().replace('"', '').replace('\n', '')
+        sql = copy_query(table_name, columns)
+
+        with transaction.atomic():
+            if 'overwrite' in kwargs and kwargs['overwrite']:
+                connection.cursor().execute('DELETE FROM {};'.format(table_name))
+            logger.debug("* Beginning Bulk CSV copy.")
+            connection.cursor().copy_expert(sql, temp_file)
+            logger.debug(" * Bulk CSV copy completed successfully.")
+        if 'update' in kwargs and kwargs['update']:
+            reader = csv.reader(open(temp_file_path, 'r'))
+            next(reader, None)  # skip headers
+            kwargs['update'].rows_created = sum(1 for row in reader)
+            kwargs['update'].save()
+    os.remove(temp_file_path)
 
 
 def upsert_query(table_name, row, primary_key):

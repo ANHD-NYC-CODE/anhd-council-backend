@@ -31,7 +31,7 @@ class AddressRecordTests(BaseTest, TestCase):
         # range of 2, dash number
         building6 = self.building_factory(bin=6, lhnd="1-10", hhnd="1-12", stname="Real Street",
                                           boro="1", zipcode="99999", property=property)
-        ds.AddressRecord.build_table()
+        ds.AddressRecord.build_table(overwrite=True)
 
         self.assertEqual(ds.AddressRecord.objects.count(), 9)
         address1 = ds.AddressRecord.objects.all()[0]
@@ -96,11 +96,11 @@ class AddressRecordTests(BaseTest, TestCase):
         building1 = self.building_factory(bin=1, lhnd="1", hhnd="1", stname="Fake Street",
                                           boro="1", zipcode="99999", property=property)
 
-        ds.AddressRecord.build_table()
+        ds.AddressRecord.build_table(overwrite=True)
 
         building2 = self.building_factory(bin=2, lhnd="1", hhnd="1", stname="Real Street",
                                           boro="1", zipcode="99999", property=property)
 
-        ds.AddressRecord.build_table()
+        ds.AddressRecord.build_table(overwrite=True)
 
         self.assertEqual(ds.AddressRecord.objects.count(), 2)
