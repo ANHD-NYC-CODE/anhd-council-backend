@@ -1,5 +1,14 @@
 version: '2'
 services:
+  celery_default:
+    env_file:
+      - .env.docker
+  celery_update:
+    env_file:
+      - .env.docker
+  celerybeat:
+    env_file:
+      - .env.docker
   flower:
     ports:
       - '8888:8888'
