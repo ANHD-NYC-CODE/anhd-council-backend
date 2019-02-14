@@ -169,8 +169,8 @@ USE_L10N = True
 USE_TZ = True
 TIME_ZONE = "America/New_York"
 # https://github.com/celery/django-celery-beat/issues/95
-# CELERY_TIMEZONE = TIME_ZONE
-CELERY_ENABLE_UTC = True
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_ENABLE_UTC = False
 DJANGO_CELERY_BEAT_TZ_AWARE = True  # potential fix for beat spamming tasks?
 CELERYBEAT_SCHEDULER = 'django_celery_beat.schedulers.DatabaseScheduler'
 
