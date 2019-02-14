@@ -26,6 +26,7 @@ def clean_temp_directory():
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
         async_send_general_task_error_mail.delay(str(e))
+        raise e
 
 
 @app.task(bind=True, queue='celery', default_retry_delay=60, max_retries=1)
@@ -35,3 +36,4 @@ def clear_cache():
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
         async_send_general_task_error_mail.delay(str(e))
+        raise e

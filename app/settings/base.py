@@ -181,8 +181,6 @@ DJANGO_CELERY_BEAT_TZ_AWARE = False  # potential fix for beat spamming tasks?
 CELERY_ENABLE_UTC = False
 CELERYBEAT_SCHEDULER = 'django_celery_beat.schedulers.DatabaseScheduler'
 
-CELERY_ACKS_LATE = True  # causes tasks to restart if worker was shut down
-
 # https://stackoverflow.com/questions/19853378/how-to-keep-multiple-independent-celery-queues
 # https://stackoverflow.com/questions/23129967/django-celery-multiple-queues-on-localhost-routing-not-working
 # celery queues setup
@@ -211,7 +209,7 @@ MEDIA_TEMP_ROOT = os.path.join(MEDIA_ROOT, 'temp')
 LOG_ROOT = os.path.join(BASE_DIR, 'logs')
 
 FLOWER_URL = "localhost:8888"
-CELERY_BROKER_URL = os.environ.get('REDIS_URL', "localhost:6378")
+CELERY_BROKER_URL = os.environ.get('REDIS_URL', "redis://localhost:6378")
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_BACKEND = 'rpc://'
 # Sensible settings for celery

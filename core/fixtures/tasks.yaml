@@ -30,7 +30,7 @@
   pk: 4
   fields:
     # midnight on 7th of every month
-    hour: "19"
+    hour: "0"
     day_of_month: "7"
     timezone: "America/New_York"
 - model: django_celery_beat.crontabschedule
