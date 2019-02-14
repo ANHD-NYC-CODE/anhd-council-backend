@@ -1,16 +1,18 @@
 from django.db import models
 from django.db.models import Q
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
-from core.utils.database import batch_upsert_from_gen
+from core.utils.database import copy_insert_from_csv
 from core.utils.address import normalize_street
 from django.contrib.postgres.search import SearchVector, SearchVectorField
 from datasets import models as ds
 from core.utils.bbl import code_to_boro
 from django.conf import settings
 from django.contrib.postgres.indexes import GinIndex
-
 import logging
 import re
+import os
+import csv
+import uuid
 
 logger = logging.getLogger('app')
 
@@ -39,19 +41,21 @@ class AddressRecord(BaseDatasetModel, models.Model):
         indexes = [GinIndex(fields=['address'])]
 
     @classmethod
-    def create_address_from_building(self, number='', letter='', building=None):
+    def write_row_from_building(self, number='', letter='', building=None, writer=None):
         try:
-            record = {}
-            record['key'] = "{}{}{}{}{}{}".format(number, letter, "".join(
-                building.stname.split()), building.boro, building.zipcode, building.bin)
-            record['bbl'] = building.bbl.bbl
-            record['bin'] = building.bin
-            record['zipcode'] = building.zipcode
-            record['borough'] = code_to_boro(building.boro)
-            record['street'] = building.stname
-            record['letter'] = letter
-            record['number'] = number
-            return record
+            row = [
+                number + letter + building.stname.replace(' ', '') + str(building.boro) + str(building.zipcode) + str(
+                    building.bin),
+                building.bbl.bbl,
+                building.bin,
+                number,
+                letter,
+                building.stname,
+                code_to_boro(building.boro),
+                building.zipcode,
+                ''
+            ]
+            writer.writerow(row)
         except ds.Property.DoesNotExist as e:
             logger.debug("AddressRecord build - property does not exist")
             return
@@ -83,53 +87,54 @@ class AddressRecord(BaseDatasetModel, models.Model):
         return (split[1], split[2])
 
     @classmethod
-    def build_table_gen(self, **kwargs):
-
+    def build_table_csv(self, **kwargs):
+        headers = [field.name for field in self._meta.get_fields()]
+        temp_file_path = os.path.join(settings.MEDIA_TEMP_ROOT, str(uuid.uuid4().hex) + '.csv')
         logger.debug("Building Table: {}", self.__name__)
 
-        for building in ds.Building.objects.all():
-            lhnd_split = building.lhnd.split('-')
-            hhnd_split = building.hhnd.split('-')
-            if len(lhnd_split) <= 1:
-                # numbers formatted: 50
-                low_number, low_letter = self.split_number_letter(building.lhnd)
-                high_number, high_letter = self.split_number_letter(building.hhnd)
-                # create rangelist
-                if int(low_number) != int(high_number):
-                    house_numbers = self.generate_rangelist(int(low_number), int(high_number))
-                    for number in house_numbers:
-                        address = self.create_address_from_building(number=number, letter='', building=building)
-                        if address:
-                            yield address
-                else:
-                    address = self.create_address_from_building(number=low_number, letter=low_letter, building=building)
-                    if address:
-                        yield address
+        with open(temp_file_path, 'w') as temp_file:
+            writer = csv.writer(temp_file, delimiter=',')
+            writer.writerow(headers)
 
-            else:
+            for building in ds.Building.objects.filter(bbl__isnull=False):
+                lhnd_split = building.lhnd.split('-')
+                hhnd_split = building.hhnd.split('-')
+                # numbers formatted: 50
+                if len(lhnd_split) <= 1:
+                    low_number, low_letter = self.split_number_letter(building.lhnd)
+                    high_number, high_letter = self.split_number_letter(building.hhnd)
+                    # create rangelist
+                    if int(low_number) != int(high_number):
+                        house_numbers = self.generate_rangelist(int(low_number), int(high_number))
+                        for number in house_numbers:
+                            self.write_row_from_building(number=number, letter='',
+                                                         building=building, writer=writer)
+                    else:
+                        self.write_row_from_building(number=low_number, letter=low_letter,
+                                                     building=building, writer=writer)
+
                 # numbers formatted: 50-10
-                low_numbers = (self.split_number_letter(lhnd_split[0]), self.split_number_letter(lhnd_split[1]))
-                # outputs: ((1, a), (2, a))
-                high_numbers = (self.split_number_letter(hhnd_split[0]), self.split_number_letter(hhnd_split[1]))
-                # create rangelist
-                if int(low_numbers[1][0]) != int(high_numbers[1][0]):
-                    house_numbers = self.generate_rangelist(
-                        int(low_numbers[1][0]), int(high_numbers[1][0]), prefix=low_numbers[0][0] + '-')
-                    for number in house_numbers:
-                        address = self.create_address_from_building(number=number, letter='', building=building)
-                        if address:
-                            yield address
                 else:
-                    combined_number = low_numbers[0][0] + "-" + low_numbers[1][0]
-                    address = self.create_address_from_building(
-                        number=combined_number, letter=None, building=building)
-                    if address:
-                        yield address
+                    low_numbers = (self.split_number_letter(lhnd_split[0]), self.split_number_letter(lhnd_split[1]))
+                    # outputs: ((1, a), (2, a))
+                    high_numbers = (self.split_number_letter(hhnd_split[0]), self.split_number_letter(hhnd_split[1]))
+                    # create rangelist
+                    if int(low_numbers[1][0]) != int(high_numbers[1][0]):
+                        house_numbers = self.generate_rangelist(
+                            int(low_numbers[1][0]), int(high_numbers[1][0]), prefix=low_numbers[0][0] + '-')
+                        for number in house_numbers:
+                            self.write_row_from_building(number=number, letter='', building=building, writer=writer)
+                    else:
+                        combined_number = low_numbers[0][0] + "-" + low_numbers[1][0]
+                        self.write_row_from_building(
+                            number=combined_number, letter='', building=building, writer=writer)
+
+        return temp_file_path
 
     @classmethod
     def build_table(self, **kwargs):
-        rows = self.build_table_gen(**kwargs)
-        batch_upsert_from_gen(self, rows, settings.BATCH_SIZE)
+        csv_path = self.build_table_csv(**kwargs)
+        copy_insert_from_csv(self._meta.db_table, csv_path, **kwargs)
         self.build_search()
 
     @classmethod

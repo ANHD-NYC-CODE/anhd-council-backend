@@ -78,7 +78,7 @@ class Building(BaseDatasetModel, models.Model):
     def seed_or_update_self(self, **kwargs):
         logger.debug("Seeding/Updating {}", self.__name__)
         self.bulk_seed(**kwargs, overwrite=True)
-        ds.AddressRecord.build_table()
+        ds.AddressRecord.build_table(overwrite=True)
 
     def __str__(self):
         return str(self.bin)
