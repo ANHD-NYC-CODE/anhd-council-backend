@@ -196,7 +196,7 @@ def batch_upsert_rows(model, rows, batch_size, update=None):
             if update:
                 rows_created = model.objects.count() - starting_count
                 update.rows_created = update.rows_created + rows_created
-                update.rows_updated = update.rows_updated + (len(rows) - rows_created)
+                update.rows_updated = update.rows_updated + (rows_length - rows_created)
                 update.save()
 
         except Exception as e:

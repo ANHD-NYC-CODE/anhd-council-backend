@@ -29,6 +29,8 @@ class AcrisRealMaster(BaseDatasetModel, models.Model):
                       "AGMT", "SPRD", "AL&R", "M&CON")
     LEASE_DOC_TYPES = ("LEAS", "ASSTO", "MLEA1")
 
+    TAX_DOC_TYPES = ("RPTT")
+
     @classmethod
     def construct_sales_query(self, relation_path):
         q_list = []
