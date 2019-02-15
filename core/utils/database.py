@@ -79,7 +79,8 @@ def bulk_insert_from_file(model, file_path, **kwargs):
 
     # create new csv with cleaned rows
     temp_file_path = os.path.join(settings.MEDIA_TEMP_ROOT, str(uuid.uuid4().hex) + '.csv')
-    rows = model.transform_self_from_file(file_path, kwargs['update'])
+    update = kwargs['update'] if 'update' in kwargs else None
+    rows = model.transform_self_from_file(file_path, update=update)
     gen_to_csv(rows, temp_file_path)
 
     with open(temp_file_path, 'r') as temp_file:
