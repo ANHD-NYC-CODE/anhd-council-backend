@@ -64,7 +64,7 @@ SENDGRID_API_KEY=<variable> EMAIL_USER=<variable> celery -A app...
 
 1) `ssh -t anhd@45.55.44.160 "cd /var/www/anhd-council-backend && sudo sh pull.sh"`
 
- - or if already SSHed inside, Run the deploy script `sh deploy.sh`
+ - or if already SSHed inside, Run the build script `sh build.prod.sh`
   - pulls from master
   - restarts app
   - restarts nginx
