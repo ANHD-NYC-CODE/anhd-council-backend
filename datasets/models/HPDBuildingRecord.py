@@ -24,7 +24,7 @@ class HPDBuildingRecord(BaseDatasetModel, models.Model):
     highhousenumber = models.TextField(blank=True, null=True)
     streetname = models.TextField(blank=True, null=True)
     zip = models.TextField(blank=True, null=True)
-    block = models.SmallIntegerField(blank=True, null=True)
+    block = models.IntegerField(blank=True, null=True)
     lot = models.IntegerField(blank=True, null=True)
     communityboard = models.IntegerField(blank=True, null=True)
     censustract = models.TextField(blank=True, null=True)
