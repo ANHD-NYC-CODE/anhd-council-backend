@@ -172,6 +172,7 @@ def batch_upsert_from_gen(model, rows, batch_size, **kwargs):
                         logger.info("Database - Batch upserts completed for {}.".format(model.__name__))
                         break
                     else:
+                        logger.debug("Seeding next batch for {}.".format(model.__name__))
                         update = kwargs['update'] if 'update' in kwargs else None
                         batch_upsert_rows(model, batch, batch_size, update=update)
 
