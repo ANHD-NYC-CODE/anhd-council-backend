@@ -41,7 +41,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
         indexes = [GinIndex(fields=['address'])]
 
     @classmethod
-    def write_row_from_building(self, number='', letter='', building=None, writer=None):
+    def write_row_from_building(self, number='', letter='', building=None, temp_file_path=None):
         try:
             row = [
                 number + letter + building.stname.replace(' ', '') + str(building.boro) + str(building.zipcode) + str(
@@ -55,7 +55,10 @@ class AddressRecord(BaseDatasetModel, models.Model):
                 building.zipcode,
                 ''
             ]
-            writer.writerow(row)
+            with open(temp_file_path, 'a') as temp_file:
+                writer = csv.writer(temp_file, delimiter=',')
+                writer.writerow(row)
+
         except ds.Property.DoesNotExist as e:
             logger.debug("AddressRecord build - property does not exist")
             return
@@ -91,43 +94,43 @@ class AddressRecord(BaseDatasetModel, models.Model):
         headers = [field.name for field in self._meta.get_fields()]
         temp_file_path = os.path.join(settings.MEDIA_TEMP_ROOT, str(uuid.uuid4().hex) + '.csv')
         logger.debug("Building Table: {}", self.__name__)
-
-        with open(temp_file_path, 'w') as temp_file:
+        with open(temp_file_path, 'a') as temp_file:
             writer = csv.writer(temp_file, delimiter=',')
             writer.writerow(headers)
 
-            for building in ds.Building.objects.filter(bbl__isnull=False):
-                lhnd_split = building.lhnd.split('-')
-                hhnd_split = building.hhnd.split('-')
-                # numbers formatted: 50
-                if len(lhnd_split) <= 1:
-                    low_number, low_letter = self.split_number_letter(building.lhnd)
-                    high_number, high_letter = self.split_number_letter(building.hhnd)
-                    # create rangelist
-                    if int(low_number) != int(high_number):
-                        house_numbers = self.generate_rangelist(int(low_number), int(high_number))
-                        for number in house_numbers:
-                            self.write_row_from_building(number=number, letter='',
-                                                         building=building, writer=writer)
-                    else:
-                        self.write_row_from_building(number=low_number, letter=low_letter,
-                                                     building=building, writer=writer)
-
-                # numbers formatted: 50-10
+        for building in ds.Building.objects.filter(bbl__isnull=False):
+            lhnd_split = building.lhnd.split('-')
+            hhnd_split = building.hhnd.split('-')
+            # numbers formatted: 50
+            if len(lhnd_split) <= 1:
+                low_number, low_letter = self.split_number_letter(building.lhnd)
+                high_number, high_letter = self.split_number_letter(building.hhnd)
+                # create rangelist
+                if int(low_number) != int(high_number):
+                    house_numbers = self.generate_rangelist(int(low_number), int(high_number))
+                    for number in house_numbers:
+                        self.write_row_from_building(temp_file_path=temp_file_path, number=number, letter='',
+                                                     building=building)
                 else:
-                    low_numbers = (self.split_number_letter(lhnd_split[0]), self.split_number_letter(lhnd_split[1]))
-                    # outputs: ((1, a), (2, a))
-                    high_numbers = (self.split_number_letter(hhnd_split[0]), self.split_number_letter(hhnd_split[1]))
-                    # create rangelist
-                    if int(low_numbers[1][0]) != int(high_numbers[1][0]):
-                        house_numbers = self.generate_rangelist(
-                            int(low_numbers[1][0]), int(high_numbers[1][0]), prefix=low_numbers[0][0] + '-')
-                        for number in house_numbers:
-                            self.write_row_from_building(number=number, letter='', building=building, writer=writer)
-                    else:
-                        combined_number = low_numbers[0][0] + "-" + low_numbers[1][0]
-                        self.write_row_from_building(
-                            number=combined_number, letter='', building=building, writer=writer)
+                    self.write_row_from_building(temp_file_path=temp_file_path, number=low_number, letter=low_letter,
+                                                 building=building)
+
+            # numbers formatted: 50-10
+            else:
+                low_numbers = (self.split_number_letter(lhnd_split[0]), self.split_number_letter(lhnd_split[1]))
+                # outputs: ((1, a), (2, a))
+                high_numbers = (self.split_number_letter(hhnd_split[0]), self.split_number_letter(hhnd_split[1]))
+                # create rangelist
+                if int(low_numbers[1][0]) != int(high_numbers[1][0]):
+                    house_numbers = self.generate_rangelist(
+                        int(low_numbers[1][0]), int(high_numbers[1][0]), prefix=low_numbers[0][0] + '-')
+                    for number in house_numbers:
+                        self.write_row_from_building(temp_file_path=temp_file_path,
+                                                     number=number, letter='', building=building)
+                else:
+                    combined_number = low_numbers[0][0] + "-" + low_numbers[1][0]
+                    self.write_row_from_building(temp_file_path=temp_file_path,
+                                                 number=combined_number, letter='', building=building)
 
         return temp_file_path
 
