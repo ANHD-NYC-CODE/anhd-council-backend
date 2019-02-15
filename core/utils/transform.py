@@ -13,6 +13,10 @@ from .address import normalize_street, normalize_street_number, normalize_apartm
 from .bbl import bbl
 from .utility import merge
 from core.utils.csv_helpers import count_csv_rows
+import logging
+
+logger = logging.getLogger('app')
+
 
 invalid_header_chars = ["\n", "\r", ' ', '-', '#', '.', "'", '"', '_', '/', '(', ')', ':', "&", "’"]
 replace_header_chars = [('%', 'pct')]
@@ -127,6 +131,7 @@ def from_xlsx_file_to_gen(file_path, worksheet, update):
 
 
 def from_csv_file_to_gen(file_path_or_generator, update=None, cleaner=None):
+    logger.debug("Converting csv file to gen...")
     """
     input: String | Generator
     outs: Generator
