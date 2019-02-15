@@ -86,7 +86,8 @@ class BaseDatasetModel():
 
     @classmethod
     def seed_with_upsert(self, **kwargs):
-        return batch_upsert_from_gen(self, self.transform_self_from_file(kwargs['file_path'], kwargs['update']), settings.BATCH_SIZE, update=kwargs['update'])
+        update = kwargs['update'] if 'update' in kwargs else None
+        return batch_upsert_from_gen(self, self.transform_self_from_file(kwargs['file_path'], update=update), settings.BATCH_SIZE, update=update)
 
     @classmethod
     def bulk_seed(self, **kwargs):

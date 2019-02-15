@@ -48,6 +48,7 @@ def async_create_update(self, dataset_id):
 @app.task(bind=True, queue='update', acks_late=True, max_retries=1)
 def async_seed_file(self, file_path, update_id):
     try:
+        # manually set file and previous file in admin ui
         update = c.Update.objects.get(id=update_id)
         file_path = os.path.join(settings.MEDIA_ROOT, os.path.basename(file_path))
         logger.info("Beginning async seeding - {} - c.Update: {}".format(update.file.dataset.name, update.id))
