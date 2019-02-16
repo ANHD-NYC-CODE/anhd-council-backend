@@ -110,8 +110,9 @@ def async_download_and_update(self, dataset_id):
         logger.info("Starting async download and update for dataset: {}".format(dataset.name))
         if dataset:
             previous_file = dataset.latest_file()
+            previous_file_id = previous_file.id if previous_file else None
             file = dataset.download()
-            async_update_from_file.delay(file.id, previous_file.id)
+            async_update_from_file.delay(file.id, previous_file_id)
             dataset.delete_old_files()
         else:
             logger.error("*ERROR* - Task Failure - No dataset found in async_download_start")
