@@ -71,10 +71,8 @@ INTERNAL_IPS = [
 CORS_ORIGIN_ALLOW_ALL = False
 
 CORS_ORIGIN_WHITELIST = (
-    "http://localhost:3000/",
-    "https://portal.displacementalert.org/",
-    "http://portal.displacementalert.org",
-    "nginx://nginx"
+    "localhost:3000",
+    "portal.displacementalert.org"
 )
 
 ROOT_URLCONF = 'app.urls'
