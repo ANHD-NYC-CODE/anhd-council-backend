@@ -72,7 +72,9 @@ CORS_ORIGIN_ALLOW_ALL = False
 
 CORS_ORIGIN_WHITELIST = (
     "http://localhost:3000/",
-    "https://portal.displacementalert.org/"
+    "https://portal.displacementalert.org/",
+    "http://portal.displacementalert.org",
+    "nginx://nginx"
 )
 
 ROOT_URLCONF = 'app.urls'
