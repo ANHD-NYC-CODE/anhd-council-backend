@@ -34,6 +34,7 @@ django-dotenv = "*"
 djangorestframework-csv = "*"
 gunicorn = "*"
 django-polymorphic = "*"
+django-cors-headers = "*"
 
 [requires]
 python_version = "3.5.6"
