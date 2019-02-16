@@ -51,7 +51,10 @@ class Dataset(models.Model):
         return latest
 
     def latest_file(self):
-        return self.datafile_set.latest('uploaded_date')
+        try:
+            return self.datafile_set.latest('uploaded_date')
+        except Exception as e:
+            return None
 
     def delete_old_files(self):
         # Deletes all but the last 2 files saved for this dataset.
