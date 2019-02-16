@@ -12,10 +12,11 @@ from datasets.filter_helpers import construct_or_q, construct_and_q
 class SearchViewSet(ApplicationViewSet, viewsets.ReadOnlyModelViewSet):
     def building_search(self, request, *args, **kwargs):
         self.serializer_class = serial.BuildingSearchSerializer
+        self.pagination_class = None
 
         search_term = None
         if 'fts' in request.query_params:
-            search_term = request.query_params['fts'].replace(',', '')
+            search_term = request.query_params['fts'].replace(',', '').strip()
 
             def construct_search_query(search_term, prefix_first=False):
                 split_terms = search_term.split(' ')

@@ -25,9 +25,9 @@ class StandardResultsSetPagination(PageNumberPagination):
 class ApplicationViewSet():
     def list(self, request, *args, **kwargs):
         self.pagination_class = StandardResultsSetPagination
-        if ('format' in kwargs and kwargs['format'] == 'csv') or ('format' in request.query_params and request.query_params['format'] == 'csv'):
+        if ('format' in request.query_params and request.query_params['format'] == 'csv') or ('format' in request.query_params and request.query_params['format'] == 'csv'):
             self.pagination_class = None
-        if ('format' in kwargs and kwargs['format'] == 'json'):
+        if ('format' in request.query_params and request.query_params['format'] == 'json'):
             self.pagination_class = None
         return super().list(request, *args, **kwargs)
 
