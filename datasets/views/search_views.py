@@ -7,9 +7,12 @@ from django.contrib.postgres.search import SearchVector
 from django.db.models import Q, F
 from django.contrib.postgres.search import SearchQuery, SearchRank
 from datasets.filter_helpers import construct_or_q, construct_and_q
+from rest_framework.permissions import IsAuthenticated
 
 
 class SearchViewSet(ApplicationViewSet, viewsets.ReadOnlyModelViewSet):
+    # permission_classes = (IsAuthenticated,)
+
     def building_search(self, request, *args, **kwargs):
         self.serializer_class = serial.BuildingSearchSerializer
         self.pagination_class = None

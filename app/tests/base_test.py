@@ -1,6 +1,6 @@
 from datasets import models as d_models
 from core import models as c_models
-from users.models import CustomUser
+from users.models import CustomUser, UserProfile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.files import File
 from django.conf import settings
@@ -16,6 +16,7 @@ import random
 
 class BaseTest(APITestCase, URLPatternsTestCase):
     urlpatterns = [
+        path('', include('users.urls')),
         path('', include('datasets.urls')),
         path('api/token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
         path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
@@ -63,6 +64,19 @@ class BaseTest(APITestCase, URLPatternsTestCase):
             username=username,
             password=password,
             is_active=True,
+            **kwargs
+        )
+        return factory
+
+    def userprofile_factory(self, user=None, council=None, **kwargs):
+        if not user:
+            user = self.user_factory()
+        if not council:
+            council = self.council_factory(),
+
+        factory = UserProfile.objects.create(
+            user=user,
+            council=council,
             **kwargs
         )
         return factory
