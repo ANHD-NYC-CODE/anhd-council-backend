@@ -108,3 +108,8 @@ venv.bak/
 
 celerybeat-schedule.db
 celerybeat.pid
+
+
+init-letsencrypt.sh
+nginx/.htpasswd
+nginx/certbot/
