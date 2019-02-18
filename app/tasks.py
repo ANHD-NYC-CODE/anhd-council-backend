@@ -2,6 +2,7 @@ from __future__ import absolute_import, unicode_literals
 from app.celery import app
 import shutil
 from core.tasks import async_send_update_error_mail
+from rest_framework_simplejwt.token_blacklist.management.commands import flushexpiredtokens
 from django.core import cache
 import celery
 
@@ -22,6 +23,7 @@ def shutdown(self):
 @app.task(bind=True, queue='celery', default_retry_delay=60, max_retries=1)
 def clean_temp_directory():
     try:
+        flushexpiredtokens.Command().handle()
         shutil.rmtree(settings.MEDIA_TEMP_ROOT)
     except Exception as e:
         logger.error('Error during task: {}'.format(e))

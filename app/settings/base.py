@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 
 import os
 from kombu import Exchange, Queue
+from datetime import timedelta
 
 BATCH_SIZE = 1000000
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -23,7 +24,8 @@ SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY', '')
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '%h(!920-v_1e6)%+@)$l9t5955a4m9v&_ipgawllvk-^_$2%=0'
+SECRET_KEY = os.environ.get('SECRET_KEY', '%h(!920-v_1e6)%+@)$l9t5955a4m9v&_ipgawllvk-^_$2%=0')
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
@@ -48,6 +50,7 @@ INSTALLED_APPS = [
     'core',
     'datasets',
     'users.apps.UsersConfig',
+    'rest_framework_simplejwt.token_blacklist'
 ]
 
 AUTH_USER_MODEL = 'users.CustomUser'
@@ -115,6 +118,14 @@ CACHES = {
         },
         "KEY_PREFIX": "DAP"
     }
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(hours=10),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+
 }
 
 
