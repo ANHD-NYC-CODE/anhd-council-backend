@@ -77,7 +77,7 @@ class ECBViolation(BaseDatasetModel, models.Model):
     @classmethod
     def update_set_filter(self, csv_reader, headers):
         for row in csv_reader:
-            if headers.index('ISSUE_DATE') and is_older_than(row[headers.index('ISSUE_DATE')], 4):
+            if row[headers.index('ISSUE_DATE')] and is_older_than(row[headers.index('ISSUE_DATE')], 4):
                 continue
             yield row
 
