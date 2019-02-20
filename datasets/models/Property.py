@@ -283,7 +283,6 @@ class Property(BaseDatasetModel, models.Model):
         for row in gen_rows:
             if is_null(row['bbl']) or exceeds_char_length(row['bbl'], 10):
                 continue
-            row['address'] = normalize_street(row['address'])
             yield row
 
     @classmethod
