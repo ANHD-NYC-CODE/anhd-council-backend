@@ -9,26 +9,37 @@ logger = logging.getLogger('app')
 
 class Eviction(BaseDatasetModel, models.Model):
     download_endpoint = "https://data.cityofnewyork.us/resource/fxkt-ewig.csv"
+    # "borough"
+    "court_index_number"
+    "docket_number"
+    "eviction_address"
+    "eviction_apt_num"
+    "eviction_zip"
+    "executed_date"
+    "marshal_first_name"
+    "marshal_last_name"
+    "residential_commercial_ind"
+    "schedule_status"
 
-    courtindex = models.TextField(primary_key=True, blank=False, null=False)
+    courtindexnumber = models.TextField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
     boro = models.TextField(blank=True, null=True)
     docketnumber = models.TextField(blank=True, null=True)
     evictionaddress = models.TextField(blank=True, null=True)
-    apt = models.TextField(blank=True, null=True)
-    zip = models.TextField(blank=True, null=True)
+    evictionaptnum = models.TextField(blank=True, null=True)
+    evictionzip = models.TextField(blank=True, null=True)
     uniqueid = models.TextField(blank=True, null=True)
     executeddate = models.DateTimeField(db_index=True, blank=True, null=True)
     marshalfirstname = models.TextField(blank=True, null=True)
     marshallastname = models.TextField(blank=True, null=True)
-    evictiontype = models.TextField(db_index=True, blank=True, null=True)
+    residentialcommercialind = models.TextField(db_index=True, blank=True, null=True)
     scheduledstatus = models.TextField(db_index=True, blank=True, null=True)
-    cleanedaddress1 = models.TextField(blank=True, null=True)
-    cleanedaddress2 = models.TextField(blank=True, null=True)
-    lat = models.DecimalField(decimal_places=8, max_digits=16, blank=True, null=True)
-    lng = models.DecimalField(decimal_places=8, max_digits=16, blank=True, null=True)
-    geocoder = models.TextField(blank=True, null=True)
+    # cleanedaddress1 = models.TextField(blank=True, null=True)
+    # cleanedaddress2 = models.TextField(blank=True, null=True)
+    # lat = models.DecimalField(decimal_places=8, max_digits=16, blank=True, null=True)
+    # lng = models.DecimalField(decimal_places=8, max_digits=16, blank=True, null=True)
+    # geocoder = models.TextField(blank=True, null=True)
 
     @classmethod
     def download(self):
@@ -111,6 +122,7 @@ class Eviction(BaseDatasetModel, models.Model):
     def link_eviction_to_pluto_by_address(self):
         evictions = self.objects.all()
         for eviction in evictions:
+            pattern = r'\d*.*?(LANE|EXPRESSWAY|PARKWAY|STREET|AVENUE|PLACE|BOULEVARD|DRIVE)'
             import pdb
             pdb.set_trace()
 
