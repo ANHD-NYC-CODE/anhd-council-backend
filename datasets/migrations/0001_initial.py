@@ -494,7 +494,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Eviction',
             fields=[
-                ('courtindex', models.TextField(primary_key=True, serialize=False)),
+                ('courtindexnumber', models.TextField(primary_key=True, serialize=False)),
                 ('boro', models.TextField(blank=True, null=True)),
                 ('docketnumber', models.TextField(blank=True, null=True)),
                 ('evictionaddress', models.TextField(blank=True, null=True)),

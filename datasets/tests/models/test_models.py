@@ -506,7 +506,7 @@ class EvictionTest(BaseTest, TestCase):
         self.assertEqual(new_update.rows_created, 1)
         self.assertEqual(new_update.rows_updated, 1)
         self.assertEqual(ds.Eviction.objects.first().scheduledstatus, 'scheduled')
-        changed_record = ds.Eviction.objects.filter(courtindex='76472/16')[0]
+        changed_record = ds.Eviction.objects.filter(courtindexnumber='76472/16')[0]
         self.assertEqual(changed_record.scheduledstatus, 'Executed')
 
 

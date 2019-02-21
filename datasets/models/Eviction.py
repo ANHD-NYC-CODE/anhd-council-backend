@@ -2,6 +2,10 @@ from django.db import models
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.utils.validation_filters import is_null
+from datasets import models as ds
+from core.utils.bbl import boro_to_abrv
+
+import re
 import logging
 
 logger = logging.getLogger('app')
@@ -9,22 +13,12 @@ logger = logging.getLogger('app')
 
 class Eviction(BaseDatasetModel, models.Model):
     download_endpoint = "https://data.cityofnewyork.us/resource/fxkt-ewig.csv"
-    # "borough"
-    "court_index_number"
-    "docket_number"
-    "eviction_address"
-    "eviction_apt_num"
-    "eviction_zip"
-    "executed_date"
-    "marshal_first_name"
-    "marshal_last_name"
-    "residential_commercial_ind"
-    "schedule_status"
+    # download_endpoint = "https://data.cityofnewyork.us/api/views/6z8x-wfk4/rows.csv?accessType=DOWNLOAD"
 
-    courtindexnumber = models.TextField(primary_key=True, blank=False, null=False)
+    courtindexnumbernumber = models.TextField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
-                            on_delete=models.SET_NULL, null=True, blank=False)
-    boro = models.TextField(blank=True, null=True)
+                            on_delete=models.SET_NULL, null=True, blank=True)
+    borough = models.TextField(blank=True, null=True)
     docketnumber = models.TextField(blank=True, null=True)
     evictionaddress = models.TextField(blank=True, null=True)
     evictionaptnum = models.TextField(blank=True, null=True)
@@ -34,7 +28,7 @@ class Eviction(BaseDatasetModel, models.Model):
     marshalfirstname = models.TextField(blank=True, null=True)
     marshallastname = models.TextField(blank=True, null=True)
     residentialcommercialind = models.TextField(db_index=True, blank=True, null=True)
-    scheduledstatus = models.TextField(db_index=True, blank=True, null=True)
+    schedulestatus = models.TextField(db_index=True, blank=True, null=True)
     # cleanedaddress1 = models.TextField(blank=True, null=True)
     # cleanedaddress2 = models.TextField(blank=True, null=True)
     # lat = models.DecimalField(decimal_places=8, max_digits=16, blank=True, null=True)
@@ -48,7 +42,8 @@ class Eviction(BaseDatasetModel, models.Model):
     @classmethod
     def pre_validation_filters(self, gen_rows):
         for row in gen_rows:
-            if is_null(row['courtindex']):
+            if is_null(row['courtindexnumbernumber']):
+                print("null courtindexnumbernumber")
                 continue
             yield row
 
@@ -58,73 +53,133 @@ class Eviction(BaseDatasetModel, models.Model):
     def update_set_filter(self, csv_reader, headers):
         return csv_reader
 
-    # Because the CSV has commas in marshalllastname column - Smith,jr.
+
+# from core.models import DataFile, Update;file_path = DataFile.objects.last().file.path;update = Update.objects.last();update.dataset.seed_dataset(file_path=file_path, update=update)
+
+# Because the CSV has commas in marshalllastname column - Smith,jr.
+
     @classmethod
     def clean_evictions_csv(self, gen_rows):
         for row in gen_rows:
-            row = row.lower().replace(',jr.', ' jr')
-            row = row.lower().replace(', jr.', ' jr')
-            row = row.lower().replace("STREE T", 'STREET')
-            row = row.lower().replace("STR EET", 'STREET')
-            row = row.lower().replace("ST REET", 'STREET')
-            row = row.lower().replace("STRE ET", 'STREET')
-            row = row.lower().replace("S TREET", 'STREET')
+            row = row.upper()
+            row = row.upper().replace(',JR.', ' JR')
+            row = row.upper().replace(', JR.', ' JR')
+            row = row.upper().replace("STREE T", 'STREET')
+            row = row.upper().replace("STR EET", 'STREET')
+            row = row.upper().replace("ST REET", 'STREET')
+            row = row.upper().replace("STRE ET", 'STREET')
+            row = row.upper().replace("S TREET", 'STREET')
             # ROAD
-            row = row.lower().replace("ROA D", 'ROAD')
-            row = row.lower().replace("RO AD", 'ROAD')
-            row = row.lower().replace("R OAD", 'ROAD')
+            row = row.upper().replace("ROA D", 'ROAD')
+            row = row.upper().replace("RO AD", 'ROAD')
+            row = row.upper().replace("R OAD", 'ROAD')
+
+            # ROAD
+            row = row.upper().replace("ROA D", 'ROAD')
+            row = row.upper().replace("RO AD", 'ROAD')
+            row = row.upper().replace("R OAD", 'ROAD')
             # AVENUE
-            row = row.lower().replace("AVENU E", 'AVENUE')
-            row = row.lower().replace("AVEN UE", 'AVENUE')
-            row = row.lower().replace("AVE NUE", 'AVENUE')
-            row = row.lower().replace("AV ENUE", 'AVENUE')
-            row = row.lower().replace("A VENUE", 'AVENUE')
-            row = row.lower().replace("AVNUE", 'AVENUE')
+            row = row.upper().replace("AVENU E", 'AVENUE')
+            row = row.upper().replace("AVEN UE", 'AVENUE')
+            row = row.upper().replace("AVE NUE", 'AVENUE')
+            row = row.upper().replace("AV ENUE", 'AVENUE')
+            row = row.upper().replace("A VENUE", 'AVENUE')
+            row = row.upper().replace("AVNUE", 'AVENUE')
             # PARKWAY
-            row = row.lower().replace("P ARKWAY", 'PARKWAY')
-            row = row.lower().replace("PA RKWAY", 'PARKWAY')
-            row = row.lower().replace("PAR KWAY", 'PARKWAY')
-            row = row.lower().replace("PARK WAY", 'PARKWAY')
-            row = row.lower().replace("PARKWA Y", 'PARKWAY')
-            row = row.lower().replace("PARKWA", 'PARKWAY')
+            row = row.upper().replace("P ARKWAY", 'PARKWAY')
+            row = row.upper().replace("PA RKWAY", 'PARKWAY')
+            row = row.upper().replace("PAR KWAY", 'PARKWAY')
+            row = row.upper().replace("PARK WAY", 'PARKWAY')
+            row = row.upper().replace("PARKWA Y", 'PARKWAY')
+            row = row.upper().replace("PARKWA", 'PARKWAY')
+            row = row.upper().replace("PARKWAYY", 'PARKWAY')
+
             # HIGHWAY
-            row = row.lower().replace("HWY", 'HIGHWAY')
+            row = row.upper().replace("HWY", 'HIGHWAY')
             # NORTH
-            row = row.lower().replace("N ORTH", 'NORTH')
-            row = row.lower().replace("NOR TH", 'NORTH')
+            row = row.upper().replace("N ORTH", 'NORTH')
+            row = row.upper().replace("NOR TH", 'NORTH')
             # SOUTH
-            row = row.lower().replace("SOUT H", 'SOUTH')
-            row = row.lower().replace("S OUTH", 'SOUTH')
-            row = row.lower().replace("SOU TH", 'SOUTH')
+            row = row.upper().replace("SOUT H", 'SOUTH')
+            row = row.upper().replace("S OUTH", 'SOUTH')
+            row = row.upper().replace("SOU TH", 'SOUTH')
             # BOULEVARD
-            row = row.lower().replace("BOULEVAR D", 'BOULEVARD')
-            row = row.lower().replace("BOULEVA RD", 'BOULEVARD')
-            row = row.lower().replace("BOULEV ARD", 'BOULEVARD')
-            row = row.lower().replace("BOULE VARD", 'BOULEVARD')
-            row = row.lower().replace("BOUL EVARD", 'BOULEVARD')
-            row = row.lower().replace("BOU LEVARD", 'BOULEVARD')
-            row = row.lower().replace("B OULEVARD", 'BOULEVARD')
+            row = row.upper().replace("BOULEVAR D", 'BOULEVARD')
+            row = row.upper().replace("BOULEVA RD", 'BOULEVARD')
+            row = row.upper().replace("BOULEV ARD", 'BOULEVARD')
+            row = row.upper().replace("BOULE VARD", 'BOULEVARD')
+            row = row.upper().replace("BOUL EVARD", 'BOULEVARD')
+            row = row.upper().replace("BOU LEVARD", 'BOULEVARD')
+            row = row.upper().replace("B OULEVARD", 'BOULEVARD')
             # BLVD
-            row = row.lower().replace("BLVD", 'BLVD')
-            row = row.lower().replace("BLV D", 'BLVD')
-            row = row.lower().replace("BL VD", 'BLVD')
-            row = row.lower().replace("B LVD", 'BLVD')
+            row = row.upper().replace("BLVD", 'BLVD')
+            row = row.upper().replace("BLV D", 'BLVD')
+            row = row.upper().replace("BL VD", 'BLVD')
+            row = row.upper().replace("B LVD", 'BLVD')
+
+            # TERRACE
+            row = row.upper().replace("TERRAC E", 'TERRACE')
+            row = row.upper().replace("TERRA CE", 'TERRACE')
+            row = row.upper().replace("TERR ACE", 'TERRACE')
+            row = row.upper().replace("TER RACE", 'TERRACE')
+            row = row.upper().replace("TE RRACE", 'TERRACE')
+            row = row.upper().replace("T ERRACE", 'TERRACE')
+
             # remove double space
-            row = row.lower().replace("  ", " ")
-            row = row.lower().replace("   ", " ")
+            row = row.upper().replace("  ", " ")
+            row = row.upper().replace("   ", " ")
             # rmove +
-            row = row.lower().replace("+", '')
+            row = row.upper().replace("+", '')
             # remove all periods
-            row = row.lower().replace('.', '')
-            yield row
+            row = row.upper().replace('.', '')
+
+            # Remove Street Suffixes
+            pattern = re.compile(r"([0-9]+)(TH|ND|ST|RD)")
+            row = re.sub(pattern, r"\1", row)
+
+            # Replace Street Appreviations
+            HOLY_SAINTS = ['JOSEPH', 'MARKS', 'LAWRENCE', 'JAMES',
+                           'NICHOLAS', 'HOLLIS', 'JOHNS', "JOHN's"]
+
+            row = re.sub(r"\bLN\b", "LANE", row)
+            row = re.sub(r"\bPL\b", "PLACE", row)
+            row = re.sub(r"\bDR\b", "DRIVE", row)
+            row = re.sub(r"\bRD\b", "ROAD", row)
+            row = re.sub(r"\bAVE\b", "AVENUE", row)
+            row = re.sub(r"\bBLVD\b", "BOULEVARD", row)
+            row = re.sub(r"\bBDWAY\b", "BROADWAY", row)
+            row = re.sub(r"\bPKWY\b", "PARKWAY", row)
+            row = re.sub(r"\bPKWAY\b", "PARKWAY", row)
+            row = re.sub(r"(?!{})(?=\bST\b)(\bST\b)".format(
+                ".*" + saint + "|" for saint in HOLY_SAINTS), "STREET", row)
+
+            # Replace Compass appreviations
+
+            row = re.sub(r"\bN\b", "NORTH", row)
+            row = re.sub(r"\bE\b", "EAST", row)
+            row = re.sub(r"\bS\b", "SOUTH", row)
+            row = re.sub(r"\bW\b", "WEST", row)
+
+            yield row.upper().strip()
 
     @classmethod
     def link_eviction_to_pluto_by_address(self):
-        evictions = self.objects.all()
+        evictions = self.objects.filter(bbl__isnull=True)
         for eviction in evictions:
-            pattern = r'\d*.*?(LANE|EXPRESSWAY|PARKWAY|STREET|AVENUE|PLACE|BOULEVARD|DRIVE)'
-            import pdb
-            pdb.set_trace()
+            pattern = r'[0-9].*?(LANE|EXPRESSWAY|PARKWAY|STREET|AVENUE|PLACE|BOULEVARD|DRIVE|ROAD|CONCOURSE|PLAZA|TERRACE)'
+            match = re.search(pattern, eviction.evictionaddress)
+            if match:
+                address = match.group(0)
+                property_match = ds.Property.objects.filter(
+                    zipcode=eviction.evictionzip, address=address).first()
+                if property_match:
+                    eviction.bbl = property_match
+                    eviction.save()
+                else:
+                    print("no property match: {}".format(address))
+
+            else:
+                print("no match: {}".format(eviction.evictionaddress))
 
     @classmethod
     def transform_self(self, file_path, update=None):
@@ -138,4 +193,4 @@ class Eviction(BaseDatasetModel, models.Model):
         return update
 
     def __str__(self):
-        return str(self.violationid)
+        return str(self.courtindexnumbernumber)

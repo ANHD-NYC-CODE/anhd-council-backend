@@ -44,7 +44,7 @@ class CouncilHousingTypeSummarySerializer(serializers.ModelSerializer):
 class PropertySerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Property
-        fields = ('bbl', 'council', 'yearbuilt', 'unitsres', 'unitstotal',
+        fields = ('bbl', 'zipcode', 'council', 'borough', 'yearbuilt', 'unitsres', 'unitstotal',
                   'bldgclass', 'numbldgs', 'numfloors', 'address', 'lat', 'lng', 'cb2010', 'ct2010')
 
 

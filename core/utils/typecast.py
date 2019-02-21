@@ -78,19 +78,24 @@ def mm_dd_yyyy(date_str):
         return None
 
 
+def yyyy_mm_dd(date_str):
+    try:
+        return datetime.datetime.strptime(date_str, '%Y%m%d').date()
+    except ValueError:
+        logger.warning("* Unable to parse date string - {}".format(date_str))
+        return None
+
 # TODO: allow for different date inputs besides mm/dd/yyyy
 #  03/04/2015 12:00:00 AM
+
+
 def date(x):
     if not x or isinstance(x, (datetime.date, datetime.datetime)):
         return x
     # checks yyyymmdd format in integers
     if isinstance(x, int):
         if len(str(x)) == 8:
-            try:
-                return datetime.datetime.strptime(str(x), '%Y%m%d').date()
-            except ValueError:
-                logger.warning("* Unable to parse date int - {}".format(x))
-                return None
+            return yyyy_mm_dd(x)
 
     # checks string dates
     # checks for 20181231 date input
@@ -115,6 +120,9 @@ def date(x):
     elif len(x.strip()) == 19 and len(x[0:10].split('/')) == 3:
         # checks for 12/31/2018 12:00:00 date input
         return mm_dd_yyyy(x)
+    elif len(x.split('T')[0].replace('-', '')) == 8:
+        return yyyy_mm_dd(x.split('T')[0].replace('-', ''))
+        # 2017-02-06T00:00:00000
     else:
         logger.warning("* Unable to parse date string - {}".format(x))
         return None

@@ -8,6 +8,18 @@ queens_values = ['queens', 'qn', '4', 4]
 staten_island_values = ['staten island', 'si', '5', 5]
 
 
+def boro_to_abrv(boro):
+    mapping = {
+        'MANHATTAN': 'MN',
+        'BRONX': 'BX',
+        'BROOKLYN': 'BK',
+        'QUEENS': 'QN',
+        'STATEN ISLAND': 'SI'
+    }
+
+    return mapping[boro]
+
+
 def code_to_boro(code):
     mapping = {
         '1': 'Manhattan',

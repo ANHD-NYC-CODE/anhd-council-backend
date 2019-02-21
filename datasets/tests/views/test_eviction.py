@@ -14,8 +14,8 @@ class EvictionViewTests(BaseTest, TestCase):
         self.clean_tests()
 
     def test_list(self):
-        self.eviction_factory(courtindex="1")
-        self.eviction_factory(courtindex="2")
+        self.eviction_factory(courtindexnumber="1")
+        self.eviction_factory(courtindexnumber="2")
 
         response = self.client.get('/evictions/', format="json")
         content = response.data['results']
@@ -24,10 +24,10 @@ class EvictionViewTests(BaseTest, TestCase):
         self.assertEqual(len(content), 2)
 
     def test_retrieve(self):
-        eviction = self.eviction_factory(courtindex="1")
+        eviction = self.eviction_factory(courtindexnumber="1")
 
         response = self.client.get('/evictions/1/')
         content = response.data
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(content["courtindex"], '1')
+        self.assertEqual(content["courtindexnumber"], '1')

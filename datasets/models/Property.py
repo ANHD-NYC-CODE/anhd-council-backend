@@ -185,7 +185,7 @@ class Property(BaseDatasetModel, models.Model):
     ct2010 = models.TextField(blank=True, null=True)
     cb2010 = models.TextField(blank=True, null=True)
     schooldist = models.SmallIntegerField(blank=True, null=True)
-    zipcode = models.TextField(blank=True, null=True)
+    zipcode = models.TextField(db_index=True, blank=True, null=True)
     firecomp = models.TextField(blank=True, null=True)
     policeprct = models.TextField(blank=True, null=True)
     healthcenterdistrict = models.SmallIntegerField(blank=True, null=True)

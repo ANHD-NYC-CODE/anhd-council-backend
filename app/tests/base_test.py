@@ -471,15 +471,15 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         )
         return factory
 
-    def eviction_factory(self, courtindex=None, property=None, **kwargs):
+    def eviction_factory(self, courtindexnumber=None, property=None, **kwargs):
         name = 'Eviction'
-        if not courtindex:
-            courtindex = random.randint(1, 1000000)
+        if not courtindexnumber:
+            courtindexnumber = random.randint(1, 1000000)
         if not property:
             property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
 
         factory = d_models.Eviction.objects.create(
-            courtindex=courtindex,
+            courtindexnumber=courtindexnumber,
             bbl=property,
             **kwargs
         )
