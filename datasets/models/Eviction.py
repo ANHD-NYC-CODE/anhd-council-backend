@@ -42,8 +42,7 @@ class Eviction(BaseDatasetModel, models.Model):
     @classmethod
     def pre_validation_filters(self, gen_rows):
         for row in gen_rows:
-            if is_null(row['courtindexnumbernumber']):
-                print("null courtindexnumbernumber")
+            if is_null(row['courtindexnumber']):
                 continue
             yield row
 

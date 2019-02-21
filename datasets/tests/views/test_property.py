@@ -122,8 +122,8 @@ class PropertyViewTests(BaseTest, TestCase):
 
     def test_property_evictions(self):
         property = self.property_factory(bbl="1")
-        self.eviction_factory(courtindexnumber="1", property=property)
-        self.eviction_factory(courtindexnumber="2", property=property)
+        self.eviction_factory(id="1", property=property)
+        self.eviction_factory(id="2", property=property)
 
         response = self.client.get('/properties/1/evictions/')
         content = response.data['results']
