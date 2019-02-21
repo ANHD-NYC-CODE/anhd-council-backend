@@ -8,7 +8,7 @@ logger = logging.getLogger('app')
 
 
 class Eviction(BaseDatasetModel, models.Model):
-    download_endpoint = "https://s3.amazonaws.com/justfix-data/marshal_evictions_2017.csv"
+    download_endpoint = "https://data.cityofnewyork.us/resource/fxkt-ewig.csv"
 
     courtindex = models.TextField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
@@ -51,9 +51,68 @@ class Eviction(BaseDatasetModel, models.Model):
     @classmethod
     def clean_evictions_csv(self, gen_rows):
         for row in gen_rows:
-            row = row.lower().replace(',jr.', '')
-            row = row.lower().replace(', jr.', '')
+            row = row.lower().replace(',jr.', ' jr')
+            row = row.lower().replace(', jr.', ' jr')
+            row = row.lower().replace("STREE T", 'STREET')
+            row = row.lower().replace("STR EET", 'STREET')
+            row = row.lower().replace("ST REET", 'STREET')
+            row = row.lower().replace("STRE ET", 'STREET')
+            row = row.lower().replace("S TREET", 'STREET')
+            # ROAD
+            row = row.lower().replace("ROA D", 'ROAD')
+            row = row.lower().replace("RO AD", 'ROAD')
+            row = row.lower().replace("R OAD", 'ROAD')
+            # AVENUE
+            row = row.lower().replace("AVENU E", 'AVENUE')
+            row = row.lower().replace("AVEN UE", 'AVENUE')
+            row = row.lower().replace("AVE NUE", 'AVENUE')
+            row = row.lower().replace("AV ENUE", 'AVENUE')
+            row = row.lower().replace("A VENUE", 'AVENUE')
+            row = row.lower().replace("AVNUE", 'AVENUE')
+            # PARKWAY
+            row = row.lower().replace("P ARKWAY", 'PARKWAY')
+            row = row.lower().replace("PA RKWAY", 'PARKWAY')
+            row = row.lower().replace("PAR KWAY", 'PARKWAY')
+            row = row.lower().replace("PARK WAY", 'PARKWAY')
+            row = row.lower().replace("PARKWA Y", 'PARKWAY')
+            row = row.lower().replace("PARKWA", 'PARKWAY')
+            # HIGHWAY
+            row = row.lower().replace("HWY", 'HIGHWAY')
+            # NORTH
+            row = row.lower().replace("N ORTH", 'NORTH')
+            row = row.lower().replace("NOR TH", 'NORTH')
+            # SOUTH
+            row = row.lower().replace("SOUT H", 'SOUTH')
+            row = row.lower().replace("S OUTH", 'SOUTH')
+            row = row.lower().replace("SOU TH", 'SOUTH')
+            # BOULEVARD
+            row = row.lower().replace("BOULEVAR D", 'BOULEVARD')
+            row = row.lower().replace("BOULEVA RD", 'BOULEVARD')
+            row = row.lower().replace("BOULEV ARD", 'BOULEVARD')
+            row = row.lower().replace("BOULE VARD", 'BOULEVARD')
+            row = row.lower().replace("BOUL EVARD", 'BOULEVARD')
+            row = row.lower().replace("BOU LEVARD", 'BOULEVARD')
+            row = row.lower().replace("B OULEVARD", 'BOULEVARD')
+            # BLVD
+            row = row.lower().replace("BLVD", 'BLVD')
+            row = row.lower().replace("BLV D", 'BLVD')
+            row = row.lower().replace("BL VD", 'BLVD')
+            row = row.lower().replace("B LVD", 'BLVD')
+            # remove double space
+            row = row.lower().replace("  ", " ")
+            row = row.lower().replace("   ", " ")
+            # rmove +
+            row = row.lower().replace("+", '')
+            # remove all periods
+            row = row.lower().replace('.', '')
             yield row
+
+    @classmethod
+    def link_eviction_to_pluto_by_address(self):
+        evictions = self.objects.all()
+        for eviction in evictions:
+            import pdb
+            pdb.set_trace()
 
     @classmethod
     def transform_self(self, file_path, update=None):
@@ -62,7 +121,9 @@ class Eviction(BaseDatasetModel, models.Model):
     @classmethod
     def seed_or_update_self(self, **kwargs):
         logger.debug("Seeding/Updating {}", self.__name__)
-        return self.seed_or_update_from_set_diff(**kwargs)
+        update = self.seed_or_update_from_set_diff(**kwargs)
+        self.link_eviction_to_pluto_by_address()
+        return update
 
     def __str__(self):
         return str(self.violationid)

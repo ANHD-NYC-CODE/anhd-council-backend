@@ -43,7 +43,7 @@ class CouncilViewTests(BaseTest, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
-    def test_council_summary(self):
+    def test_council_housing(self):
         council = self.council_factory(coundist=1)
         self.property_factory(council=council)
 

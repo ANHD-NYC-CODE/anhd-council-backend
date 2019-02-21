@@ -11,7 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 
 
 class SearchViewSet(ApplicationViewSet, viewsets.ReadOnlyModelViewSet):
-    permission_classes = (IsAuthenticated,)
+    # permission_classes = (IsAuthenticated,)
 
     def building_search(self, request, *args, **kwargs):
         self.serializer_class = serial.BuildingSearchSerializer

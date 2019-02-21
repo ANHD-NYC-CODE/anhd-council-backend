@@ -4,7 +4,6 @@ from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from datasets.utils.validation_filters import is_null, exceeds_char_length
 from core.utils.transform import from_csv_file_to_gen, with_geo
 from core.utils.csv_helpers import extract_csvs_from_zip
-from core.utils.address import normalize_street
 
 from datasets import models as ds
 
@@ -36,11 +35,16 @@ class PropertyQuerySet(models.QuerySet):
                                                                    'uc2012', 'uc2013', 'uc2014', 'uc2015', 'uc2016', 'uc2017', 'uc2018', 'uc2019', 'uc2020',).filter(ucbbl=OuterRef('bbl'))
         return self.filter(yearbuilt__lte=1974, yearbuilt__gte=1).annotate(has_rentstab=Exists(rentstab_records)).filter(has_rentstab=True)
 
-    def rentreg_filter(self):
-        return self.annotate(corerecords=Count('coresubsidyrecord'), subsidyj51records=Count('subsidyj51'), subsidy421arecords=Count('subsidy421a')).filter(Q(unitsres__gte=1), Q(corerecords__gte=1) | Q(subsidyj51records__gte=1) | Q(subsidy421arecords__gte=1))
+    def rentreg_filter(self, program=None):
+        queryset = self.annotate(corerecords=Count('coresubsidyrecord'), subsidyj51records=Count('subsidyj51'), subsidy421arecords=Count(
+            'subsidy421a')).filter(Q(unitsres__gte=1), Q(corerecords__gte=1) | Q(subsidyj51records__gte=1) | Q(subsidy421arecords__gte=1))
+        if program:
+            return queryset.prefetch_related('coresubsidyrecord').filter(coresubsidyrecord__programname__icontains=program)
+        else:
+            return queryset
 
-    def smallhome_filter(self):
-        return self.filter(unitsres__lte=4)
+    def smallhome_filter(self, units=6):
+        return self.filter(unitsres__lte=units)
 
     def marketrate_filter(self):
         return self.annotate(
@@ -103,11 +107,11 @@ class PropertyQuerySet(models.QuerySet):
     def rentstab(self):
         return self.residential().rentstab_filter()
 
-    def rentreg(self):
-        return self.residential().rentreg_filter()
+    def rentreg(self, program=None):
+        return self.residential().rentreg_filter(program)
 
-    def smallhome(self):
-        return self.residential().smallhome_filter()
+    def smallhome(self, units=6):
+        return self.residential().smallhome_filter(units=units)
 
     def marketrate(self):
         return self.residential().marketrate_filter()

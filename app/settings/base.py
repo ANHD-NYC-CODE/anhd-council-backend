@@ -214,6 +214,9 @@ CELERY_RESULT_SERIALIZER = 'json'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 STATIC_URL = '/static/'
+# STATICFILES_DIRS = (
+#     os.path.join(BASE_DIR, 'static'),
+# )
 
 MEDIA_URL = '/data/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'data')
@@ -273,16 +276,16 @@ LOGGING = {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(LOG_ROOT, "dap-council.log"),
-            'maxBytes': 1024 * 1024 * 5,  # 15MB
-            'backupCount': 20,
+            'maxBytes': 1024 * 1024 * 5,  # 10MB
+            'backupCount': 10,
             'formatter': 'standard',
         },
         'errorfile': {
             'level': 'WARNING',
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(LOG_ROOT, "dap-council.error.log"),
-            'maxBytes': 1024 * 1024 * 5,  # 15MB
-            'backupCount': 20,
+            'maxBytes': 1024 * 1024 * 5,  # 10MB
+            'backupCount': 10,
             'formatter': 'standard',
         },
         'sql': {

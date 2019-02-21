@@ -59,7 +59,7 @@ def seed_from_csv_diff(original_file_path, new_file_path, model, **kwargs):
         original_diff_set.add(json.dumps(row))
 
     diff = new_diff_set - original_diff_set
-    temp_file_path = os.path.join(settings.MEDIA_TEMP_ROOT, str(uuid.uuid4().hex) + '.csv')
+    temp_file_path = os.path.join(settings.MEDIA_TEMP_ROOT, str('set_diff' + uuid.uuid4().hex) + '.csv')
     with open(temp_file_path, 'w') as temp_file:
         writer = csv.writer(temp_file, delimiter=',')
         writer.writerow(headers)
@@ -78,7 +78,7 @@ def bulk_insert_from_file(model, file_path, **kwargs):
     table_name = model._meta.db_table
 
     # create new csv with cleaned rows
-    temp_file_path = os.path.join(settings.MEDIA_TEMP_ROOT, str(uuid.uuid4().hex) + '.csv')
+    temp_file_path = os.path.join(settings.MEDIA_TEMP_ROOT, str('clean_csv' + uuid.uuid4().hex) + '.csv')
     update = kwargs['update'] if 'update' in kwargs else None
     rows = model.transform_self_from_file(file_path, update=update)
     gen_to_csv(rows, temp_file_path)
@@ -98,8 +98,7 @@ def bulk_insert_from_file(model, file_path, **kwargs):
     if 'callback' in kwargs and kwargs['callback']:
         kwargs['callback']()
 
-    if os.path.isfile(temp_file_path):
-        os.remove(temp_file_path)
+    os.remove(temp_file_path)
 
 
 def copy_insert_from_csv(table_name, temp_file_path, **kwargs):

@@ -1,5 +1,5 @@
 from app.settings.base import *
-DEBUG = False
+DEBUG = True
 
 
 ADMINS = (
