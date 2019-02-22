@@ -98,7 +98,7 @@ def bulk_insert_from_file(model, file_path, **kwargs):
     if 'callback' in kwargs and kwargs['callback']:
         kwargs['callback']()
 
-    os.remove(temp_file_path)
+    # os.remove(temp_file_path)
 
 
 def copy_insert_from_csv(table_name, temp_file_path, **kwargs):

@@ -12,10 +12,9 @@ logger = logging.getLogger('app')
 
 
 class Eviction(BaseDatasetModel, models.Model):
-    download_endpoint = "https://data.cityofnewyork.us/resource/fxkt-ewig.csv"
-    # download_endpoint = "https://data.cityofnewyork.us/api/views/6z8x-wfk4/rows.csv?accessType=DOWNLOAD"
+    download_endpoint = "https://data.cityofnewyork.us/api/views/6z8x-wfk4/rows.csv?accessType=DOWNLOAD"
 
-    courtindexnumbernumber = models.TextField(primary_key=True, blank=False, null=False)
+    courtindexnumber = models.TextField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=True)
     borough = models.TextField(blank=True, null=True)
@@ -187,9 +186,9 @@ class Eviction(BaseDatasetModel, models.Model):
     @classmethod
     def seed_or_update_self(self, **kwargs):
         logger.debug("Seeding/Updating {}", self.__name__)
-        update = self.seed_or_update_from_set_diff(**kwargs)
+        update = self.seed_with_upsert(**kwargs)
         self.link_eviction_to_pluto_by_address()
         return update
 
     def __str__(self):
-        return str(self.courtindexnumbernumber)
+        return str(self.courtindexnumber)

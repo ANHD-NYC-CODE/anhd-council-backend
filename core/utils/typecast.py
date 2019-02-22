@@ -80,7 +80,7 @@ def mm_dd_yyyy(date_str):
 
 def yyyy_mm_dd(date_str):
     try:
-        return datetime.datetime.strptime(date_str, '%Y%m%d').date()
+        return datetime.datetime.strptime(str(date_str), '%Y%m%d').date()
     except ValueError:
         logger.warning("* Unable to parse date string - {}".format(date_str))
         return None

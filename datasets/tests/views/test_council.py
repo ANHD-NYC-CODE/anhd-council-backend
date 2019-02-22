@@ -47,7 +47,7 @@ class CouncilViewTests(BaseTest, TestCase):
         council = self.council_factory(coundist=1)
         self.property_factory(council=council)
 
-        response = self.client.get('/councils/1/summary/')
+        response = self.client.get('/councils/1/housing/')
         content = response.data
 
         self.assertEqual(response.status_code, 200)
