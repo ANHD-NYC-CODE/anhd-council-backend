@@ -20,16 +20,16 @@ app = Celery('app', broker=settings.CELERY_BROKER_URL,
 # https://gist.github.com/mlavin/6671079
 
 
-def restore_all_unacknowledged_messages():
-    conn = app.connection(transport_options={'visibility_timeout': 0})
-    qos = conn.channel().qos
-    qos.restore_visible()
-    logger.info('Unacknowledged messages restored')
+# def restore_all_unacknowledged_messages():
+#     conn = app.connection(transport_options={'visibility_timeout': 0})
+#     qos = conn.channel().qos
+#     qos.restore_visible()
+#     logger.info('Unacknowledged messages restored')
 
 
-@worker_init.connect
-def configure(sender=None, conf=None, **kwargs):
-    restore_all_unacknowledged_messages()
+# @worker_init.connect
+# def configure(sender=None, conf=None, **kwargs):
+#     restore_all_unacknowledged_messages()
 
 
 # Using a string here means the worker doesn't have to serialize
