@@ -4,6 +4,7 @@ from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from datasets.utils.validation_filters import is_null, exceeds_char_length
 from core.utils.transform import from_csv_file_to_gen, with_geo
 from core.utils.csv_helpers import extract_csvs_from_zip
+from core.utils.address import clean_number_and_streets
 
 from datasets import models as ds
 
@@ -287,6 +288,7 @@ class Property(BaseDatasetModel, models.Model):
         for row in gen_rows:
             if is_null(row['bbl']) or exceeds_char_length(row['bbl'], 10):
                 continue
+            row['address'] = clean_number_and_streets(row['address'])
             yield row
 
     @classmethod

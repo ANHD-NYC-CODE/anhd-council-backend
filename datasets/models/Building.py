@@ -7,6 +7,9 @@ from core.utils.transform import from_csv_file_to_gen, with_bbl
 from core.utils.address import normalize_street
 from django.contrib.postgres.search import SearchVector, SearchVectorField
 from core.tasks import async_create_update
+from core.utils.address import clean_number_and_streets
+
+
 import logging
 from datasets import models as ds
 
@@ -63,7 +66,7 @@ class Building(BaseDatasetModel, models.Model):
                 continue
             if is_null(row['lhnd']):
                 continue
-            row['stname'] = normalize_street(row['stname'])
+            row['stname'] = clean_number_and_streets(row['stname'])
             yield row
 
     # trims down new update files to preserve memory

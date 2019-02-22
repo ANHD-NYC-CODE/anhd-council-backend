@@ -4,6 +4,7 @@ from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.utils.validation_filters import is_null
 from datasets import models as ds
 from core.utils.bbl import boro_to_abrv
+from core.utils.address import clean_number_and_streets
 
 import re
 import logging
@@ -56,128 +57,39 @@ class Eviction(BaseDatasetModel, models.Model):
 
 # Because the CSV has commas in marshalllastname column - Smith,jr.
 
+
     @classmethod
     def clean_evictions_csv(self, gen_rows):
         for row in gen_rows:
             row = row.upper()
             row = row.upper().replace(',JR.', ' JR')
             row = row.upper().replace(', JR.', ' JR')
-            row = row.upper().replace("STREE T", 'STREET')
-            row = row.upper().replace("STR EET", 'STREET')
-            row = row.upper().replace("ST REET", 'STREET')
-            row = row.upper().replace("STRE ET", 'STREET')
-            row = row.upper().replace("S TREET", 'STREET')
-            # ROAD
-            row = row.upper().replace("ROA D", 'ROAD')
-            row = row.upper().replace("RO AD", 'ROAD')
-            row = row.upper().replace("R OAD", 'ROAD')
 
-            # ROAD
-            row = row.upper().replace("ROA D", 'ROAD')
-            row = row.upper().replace("RO AD", 'ROAD')
-            row = row.upper().replace("R OAD", 'ROAD')
-            # AVENUE
-            row = row.upper().replace("AVENU E", 'AVENUE')
-            row = row.upper().replace("AVEN UE", 'AVENUE')
-            row = row.upper().replace("AVE NUE", 'AVENUE')
-            row = row.upper().replace("AV ENUE", 'AVENUE')
-            row = row.upper().replace("A VENUE", 'AVENUE')
-            row = row.upper().replace("AVNUE", 'AVENUE')
-            # PARKWAY
-            row = row.upper().replace("P ARKWAY", 'PARKWAY')
-            row = row.upper().replace("PA RKWAY", 'PARKWAY')
-            row = row.upper().replace("PAR KWAY", 'PARKWAY')
-            row = row.upper().replace("PARK WAY", 'PARKWAY')
-            row = row.upper().replace("PARKWA Y", 'PARKWAY')
-            row = row.upper().replace("PARKWA", 'PARKWAY')
-            row = row.upper().replace("PARKWAYY", 'PARKWAY')
-
-            # HIGHWAY
-            row = row.upper().replace("HWY", 'HIGHWAY')
-            # NORTH
-            row = row.upper().replace("N ORTH", 'NORTH')
-            row = row.upper().replace("NOR TH", 'NORTH')
-            # SOUTH
-            row = row.upper().replace("SOUT H", 'SOUTH')
-            row = row.upper().replace("S OUTH", 'SOUTH')
-            row = row.upper().replace("SOU TH", 'SOUTH')
-            # BOULEVARD
-            row = row.upper().replace("BOULEVAR D", 'BOULEVARD')
-            row = row.upper().replace("BOULEVA RD", 'BOULEVARD')
-            row = row.upper().replace("BOULEV ARD", 'BOULEVARD')
-            row = row.upper().replace("BOULE VARD", 'BOULEVARD')
-            row = row.upper().replace("BOUL EVARD", 'BOULEVARD')
-            row = row.upper().replace("BOU LEVARD", 'BOULEVARD')
-            row = row.upper().replace("B OULEVARD", 'BOULEVARD')
-            # BLVD
-            row = row.upper().replace("BLVD", 'BLVD')
-            row = row.upper().replace("BLV D", 'BLVD')
-            row = row.upper().replace("BL VD", 'BLVD')
-            row = row.upper().replace("B LVD", 'BLVD')
-
-            # TERRACE
-            row = row.upper().replace("TERRAC E", 'TERRACE')
-            row = row.upper().replace("TERRA CE", 'TERRACE')
-            row = row.upper().replace("TERR ACE", 'TERRACE')
-            row = row.upper().replace("TER RACE", 'TERRACE')
-            row = row.upper().replace("TE RRACE", 'TERRACE')
-            row = row.upper().replace("T ERRACE", 'TERRACE')
-
-            # remove double space
-            row = row.upper().replace("  ", " ")
-            row = row.upper().replace("   ", " ")
-            # rmove +
-            row = row.upper().replace("+", '')
-            # remove all periods
-            row = row.upper().replace('.', '')
-
-            # Remove Street Suffixes
-            pattern = re.compile(r"([0-9]+)(TH|ND|ST|RD)")
-            row = re.sub(pattern, r"\1", row)
-
-            # Replace Street Appreviations
-            HOLY_SAINTS = ['JOSEPH', 'MARKS', 'LAWRENCE', 'JAMES',
-                           'NICHOLAS', 'HOLLIS', 'JOHNS', "JOHN's"]
-
-            row = re.sub(r"\bLN\b", "LANE", row)
-            row = re.sub(r"\bPL\b", "PLACE", row)
-            row = re.sub(r"\bDR\b", "DRIVE", row)
-            row = re.sub(r"\bRD\b", "ROAD", row)
-            row = re.sub(r"\bAVE\b", "AVENUE", row)
-            row = re.sub(r"\bBLVD\b", "BOULEVARD", row)
-            row = re.sub(r"\bBDWAY\b", "BROADWAY", row)
-            row = re.sub(r"\bPKWY\b", "PARKWAY", row)
-            row = re.sub(r"\bPKWAY\b", "PARKWAY", row)
-            row = re.sub(r"(?!{})(?=\bST\b)(\bST\b)".format(
-                ".*" + saint + "|" for saint in HOLY_SAINTS), "STREET", row)
-
-            # Replace Compass appreviations
-
-            row = re.sub(r"\bN\b", "NORTH", row)
-            row = re.sub(r"\bE\b", "EAST", row)
-            row = re.sub(r"\bS\b", "SOUTH", row)
-            row = re.sub(r"\bW\b", "WEST", row)
-
+            row = clean_number_and_streets(row)
             yield row.upper().strip()
 
     @classmethod
     def link_eviction_to_pluto_by_address(self):
         evictions = self.objects.filter(bbl__isnull=True)
         for eviction in evictions:
-            pattern = r'[0-9].*?(LANE|EXPRESSWAY|PARKWAY|STREET|AVENUE|PLACE|BOULEVARD|DRIVE|ROAD|CONCOURSE|PLAZA|TERRACE)'
+            pattern = r'[0-9].*?(LANE|EXPRESSWAY|PARKWAY|STREET|(AVENUE \w\b|AVENUE)|PLACE|BOULEVARD|DRIVE|ROAD|CONCOURSE|PLAZA|TERRACE|COURT|LOOP|CRESENT|BROADWAY|WAY|WALK|TURNPIKE|PROMENADE|RIDGE|OVAL|SLIP|CIRCLE)'
             match = re.search(pattern, eviction.evictionaddress)
             if match:
                 address = match.group(0)
-                property_match = ds.Property.objects.filter(
-                    zipcode=eviction.evictionzip, address=address).first()
-                if property_match:
-                    eviction.bbl = property_match
+                address_match = ds.AddressRecord.objects.filter(address=address + ' {}'.format(eviction.borough))
+                if len(address_match) == 1:
+                    eviction.bbl = address_match[0].bbl
                     eviction.save()
+                elif len(address_match) > 1:
+                    logger.debug('more than one eviction address match found: {}'.format(address))
+                    # not a super generic query like 123 STREET or 45 AVENUE
+                    if not re.match(r"(\d+ (STREET|AVENUE))", address):
+                        eviction.bbl = address_match[0].bbl
                 else:
-                    print("no property match: {}".format(address))
+                    logger.debug("no address match {}".format(address))
 
             else:
-                print("no match: {}".format(eviction.evictionaddress))
+                logger.debug("no match: {}".format(eviction.evictionaddress))
 
     @classmethod
     def transform_self(self, file_path, update=None):

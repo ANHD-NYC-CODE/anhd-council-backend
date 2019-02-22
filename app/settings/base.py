@@ -14,6 +14,9 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 import os
 from kombu import Exchange, Queue
 from datetime import timedelta
+import sys
+
+TESTING = sys.argv[1:2] == ['test']
 
 BATCH_SIZE = 1000000
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -307,7 +310,7 @@ LOGGING = {
         },
         'django.db.backends': {
             'handlers': ['sql'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': True,
         },
         'django.template': {

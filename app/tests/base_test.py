@@ -35,6 +35,12 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         for file in files:
             os.remove(os.path.join(path, file))
 
+        path = settings.MEDIA_TEMP_ROOT
+        files = [i for i in os.listdir(path)
+                 if os.path.isfile(os.path.join(path, i)) and 'mock' in i]
+        for file in files:
+            os.remove(os.path.join(path, file))
+
     def get_access_token(self, username=None, password=None):
         if not username or not password:
             username = "test"
