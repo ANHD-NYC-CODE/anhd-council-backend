@@ -425,7 +425,8 @@ def clean_number_and_streets(string, include_house_number):
     # final formatting - Title Case, except for numbered streets like 10th st (not 10Th st)
     string = string.title()
     street_suffix_pattern = r"\d+(S(T|t)|N(D|d)|R(D|d)|T(H|h))"
-    match = re.match(street_suffix_pattern, string)
+    match = re.search(street_suffix_pattern, string)
+
     if match:
         string = re.sub(street_suffix_pattern, match.group().lower(), string)
 
