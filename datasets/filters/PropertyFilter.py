@@ -117,21 +117,21 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
             },)
         return v
 
-    def read_criteria_options(self, criteria, values):
-        options = ()
+    def read_condition_groups(self, condition, values):
+        groups = ()
         for value in values:
-            if 'option' in value['type'] and criteria['id'] in value['id']:
-                options = options + (value,)
-        return options
+            if 'group' in value['type'] and condition['id'] in value['id']:
+                groups = groups + (value,)
+        return groups
 
-    def get_next_criteria(self, category_id, values):
+    def get_next_condition(self, category_id, values):
         for value in values:
-            if 'criteria' in value['type'] and value['id'] == category_id:
+            if 'condition' in value['type'] and value['id'] == category_id:
                 return value
 
-    def construct_rule_query(self, option, counts=False):
+    def construct_rule_query(self, group, counts=False):
         parameters = {}
-        for parameter in option['value'].split(','):
+        for parameter in group['value'].split(','):
             par = parameter.split('=')
             if counts:
                 if 'count' in parameter or 'percent' in parameter:
@@ -141,44 +141,44 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
                     parameters[par[0]] = par[1]
         return parameters
 
-    def construct_option_query(self, option, values, counts=False):
-        if '*criteria' in option['value']:
-            next_id = option['value'].partition('_')[2]
+    def construct_group_query(self, group, values, counts=False):
+        if '*condition' in group['value']:
+            next_id = group['value'].partition('_')[2]
             if not next_id:
-                raise Exception("Malformed Query - an option's criteria format should be like: '*criteria_0'")
-            next_criteria = self.get_next_criteria(next_id, values)
-            q_value = self.read_criteria(next_criteria, values, counts)
+                raise Exception("Malformed Query - an group's condition format should be like: '*condition_0'")
+            next_condition = self.get_next_condition(next_id, values)
+            q_value = self.read_condition(next_condition, values, counts)
         else:
-            q_value = Q(**self.construct_rule_query(option, counts))
-            rules = option['value'].split(',')
-            option_split = option['value'].split('__')
+            q_value = Q(**self.construct_rule_query(group, counts))
+            rules = group['value'].split(',')
+            group_split = group['value'].split('__')
             self.q_filters.append({
-                'dataset': option_split[0],
+                'dataset': group_split[0],
                 'full_related_path': '__'.join(rules[0].split('__')[:-2]),
                 'type': 'annotate' if counts else 'field',
                 'q': q_value
             })
         return q_value
 
-    def read_criteria(self, criteria, values, counts=False):
-        if criteria['value'].lower() == 'all':
+    def read_condition(self, condition, values, counts=False):
+        if condition['value'].lower() == 'and':
             q_op = Q.AND
-        elif criteria['value'].lower() == 'any':
+        elif condition['value'].lower() == 'or':
             q_op = Q.OR
         else:
-            raise Exception('invalid criteria: {}'.format(criteria))
+            raise Exception('invalid condition: {}'.format(condition))
 
         query = None
-        options = self.read_criteria_options(criteria, values)
+        groups = self.read_condition_groups(condition, values)
         or_list = []  # for construcing new Q statements as an OR without default AND
 
-        for option in options:
+        for group in groups:
             if not query and q_op == Q.OR:
-                or_list.append(Q(self.construct_option_query(option, values, counts)))
+                or_list.append(Q(self.construct_group_query(group, values, counts)))
             elif not query and q_op == Q.AND:
-                query = Q(self.construct_option_query(option, values, counts))
+                query = Q(self.construct_group_query(group, values, counts))
             else:
-                q_filter = self.construct_option_query(option, values, counts)
+                q_filter = self.construct_group_query(group, values, counts)
                 query.add(q_filter, q_op)
 
         # Constructs a Q entirely of ORs and removes the initial AND
@@ -196,7 +196,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         }
 
     # advanced query
-    # http://localhost:8000/councils/6/properties/?housingtype=rs&q=criteria_0=ALL+option_0A=*criteria_1+option_0B=rentstabilizationrecord__uc2007__gte=0,rentstabilizationrecord__uc2017__gte=0,rentstabilizationrecords__percent__gte=0.5+criteria_1=ANY+option_1A=dobviolation__issuedate__gte=2017-01-01,dobviolation__issuedate__lte=2018-01-01,dobviolations__count__gte=1+option_1B=ecbviolation__issuedate__gte=2017-01-01,ecbviolation__issuedate__lte=2018-01-01,ecbviolations__count__gte=1
+    # http://localhost:8000/councils/6/properties/?housingtype=rs&q=condition_0=AND+group_0A=*condition_1+group_0B=rentstabilizationrecord__uc2007__gte=0,rentstabilizationrecord__uc2017__gte=0,rentstabilizationrecords__percent__gte=0.5+condition_1=OR+group_1A=dobviolation__issuedate__gte=2017-01-01,dobviolation__issuedate__lte=2018-01-01,dobviolations__count__gte=1+group_1B=ecbviolation__issuedate__gte=2017-01-01,ecbviolation__issuedate__lte=2018-01-01,ecbviolations__count__gte=1
     def filter_advancedquery(self, queryset, name, values):
         # 1) filter queryset by model fields first
         # return queryset with only BBL values (to reduce memory overhead)
@@ -205,7 +205,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         # 3) perform related Q query on counts
         # return queryset with all values
         parsed_values = self.parse_values(values)
-        dates_q = Q(self.read_criteria(
+        dates_q = Q(self.read_condition(
             parsed_values[0], parsed_values, False))
 
         # 1
@@ -285,7 +285,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
         # 3
 
-        annotation_q = Q(self.read_criteria(parsed_values[0], parsed_values, True))
+        annotation_q = Q(self.read_condition(parsed_values[0], parsed_values, True))
         final_bbls = related_queryset.filter(annotation_q).only('bbl').values('bbl')
         return ds.Property.objects.filter(bbl__in=final_bbls)
 
