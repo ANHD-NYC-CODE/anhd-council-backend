@@ -210,91 +210,91 @@ def normalize_apartment(string):
 def clean_number_and_streets(string):
     # Beach
     string = string.upper()
-    string = string.upper().replace("BEAC H", 'BEACH')
-    string = string.upper().replace("BEA CH", 'BEACH')
-    string = string.upper().replace("BE ACH", 'BEACH')
-    string = string.upper().replace("B EACH", 'BEACH')
+    string = re.sub(r"\bBEAC H\b", 'BEACH', string)
+    string = re.sub(r"\bBEA CH\b", 'BEACH', string)
+    string = re.sub(r"\bBE ACH\b", 'BEACH', string)
+    string = re.sub(r"\bB EACH\b", 'BEACH', string)
 
     # Street
-    string = string.upper().replace("STREE T", 'STREET')
-    string = string.upper().replace("STR EET", 'STREET')
-    string = string.upper().replace("ST REET", 'STREET')
-    string = string.upper().replace("STRE ET", 'STREET')
-    string = string.upper().replace("S TREET", 'STREET')
-    string = string.upper().replace("STREE", "STREET")
+    string = re.sub(r"\bSTREE T\b", 'STREET', string)
+    string = re.sub(r"\bSTR EET\b", 'STREET', string)
+    string = re.sub(r"\bST REET\b", 'STREET', string)
+    string = re.sub(r"\bSTRE ET\b", 'STREET', string)
+    string = re.sub(r"\bS TREET\b", 'STREET', string)
+    string = re.sub(r'\bSTREE\b', 'STREET', string)
 
     # PLACE
-    string = string.upper().replace("PLAC E", 'PLACE')
-    string = string.upper().replace("PLA CE", 'PLACE')
-    string = string.upper().replace("PL ACE", 'PLACE')
-    string = string.upper().replace("P LACE", 'PLACE')
+    string = re.sub(r"\bPLAC E\b", 'PLACE', string)
+    string = re.sub(r"\bPLA CE\b", 'PLACE', string)
+    string = re.sub(r"\bPL ACE\b", 'PLACE', string)
+    string = re.sub(r"\bP LACE\b", 'PLACE', string)
 
     # ROAD
-    string = string.upper().replace("ROA D", 'ROAD')
-    string = string.upper().replace("RO AD", 'ROAD')
-    string = string.upper().replace("R OAD", 'ROAD')
+    string = re.sub(r"\bROA D\b", 'ROAD', string)
+    string = re.sub(r"\bRO AD\b", 'ROAD', string)
+    string = re.sub(r"\bR OAD\b", 'ROAD', string)
 
     # AVENUE
-    string = string.upper().replace("AVENU E", 'AVENUE')
-    string = string.upper().replace("AVEN UE", 'AVENUE')
-    string = string.upper().replace("AVE NUE", 'AVENUE')
-    string = string.upper().replace("AV ENUE", 'AVENUE')
-    string = string.upper().replace("A VENUE", 'AVENUE')
-    string = string.upper().replace("AVNUE", 'AVENUE')
-    string = string.upper().replace("AVENU", 'AVENUE')
-    string = string.upper().replace("AVENE", 'AVENUE')
-    string = string.upper().replace("AVNEUE", 'AVENUE')
+    string = re.sub(r"\bAVENU E\b", 'AVENUE', string)
+    string = re.sub(r"\bAVEN UE\b", 'AVENUE', string)
+    string = re.sub(r"\bAVE NUE\b", 'AVENUE', string)
+    string = re.sub(r"\bAV ENUE\b", 'AVENUE', string)
+    string = re.sub(r"\bA VENUE\b", 'AVENUE', string)
+    string = re.sub(r"\bAVNUE\b", 'AVENUE', string)
+    string = re.sub(r"\bAVENU\b", 'AVENUE', string)
+    string = re.sub(r"\bAVENE\b", 'AVENUE', string)
+    string = re.sub(r"\bAVNEUE\b", 'AVENUE', string)
 
     # PARKWAY
-    string = string.upper().replace("P ARKWAY", 'PARKWAY')
-    string = string.upper().replace("PA RKWAY", 'PARKWAY')
-    string = string.upper().replace("PAR KWAY", 'PARKWAY')
-    string = string.upper().replace("PARK WAY", 'PARKWAY')
-    string = string.upper().replace("PARKWA Y", 'PARKWAY')
-    string = string.upper().replace("PARKWA", 'PARKWAY')
-    string = string.upper().replace("PARKWAYY", 'PARKWAY')
-    string = string.upper().replace("PKW Y", "PARKWAY")
+    string = re.sub(r"\bP ARKWAY\b", 'PARKWAY', string)
+    string = re.sub(r"\bPA RKWAY\b", 'PARKWAY', string)
+    string = re.sub(r"\bPAR KWAY\b", 'PARKWAY', string)
+    string = re.sub(r"\bPARK WAY\b", 'PARKWAY', string)
+    string = re.sub(r"\bPARKWA Y\b", 'PARKWAY', string)
+    string = re.sub(r"\bPARKWA\b", 'PARKWAY', string)
+    string = re.sub(r"\bPARKWAYY\b", 'PARKWAY', string)
+    string = re.sub(r'\bPKW Y\b', 'PARKWAY', string)
 
     # EXPRESSWAY
-    string = string.upper().replace("EXP RESSWAY", "EXPRESSWAY")
+    string = re.sub(r'\bEXP RESSWAY\b', 'EXPRESSWAY', string)
 
     # HIGHWAY
-    string = string.upper().replace("HWY", 'HIGHWAY')
+    string = re.sub(r"\bHWY\b", 'HIGHWAY', string)
     # NORTH
-    string = string.upper().replace("N ORTH", 'NORTH')
-    string = string.upper().replace("NOR TH", 'NORTH')
+    string = re.sub(r"\bN ORTH\b", 'NORTH', string)
+    string = re.sub(r"\bNOR TH\b", 'NORTH', string)
     # SOUTH
-    string = string.upper().replace("SOUT H", 'SOUTH')
-    string = string.upper().replace("S OUTH", 'SOUTH')
-    string = string.upper().replace("SOU TH", 'SOUTH')
+    string = re.sub(r"\bSOUT H\b", 'SOUTH', string)
+    string = re.sub(r"\bS OUTH\b", 'SOUTH', string)
+    string = re.sub(r"\bSOU TH\b", 'SOUTH', string)
     # BOULEVARD
-    string = string.upper().replace("BOULEVAR D", 'BOULEVARD')
-    string = string.upper().replace("BOULEVA RD", 'BOULEVARD')
-    string = string.upper().replace("BOULEV ARD", 'BOULEVARD')
-    string = string.upper().replace("BOULE VARD", 'BOULEVARD')
-    string = string.upper().replace("BOUL EVARD", 'BOULEVARD')
-    string = string.upper().replace("BOU LEVARD", 'BOULEVARD')
-    string = string.upper().replace("B OULEVARD", 'BOULEVARD')
-    string = string.upper().replace("BOUELEVARD", 'BOULEVARD')
-    string = string.upper().replace("BOULEV ", 'BOULEVARD')
+    string = re.sub(r"\bBOULEVAR D\b", 'BOULEVARD', string)
+    string = re.sub(r"\bBOULEVA RD\b", 'BOULEVARD', string)
+    string = re.sub(r"\bBOULEV ARD\b", 'BOULEVARD', string)
+    string = re.sub(r"\bBOULE VARD\b", 'BOULEVARD', string)
+    string = re.sub(r"\bBOUL EVARD\b", 'BOULEVARD', string)
+    string = re.sub(r"\bBOU LEVARD\b", 'BOULEVARD', string)
+    string = re.sub(r"\bB OULEVARD\b", 'BOULEVARD', string)
+    string = re.sub(r"\bBOUELEVARD\b", 'BOULEVARD', string)
+    string = re.sub(r"\bBOULEV\b", 'BOULEVARD', string)
 
     # BLVD
-    string = string.upper().replace("BLVD", 'BOULEVARD')
-    string = string.upper().replace("BLV D", 'BOULEVARD')
-    string = string.upper().replace("BL VD", 'BOULEVARD')
-    string = string.upper().replace("B LVD", 'BOULEVARD')
+    string = re.sub(r"\bBLVD\b", 'BOULEVARD', string)
+    string = re.sub(r"\bBLV D\b", 'BOULEVARD', string)
+    string = re.sub(r"\bBL VD\b", 'BOULEVARD', string)
+    string = re.sub(r"\bB LVD\b", 'BOULEVARD', string)
 
     # TERRACE
-    string = string.upper().replace("TERRAC E", 'TERRACE')
-    string = string.upper().replace("TERRA CE", 'TERRACE')
-    string = string.upper().replace("TERR ACE", 'TERRACE')
-    string = string.upper().replace("TER RACE", 'TERRACE')
-    string = string.upper().replace("TE RRACE", 'TERRACE')
-    string = string.upper().replace("T ERRACE", 'TERRACE')
+    string = re.sub(r"\bTERRAC E\b", 'TERRACE', string)
+    string = re.sub(r"\bTERRA CE\b", 'TERRACE', string)
+    string = re.sub(r"\bTERR ACE\b", 'TERRACE', string)
+    string = re.sub(r"\bTER RACE\b", 'TERRACE', string)
+    string = re.sub(r"\bTE RRACE\b", 'TERRACE', string)
+    string = re.sub(r"\bT ERRACE\b", 'TERRACE', string)
 
     # CONCOURSE
 
-    string = string.upper().replace("CONC OURSE", "CONCOURSE")
+    string = re.sub(r'\bCONC OURSE\b', 'CONCOURSE', string)
 
     # remove double space
     string = string.upper().replace("  ", " ")
@@ -413,4 +413,4 @@ def clean_number_and_streets(string):
 
     # remove dashes from street-names-with-dashes (but not 12-14 number dashes)
     string = re.sub(r"(?=[a-zA-Z]*\-[a-zA-Z])\-", " ", string)
-    return string.capitalize()
+    return string.title()
