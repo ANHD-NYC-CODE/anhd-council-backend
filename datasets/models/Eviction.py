@@ -77,7 +77,7 @@ class Eviction(BaseDatasetModel, models.Model):
                 eviction.save()
             elif len(match) > 1:
                 if not re.match(r"(\d+ (STREET|AVENUE))", address):
-                    eviction.bbl = match[0]1
+                    eviction.bbl = match[0]
                     eviction.save()
                 else:
                     logger.debug("Unable to choose from multiple property matches: {}".format(address))
