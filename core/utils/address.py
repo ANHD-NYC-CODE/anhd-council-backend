@@ -207,7 +207,7 @@ def normalize_apartment(string):
     return s.replace(' ', '')
 
 
-def clean_number_and_streets(string):
+def clean_number_and_streets(string, include_house_number):
     # Beach
     string = string.upper()
     string = re.sub(r"\bBEAC H\b", 'BEACH', string)
@@ -347,7 +347,7 @@ def clean_number_and_streets(string):
     string = re.sub(r"\SQUAR\b", "SQUARE", string)
 
     # Replace Street Appreviations
-    HOLY_SAINTS = ['JOSEPH', 'MARKS', 'LAWRENCE', 'JAMES',
+    HOLY_SAINTS = ['FELIX', 'ANDREWS', 'PAULS', 'JOSEPH', 'MARKS', 'LAWRENCE', 'JAMES',
                    'NICHOLAS', 'HOLLIS', 'JOHNS', "JOHN's", "EDWARDS", "GEORGES", "LUKES", "JUDE"]
 
     # replace ST MARKS etc with SAINT MARKS
@@ -403,14 +403,28 @@ def clean_number_and_streets(string):
     string = re.sub(r"\bS\b", "SOUTH", string)
     string = re.sub(r"\bW\b", "WEST", string)
 
-    # replace 143 street with 143rd st
-    match = re.search(r"(?<!^)(?=\s\d+ (STREET|AVENUE))( \d+ (STREET|AVENUE))", string)
-    if match:
-        original = match.group().strip()
-        number, rest = original.split(' ', 1)
-        match = " ".join([number_to_text(number), rest])
-        string = string.upper().replace(original, match)
+    if (include_house_number):
+        # replace 143 street with 143rd st
+        match = re.search(r"(?<!^)(?=\s\d+ (STREET|AVENUE))( \d+ (STREET|AVENUE))", string)
+        if match:
+            original = match.group().strip()
+            number, rest = original.split(' ', 1)
+            match = " ".join([number_to_text(number), rest])
+            string = string.upper().replace(original, match)
+    else:
+        match = re.search(r"(?=\d* (STREET|AVENUE))(\d+ (STREET|AVENUE))", string)
+        if match:
+            original = match.group().strip()
+            number, rest = original.split(' ', 1)
+            match = " ".join([number_to_text(number).lower(), rest])
+            string = string.upper().replace(original, match)
 
     # remove dashes from street-names-with-dashes (but not 12-14 number dashes)
     string = re.sub(r"(?=[a-zA-Z]*\-[a-zA-Z])\-", " ", string)
-    return string.title()
+
+    # final formatting - Title Case, except for numbered streets like 10th st (not 10Th st)
+    string = string.title()
+    street_suffix_pattern = r"\d+(S(T|t)|N(D|d)|R(D|d)|T(H|h))"
+    match = re.match(street_suffix_pattern, string)
+    if match:
+        string = re.sub(street_suffix_pattern, match.group().lower(), string)

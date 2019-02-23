@@ -8,5 +8,5 @@ class BuildingFilter(django_filters.rest_framework.FilterSet):
         fields = {
             'lhnd': ['exact', 'iexact', 'icontains'],
             'hhnd': ['exact', 'iexact', 'icontains'],
-            'stname': ['exact', 'iexact', 'icontains'],
+            'stname': ['exact', 'iexact', 'icontains']
         }
