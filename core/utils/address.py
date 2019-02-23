@@ -413,4 +413,4 @@ def clean_number_and_streets(string):
 
     # remove dashes from street-names-with-dashes (but not 12-14 number dashes)
     string = re.sub(r"(?=[a-zA-Z]*\-[a-zA-Z])\-", " ", string)
-    return string.capitalize(typ)
+    return string.capitalize()
