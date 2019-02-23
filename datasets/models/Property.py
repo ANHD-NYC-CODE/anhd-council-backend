@@ -288,7 +288,7 @@ class Property(BaseDatasetModel, models.Model):
         for row in gen_rows:
             if is_null(row['bbl']) or exceeds_char_length(row['bbl'], 10):
                 continue
-            row['address'] = clean_number_and_streets(row['address'])
+            row['address'] = clean_number_and_streets(row['address'], True)
             yield row
 
     @classmethod

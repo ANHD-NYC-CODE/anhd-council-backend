@@ -65,7 +65,7 @@ class Eviction(BaseDatasetModel, models.Model):
             row = row.upper().replace(',JR.', ' JR')
             row = row.upper().replace(', JR.', ' JR')
 
-            row = clean_number_and_streets(row)
+            row = clean_number_and_streets(row, True)
             yield row.upper().strip()
 
     @classmethod

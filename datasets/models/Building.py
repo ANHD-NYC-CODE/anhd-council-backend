@@ -66,7 +66,7 @@ class Building(BaseDatasetModel, models.Model):
                 continue
             if is_null(row['lhnd']):
                 continue
-            row['stname'] = clean_number_and_streets(row['stname'])
+            row['stname'] = clean_number_and_streets(row['stname'], False)
             yield row
 
     # trims down new update files to preserve memory

@@ -428,3 +428,5 @@ def clean_number_and_streets(string, include_house_number):
     match = re.match(street_suffix_pattern, string)
     if match:
         string = re.sub(street_suffix_pattern, match.group().lower(), string)
+
+    return string
