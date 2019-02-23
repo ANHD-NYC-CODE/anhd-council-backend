@@ -348,7 +348,7 @@ def clean_number_and_streets(string, include_house_number):
 
     # Replace Street Appreviations
     HOLY_SAINTS = ['FELIX', 'ANDREWS', 'PAULS', 'JOSEPH', 'MARKS', 'LAWRENCE', 'JAMES',
-                   'NICHOLAS', 'HOLLIS', 'JOHNS', "JOHN's", "EDWARDS", "GEORGES", "GEORGE", "OUEN", "MARYS", "THERESA", "LUKES", "JUDE"]
+                   'NICHOLAS', 'HOLLIS', 'JOHNS', "JOHN'S", "EDWARDS", "GEORGES", "GEORGE", "OUEN", "MARYS", "THERESA", "LUKES", "JUDE"]
 
     # replace ST MARKS etc with SAINT MARKS
     for saint in HOLY_SAINTS:

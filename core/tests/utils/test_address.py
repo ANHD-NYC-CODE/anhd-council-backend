@@ -26,12 +26,12 @@ class CleanNumberAndStreetsTest(BaseTest, TestCase):
         self.assertEqual(cleaned, expected)
 
     def test_abbreviations(self):
-        string = "100 Grand BLVD"
+        string = "100 Grand Blvd"
         expected = "100 Grand Boulevard"
         cleaned = address.clean_number_and_streets(string, True)
         self.assertEqual(cleaned, expected)
 
-        string = "100 Grand ST"
+        string = "100 Grand St"
         expected = "100 Grand Street"
         cleaned = address.clean_number_and_streets(string, True)
         self.assertEqual(cleaned, expected)
@@ -41,7 +41,27 @@ class CleanNumberAndStreetsTest(BaseTest, TestCase):
         cleaned = address.clean_number_and_streets(string, True)
         self.assertEqual(cleaned, expected)
 
-        string = "100 Dr Martin Luther King Dr"
-        expected = "100 Doctor Martin Luther King Drive"
+        string = "100 Short Dr"
+        expected = "100 Short Drive"
+        cleaned = address.clean_number_and_streets(string, True)
+        self.assertEqual(cleaned, expected)
+
+        string = "100 Short Ave"
+        expected = "100 Short Avenue"
+        cleaned = address.clean_number_and_streets(string, True)
+        self.assertEqual(cleaned, expected)
+
+        string = "100 Short Ave"
+        expected = "100 Short Avenue"
+        cleaned = address.clean_number_and_streets(string, True)
+        self.assertEqual(cleaned, expected)
+
+        string = "100 Short Ct"
+        expected = "100 Short Court"
+        cleaned = address.clean_number_and_streets(string, True)
+        self.assertEqual(cleaned, expected)
+
+        string = "100 Short Sq"
+        expected = "100 Short Sq"
         cleaned = address.clean_number_and_streets(string, True)
         self.assertEqual(cleaned, expected)
