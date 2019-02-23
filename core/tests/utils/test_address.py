@@ -30,3 +30,18 @@ class CleanNumberAndStreetsTest(BaseTest, TestCase):
         expected = "100 Grand Boulevard"
         cleaned = address.clean_number_and_streets(string, True)
         self.assertEqual(cleaned, expected)
+
+        string = "100 Grand ST"
+        expected = "100 Grand Street"
+        cleaned = address.clean_number_and_streets(string, True)
+        self.assertEqual(cleaned, expected)
+
+        string = "100 St Johns St"
+        expected = "100 Saint Johns Street"
+        cleaned = address.clean_number_and_streets(string, True)
+        self.assertEqual(cleaned, expected)
+
+        string = "100 Dr Martin Luther King Dr"
+        expected = "100 Doctor Martin Luther King Drive"
+        cleaned = address.clean_number_and_streets(string, True)
+        self.assertEqual(cleaned, expected)
