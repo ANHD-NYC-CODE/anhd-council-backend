@@ -209,6 +209,7 @@ def normalize_apartment(string):
 
 def clean_number_and_streets(string):
     # Beach
+    string = string.upper()
     string = string.upper().replace("BEAC H", 'BEACH')
     string = string.upper().replace("BEA CH", 'BEACH')
     string = string.upper().replace("BE ACH", 'BEACH')
@@ -221,7 +222,6 @@ def clean_number_and_streets(string):
     string = string.upper().replace("STRE ET", 'STREET')
     string = string.upper().replace("S TREET", 'STREET')
     string = string.upper().replace("STREE", "STREET")
-    string = string.upper().replace("STR ", "STREET")
 
     # PLACE
     string = string.upper().replace("PLAC E", 'PLACE')
@@ -311,7 +311,7 @@ def clean_number_and_streets(string):
     # remove space dash space
     string = string.upper().replace(' - ', ' ')
 
-    # other typos
+    # FOUND TYPOS
     string = re.sub(r"\bP OLITE\b", "POLITE", string)
     string = re.sub(r"\bDEREIMER\b", "DE REIMER", string)
     string = re.sub(r"\bBAYRIDGE\b", "BAY RIDGE", string)
@@ -327,6 +327,7 @@ def clean_number_and_streets(string):
     string = re.sub(r"\bWTREMONT\b", "WEST TREMONT", string)
     string = re.sub(r"\bREVERAND\b", "REV", string)
     string = re.sub(r"\bPENNSYLVAN IA\b", "PENNSYLVANIA", string)
+    string = re.sub(r"\bPENNSYLVANI A\b", "PENNSYLVANIA", string)
     string = re.sub(r"\bRID GE\b", "RIDGE", string)
     string = re.sub(r"\bHARDIN G\b", "HARDING", string)
     string = re.sub(r"\bCHESTNU T\b", "CHESTNU T", string)
@@ -337,15 +338,23 @@ def clean_number_and_streets(string):
     string = re.sub(r"\bPAEDERGAT\b", "PAERDEGAT", string)
     string = re.sub(r"\bVALENTI NE\b", "VALENTINE", string)
     string = re.sub(r"\bSOUTHE RN\b", "SOUTHERN", string)
+    string = re.sub(r"\bKI NG\b", "KING", string)
+    string = re.sub(r"\bFTWASHINGTON\b", "FORT WASHINGTON", string)
+    string = re.sub(r"\bL OT\b", "LOT", string)
+    string = re.sub(r"\bP ARK\b", "PARK", string)
+    string = re.sub(r"\bAMSTERD AM\b", "AMSTERDAM", string)
+    string = re.sub(r"\bSTR\b", "STREET", string)
+    string = re.sub(r"\SQUAR\b", "SQUARE", string)
 
     # Replace Street Appreviations
     HOLY_SAINTS = ['JOSEPH', 'MARKS', 'LAWRENCE', 'JAMES',
-                   'NICHOLAS', 'HOLLIS', 'JOHNS', "JOHN's", "EDWARDS", "GEORGES"]
+                   'NICHOLAS', 'HOLLIS', 'JOHNS', "JOHN's", "EDWARDS", "GEORGES", "LUKES", "JUDE"]
 
     # replace ST MARKS etc with SAINT MARKS
     for saint in HOLY_SAINTS:
         string = re.sub(r"(?=.*ST {})(\bST {}\b)".format(saint, saint), "SAINT {}".format(saint), string)
 
+    # Abbreviations
     string = re.sub(r"\bFT\b", "FORT", string)
     string = re.sub(r"\bRV\b", "RIVER", string)
     string = re.sub(r"\bCT\b", "COURT", string)
@@ -364,6 +373,7 @@ def clean_number_and_streets(string):
     string = re.sub(r"\bEXPWY\b", "EXPRESSWAY", string)
     string = re.sub(r"\bEXP WY\b", "EXPRESSWAY", string)
     string = re.sub(r"\bEXPR ESSWAY\b", "EXPRESSWAY", string)
+    string = re.sub(r"\bTPKE\b", "TURNPIKE", string)
 
     string = re.sub(r"(?!{})(?=\bST\b)(\bST\b)".format(
         ".*" + saint + "|" for saint in HOLY_SAINTS), "STREET", string)
@@ -403,4 +413,4 @@ def clean_number_and_streets(string):
 
     # remove dashes from street-names-with-dashes (but not 12-14 number dashes)
     string = re.sub(r"(?=[a-zA-Z]*\-[a-zA-Z])\-", " ", string)
-    return string
+    return string.capitalize(typ)

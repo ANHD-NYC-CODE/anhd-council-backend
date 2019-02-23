@@ -70,6 +70,20 @@ class Eviction(BaseDatasetModel, models.Model):
 
     @classmethod
     def link_eviction_to_pluto_by_address(self):
+        def search_property_address(eviction, address):
+            match = ds.Property.objects.filter(address__icontains=address)
+            if len(match) == 1:
+                eviction.bbl = match[0]
+                eviction.save()
+            elif len(match) > 1:
+                if not re.match(r"(\d+ (STREET|AVENUE))", address):
+                    eviction.bbl = match[0]1
+                    eviction.save()
+                else:
+                    logger.debug("Unable to choose from multiple property matches: {}".format(address))
+            else:
+                logger.debug("No property match found: {}".format(address))
+
         evictions = self.objects.filter(bbl__isnull=True)
         for eviction in evictions:
             pattern = r'[0-9].*?(LANE|EXPRESSWAY|PARKWAY|STREET|(AVENUE \w\b|AVENUE)|PLACE|BOULEVARD|DRIVE|ROAD|CONCOURSE|PLAZA|TERRACE|COURT|LOOP|CRESENT|BROADWAY|WAY|WALK|TURNPIKE|PROMENADE|RIDGE|OVAL|SLIP|CIRCLE)'
@@ -81,12 +95,14 @@ class Eviction(BaseDatasetModel, models.Model):
                     eviction.bbl = address_match[0].bbl
                     eviction.save()
                 elif len(address_match) > 1:
-                    logger.debug('more than one eviction address match found: {}'.format(address))
                     # not a super generic query like 123 STREET or 45 AVENUE
                     if not re.match(r"(\d+ (STREET|AVENUE))", address):
                         eviction.bbl = address_match[0].bbl
+                        eviction.save()
+                    else:
+                        search_property_address(eviction, address)
                 else:
-                    logger.debug("no address match {}".format(address))
+                    search_property_address(eviction, address)
 
             else:
                 logger.debug("no match: {}".format(eviction.evictionaddress))
