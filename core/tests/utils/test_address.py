@@ -65,3 +65,29 @@ class CleanNumberAndStreetsTest(BaseTest, TestCase):
         expected = "100 Short Sq"
         cleaned = address.clean_number_and_streets(string, True)
         self.assertEqual(cleaned, expected)
+
+    def test_number_to_text(self):
+        string = "100 1 Avenue"
+        expected = "100 1st Avenue"
+        cleaned = address.clean_number_and_streets(string, True)
+        self.assertEqual(cleaned, expected)
+
+        string = "100 11 Avenue"
+        expected = "100 11th Avenue"
+        cleaned = address.clean_number_and_streets(string, True)
+        self.assertEqual(cleaned, expected)
+
+        string = "123-20 22 Avenue"
+        expected = "123-20 22nd Avenue"
+        cleaned = address.clean_number_and_streets(string, True)
+        self.assertEqual(cleaned, expected)
+
+        string = "33 Avenue"
+        expected = "33rd Avenue"
+        cleaned = address.clean_number_and_streets(string, False)
+        self.assertEqual(cleaned, expected)
+
+        string = "44 St"
+        expected = "44th Street"
+        cleaned = address.clean_number_and_streets(string, False)
+        self.assertEqual(cleaned, expected)
