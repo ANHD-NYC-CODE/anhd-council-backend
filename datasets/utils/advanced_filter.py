@@ -1,7 +1,6 @@
 from datasets import models as ds
 from django.db.models import Count, Q, ExpressionWrapper, F, FloatField
 import re
-from datasets.filter_helpers import construct_or_q, construct_and_q
 
 
 def clean_model_name(string):
@@ -78,8 +77,36 @@ def convert_query_string_to_mapping(string):
     return conditions
 
 
-def convert_condition_to_q(condition):
-    if condition.type.lower() == 'and':
-        return construct_and_q(condition.filters.query1_filters)
-    elif condition.type.lower() == 'or':
-        return construct_or_q(condition.filters.query1_filters)
+def construct_or_q(query_list):
+    query = query_list.pop()
+
+    for item in query_list:
+        query |= item
+
+    return Q(query)
+
+
+def construct_and_q(query_list):
+    query = query_list.pop()
+    for item in query_list:
+        query &= item
+
+    return Q(query)
+
+
+def convert_condition_to_q(condition, conditions, type='query1_filters'):
+    # only seed condition0, let it recurisvely construct rest of Q
+    q = Q()
+    if condition['type'].lower() == 'and':
+        for c_filter in condition['filters']:
+            if 'condition' in c_filter:
+                q &= convert_condition_to_q(conditions[c_filter['condition']], conditions, type)
+            else:
+                q &= construct_and_q(c_filter[type])
+    elif condition['type'].lower() == 'or':
+        for c_filter in condition['filters']:
+            if 'condition' in c_filter:
+                q |= convert_condition_to_q(conditions[c_filter['condition']], conditions, type)
+            else:
+                q |= construct_or_q(c_filter[type])
+    return q

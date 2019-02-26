@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.urls import include, path
 from rest_framework.test import APITestCase, URLPatternsTestCase
 from app.tests.base_test import BaseTest
+from django.db.models import Q
 
 from datasets.utils import advanced_filter as af
 from datasets import models as ds
@@ -60,8 +61,19 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.assertEqual(result[1]['filters'][1]['query2_filters'], expected[1]['filters'][1]['query2_filters'])
 
     def test_convert_condition_to_q(self):
+        # with query1_filters
         query_string = "*condition_0=AND+filter_0=condition_1+filter_1=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__count__gte=10+*condition_1=OR+filter_0=dobviolations__issueddate__gte=2018-01-01,dobviolations__count__gte=10+filter_1=ecbviolations__issueddate__gte=2018-01-01,ecbviolations__count__gte=10"
         mapping = af.convert_query_string_to_mapping(query_string)
-        result = af.convert_condition_to_q(mapping[0])
-        import pdb
-        pdb.set_trace()
+        result = af.convert_condition_to_q(mapping[0], mapping, 'query1_filters')
+        expected = Q((Q({'dobviolation__issueddate__gte': '2018-01-01'}) |
+                      Q({'ecbviolation__issueddate__gte': '2018-01-01'})), {'hpdviolation__approveddate__gte': '2018-01-01'})
+
+        self.assertEqual(result, expected)
+
+        # With query2_filters
+
+        result2 = af.convert_condition_to_q(mapping[0], mapping, 'query2_filters')
+        expected2 = Q((Q({'dobviolations__count__gte': '10'}) |
+                       Q({'ecbviolations__count__gte': '10'})), {'hpdviolations__count__gte': '10'})
+
+        self.assertEqual(result2, expected2)

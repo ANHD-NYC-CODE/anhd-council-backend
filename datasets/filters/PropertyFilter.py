@@ -6,6 +6,8 @@ import django_filters
 from django import forms
 from copy import deepcopy
 from datasets.filter_helpers import construct_or_q, TotalWithDateFilter, RSLostPercentWithDateFilter, AdvancedQueryFilter
+from datasets.utils import advanced_filter as af
+
 from collections import OrderedDict
 from django.conf import settings
 from psycopg2.extras import DateRange
@@ -195,13 +197,20 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
             )
         }
 
-    # def filter_advancedquery(self, queryset, name, values):
-    #     dates_q = ...
-    #     date_filtered_queryset = queryset.only('bbl').filter(dates_q).distinct()
+    def filter_advancedquery(self, queryset, name, values):
+        mappings = af.convert_query_string_to_mapping(values)
+
+        # filter on non-annotating filters (like dates)
+        q1 = af.convert_condition_to_q(mappings[0], mappings, 'query1_filters')
+        q1_queryset = queryset.only('bbl').filter(q1).distinct()
+        import pdb
+        pdb.set_trace()
+        # filter on annotating filters (like counts)
 
     # advanced query
     # http://localhost:8000/councils/6/properties/?housingtype=rs&q=condition_0=AND+group_0A=*condition_1+group_0B=rentstabilizationrecord__uc2007__gte=0,rentstabilizationrecord__uc2017__gte=0,rentstabilizationrecords__percent__gte=0.5+condition_1=OR+group_1A=dobviolation__issuedate__gte=2017-01-01,dobviolation__issuedate__lte=2018-01-01,dobviolations__count__gte=1+group_1B=ecbviolation__issuedate__gte=2017-01-01,ecbviolation__issuedate__lte=2018-01-01,ecbviolations__count__gte=1
-    def filter_advancedquery(self, queryset, name, values):
+
+    def filter_advancedquery1(self, queryset, name, values):
         # 1) filter queryset by model fields first
         # return queryset with only BBL values (to reduce memory overhead)
         # 2) perform related Q query on date ranges, other ranges
