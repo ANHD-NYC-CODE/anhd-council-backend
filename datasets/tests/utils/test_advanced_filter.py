@@ -16,7 +16,7 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.clean_tests()
 
     def test_convert_query_string_to_mapping_1(self):
-        query_string = "*condition_0=AND+filter_0=condition_1+filter_1=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__count__gte=10+*condition_1=OR+filter_0=dobviolations__issueddate__gte=2018-01-01,dobviolations__count__gte=10+filter_1=ecbviolations__issueddate__gte=2018-01-01,ecbviolations__count__gte=10"
+        query_string = "*condition_0=AND filter_0=condition_1 filter_1=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=10 *condition_1=OR filter_0=dobviolations__issueddate__gte=2018-01-01,dobviolations__count__gte=10 filter_1=ecbviolations__issueddate__gte=2018-01-01,ecbviolations__count__gte=10"
 
         result = af.convert_query_string_to_mapping(query_string)
         expected = [
@@ -27,7 +27,7 @@ class PropertyFilterTests(BaseTest, TestCase):
                      'model': 'hpdviolation',
                      'prefetch_key': 'hpdviolation_set',
                      'annotation_key': 'hpdviolations__count',
-                     'query1_filters': [{'hpdviolation__approveddate__gte': '2018-01-01'}],
+                     'query1_filters': [{'hpdviolation__approveddate__gte': '2018-01-01'}, {'hpdviolation__approveddate__lte': '2019-01-01'}],
                      'query2_filters': [{'hpdviolations__count__gte': '10'}]
                  }
              ]
@@ -62,18 +62,18 @@ class PropertyFilterTests(BaseTest, TestCase):
 
     def test_convert_condition_to_q(self):
         # with query1_filters
-        query_string = "*condition_0=AND+filter_0=condition_1+filter_1=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__count__gte=10+*condition_1=OR+filter_0=dobviolations__issueddate__gte=2018-01-01,dobviolations__count__gte=10+filter_1=ecbviolations__issueddate__gte=2018-01-01,ecbviolations__count__gte=10"
+        query_string = "*condition_0=AND filter_0=condition_1 filter_1=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__count__gte=10 *condition_1=OR filter_0=dobviolations__issueddate__gte=2018-01-01,dobviolations__count__gte=10 filter_1=ecbviolations__issueddate__gte=2018-01-01,ecbviolations__count__gte=10"
         mapping = af.convert_query_string_to_mapping(query_string)
         result = af.convert_condition_to_q(mapping[0], mapping, 'query1_filters')
-        expected = Q((Q({'dobviolation__issueddate__gte': '2018-01-01'}) |
-                      Q({'ecbviolation__issueddate__gte': '2018-01-01'})), {'hpdviolation__approveddate__gte': '2018-01-01'})
+        expected = Q((Q(('dobviolation__issueddate__gte', '2018-01-01')) |
+                      Q(('ecbviolation__issueddate__gte', '2018-01-01'))), ('hpdviolation__approveddate__gte', '2018-01-01'))
 
         self.assertEqual(result, expected)
 
         # With query2_filters
 
         result2 = af.convert_condition_to_q(mapping[0], mapping, 'query2_filters')
-        expected2 = Q((Q({'dobviolations__count__gte': '10'}) |
-                       Q({'ecbviolations__count__gte': '10'})), {'hpdviolations__count__gte': '10'})
+        expected2 = Q((Q(('dobviolations__count__gte', '10')) |
+                       Q(('ecbviolations__count__gte', '10'))), ('hpdviolations__count__gte', '10'))
 
         self.assertEqual(result2, expected2)

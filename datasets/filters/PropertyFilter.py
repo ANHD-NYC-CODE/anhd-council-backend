@@ -203,9 +203,28 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         # filter on non-annotating filters (like dates)
         q1 = af.convert_condition_to_q(mappings[0], mappings, 'query1_filters')
         q1_queryset = queryset.only('bbl').filter(q1).distinct()
+
+        # filter on annotating filters (like counts)
+        q2 = af.convert_condition_to_q(mappings[0], mappings, 'query2_filters')
+        for condition in mappings:
+            for c_filter in condition['filters']:
+                if 'condition' in c_filter:
+                    continue
+                if c_filter['model'].lower() not in (model.lower() for model in settings.ACTIVE_MODELS):
+                    continue
+                q1_queryset = q1_queryset.prefetch_related(c_filter['prefetch_key'])
+
+                q1_queryset = q1_queryset.annotate(**{c_filter['annotation_key']: Count(
+                    c_filter['model'],
+                    filter=af.construct_and_q(c_filter['query1_filters']),
+                    distinct=True
+                )})
         import pdb
         pdb.set_trace()
-        # filter on annotating filters (like counts)
+        q2_queryset = q1_queryset.only('bbl').filter(q2).distinct()
+        final_bbls = q2_queryset.values('bbl')
+
+        return ds.Property.objects.filter(bbl__in=final_bbls)
 
     # advanced query
     # http://localhost:8000/councils/6/properties/?housingtype=rs&q=condition_0=AND+group_0A=*condition_1+group_0B=rentstabilizationrecord__uc2007__gte=0,rentstabilizationrecord__uc2017__gte=0,rentstabilizationrecords__percent__gte=0.5+condition_1=OR+group_1A=dobviolation__issuedate__gte=2017-01-01,dobviolation__issuedate__lte=2018-01-01,dobviolations__count__gte=1+group_1B=ecbviolation__issuedate__gte=2017-01-01,ecbviolation__issuedate__lte=2018-01-01,ecbviolations__count__gte=1

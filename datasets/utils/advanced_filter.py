@@ -69,8 +69,8 @@ def convert_query_string_to_mapping(string):
     array = list(filter(None, array))
     for condition in array:
         element = {
-            'type': condition.split('=', 1)[1].split('+')[0],
-            'filters': list(filter(None, list(map(lambda x: parse_filter_string(x),  list(filter(None, condition.split('+')))))))
+            'type': condition.split('=', 1)[1].split(' ')[0],
+            'filters': list(filter(None, list(map(lambda x: parse_filter_string(x),  list(filter(None, condition.split(' ')))))))
         }
         conditions.append(element)
 
@@ -78,20 +78,25 @@ def convert_query_string_to_mapping(string):
 
 
 def construct_or_q(query_list):
-    query = query_list.pop()
+    ql = query_list[:]
+    query = Q(**ql.pop())
 
-    for item in query_list:
-        query |= item
+    if len(ql):
+        for item in ql:
+            query |= Q(**item)
 
-    return Q(query)
+    return query
 
 
 def construct_and_q(query_list):
-    query = query_list.pop()
-    for item in query_list:
-        query &= item
+    ql = query_list[:]
+    query = Q(**ql.pop())
 
-    return Q(query)
+    if len(ql):
+        for item in ql:
+            query &= Q(**item)
+
+    return query
 
 
 def convert_condition_to_q(condition, conditions, type='query1_filters'):
@@ -108,5 +113,5 @@ def convert_condition_to_q(condition, conditions, type='query1_filters'):
             if 'condition' in c_filter:
                 q |= convert_condition_to_q(conditions[c_filter['condition']], conditions, type)
             else:
-                q |= construct_or_q(c_filter[type])
+                q |= construct_and_q(c_filter[type])
     return q
