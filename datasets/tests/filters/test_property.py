@@ -414,7 +414,42 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
 
         # properties with 5 HPD violations b/t 2018- 2019 AND (5 DOB violations b/t 2018-2019 OR (5 ECB violations b/t 2018-2019 AND 5 HPD Complaints b/t 2018-2019))
         query = '/properties/?q=condition_0=AND+group_0A=*condition_1+group_0B=hpdviolation__approveddate__gte=2018-01-01,hpdviolation__approveddate__lte=2019-01-01,hpdviolation__count__gte=5+condition_1=OR+group_1A=*condition_2+group_1B=dobviolation__issuedate__gte=2018-01-01,dobviolation__issuedate__lte=2019-01-01,dobviolation__count__gte=5+condition_2=AND+group_2A=ecbviolation__issuedate__gte=2018-01-01,ecbviolation__issuedate__lte=2019-01-01,ecbviolation__count__gte=5+group_2A=hpdcomplaint__receiveddate__gte=2018-01-01,hpdcomplaint__receiveddate__lte=2019-01-01,hpdcomplaint__count__gte=5'
-        query = '/properties/?q=condition_0=AND+group_0A=*condition_1+group_0B=hpdviolation__approveddate__gte=2018-01-01,hpdviolation__approveddate__lte=2019-01-01,hpdviolation__count__gte=5+condition_1=OR+group_1A=*condition_2+group_1B=dobviolation__issuedate__gte=2018-01-01,dobviolation__issuedate__lte=2019-01-01,dobviolation__count__gte=5+condition_2=AND+group_2A=ecbviolation__issuedate__gte=2018-01-01,ecbviolation__issuedate__lte=2019-01-01,ecbviolation__count__gte=5+group_2A=hpdcomplaint__receiveddate__gte=2018-01-01,hpdcomplaint__receiveddate__lte=2019-01-01,hpdcomplaint__count__gte=5'
+
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+        self.assertEqual(any(d['bbl'] == '1' for d in content), True)
+        self.assertEqual(any(d['bbl'] == '2' for d in content), True)
+
+    def test_multiple_condition_multi_groups_4(self):
+        council = self.council_factory(coundist=1)
+        # 5 HPD Violations and 5 HPD Complaints in range
+        property1 = self.property_factory(bbl=1, council=council)
+        # 5 DOB Violations and 5 ECB Violations in range
+        property2 = self.property_factory(bbl=2, council=council)
+        # 5 HPD Violations in range and 5 HPD Complaints NOT in range
+        property3 = self.property_factory(bbl=3, council=council)
+        # 5 DOB Violations in range
+        property4 = self.property_factory(bbl=4, council=council)
+        # 5 DOB Violations in range and 5 ECB violations NOT in range
+        property5 = self.property_factory(bbl=5, council=council)
+
+        for i in range(5):
+            self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
+            self.hpdcomplaint_factory(property=property1, receiveddate="2018-01-01")
+            self.dobviolation_factory(property=property2, issuedate="2018-01-01")
+            self.ecbviolation_factory(property=property2, issuedate="2018-01-01")
+            self.hpdviolation_factory(property=property3, approveddate="2018-01-01")
+            self.hpdcomplaint_factory(property=property3, receiveddate="2016-01-01")
+
+            self.dobviolation_factory(property=property4, issuedate="2018-01-01")
+            self.dobviolation_factory(property=property5, issuedate="2018-01-01")
+            self.ecbviolation_factory(property=property5, issuedate="2016-01-01")
+
+        # properties with either (5 HPD violations b/t 2018- 2019 AND 5 HPD complaints b/t 2018-2019) OR (5 DOB violations b/t 2018-2019 AND 5 ECB violations b/t 2018-2019)
+        query = '/properties/?q=condition_0=OR+group_0a=*condition_1+group_0b=*condition_2+condition_1=AND+group_1a=hpdviolation__approveddate__gte=2018-01-01,hpdviolation__approveddate__lte=2019-01-01,hpdviolation__count__gte=5+group_1b=hpdcomplaint__receiveddate__gte=2018-01-01,hpdcomplaint__receiveddate__lte=2019-01-01,hpdcomplaint__count__gte=5+condition_2=AND+group_2a=dobviolation__issuedate__gte=2018-01-01,dobviolation__issuedate__lte=2019-01-01,dobviolation__count__gte=5+group_2b=ecbviolation__issuedate__gte=2018-01-01,ecbviolation__issuedate__lte=2019-01-01,ecbviolation__count__gte=5'
 
         response = self.client.get(query, format="json")
         content = response.data['results']

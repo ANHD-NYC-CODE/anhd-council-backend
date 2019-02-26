@@ -195,6 +195,10 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
             )
         }
 
+    # def filter_advancedquery(self, queryset, name, values):
+    #     initial_bbls = queryset.only('bbl').values('bbl')
+    #     bbl_queryset = ds.Property.objects.filter(bbl__in=initial_bbls)
+
     # advanced query
     # http://localhost:8000/councils/6/properties/?housingtype=rs&q=condition_0=AND+group_0A=*condition_1+group_0B=rentstabilizationrecord__uc2007__gte=0,rentstabilizationrecord__uc2017__gte=0,rentstabilizationrecords__percent__gte=0.5+condition_1=OR+group_1A=dobviolation__issuedate__gte=2017-01-01,dobviolation__issuedate__lte=2018-01-01,dobviolations__count__gte=1+group_1B=ecbviolation__issuedate__gte=2017-01-01,ecbviolation__issuedate__lte=2018-01-01,ecbviolations__count__gte=1
     def filter_advancedquery(self, queryset, name, values):
@@ -209,8 +213,8 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
             parsed_values[0], parsed_values, False))
 
         # 1
-        initial_bbls = queryset.only('bbl').values('bbl')
-        filtered_by_model_queryset = ds.Property.objects.filter(bbl__in=initial_bbls)
+        # initial_bbls = queryset.only('bbl').values('bbl')
+        # filtered_by_model_queryset = queryset.only('bbl').values('bbl')
 
         # 2
         related_queryset = filtered_by_model_queryset.only('bbl').filter(dates_q).distinct()
@@ -249,42 +253,12 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
                 except Exception as e:
                     raise Exception("Malformed rentstabilization parameter. Error: {}".format(e))
             else:
-                # only annotate for count types
-                # if q_filter['type'] is not 'annotate':
-                #     continue
-
                 count_key = q_filter['full_related_path'] + '__count'
                 related_queryset = related_queryset.prefetch_related(q_filter['dataset'] + '_set').annotate(
                     **self.get_dataset_count_annotation(count_key, q_filter)
                 )
 
-            ##
-            # Less memory intensive, but less efficient query.
-            #
-            # Uses a subquery - 1 query per result in related_queryset -
-            # this saves on Postgres memory and speeds things up
-            # even if inefficient, if lieu of scaled resources.
-            #
-            # But it turns out increasing the cache and work_mem of postgres
-            # in the config fixes the slowness!
-            ##
-            # related_queryset = related_queryset.annotate(
-            #     **{count_key: Subquery(
-            #         ds.Property.objects.filter(
-            #             bbl=OuterRef('bbl')
-            #         ).annotate(
-            #             sub_count=Count(
-            #                 q_filter['dataset'],
-            #                 filter=q_filter['q'],
-            #                 distinct=True
-            #             )
-            #         ).values('sub_count')[:1]
-            #     )
-            #     }
-            # )
-
         # 3
-
         annotation_q = Q(self.read_condition(parsed_values[0], parsed_values, True))
         final_bbls = related_queryset.filter(annotation_q).only('bbl').values('bbl')
         return ds.Property.objects.filter(bbl__in=final_bbls)
