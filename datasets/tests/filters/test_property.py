@@ -733,3 +733,54 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.assertEqual(len(content), 2)
         self.assertEqual(any(d['bbl'] == '1' for d in content), True)
         self.assertEqual(any(d['bbl'] == '2' for d in content), True)
+
+    def test_council_with_housingtype_with_q_2(self):
+        council = self.council_factory(coundist=1)
+        council2 = self.council_factory(coundist=2)
+        # full match
+        property1 = self.property_factory(bbl=1, council=council)
+        self.coredata_factory(property=property1, programname="j-51")
+
+        # full match
+        property2 = self.property_factory(bbl=2, council=council)
+        self.coredata_factory(property=property2, programname="j-51")
+
+        # correct council, correct housing type, not filter match
+        property3 = self.property_factory(bbl=3, council=council)
+        self.coredata_factory(property=property3, programname="j-51")
+
+        # correct council, wrong housing type, filter match
+        property4 = self.property_factory(bbl=4, council=council)
+        self.coredata_factory(property=property4, programname="421a")
+
+        # wrong council, otherwise complete match
+        property5 = self.property_factory(bbl=5, council=council2)
+        self.coredata_factory(property=property5, programname="j-51")
+
+        # wrong council, housing type only match
+        property6 = self.property_factory(bbl=6, council=council2)
+        self.coredata_factory(property=property6, programname="j-51")
+
+        for i in range(5):
+            self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
+            self.dobviolation_factory(property=property1, issuedate="2018-01-01")
+            self.hpdviolation_factory(property=property2, approveddate="2018-01-01")
+            self.ecbviolation_factory(property=property2, issuedate="2018-01-01")
+            self.hpdviolation_factory(property=property3, approveddate="2018-01-01")
+            self.dobviolation_factory(property=property3, issuedate="2016-01-01")
+            self.hpdviolation_factory(property=property4, approveddate="2018-01-01")
+            self.dobviolation_factory(property=property4, issuedate="2018-01-01")
+            self.hpdviolation_factory(property=property5, approveddate="2018-01-01")
+            self.dobviolation_factory(property=property5, issuedate="2018-01-01")
+            self.ecbviolation_factory(property=property6, issuedate="2018-01-01")
+
+        # properties in council 1 with rent regulated j-51 and with 5 HPD violations b/t 2018- 2019 AND (5 DOB violations b/t 2018-2019 OR 5 ECB violations b/t 2018-2019)
+        query = '/properties/?council=1&housingtype=rr&subsidy__programname=j-51&q=*condition_0=AND+filter_0=condition_1+filter_0=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5+*condition_1=OR+filter_1=dobviolations__issuedate__gte=2018-01-01,dobviolations__issuedate__lte=2019-01-01,dobviolations__count__gte=5+filter_1=ecbviolations__issuedate__gte=2018-01-01,ecbviolations__issuedate__lte=2019-01-01,ecbviolations__count__gte=5'
+
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+        self.assertEqual(any(d['bbl'] == '1' for d in content), True)
+        self.assertEqual(any(d['bbl'] == '2' for d in content), True)

@@ -22,7 +22,7 @@ def annotate_acrislegals(queryset, c_filter):
     if c_filter['annotation_key']:
         queryset = queryset.annotate(**{c_filter['annotation_key']: Count(
             c_filter['model'],
-            filter=af.construct_and_q(c_filter['query1_filters']),
+            filter=construct_and_q(c_filter['query1_filters']),
             distinct=True
         )})
     return queryset
@@ -152,7 +152,7 @@ def convert_condition_to_q(condition, conditions, type='query1_filters'):
                 if type == 'query2_filters' and c_filter['annotation_key']:
                     q &= construct_and_q(c_filter[type])
                 elif type == 'query1_filters':
-                    q |= construct_and_q(c_filter[type])
+                    q &= construct_and_q(c_filter[type])
     elif condition['type'].lower() == 'or':
         for c_filter in condition['filters']:
             if 'condition' in c_filter:

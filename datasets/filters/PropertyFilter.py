@@ -5,7 +5,7 @@ from django.db.models.functions import Cast
 import django_filters
 from django import forms
 from copy import deepcopy
-from datasets.filter_helpers import construct_or_q, TotalWithDateFilter, RSLostPercentWithDateFilter, AdvancedQueryFilter
+from datasets.filter_helpers import TotalWithDateFilter, RSLostPercentWithDateFilter, AdvancedQueryFilter
 from datasets.utils import advanced_filter as af
 
 from collections import OrderedDict
