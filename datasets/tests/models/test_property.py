@@ -33,6 +33,15 @@ class PropertyTests(BaseTest, TestCase):
         self.assertEqual(new_update.rows_created, 1)
         self.assertEqual(new_update.rows_updated, 1)
 
+    def test_get_rentstabilized_units(self):
+        property = self.property_factory(bbl=1)
+        property2 = self.property_factory(bbl=2)
+        taxbills = self.taxbill_factory(property=property, uc2016=22, uc2017=21, uc2018=20)
+
+        # Returns 0 if no taxbills record for property
+        self.assertEqual(property2.get_rentstabilized_units(), 0)
+        self.assertEqual(property.get_rentstabilized_units(), 20)
+
 
 class PropertyManagerTest(BaseTest, TestCase):
     def tearDown(self):

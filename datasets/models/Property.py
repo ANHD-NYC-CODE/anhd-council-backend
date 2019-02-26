@@ -277,8 +277,14 @@ class Property(BaseDatasetModel, models.Model):
     lng = models.DecimalField(decimal_places=16, max_digits=32, blank=True, null=True)
     lat = models.DecimalField(decimal_places=16, max_digits=32, blank=True, null=True)
 
+    def get_rentstabilized_units(self):
+        try:
+            return self.rentstabilizationrecord.get_latest_count()
+        except Exception as e:
+            return 0
     # trims down new update files to preserve memory
     # uses original header values
+
     @classmethod
     def update_set_filter(self, csv_reader, headers):
         return csv_reader

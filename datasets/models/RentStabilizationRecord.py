@@ -3,6 +3,7 @@ from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.utils.validation_filters import is_null
 import logging
+import datetime
 
 logger = logging.getLogger('app')
 
@@ -107,6 +108,15 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
     condono = models.SmallIntegerField(blank=True, null=True)
     lon = models.DecimalField(decimal_places=16, max_digits=32, blank=True, null=True)
     lat = models.DecimalField(decimal_places=16, max_digits=32, blank=True, null=True)
+
+    def get_latest_count(self):
+        year = datetime.datetime.today().year
+        latest_count = None
+
+        while not latest_count and int(year) > 2006:
+            latest_count = getattr(self, 'uc' + str(year))
+            year -= 1
+        return latest_count
 
     @classmethod
     def download(self):
