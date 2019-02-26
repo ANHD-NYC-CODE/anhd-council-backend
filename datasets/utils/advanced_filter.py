@@ -70,10 +70,13 @@ def get_filters(string, annotation=False):
 
 def parse_filter_string(string):
     if re.search(r'\bAND\b', string.upper()):
+        # Don't parse conditions
         return None
     if re.search(r'\bOR\b', string.upper()):
+        # Don't parse conditions
         return None
     if 'CONDITION' in string.upper():
+        # return the condition filter mapping
         return {'condition': int(string.split('=')[1].split('_')[1])}
 
     model = clean_model_name(string.lower().split('=', 1)[1].split('__')[0])
@@ -90,7 +93,7 @@ def parse_filter_string(string):
 
 def convert_query_string_to_mapping(string):
     # Converts query string:
-    # *condition_0=AND+filter_0=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__count__gte=10
+    # *condition_0=AND filter_0=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__count__gte=10
     # into:
     # [
     #   {'type': 'AND',
@@ -142,7 +145,7 @@ def construct_and_q(query_list):
 
 
 def convert_condition_to_q(condition, conditions, type='query1_filters'):
-    # only seed condition0, let it recurisvely construct rest of Q
+    # only seed condition0 in view-filter, let it recurisvely construct rest of Q
     q = Q()
     if condition['type'].lower() == 'and':
         for c_filter in condition['filters']:
