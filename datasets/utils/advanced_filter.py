@@ -1,6 +1,7 @@
 from datasets import models as ds
 from django.db.models import Count, Q, ExpressionWrapper, F, FloatField
 import re
+from datasets.filter_helpers import construct_or_q, construct_and_q
 
 
 def clean_model_name(string):
@@ -77,6 +78,8 @@ def convert_query_string_to_mapping(string):
     return conditions
 
 
-def convert_condition_to_q():
-    import pdb
-    pdb.set_trace()
+def convert_condition_to_q(condition):
+    if condition.type.lower() == 'and':
+        return construct_and_q(condition.filters.query1_filters)
+    elif condition.type.lower() == 'or':
+        return construct_or_q(condition.filters.query1_filters)
