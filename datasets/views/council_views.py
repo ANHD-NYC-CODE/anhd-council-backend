@@ -13,7 +13,7 @@ class CouncilViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyMo
 
     ### Query Params:
 
-    #### sh_units=`number`
+    #### unitsres=`number`
       - adjusts the small homes definition to correspond to less than or equal to the specified number. Blank defaults to lte 6
 
     #### program=`name`

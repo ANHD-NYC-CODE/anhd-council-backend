@@ -29,13 +29,13 @@ class CouncilHousingTypeSummarySerializer(serializers.ModelSerializer):
     def get_housing_types(self, obj):
         council_properties = ds.Property.objects.council(obj.pk)
         program = self.context['request'].query_params['program'] if 'program' in self.context['request'].query_params else None
-        sh_units = self.context['request'].query_params['sh_units'] if 'sh_units' in self.context['request'].query_params else '6'
+        unitsres = self.context['request'].query_params['unitsres'] if 'unitsres' in self.context['request'].query_params else '6'
 
         return {
             "residential_properties_count": council_properties.residential().count(),
             "rent_stabilized_count": council_properties.rentstab().count(),
             "rent_regulated_count": council_properties.rentreg(program=program).count(),
-            "small_homes_count": council_properties.smallhome(units=sh_units).count(),
+            "small_homes_count": council_properties.smallhome(units=unitsres).count(),
             "market_rate_count": council_properties.marketrate().count(),
             "public_housing_count": council_properties.publichousing().count()
         }

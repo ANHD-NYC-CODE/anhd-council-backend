@@ -120,29 +120,18 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         for condition in mappings:
             for c_filter in condition['filters']:
                 if 'condition' in c_filter:
+                    # skip condition filters
                     continue
                 if c_filter['model'].lower() not in (model.lower() for model in settings.ACTIVE_MODELS):
+                    # skip models not in list of models
                     continue
 
                 if c_filter['model'] == 'rentstabilizationrecord':
                     q1_queryset = af.annotate_rentstabilized(q1_queryset, c_filter)
                 elif c_filter['model'].lower() == 'acrisreallegal':
-                    q1_queryset = q1_queryset.filter(
-                        ds.AcrisRealMaster.construct_sales_query('acrisreallegal__documentid'))
-                    if c_filter['annotation_key']:
-                        q1_queryset = q1_queryset.annotate(**{c_filter['annotation_key']: Count(
-                            c_filter['model'],
-                            filter=af.construct_and_q(c_filter['query1_filters']),
-                            distinct=True
-                        )})
+                    q1_queryset = af.annotate_acrislegals(q1_queryset, c_filter)
                 else:
-                    q1_queryset = q1_queryset.prefetch_related(c_filter['prefetch_key'])
-                    if c_filter['annotation_key']:
-                        q1_queryset = q1_queryset.annotate(**{c_filter['annotation_key']: Count(
-                            c_filter['model'],
-                            filter=af.construct_and_q(c_filter['query1_filters']),
-                            distinct=True
-                        )})
+                    q1_queryset = af.annotate_dataset(q1_queryset, c_filter)
 
         q2_queryset = q1_queryset.only('bbl').filter(q2).distinct()
         final_bbls = q2_queryset.values('bbl')

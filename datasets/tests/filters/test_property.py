@@ -344,7 +344,6 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
             self.ecbviolation_factory(property=property5, issuedate="2018-01-01")
 
         # properties with 5 HPD violations b/t 2018- 2019 AND (5 DOB violations b/t 2018-2019 OR 5 ECB violations b/t 2018-2019)
-        # query = '/properties/?q=condition_0=AND+group_0A=*condition_1+group_0B=hpdviolation__approveddate__gte=2018-01-01,hpdviolation__approveddate__lte=2019-01-01,hpdviolation__count__gte=5+condition_1=OR+group_1A=dobviolation__issuedate__gte=2018-01-01,dobviolation__issuedate__lte=2019-01-01,dobviolation__count__gte=5+group_1B=ecbviolation__issuedate__gte=2018-01-01,ecbviolation__issuedate__lte=2019-01-01,ecbviolation__count__gte=5'
         query = '/properties/?q=*condition_0=AND+filter_0=condition_1+filter_0=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5+*condition_1=OR+filter_1=dobviolations__issuedate__gte=2018-01-01,dobviolations__issuedate__lte=2019-01-01,dobviolations__count__gte=5+filter_1=ecbviolations__issuedate__gte=2018-01-01,ecbviolations__issuedate__lte=2019-01-01,ecbviolations__count__gte=5'
 
         response = self.client.get(query, format="json")
@@ -379,7 +378,6 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
             self.ecbviolation_factory(property=property5, issuedate="2018-01-01")
 
         # properties with 5 HPD violations b/t 2018- 2019 OR (5 DOB violations b/t 2018-2019 AND 5 ECB violations b/t 2018-2019)
-        # query = '/properties/?q=condition_0=OR+group_0A=*condition_1+group_0B=hpdviolation__approveddate__gte=2018-01-01,hpdviolation__approveddate__lte=2019-01-01,hpdviolation__count__gte=5+condition_1=AND+group_1A=dobviolation__issuedate__gte=2018-01-01,dobviolation__issuedate__lte=2019-01-01,dobviolation__count__gte=5+group_1B=ecbviolation__issuedate__gte=2018-01-01,ecbviolation__issuedate__lte=2019-01-01,ecbviolation__count__gte=5'
         query = '/properties/?q=*condition_0=OR+filter_0=condition_1+filter_0=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5+*condition_1=AND+filter_1=dobviolations__issuedate__gte=2018-01-01,dobviolations__issuedate__lte=2019-01-01,dobviolations__count__gte=5+group_1B=ecbviolations__issuedate__gte=2018-01-01,ecbviolations__issuedate__lte=2019-01-01,ecbviolations__count__gte=5'
 
         response = self.client.get(query, format="json")
@@ -417,7 +415,6 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
             self.ecbviolation_factory(property=property5, issuedate="2018-01-01")
 
         # properties with 5 HPD violations b/t 2018- 2019 AND (5 DOB violations b/t 2018-2019 OR (5 ECB violations b/t 2018-2019 AND 5 HPD Complaints b/t 2018-2019))
-        # query = '/properties/?q=condition_0=AND+group_0A=*condition_1+group_0B=hpdviolation__approveddate__gte=2018-01-01,hpdviolation__approveddate__lte=2019-01-01,hpdviolation__count__gte=5+condition_1=OR+group_1A=*condition_2+group_1B=dobviolation__issuedate__gte=2018-01-01,dobviolation__issuedate__lte=2019-01-01,dobviolation__count__gte=5+condition_2=AND+group_2A=ecbviolation__issuedate__gte=2018-01-01,ecbviolation__issuedate__lte=2019-01-01,ecbviolation__count__gte=5+group_2A=hpdcomplaint__receiveddate__gte=2018-01-01,hpdcomplaint__receiveddate__lte=2019-01-01,hpdcomplaint__count__gte=5'
 
         query = '/properties/?q=*condition_0=AND+filter_0=condition_1+filter_0=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5+*condition_1=OR+filter_1=condition_2+filter_1=dobviolations__issuedate__gte=2018-01-01,dobviolations__issuedate__lte=2019-01-01,dobviolations__count__gte=5+*condition_2=AND+filter_2=ecbviolations__issuedate__gte=2018-01-01,ecbviolations__issuedate__lte=2019-01-01,ecbviolations__count__gte=5+group_2A=hpdcomplaints__receiveddate__gte=2018-01-01,hpdcomplaints__receiveddate__lte=2019-01-01,hpdcomplaints__count__gte=5'
 
@@ -517,8 +514,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.acrislegal_factory(property=property4, master=acrismaster4)
 
         # properties that sold for over $5 between 2017-2018
-        # query = '/properties/?q=condition_0=AND+group_0A=acrisreallegal__documentid__docdate__gte=2017-01-01,acrisreallegal__documentid__docdate__lte=2018-01-01,acrisreallegal__documentid__docamount__gte=5'
-        query = '/properties/?q=*condition_0=AND+filter_0=acrisreallegal__documentid__docdate__gte=2017-01-01,acrisreallegal__documentid__docdate__lte=2018-01-01,acrisreallegal__documentid__docamount__gte=5'
+        query = '/properties/?q=*condition_0=AND+filter_0=acrisreallegals__documentid__docdate__gte=2017-01-01,acrisreallegals__documentid__docdate__lte=2018-01-01,acrisreallegals__documentid__docamount__gte=5'
 
         response = self.client.get(query, format="json")
         content = response.data['results']
@@ -542,7 +538,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.acrislegal_factory(property=property2, master=acrismaster2)
 
         # properties with 5 sales between 2017-2018
-        query = '/properties/?q=*condition_0=AND+filter_0=acrisreallegal__documentid__docdate__gte=2017-01-01,acrisreallegal__documentid__docdate__lte=2018-01-01,acrisreallegal__documentid__count__gte=5'
+        query = '/properties/?q=*condition_0=AND+filter_0=acrisreallegals__documentid__docdate__gte=2017-01-01,acrisreallegals__documentid__docdate__lte=2018-01-01,acrisreallegals__documentid__count__gte=5'
 
         response = self.client.get(query, format="json")
         content = response.data['results']
@@ -570,7 +566,6 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
             self.permitissuedjoined_factory(property=property3, issuedate="2018-01-01")
 
         # 10 permits between 2017-2018
-        # query = '/properties/?q=condition_0=AND+group_0A=dobpermitissuedjoined__issuedate__gte=2017-01-01,dobpermitissuedjoined__issuedate__lte=2018-01-01,dobpermitissuedjoined__count__gte=10'
         query = '/properties/?q=*condition_0=AND+filter_0=dobpermitissuedjoined__issuedate__gte=2017-01-01,dobpermitissuedjoined__issuedate__lte=2018-01-01,dobpermitissuedjoined__count__gte=10'
 
         response = self.client.get(query, format="json")
@@ -698,3 +693,43 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         response = self.client.get(query, format="json")
 
         self.assertEqual(response.status_code, 401)
+
+    def test_council_with_housingtype_with_q_1(self):
+        council = self.council_factory(coundist=1)
+        council2 = self.council_factory(coundist=2)
+        # full match
+        property1 = self.property_factory(bbl=1, council=council, unitsres=4)
+        # full match
+        property2 = self.property_factory(bbl=2, council=council, unitsres=4)
+        # correct council, correct housing type, not filter match
+        property3 = self.property_factory(bbl=3, council=council, unitsres=4)
+        # correct council, wrong housing type, filter match
+        property4 = self.property_factory(bbl=4, council=council, unitsres=6)
+        # wrong council, otherwise complete match
+        property5 = self.property_factory(bbl=5, council=council2, unitsres=4)
+        # wrong council, housing type only match
+        property6 = self.property_factory(bbl=6, council=council2, unitsres=4)
+
+        for i in range(5):
+            self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
+            self.dobviolation_factory(property=property1, issuedate="2018-01-01")
+            self.hpdviolation_factory(property=property2, approveddate="2018-01-01")
+            self.ecbviolation_factory(property=property2, issuedate="2018-01-01")
+            self.hpdviolation_factory(property=property3, approveddate="2018-01-01")
+            self.dobviolation_factory(property=property3, issuedate="2016-01-01")
+            self.hpdviolation_factory(property=property4, approveddate="2018-01-01")
+            self.dobviolation_factory(property=property4, issuedate="2018-01-01")
+            self.hpdviolation_factory(property=property5, approveddate="2018-01-01")
+            self.dobviolation_factory(property=property5, issuedate="2018-01-01")
+            self.ecbviolation_factory(property=property6, issuedate="2018-01-01")
+
+        # properties in council 1 with small homes and with 5 HPD violations b/t 2018- 2019 AND (5 DOB violations b/t 2018-2019 OR 5 ECB violations b/t 2018-2019)
+        query = '/properties/?council=1&housingtype=sh&unitsres__lte=4&q=*condition_0=AND+filter_0=condition_1+filter_0=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5+*condition_1=OR+filter_1=dobviolations__issuedate__gte=2018-01-01,dobviolations__issuedate__lte=2019-01-01,dobviolations__count__gte=5+filter_1=ecbviolations__issuedate__gte=2018-01-01,ecbviolations__issuedate__lte=2019-01-01,ecbviolations__count__gte=5'
+
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+        self.assertEqual(any(d['bbl'] == '1' for d in content), True)
+        self.assertEqual(any(d['bbl'] == '2' for d in content), True)

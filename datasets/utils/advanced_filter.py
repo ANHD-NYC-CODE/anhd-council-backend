@@ -5,6 +5,29 @@ from django.db.models.functions import Cast
 import re
 
 
+def annotate_dataset(queryset, c_filter):
+    queryset = queryset.prefetch_related(c_filter['prefetch_key'])
+    if c_filter['annotation_key']:
+        queryset = queryset.annotate(**{c_filter['annotation_key']: Count(
+            c_filter['model'],
+            filter=construct_and_q(c_filter['query1_filters']),
+            distinct=True
+        )})
+    return queryset
+
+
+def annotate_acrislegals(queryset, c_filter):
+    queryset = queryset.filter(
+        ds.AcrisRealMaster.construct_sales_query('acrisreallegal__documentid'))
+    if c_filter['annotation_key']:
+        queryset = queryset.annotate(**{c_filter['annotation_key']: Count(
+            c_filter['model'],
+            filter=af.construct_and_q(c_filter['query1_filters']),
+            distinct=True
+        )})
+    return queryset
+
+
 def annotate_rentstabilized(queryset, c_filter):
     rsvalues = c_filter['query1_filters']
 
@@ -26,6 +49,7 @@ def clean_model_name(string):
 
 
 def get_annotation_key(string):
+    string = re.sub(r"(?=filter)(.*?)(?=\=)", '', string)
     # returns entire ,.*__count filter string minus the comparison
     for filter in string.split(','):
         if 'count' in filter.lower() or 'percent' in filter.lower():
