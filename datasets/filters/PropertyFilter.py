@@ -217,7 +217,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         # filtered_by_model_queryset = queryset.only('bbl').values('bbl')
 
         # 2
-        related_queryset = filtered_by_model_queryset.only('bbl').filter(dates_q).distinct()
+        related_queryset = queryset.only('bbl').filter(dates_q).distinct()
 
         # Prefetch related datasets and annotate counts
         for q_filter in self.q_filters:
