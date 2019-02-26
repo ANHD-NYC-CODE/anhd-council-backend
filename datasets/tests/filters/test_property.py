@@ -278,7 +278,6 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
 
         # properties with 5 HPD violations b/t 2018- 2019 OR 5 DOB violations b/t 2018-2019
         query = '/properties/?q=condition_0=OR+group_0A=hpdviolation__approveddate__gte=2018-01-01,hpdviolation__approveddate__lte=2019-01-01,hpdviolation__count__gte=5+group_0B=dobviolation__issuedate__gte=2018-01-01,dobviolation__issuedate__lte=2019-01-01,dobviolation__count__gte=5'
-        query = '/properties/?q=condition_0=OR+group_0A=hpdviolation__approveddate__gte=2018-01-01,hpdviolation__approveddate__lte=2019-01-01,hpdviolation__count__gte=5+group_0B=dobviolation__issuedate__gte=2018-01-01,dobviolation__issuedate__lte=2019-01-01,dobviolation__count__gte=5'
 
         response = self.client.get(query, format="json")
         content = response.data['results']

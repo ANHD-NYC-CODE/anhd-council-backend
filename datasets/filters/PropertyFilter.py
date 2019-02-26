@@ -1,6 +1,6 @@
 from datasets import models as ds
 import rest_framework_filters as filters
-from django.db.models import Count, Q, OuterRef, Subquery, ExpressionWrapper, F, FloatField
+from django.db.models import Count, Q, ExpressionWrapper, F, FloatField
 from django.db.models.functions import Cast
 import django_filters
 from django import forms
@@ -196,8 +196,8 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         }
 
     # def filter_advancedquery(self, queryset, name, values):
-    #     initial_bbls = queryset.only('bbl').values('bbl')
-    #     bbl_queryset = ds.Property.objects.filter(bbl__in=initial_bbls)
+    #     dates_q = ...
+    #     date_filtered_queryset = queryset.only('bbl').filter(dates_q).distinct()
 
     # advanced query
     # http://localhost:8000/councils/6/properties/?housingtype=rs&q=condition_0=AND+group_0A=*condition_1+group_0B=rentstabilizationrecord__uc2007__gte=0,rentstabilizationrecord__uc2017__gte=0,rentstabilizationrecords__percent__gte=0.5+condition_1=OR+group_1A=dobviolation__issuedate__gte=2017-01-01,dobviolation__issuedate__lte=2018-01-01,dobviolations__count__gte=1+group_1B=ecbviolation__issuedate__gte=2017-01-01,ecbviolation__issuedate__lte=2018-01-01,ecbviolations__count__gte=1
