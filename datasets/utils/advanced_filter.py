@@ -1,6 +1,24 @@
 from datasets import models as ds
 from django.db.models import Count, Q, ExpressionWrapper, F, FloatField
+from django.db.models.functions import Cast
+
 import re
+
+
+def annotate_rentstabilized(queryset, c_filter):
+    rsvalues = c_filter['query1_filters']
+
+    start_year = [*rsvalues[0].keys()][0].split('__', 2)[1].split('uc', 1)[1]
+    end_year = [*rsvalues[1].keys()][0].split('__', 2)[1].split('uc', 1)[1]
+    queryset = queryset.annotate(**{'rentstabilizationrecord' + start_year: F('rentstabilizationrecord__uc' + start_year)}).annotate(**{
+        'rentstabilizationrecord' + end_year: F('rentstabilizationrecord__uc' + end_year)})
+    queryset = queryset.annotate(
+        rentstabilizationrecords__percent=ExpressionWrapper(
+            1 - Cast(F('rentstabilizationrecord' + end_year), FloatField()) /
+            Cast(F('rentstabilizationrecord' + start_year), FloatField()), output_field=FloatField()
+        )
+    )
+    return queryset
 
 
 def clean_model_name(string):
@@ -8,17 +26,16 @@ def clean_model_name(string):
 
 
 def get_annotation_key(string):
-    pattern = r"(?=count|percent|amount)(.*?)(?=__(gte|lte|exact|lt|gt))"
-    match = re.search(pattern, string.lower())
-    if match:
-        return match.group()
-    else:
-        raise Exception('No annotation key present in string: {}'.format(string))
+    # returns entire ,.*__count filter string minus the comparison
+    for filter in string.split(','):
+        if 'count' in filter.lower() or 'percent' in filter.lower():
+            filter = re.sub(r"(__gte\b|__gt\b|__exact\b|__lt\b|__lte\b|)", '', filter.split('=')[0])
+            return filter
 
 
 def get_filters(string, annotation=False):
     filter_strings = list(
-        filter(lambda x: bool(re.search(r"(count|amount|percent)", x.lower())) == annotation, string.split(',')))
+        filter(lambda x: bool(re.search(r"(count|percent)", x.lower())) == annotation, string.split(',')))
 
     if not annotation:
         # convert the date fields to singular model names
@@ -28,18 +45,19 @@ def get_filters(string, annotation=False):
 
 
 def parse_filter_string(string):
-    if 'AND' in string.upper():
+    if re.search(r'\bAND\b', string.upper()):
         return None
-    if 'OR' in string.upper():
+    if re.search(r'\bOR\b', string.upper()):
         return None
     if 'CONDITION' in string.upper():
         return {'condition': int(string.split('=')[1].split('_')[1])}
 
     model = clean_model_name(string.lower().split('=', 1)[1].split('__')[0])
+
     return {
         'model': model,
         'prefetch_key': model + '_set',
-        'annotation_key': model + 's__' + get_annotation_key(string),
+        'annotation_key': get_annotation_key(string),
         'query1_filters': get_filters(string.split('=', 1)[1], annotation=False),
         'query2_filters': get_filters(string.split('=', 1)[1], annotation=True)
 
@@ -107,11 +125,17 @@ def convert_condition_to_q(condition, conditions, type='query1_filters'):
             if 'condition' in c_filter:
                 q &= convert_condition_to_q(conditions[c_filter['condition']], conditions, type)
             else:
-                q &= construct_and_q(c_filter[type])
+                if type == 'query2_filters' and c_filter['annotation_key']:
+                    q &= construct_and_q(c_filter[type])
+                elif type == 'query1_filters':
+                    q |= construct_and_q(c_filter[type])
     elif condition['type'].lower() == 'or':
         for c_filter in condition['filters']:
             if 'condition' in c_filter:
                 q |= convert_condition_to_q(conditions[c_filter['condition']], conditions, type)
             else:
-                q |= construct_and_q(c_filter[type])
+                if type == 'query2_filters' and c_filter['annotation_key']:
+                    q |= construct_and_q(c_filter[type])
+                elif type == 'query1_filters':
+                    q |= construct_and_q(c_filter[type])
     return q

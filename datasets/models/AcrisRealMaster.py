@@ -2,7 +2,7 @@ from django.db import models
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.utils.validation_filters import is_null
-from datasets.filter_helpers import construct_or_q
+from datasets.utils import advanced_filter as af
 from django.db.models import Q
 
 
@@ -35,9 +35,9 @@ class AcrisRealMaster(BaseDatasetModel, models.Model):
     def construct_sales_query(self, relation_path):
         q_list = []
         for type in self.SALE_DOC_TYPES:
-            q_list.append(Q(**{relation_path + '__doctype': type}))
+            q_list.append({relation_path + '__doctype': type})
 
-        sales_filter = construct_or_q(q_list)
+        sales_filter = af.construct_or_q(q_list)
         return sales_filter
 
     @classmethod

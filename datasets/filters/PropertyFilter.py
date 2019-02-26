@@ -108,95 +108,6 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         }
         return switcher.get(value, queryset.none())
 
-    def parse_values(self, values):
-        v = ()
-        for value in values.split(' '):
-            v = v + ({
-                'type': value.split('_', 1)[0].lower(),
-                'id': value.split('_', 1)[1].split('=')[0].lower(),
-                'value': value.split('=', 1)[1].lower(),
-                'dataset': value.split('=', 1)[1].split(',')[0].split('__', 1)[0].lower()
-            },)
-        return v
-
-    def read_condition_groups(self, condition, values):
-        groups = ()
-        for value in values:
-            if 'group' in value['type'] and condition['id'] in value['id']:
-                groups = groups + (value,)
-        return groups
-
-    def get_next_condition(self, category_id, values):
-        for value in values:
-            if 'condition' in value['type'] and value['id'] == category_id:
-                return value
-
-    def construct_rule_query(self, group, counts=False):
-        parameters = {}
-        for parameter in group['value'].split(','):
-            par = parameter.split('=')
-            if counts:
-                if 'count' in parameter or 'percent' in parameter:
-                    parameters[par[0]] = par[1]
-            elif counts == False:
-                if not 'count' in parameter and not 'percent' in parameter:
-                    parameters[par[0]] = par[1]
-        return parameters
-
-    def construct_group_query(self, group, values, counts=False):
-        if '*condition' in group['value']:
-            next_id = group['value'].partition('_')[2]
-            if not next_id:
-                raise Exception("Malformed Query - an group's condition format should be like: '*condition_0'")
-            next_condition = self.get_next_condition(next_id, values)
-            q_value = self.read_condition(next_condition, values, counts)
-        else:
-            q_value = Q(**self.construct_rule_query(group, counts))
-            rules = group['value'].split(',')
-            group_split = group['value'].split('__')
-            self.q_filters.append({
-                'dataset': group_split[0],
-                'full_related_path': '__'.join(rules[0].split('__')[:-2]),
-                'type': 'annotate' if counts else 'field',
-                'q': q_value
-            })
-        return q_value
-
-    def read_condition(self, condition, values, counts=False):
-        if condition['value'].lower() == 'and':
-            q_op = Q.AND
-        elif condition['value'].lower() == 'or':
-            q_op = Q.OR
-        else:
-            raise Exception('invalid condition: {}'.format(condition))
-
-        query = None
-        groups = self.read_condition_groups(condition, values)
-        or_list = []  # for construcing new Q statements as an OR without default AND
-
-        for group in groups:
-            if not query and q_op == Q.OR:
-                or_list.append(Q(self.construct_group_query(group, values, counts)))
-            elif not query and q_op == Q.AND:
-                query = Q(self.construct_group_query(group, values, counts))
-            else:
-                q_filter = self.construct_group_query(group, values, counts)
-                query.add(q_filter, q_op)
-
-        # Constructs a Q entirely of ORs and removes the initial AND
-        if q_op == Q.OR:
-            query = construct_or_q(or_list)
-        return query
-
-    def get_dataset_count_annotation(self, count_key, q_filter):
-        return {
-            count_key: Count(
-                q_filter['full_related_path'],
-                filter=q_filter['q'],
-                distinct=True
-            )
-        }
-
     def filter_advancedquery(self, queryset, name, values):
         mappings = af.convert_query_string_to_mapping(values)
 
@@ -212,86 +123,34 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
                     continue
                 if c_filter['model'].lower() not in (model.lower() for model in settings.ACTIVE_MODELS):
                     continue
-                q1_queryset = q1_queryset.prefetch_related(c_filter['prefetch_key'])
 
-                q1_queryset = q1_queryset.annotate(**{c_filter['annotation_key']: Count(
-                    c_filter['model'],
-                    filter=af.construct_and_q(c_filter['query1_filters']),
-                    distinct=True
-                )})
-        import pdb
-        pdb.set_trace()
+                if c_filter['model'] == 'rentstabilizationrecord':
+                    q1_queryset = af.annotate_rentstabilized(q1_queryset, c_filter)
+                elif c_filter['model'].lower() == 'acrisreallegal':
+                    q1_queryset = q1_queryset.filter(
+                        ds.AcrisRealMaster.construct_sales_query('acrisreallegal__documentid'))
+                    if c_filter['annotation_key']:
+                        q1_queryset = q1_queryset.annotate(**{c_filter['annotation_key']: Count(
+                            c_filter['model'],
+                            filter=af.construct_and_q(c_filter['query1_filters']),
+                            distinct=True
+                        )})
+                else:
+                    q1_queryset = q1_queryset.prefetch_related(c_filter['prefetch_key'])
+                    if c_filter['annotation_key']:
+                        q1_queryset = q1_queryset.annotate(**{c_filter['annotation_key']: Count(
+                            c_filter['model'],
+                            filter=af.construct_and_q(c_filter['query1_filters']),
+                            distinct=True
+                        )})
+
         q2_queryset = q1_queryset.only('bbl').filter(q2).distinct()
         final_bbls = q2_queryset.values('bbl')
 
         return ds.Property.objects.filter(bbl__in=final_bbls)
 
-    # advanced query
-    # http://localhost:8000/councils/6/properties/?housingtype=rs&q=condition_0=AND+group_0A=*condition_1+group_0B=rentstabilizationrecord__uc2007__gte=0,rentstabilizationrecord__uc2017__gte=0,rentstabilizationrecords__percent__gte=0.5+condition_1=OR+group_1A=dobviolation__issuedate__gte=2017-01-01,dobviolation__issuedate__lte=2018-01-01,dobviolations__count__gte=1+group_1B=ecbviolation__issuedate__gte=2017-01-01,ecbviolation__issuedate__lte=2018-01-01,ecbviolations__count__gte=1
-
-    def filter_advancedquery1(self, queryset, name, values):
-        # 1) filter queryset by model fields first
-        # return queryset with only BBL values (to reduce memory overhead)
-        # 2) perform related Q query on date ranges, other ranges
-        # return queryset with only BBL values
-        # 3) perform related Q query on counts
-        # return queryset with all values
-        parsed_values = self.parse_values(values)
-        dates_q = Q(self.read_condition(
-            parsed_values[0], parsed_values, False))
-
-        # 1
-        # initial_bbls = queryset.only('bbl').values('bbl')
-        # filtered_by_model_queryset = queryset.only('bbl').values('bbl')
-
-        # 2
-        related_queryset = queryset.only('bbl').filter(dates_q).distinct()
-
-        # Prefetch related datasets and annotate counts
-        for q_filter in self.q_filters:
-            # remove q_filters that don't have a matching dataset (like model fields yearbuilt, etc)
-            if q_filter['dataset'].lower() not in (model.lower() for model in settings.ACTIVE_MODELS):
-                continue
-
-            ##
-            # Pre-filters
-            #
-            # filter only for acris sales/deeds/mortgages
-            if q_filter['dataset'].lower() == 'acrisreallegal':
-                related_queryset = related_queryset.filter(
-                    ds.AcrisRealMaster.construct_sales_query('acrisreallegal__documentid'))
-
-            ##
-            # Special annotations
-            #
-            if q_filter['dataset'] == 'rentstabilizationrecord':
-                rsvalues = list(filter(lambda x: x['dataset'] == 'rentstabilizationrecord', parsed_values))[
-                    0]['value'].split(',')
-                try:
-                    start_year = rsvalues[0].split('__', 2)[1].split('uc', 1)[1]
-                    end_year = rsvalues[1].split('__', 2)[1].split('uc', 1)[1]
-                    related_queryset = related_queryset.annotate(**{'rentstabilizationrecord' + start_year: F('rentstabilizationrecord__uc' + start_year)}).annotate(**{
-                        'rentstabilizationrecord' + end_year: F('rentstabilizationrecord__uc' + end_year)})
-                    related_queryset = related_queryset.annotate(
-                        rentstabilizationrecords__percent=ExpressionWrapper(
-                            1 - Cast(F('rentstabilizationrecord' + end_year), FloatField()) /
-                            Cast(F('rentstabilizationrecord' + start_year), FloatField()), output_field=FloatField()
-                        )
-                    )
-                except Exception as e:
-                    raise Exception("Malformed rentstabilization parameter. Error: {}".format(e))
-            else:
-                count_key = q_filter['full_related_path'] + '__count'
-                related_queryset = related_queryset.prefetch_related(q_filter['dataset'] + '_set').annotate(
-                    **self.get_dataset_count_annotation(count_key, q_filter)
-                )
-
-        # 3
-        annotation_q = Q(self.read_condition(parsed_values[0], parsed_values, True))
-        final_bbls = related_queryset.filter(annotation_q).only('bbl').values('bbl')
-        return ds.Property.objects.filter(bbl__in=final_bbls)
-
     # Rent stabilized units lost
+
     def filter_stabilizedunitslost_percent_and_dates(self, queryset, name, values):
         return queryset.rs_annotate().annotate(rslostpercent=ExpressionWrapper(1 - Cast(F(values['end_year']), FloatField()) / Cast(F(values['start_year']), FloatField()), output_field=FloatField())).filter(**values['percent_query'])
 

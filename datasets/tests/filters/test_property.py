@@ -483,7 +483,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.taxbill_factory(property=property4, uc2007=10, uc2017=10)
 
         # properties that lost over 50% of rent stabilized units between 2007 and 2017
-        query = '/properties/?q=condition_0=AND+group_0A=rentstabilizationrecord__uc2007__gt=0,rentstabilizationrecord__uc2017__gt=0,rentstabilizationrecords__percent__gte=0.5'
+        query = '/properties/?q=*condition_0=AND+filter_0=rentstabilizationrecords__uc2007__gt=0,rentstabilizationrecords__uc2017__gt=0,rentstabilizationrecords__percent__gte=0.5'
 
         response = self.client.get(query, format="json")
         content = response.data['results']
@@ -517,7 +517,8 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.acrislegal_factory(property=property4, master=acrismaster4)
 
         # properties that sold for over $5 between 2017-2018
-        query = '/properties/?q=condition_0=AND+group_0A=acrisreallegal__documentid__docdate__gte=2017-01-01,acrisreallegal__documentid__docdate__lte=2018-01-01,acrisreallegal__documentid__docamount__gte=5'
+        # query = '/properties/?q=condition_0=AND+group_0A=acrisreallegal__documentid__docdate__gte=2017-01-01,acrisreallegal__documentid__docdate__lte=2018-01-01,acrisreallegal__documentid__docamount__gte=5'
+        query = '/properties/?q=*condition_0=AND+filter_0=acrisreallegal__documentid__docdate__gte=2017-01-01,acrisreallegal__documentid__docdate__lte=2018-01-01,acrisreallegal__documentid__docamount__gte=5'
 
         response = self.client.get(query, format="json")
         content = response.data['results']
@@ -541,7 +542,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.acrislegal_factory(property=property2, master=acrismaster2)
 
         # properties with 5 sales between 2017-2018
-        query = '/properties/?q=condition_0=AND+group_0A=acrisreallegal__documentid__docdate__gte=2017-01-01,acrisreallegal__documentid__docdate__lte=2018-01-01,acrisreallegal__documentid__count__gte=5'
+        query = '/properties/?q=*condition_0=AND+filter_0=acrisreallegal__documentid__docdate__gte=2017-01-01,acrisreallegal__documentid__docdate__lte=2018-01-01,acrisreallegal__documentid__count__gte=5'
 
         response = self.client.get(query, format="json")
         content = response.data['results']
@@ -569,7 +570,8 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
             self.permitissuedjoined_factory(property=property3, issuedate="2018-01-01")
 
         # 10 permits between 2017-2018
-        query = '/properties/?q=condition_0=AND+group_0A=dobpermitissuedjoined__issuedate__gte=2017-01-01,dobpermitissuedjoined__issuedate__lte=2018-01-01,dobpermitissuedjoined__count__gte=10'
+        # query = '/properties/?q=condition_0=AND+group_0A=dobpermitissuedjoined__issuedate__gte=2017-01-01,dobpermitissuedjoined__issuedate__lte=2018-01-01,dobpermitissuedjoined__count__gte=10'
+        query = '/properties/?q=*condition_0=AND+filter_0=dobpermitissuedjoined__issuedate__gte=2017-01-01,dobpermitissuedjoined__issuedate__lte=2018-01-01,dobpermitissuedjoined__count__gte=10'
 
         response = self.client.get(query, format="json")
         content = response.data['results']
@@ -597,7 +599,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
             self.eviction_factory(property=property3, executeddate="2018-01-01")
 
         # 10 permits between 2017-2018
-        query = '/properties/?q=condition_0=AND+group_0A=eviction__executeddate__gte=2017-01-01,eviction__executeddate__lte=2018-01-01,eviction__count__gte=10'
+        query = '/properties/?q=*condition_0=AND+filter_0=evictions__executeddate__gte=2017-01-01,evictions__executeddate__lte=2018-01-01,evictions__count__gte=10'
 
         response = self.client.get(query, format="json")
         content = response.data['results']
@@ -618,8 +620,8 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.taxlien_factory(property=property1, year="2018")
         self.taxlien_factory(property=property2, year="2011")
 
-        # 10 permits between 2017-2018
-        query = '/properties/?q=condition_0=AND+group_0A=taxlien__year__exact=2018'
+        # has a 2018 taxlien
+        query = '/properties/?q=*condition_0=AND+filter_0=taxliens__year__exact=2018'
 
         response = self.client.get(query, format="json")
         content = response.data['results']
@@ -642,7 +644,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.coredata_factory(property=property3, enddate="2025-01-01", programname="lihtc")
 
         # any lihtc buildings ending 2018
-        query = '/properties/?q=condition_0=AND+group_0A=coresubsidyrecord__programname__icontains=lihtc,coresubsidyrecord__enddate__lte=2018-01-01'
+        query = '/properties/?q=*condition_0=AND+filter_0=coresubsidyrecords__programname__icontains=lihtc,coresubsidyrecords__enddate__lte=2018-01-01'
         response = self.client.get(query, format="json")
         content = response.data['results']
 
@@ -666,7 +668,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
                                type=ds.LisPenden.LISPENDEN_TYPES['foreclosure'])
 
         # any properties with >= 1 foreclosures since ending 2017
-        query = '/properties/?q=condition_0=AND+group_0A=lispenden__count__gte=1,lispenden__fileddate__gte=2017-01-01,lispenden__type=foreclosure'
+        query = '/properties/?q=*condition_0=AND+filter_0=lispendens__count__gte=1,lispendens__fileddate__gte=2017-01-01,lispendens__type=foreclosure'
         token = self.get_access_token()
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
         response = self.client.get(query, format="json")
@@ -692,7 +694,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
                                type=ds.LisPenden.LISPENDEN_TYPES['foreclosure'])
 
         # any properties with >= 1 foreclosures since ending 2017
-        query = '/properties/?q=condition_0=AND+group_0A=lispenden__count__gte=1,lispenden__fileddate__gte=2017-01-01,lispenden__type=foreclosure'
+        query = '/properties/?q=*condition_0=AND+filter_0=lispendens__count__gte=1,lispendens__fileddate__gte=2017-01-01,lispenden__type=foreclosure'
         response = self.client.get(query, format="json")
 
         self.assertEqual(response.status_code, 401)
