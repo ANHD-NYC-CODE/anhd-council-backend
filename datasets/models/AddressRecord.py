@@ -113,14 +113,18 @@ class AddressRecord(BaseDatasetModel, models.Model):
                     low_number, low_letter = self.split_number_letter(building.lhnd)
                     high_number, high_letter = self.split_number_letter(building.hhnd)
                     # create rangelist
-                    if low_number != high_number:
+                    if low_number.strip() == high_number.strip():
+                        self.write_row_from_building(number=low_number, letter=low_letter,
+                                                     building=building, temp_file=temp_file)
+                    else:
+                        if re.search(r'(1/2|1/3|1/4)', low_number):
+                            low_number = low_number.split(' ')[0]
+                        if re.search(r'(1/2|1/3|1/4)', high_number):
+                            high_number = low_number.split(' ')[0]
                         house_numbers = self.generate_rangelist(int(low_number), int(high_number))
                         for number in house_numbers:
                             self.write_row_from_building(number=number, letter='',
                                                          building=building, temp_file=temp_file)
-                    else:
-                        self.write_row_from_building(number=low_number, letter=low_letter,
-                                                     building=building, temp_file=temp_file)
 
                 # numbers formatted: 50-10
                 else:
@@ -130,7 +134,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
                     high_numbers = (self.split_number_letter(
                         hhnd_split[0]), self.split_number_letter(hhnd_split[1]))
                     # create rangelist
-                    if int(low_numbers[1][0]) != int(high_numbers[1][0]):
+                    if low_numbers[1][0].strip() != high_numbers[1][0].strip():
                         house_numbers = self.generate_rangelist(
                             int(low_numbers[1][0]), int(high_numbers[1][0]), prefix=low_numbers[0][0] + '-')
                         for number in house_numbers:
