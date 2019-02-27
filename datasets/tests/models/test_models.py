@@ -78,6 +78,32 @@ class BuildingTests(BaseTest, TestCase):
         self.assertEqual(changed_record.hhnd, '104')
 
 
+class TaxLotTests(BaseTest, TestCase):
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_seed_taxlot(self):
+        update = self.update_factory(model_name="TaxLot",
+                                     file_name="mock_taxlot.csv")
+
+        ds.TaxLot.seed_or_update_self(file_path=update.file.file.path, update=update)
+        self.assertEqual(ds.TaxLot.objects.count(), 4)
+        self.assertEqual(update.rows_created, 4)
+        self.assertEqual(update.rows_updated, 0)
+
+    def test_seed_taxlot_after_update(self):
+        update = self.update_factory(model_name="TaxLot",
+                                     file_name="mock_taxlot.csv")
+        ds.TaxLot.seed_or_update_self(file_path=update.file.file.path, update=update)
+
+        new_update = self.update_factory(dataset=update.dataset, model_name="TaxLot",
+                                         file_name="mock_taxlot_diff.csv", previous_file_name="mock_taxlot.csv")
+        ds.TaxLot.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
+        self.assertEqual(ds.TaxLot.objects.count(), 6)
+        self.assertEqual(new_update.rows_created, 2)
+        self.assertEqual(new_update.rows_updated, 4)
+
+
 class HPDViolationTests(BaseTest, TestCase):
     def tearDown(self):
         self.clean_tests()
