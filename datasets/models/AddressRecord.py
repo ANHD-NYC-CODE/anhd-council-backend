@@ -54,7 +54,6 @@ class AddressRecord(BaseDatasetModel, models.Model):
 
         key = str(number) + str(letter) + building.stname.replace(' ', '') + \
             str(building.boro) + str(building.zipcode) + str(bin)
-        letter = letter if letter else None
 
         temp_file.write('%s,%s,%s,%s,%s,%s,%s,%s,%s\n' % (
             key,
@@ -92,7 +91,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
             letter = letter.group()
             number = house.split(letter)[0]
         else:
-            letter = None
+            letter = ''
             number = house
 
         return (number, letter)
