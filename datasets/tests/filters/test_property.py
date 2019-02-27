@@ -18,7 +18,7 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.clean_tests()
 
     def test_yearbuilt_field(self):
-        council = self.council_factory(coundist=1)
+        council = self.council_factory(id=1)
         property1 = self.property_factory(bbl=1, council=council, yearbuilt=2000)
         property2 = self.property_factory(bbl=2, council=council, yearbuilt=1900)
 
@@ -31,7 +31,7 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.assertEqual(content[0]['bbl'], '1')
 
     def mock_hpdviolations_field(self):
-        council = self.council_factory(coundist=1)
+        council = self.council_factory(id=1)
         property1 = self.property_factory(bbl=1, council=council)
         property2 = self.property_factory(bbl=2, council=council)
 
@@ -50,7 +50,7 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.assertEqual(content[0]['bbl'], '1')
 
     def mock_hpdviolationsdates_field(self):
-        council = self.council_factory(coundist=1)
+        council = self.council_factory(id=1)
         property1 = self.property_factory(bbl=1, council=council)
         property2 = self.property_factory(bbl=2, council=council)
 
@@ -72,7 +72,7 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.assertEqual(content[0]['bbl'], '1')
 
     def test_rsunitslost_field(self):
-        council = self.council_factory(coundist=1)
+        council = self.council_factory(id=1)
         property1 = self.property_factory(bbl=1, council=council)
         property2 = self.property_factory(bbl=2, council=council)
         self.taxbill_factory(property=property1, uc2007=10, uc2017=1)
@@ -87,7 +87,7 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.assertEqual(content[0]['bbl'], '1')
 
     def test_acrisrealmasteramount_field(self):
-        council = self.council_factory(coundist=1)
+        council = self.council_factory(id=1)
         property1 = self.property_factory(bbl=1, council=council)
         property2 = self.property_factory(bbl=2, council=council)
         acrismaster1 = self.acrismaster_factory(docamount=10, docdate="2018-01-01")
@@ -104,7 +104,7 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.assertEqual(content[0]['bbl'], '1')
 
     def test_acrisrealmastersales_field(self):
-        council = self.council_factory(coundist=1)
+        council = self.council_factory(id=1)
         # 5 in range
         property1 = self.property_factory(bbl=1, council=council)
         # only 1
@@ -132,7 +132,7 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.assertEqual(content[0]['bbl'], '1')
 
     def test_dobpermitissuedjoineds_field(self):
-        council = self.council_factory(coundist=1)
+        council = self.council_factory(id=1)
         # 10 in range
         property1 = self.property_factory(bbl=1, council=council)
         # 10 out of range
@@ -159,7 +159,7 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.assertEqual(content[0]['bbl'], '1')
 
     def test_eviction_field(self):
-        council = self.council_factory(coundist=1)
+        council = self.council_factory(id=1)
         # 10 in range
         property1 = self.property_factory(bbl=1, council=council)
         # 10 out of range
@@ -186,7 +186,7 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.assertEqual(content[0]['bbl'], '1')
 
     def test_taxlien_field(self):
-        council = self.council_factory(coundist=1)
+        council = self.council_factory(id=1)
         # has tax lien in 2018
         property1 = self.property_factory(bbl=1, council=council)
         # has tax lien in 2017
@@ -207,7 +207,7 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.assertEqual(content[0]['bbl'], '1')
 
     def test_subsidy_field(self):
-        council = self.council_factory(coundist=1)
+        council = self.council_factory(id=1)
         # has lihtc ending 2018
         property1 = self.property_factory(bbl=1, council=council)
         # has j-51 ending 2018
@@ -234,7 +234,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.clean_tests()
 
     def test_single_all_condition(self):
-        council = self.council_factory(coundist=1)
+        council = self.council_factory(id=1)
         property1 = self.property_factory(bbl=1, council=council, yearbuilt=2000)
         property2 = self.property_factory(bbl=2, council=council, yearbuilt=1900)
 
@@ -259,7 +259,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.assertEqual(content[0]['bbl'], '1')
 
     def test_single_any_condition(self):
-        council = self.council_factory(coundist=1)
+        council = self.council_factory(id=1)
         # 5 HPD Violations in range
         property1 = self.property_factory(bbl=1, council=council)
         # 5 DOB violations not in range
@@ -291,7 +291,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.assertEqual(any(d['bbl'] == '3' for d in content), True)
 
     def test_single_all_condition_multi_groups(self):
-        council = self.council_factory(coundist=1)
+        council = self.council_factory(id=1)
         # 5 HPD Violations and 5 DOB Violations in range
         property1 = self.property_factory(bbl=1, council=council)
         # 5 DOB violations in range, no HPD Violations in range
@@ -321,7 +321,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.assertEqual(any(d['bbl'] == '3' for d in content), True)
 
     def test_multiple_condition_multi_groups_1(self):
-        council = self.council_factory(coundist=1)
+        council = self.council_factory(id=1)
         # 5 HPD Violations and 5 DOB Violations in range
         property1 = self.property_factory(bbl=1, council=council)
         # 5 HPD Violations and 5 ECB Violations in range
@@ -355,7 +355,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.assertEqual(any(d['bbl'] == '2' for d in content), True)
 
     def test_multiple_condition_multi_groups_2(self):
-        council = self.council_factory(coundist=1)
+        council = self.council_factory(id=1)
         # 5 HPD Violations and 5 DOB Violations in range
         property1 = self.property_factory(bbl=1, council=council)
         # 5 HPD Violations and 5 ECB Violations in range
@@ -391,7 +391,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.assertEqual(any(d['bbl'] == '5' for d in content), True)
 
     def test_multiple_condition_multi_groups_3(self):
-        council = self.council_factory(coundist=1)
+        council = self.council_factory(id=1)
         # 5 HPD Violations and 5 DOB Violations in range
         property1 = self.property_factory(bbl=1, council=council)
         # 5 HPD Violations and 5 ECB Violations in range AND 5 HPD Complaints
@@ -427,7 +427,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.assertEqual(any(d['bbl'] == '2' for d in content), True)
 
     def test_multiple_condition_multi_groups_4(self):
-        council = self.council_factory(coundist=1)
+        council = self.council_factory(id=1)
         # 5 HPD Violations and 5 HPD Complaints in range
         property1 = self.property_factory(bbl=1, council=council)
         # 5 DOB Violations and 5 ECB Violations in range
@@ -465,7 +465,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.assertEqual(any(d['bbl'] == '2' for d in content), True)
 
     def test_rentstabilization_rules(self):
-        council = self.council_factory(coundist=1)
+        council = self.council_factory(id=1)
         # loses 90% between 2007 - 2017
         property1 = self.property_factory(bbl=1, council=council)
         self.taxbill_factory(property=property1, uc2007=10, uc2017=1)
@@ -491,7 +491,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.assertEqual(any(d['bbl'] == '2' for d in content), True)
 
     def test_acrisamount_rules(self):
-        council = self.council_factory(coundist=1)
+        council = self.council_factory(id=1)
 
         # sold for $10 in date range
         acrismaster1 = self.acrismaster_factory(documentid="a", doctype="DEED", docamount=10, docdate="2018-01-01")
@@ -524,7 +524,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.assertEqual(content[0]['bbl'], '1')
 
     def test_acrissales_rules(self):
-        council = self.council_factory(coundist=1)
+        council = self.council_factory(id=1)
 
         # sold for $10 in date range
         property1 = self.property_factory(bbl=1, council=council)
@@ -548,7 +548,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.assertEqual(content[0]['bbl'], '1')
 
     def test_permitissuedjoined_rules(self):
-        council = self.council_factory(coundist=1)
+        council = self.council_factory(id=1)
         # 10 in range
         property1 = self.property_factory(bbl=1, council=council)
         # 10 out of range
@@ -576,7 +576,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.assertEqual(content[0]['bbl'], '1')
 
     def test_eviction_rules(self):
-        council = self.council_factory(coundist=1)
+        council = self.council_factory(id=1)
         # 10 in range
         property1 = self.property_factory(bbl=1, council=council)
         # 10 out of range
@@ -604,7 +604,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.assertEqual(content[0]['bbl'], '1')
 
     def test_taxlien_rules(self):
-        council = self.council_factory(coundist=1)
+        council = self.council_factory(id=1)
         # has tax lien in 2018
         property1 = self.property_factory(bbl=1, council=council)
         # has tax lien in 2017
@@ -626,7 +626,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.assertEqual(content[0]['bbl'], '1')
 
     def test_subsidy_rules(self):
-        council = self.council_factory(coundist=1)
+        council = self.council_factory(id=1)
         # has lihtc ending 2018
         property1 = self.property_factory(bbl=1, council=council)
         # has j-51 ending 2018
@@ -648,7 +648,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.assertEqual(content[0]['bbl'], '1')
 
     def test_foreclosure_rules_authorized(self):
-        council = self.council_factory(coundist=1)
+        council = self.council_factory(id=1)
         # has lihtc ending 2018
         property1 = self.property_factory(bbl=1, council=council)
         # has j-51 ending 2018
@@ -674,7 +674,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.assertEqual(content[0]['bbl'], '1')
 
     def test_foreclosure_rules_unauthorized(self):
-        council = self.council_factory(coundist=1)
+        council = self.council_factory(id=1)
         # has lihtc ending 2018
         property1 = self.property_factory(bbl=1, council=council)
         # has j-51 ending 2018
@@ -695,8 +695,8 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_council_with_housingtype_with_q_1(self):
-        council = self.council_factory(coundist=1)
-        council2 = self.council_factory(coundist=2)
+        council = self.council_factory(id=1)
+        council2 = self.council_factory(id=2)
         # full match
         property1 = self.property_factory(bbl=1, council=council, unitsres=4)
         # full match
@@ -735,8 +735,8 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.assertEqual(any(d['bbl'] == '2' for d in content), True)
 
     def test_council_with_housingtype_with_q_2(self):
-        council = self.council_factory(coundist=1)
-        council2 = self.council_factory(coundist=2)
+        council = self.council_factory(id=1)
+        council2 = self.council_factory(id=2)
         # full match
         property1 = self.property_factory(bbl=1, council=council)
         self.coredata_factory(property=property1, programname="j-51")

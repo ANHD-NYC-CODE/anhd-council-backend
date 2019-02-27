@@ -1,7 +1,7 @@
 - model: core.dataset
   pk: 1
   fields:
-    name: Councils
+    name: Council Districts
     model_name: Council
     automated: False
     update_instructions: "1) Visit http://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/nycc/FeatureServer/0/query?where=1=1&outFields=*&outSR=4326&f=geojson 2) Copy all of the data on the screen into a .geojson file. 3) Upload the file to the app. 4) Create an update with the file."
@@ -196,3 +196,10 @@
     model_name: TaxLot
     automated: false
     update_instructions: "Visit https://data.cityofnewyork.us/City-Government/Property-Address-Directory/bc8t-ecyu 2) Download latest zipfile. 3) Extract zipfile and open bobabbl.csv. 4) Upload bobabbl.csv to app. 5) Update"
+- model: core.dataset
+  pk: 32
+  fields:
+    name: Community Districts
+    model_name: Community
+    automated: false
+    update_instructions: "1) Visit http://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/nycd/FeatureServer/0/query?where=1=1&outFields=*&outSR=4326&f=geojson 2) Copy all of the data on the screen into a .geojson file. 3) Upload the file to the app. 4) Create an update with the file."

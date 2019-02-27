@@ -97,15 +97,15 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         update = c_models.Update.objects.create(dataset=dataset, file=file, previous_file=previous_file)
         return update
 
-    def council_factory(self, coundist=None, geometry='{"type":"Polygon","coordinates":[]}', **kwargs):
+    def council_factory(self, id=None, geometry='{"type":"Polygon","coordinates":[]}', **kwargs):
         name = 'Council'
-        if not coundist:
-            coundist = random.randint(1, 1000000)
+        if not id:
+            id = random.randint(1, 1000000)
         if not len(c_models.Dataset.objects.filter(name=name)):
             dataset = c_models.Dataset.objects.create(name=name, model_name=name)
 
         factory = d_models.Council.objects.create(
-            coundist=coundist,
+            id=id,
             geometry=geometry,
             **kwargs
         )
@@ -118,7 +118,7 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         if not len(c_models.Dataset.objects.filter(name=name)):
             dataset = c_models.Dataset.objects.create(name=name, model_name=name)
         if not council:
-            council = self.council_factory(coundist=random.randint(1, 1000000))
+            council = self.council_factory(id=random.randint(1, 1000000))
 
         factory = d_models.Property.objects.create(
             bbl=bbl,
