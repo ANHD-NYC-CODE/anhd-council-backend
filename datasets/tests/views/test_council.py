@@ -24,16 +24,16 @@ class CouncilViewTests(BaseTest, TestCase):
         self.assertEqual(len(content), 2)
 
     def test_retrieve(self):
-        self.council_factory(coundist=1)
+        self.council_factory(id=1)
 
         response = self.client.get('/councils/1/')
         content = response.data
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(content["coundist"], 1)
+        self.assertEqual(content["id"], 1)
 
     def test_council_properties(self):
-        council = self.council_factory(coundist=1)
+        council = self.council_factory(id=1)
         self.property_factory(council=council, bbl="1")
         self.property_factory(council=council, bbl="2")
 
@@ -44,7 +44,7 @@ class CouncilViewTests(BaseTest, TestCase):
         self.assertEqual(len(content), 2)
 
     def test_council_housing(self):
-        council = self.council_factory(coundist=1)
+        council = self.council_factory(id=1)
         self.property_factory(council=council)
 
         response = self.client.get('/councils/1/housing/')

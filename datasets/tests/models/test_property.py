@@ -48,8 +48,8 @@ class PropertyManagerTest(BaseTest, TestCase):
         self.clean_tests()
 
     def test_council_method(self):
-        council1 = BaseTest.council_factory(self, coundist=1)
-        council2 = BaseTest.council_factory(self, coundist=2)
+        council1 = BaseTest.council_factory(self, id=1)
+        council2 = BaseTest.council_factory(self, id=2)
 
         for i in range(5):
             BaseTest.property_factory(self, bbl=str(i) + 'a', council=council1)

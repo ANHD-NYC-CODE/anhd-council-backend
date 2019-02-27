@@ -25,7 +25,7 @@ class UserViews(BaseTest, TestCase):
     def test_authenticated_get_current_user(self):
         username = 'test'
         password = 'test1234'
-        council = self.council_factory(coundist=3)
+        council = self.council_factory(id=3)
         user = self.user_factory(email="test@test.com",  username=username, password=password)
         profile = self.userprofile_factory(user=user, council=council)
         token = self.get_access_token(username=username, password=password)
