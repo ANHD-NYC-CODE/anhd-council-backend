@@ -30,8 +30,6 @@ class AddressRecord(BaseDatasetModel, models.Model):
                             db_column='bbl', db_constraint=False)
     bin = models.ForeignKey('Building', on_delete=models.SET_NULL, null=True,
                             db_column='bin', db_constraint=False)
-    taxlot = models.ForeignKey('TaxLot', on_delete=models.SET_NULL, null=True,
-                               db_column='taxlot', db_constraint=False)
     number = models.TextField(blank=True, null=True)
     letter = models.TextField(blank=True, null=True)
     street = models.TextField(blank=True, null=True)

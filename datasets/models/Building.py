@@ -27,8 +27,6 @@ class Building(BaseDatasetModel, models.Model):
     bin = models.TextField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Property', on_delete=models.SET_NULL, null=True,
                             db_column='bbl', db_constraint=False)
-    taxlot = models.ForeignKey('TaxLot', on_delete=models.SET_NULL, null=True,
-                               db_column='taxlot', db_constraint=False)
     boro = models.TextField(blank=False, null=False)
     block = models.TextField(blank=False, null=False)
     lot = models.TextField(blank=False, null=False)
