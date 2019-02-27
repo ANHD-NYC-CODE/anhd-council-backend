@@ -117,6 +117,8 @@ class AddressRecord(BaseDatasetModel, models.Model):
                         self.write_row_from_building(number=low_number, letter=low_letter,
                                                      building=building, temp_file=temp_file)
                     else:
+                        # For that one number that has a lhnd = 52 and hhnd = 54 1/2
+                        # Removing the 1/2 part from the high number
                         if re.search(r'(1/2|1/3|1/4)', low_number):
                             low_number = low_number.split(' ')[0]
                         if re.search(r'(1/2|1/3|1/4)', high_number):

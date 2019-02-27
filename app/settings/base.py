@@ -328,8 +328,11 @@ LOGGING = {
 # Use exact model names from datasets/models
 ACTIVE_MODELS = [
     'Council',
+    'Community,'
     'Property',
     'Building',
+    'TaxLot'
+    'AddressRecord',
     'AcrisRealLegal',
     'AcrisRealMaster',
     'AcrisRealParty',
@@ -356,6 +359,5 @@ ACTIVE_MODELS = [
     'TaxLien',
     'LisPenden',
     'LisPendenComment',
-    'AddressRecord',
-    'TaxLot'
+
 ]

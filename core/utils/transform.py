@@ -73,7 +73,7 @@ def clean_headers(headers):
     return [flip_numbers(x) for x in s.split(',')]
 
 
-def from_council_geojson(file_path):
+def from_geojson(file_path, pk='CounDist'):
     if isinstance(file_path, str):
         f = open(file_path, mode='r', encoding='utf-8', errors='replace')
     else:
@@ -94,8 +94,8 @@ def from_council_geojson(file_path):
 
             row['geometry'] = json.dumps(row['geometry'])
 
-            row['coundist'] = row['CounDist']
-            row.pop('CounDist')
+            row['id'] = row[pk]
+            row.pop(pk)
 
             row['shapearea'] = row['Shape__Area']
             row.pop('Shape__Area')
