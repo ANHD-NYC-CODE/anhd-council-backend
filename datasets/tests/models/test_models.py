@@ -100,8 +100,8 @@ class TaxLotTests(BaseTest, TestCase):
                                          file_name="mock_taxlot_diff.csv", previous_file_name="mock_taxlot.csv")
         ds.TaxLot.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds.TaxLot.objects.count(), 6)
-        self.assertEqual(new_update.rows_created, 2)
-        self.assertEqual(new_update.rows_updated, 4)
+        self.assertEqual(new_update.rows_created, 6)
+        self.assertEqual(new_update.rows_updated, 0)
 
 
 class HPDViolationTests(BaseTest, TestCase):

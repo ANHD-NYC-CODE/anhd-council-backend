@@ -17,14 +17,13 @@ import logging
 
 logger = logging.getLogger('app')
 
-ACTIVE_MODELS_CHOICES = list(map(lambda model: (model, model), settings.ACTIVE_MODELS))
 
 #
 
 
 class Dataset(models.Model):
     name = models.CharField(unique=True, max_length=255, blank=False, null=False)
-    model_name = models.CharField(unique=True, max_length=255, blank=False, null=False, choices=ACTIVE_MODELS_CHOICES)
+    model_name = models.CharField(unique=True, max_length=255, blank=False, null=False)
     automated = models.BooleanField(blank=True, null=True)
     update_instructions = models.TextField(blank=True, null=True)
     download_endpoint = models.TextField(blank=True, null=True)

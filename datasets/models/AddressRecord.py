@@ -1,11 +1,11 @@
 from django.db import models
 from django.db.models import Q
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
-from core.utils.database import copy_insert_from_csv
+from core.utils.database import copy_insert_from_csv, batch_upsert_from_gen
 from core.utils.address import normalize_street
 from django.contrib.postgres.search import SearchVector, SearchVectorField
 from datasets import models as ds
-from core.utils.bbl import code_to_boro
+from core.utils.bbl import code_to_boro, abrv_to_borough
 from django.conf import settings
 from django.contrib.postgres.indexes import GinIndex
 import logging
@@ -39,18 +39,14 @@ class AddressRecord(BaseDatasetModel, models.Model):
 
     class Meta:
         indexes = [GinIndex(fields=['address'])]
+        unique_together = ('number', 'letter', 'street', 'borough')
 
     @classmethod
     def write_row_from_building(self, number='', letter='', building=None, temp_file=None):
         try:
             bbl = building.bbl.bbl
         except Exception as e:
-            bbl = None
-
-        try:
-            taxlot = building.taxlot
-        except Exception as e:
-            taxlot = None
+            return
 
         try:
             bin = building.bin
@@ -61,7 +57,6 @@ class AddressRecord(BaseDatasetModel, models.Model):
                         (number + letter + building.stname.replace(' ', '') + str(building.boro) + str(building.zipcode) + str(
                             bin),
                          bbl,
-                         taxlot,
                          bin,
                          number,
                          letter,
@@ -87,12 +82,21 @@ class AddressRecord(BaseDatasetModel, models.Model):
 
     @classmethod
     def split_number_letter(self, house):
-        split = re.split('(\d*)', house)
-        # 1a outputs: ('', '1', 'a')
-        return (split[1], split[2])
+        # This gets number and 1/2 lol
+        # (^([^\s]* (1\/2|1\/3|1\/4))|^[^\s]*)
+
+        letter = re.search(r"[a-zA-Z]*", house).group()
+        if letter:
+            letter = letter
+            number = house.split(letter)[0]
+        else:
+            letter = None
+            numeber = house
+
+        return (number, letter)
 
     @classmethod
-    def build_table_csv(self, **kwargs):
+    def build_table_csv(self):
         BATCH_SIZE = 100000
         headers = [field.name for field in self._meta.get_fields()]
         temp_file_path = os.path.join(settings.MEDIA_TEMP_ROOT, str(uuid.uuid4().hex) + '.csv')
@@ -139,13 +143,46 @@ class AddressRecord(BaseDatasetModel, models.Model):
         return temp_file_path
 
     @classmethod
+    def build_property_object(self, property):
+        if not property.address:
+            return
+        number_letter = re.search(r"(?=\d*)^.*?(?=\s\b)", property.address)
+
+        if number_letter:
+            number = re.search(r"\d*", number_letter.group()).group()
+            letter = re.search(r"[a-zA-Z]**", number_letter.group()).group()
+            street = property.address.split(number_letter.group())[1].strip()
+            zipcode = property.zipcode
+            borough = abrv_to_borough(property.borough)
+
+            key = str(number) + letter + street.replace(' ', '') + borough + str(zipcode) + str(property.bbl)
+            return {
+                'key': key,
+                'bbl': property,
+                'bin': "",
+                'number': number,
+                'letter': letter,
+                'street': street,
+                'borough': borough,
+                'zipcode': zipcode,
+                'address': ""
+            }
+
+    @classmethod
+    def build_property_gen(self):
+        for property in ds.Property.objects.all():
+            yield self.build_property_object(property)
+
+    @classmethod
     def seed_or_update_self(self, **kwargs):
         self.build_table(overwrite=True)
 
     @classmethod
     def build_table(self, **kwargs):
-        csv_path = self.build_table_csv(**kwargs)
+        csv_path = self.build_table_csv()
         copy_insert_from_csv(self._meta.db_table, csv_path, **kwargs)
+        property_gen = self.build_property_gen()
+        batch_upsert_from_gen(self, property_gen, 100000, **kwargs)
         self.build_search()
 
     @classmethod

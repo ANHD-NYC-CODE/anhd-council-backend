@@ -20,6 +20,18 @@ def boro_to_abrv(boro):
     return mapping[boro]
 
 
+def abrv_to_borough(abrv):
+    mapping = {
+        'MN': 'MANHATTAN',
+        'BX': 'BRONX',
+        'BK': 'BROOKLYN',
+        'QN': 'QUEENS',
+        'SI': 'STATEN ISLAND'
+    }
+
+    return mapping[abrv]
+
+
 def code_to_boro(code):
     mapping = {
         '1': 'Manhattan',

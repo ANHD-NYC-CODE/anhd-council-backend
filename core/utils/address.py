@@ -374,6 +374,7 @@ def clean_number_and_streets(string, include_house_number):
     string = re.sub(r"\bEXP WY\b", "EXPRESSWAY", string)
     string = re.sub(r"\bEXPR ESSWAY\b", "EXPRESSWAY", string)
     string = re.sub(r"\bTPKE\b", "TURNPIKE", string)
+    string = re.sub(r"\bNY\b", "NEW YORK", string)
 
     string = re.sub(r"(?!{})(?=\bST\b)(\bST\b)".format(
         ".*" + saint + "|" for saint in HOLY_SAINTS), "STREET", string)
