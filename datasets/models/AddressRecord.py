@@ -113,7 +113,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
                     low_number, low_letter = self.split_number_letter(building.lhnd)
                     high_number, high_letter = self.split_number_letter(building.hhnd)
                     # create rangelist
-                    if int(low_number) != int(high_number):
+                    if low_number != high_number:
                         house_numbers = self.generate_rangelist(int(low_number), int(high_number))
                         for number in house_numbers:
                             self.write_row_from_building(number=number, letter='',

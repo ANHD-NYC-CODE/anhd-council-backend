@@ -31,9 +31,14 @@ class AddressRecordTests(BaseTest, TestCase):
         # range of 2, dash number
         building6 = self.building_factory(bin=6, lhnd="1-10", hhnd="1-12", stname="Real Street",
                                           boro="1", zipcode="99999", property=property)
+
+        # no range, 1/2 number
+        building6 = self.building_factory(bin=7, lhnd="10 1/2", hhnd="10 1/2", stname="Half Street",
+                                          boro="1", zipcode="99999", property=property)
+
         ds.AddressRecord.build_table(overwrite=True)
 
-        self.assertEqual(ds.AddressRecord.objects.count(), 9)
+        self.assertEqual(ds.AddressRecord.objects.count(), 10)
         address1 = ds.AddressRecord.objects.all()[0]
         self.assertEqual(address1.bbl, property)
         self.assertEqual(address1.number, "1")
@@ -89,6 +94,12 @@ class AddressRecordTests(BaseTest, TestCase):
         self.assertEqual(address9.street, "Real Street")
         self.assertEqual(address9.borough, "Manhattan")
         self.assertEqual(address9.zipcode, "99999")
+        address10 = ds.AddressRecord.objects.all()[9]
+        self.assertEqual(address10.number, "10 1/2")
+        self.assertEqual(address10.letter, None)
+        self.assertEqual(address10.street, "Half Street")
+        self.assertEqual(address10.borough, "Manhattan")
+        self.assertEqual(address10.zipcode, "99999")
 
     def test_seed_addresssearch_update(self):
         property = self.property_factory(bbl="1")
