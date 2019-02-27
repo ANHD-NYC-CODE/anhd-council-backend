@@ -30,6 +30,8 @@ class AddressRecord(BaseDatasetModel, models.Model):
                             db_column='bbl', db_constraint=False)
     bin = models.ForeignKey('Building', on_delete=models.SET_NULL, null=True,
                             db_column='bin', db_constraint=False)
+    taxlot = models.ForeignKey('TaxLot', on_delete=models.SET_NULL, null=True,
+                               db_column='taxlot', db_constraint=False)
     number = models.TextField(blank=True, null=True)
     letter = models.TextField(blank=True, null=True)
     street = models.TextField(blank=True, null=True)
@@ -43,28 +45,33 @@ class AddressRecord(BaseDatasetModel, models.Model):
     @classmethod
     def write_row_from_building(self, number='', letter='', building=None, temp_file=None):
         try:
-            temp_file.write('%s,%s,%s,%s,%s,%s,%s,%s,%s\n' %
-                            (number + letter + building.stname.replace(' ', '') + str(building.boro) + str(building.zipcode) + str(
-                                building.bin),
-                             building.bbl.bbl,
-                             building.bin,
-                             number,
-                             letter,
-                             building.stname,
-                             code_to_boro(building.boro),
-                             building.zipcode,
-                             ''
-                             ))
-
-        except ds.Property.DoesNotExist as e:
-            logger.debug("AddressRecord build - property does not exist")
-            return
-        except ds.Building.DoesNotExist as e:
-            logger.debug("AddressRecord build - building does not exist")
-            return
+            bbl = building.bbl.bbl
         except Exception as e:
-            logger.warning("* Unable to create address for building Table: {}", building)
-            return
+            bbl = None
+
+        try:
+            taxlot = building.taxlot
+        except Exception as e:
+            taxlot = None
+
+        try:
+            bin = building.bin
+        except Exception as e:
+            bin = None
+
+        temp_file.write('%s,%s,%s,%s,%s,%s,%s,%s,%s\n' %
+                        (number + letter + building.stname.replace(' ', '') + str(building.boro) + str(building.zipcode) + str(
+                            bin),
+                         bbl,
+                         taxlot,
+                         bin,
+                         number,
+                         letter,
+                         building.stname,
+                         code_to_boro(building.boro),
+                         building.zipcode,
+                         ''
+                         ))
 
     @classmethod
     def generate_rangelist(self, low, high, prefix=None):

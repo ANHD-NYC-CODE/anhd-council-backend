@@ -27,6 +27,8 @@ class Building(BaseDatasetModel, models.Model):
     bin = models.TextField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Property', on_delete=models.SET_NULL, null=True,
                             db_column='bbl', db_constraint=False)
+    taxlot = models.ForeignKey('TaxLot', on_delete=models.SET_NULL, null=True,
+                               db_column='taxlot', db_constraint=False)
     boro = models.TextField(blank=False, null=False)
     block = models.TextField(blank=False, null=False)
     lot = models.TextField(blank=False, null=False)
@@ -82,7 +84,7 @@ class Building(BaseDatasetModel, models.Model):
     @classmethod
     def seed_or_update_self(self, **kwargs):
         logger.debug("Seeding/Updating {}", self.__name__)
-        self.bulk_seed(**kwargs)
+        self.bulk_seed(**kwargs, overwrite=True)
         dataset = c.Dataset.objects.filter(model_name='AddressRecord').first()
         if dataset:
             async_create_update.delay(dataset.id)

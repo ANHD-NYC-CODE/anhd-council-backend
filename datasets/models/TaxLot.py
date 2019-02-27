@@ -40,13 +40,13 @@ class TaxLot(BaseDatasetModel, models.Model):
         return {
             'bbl': bbl(row['loboro'], row['loblock'], lot),
             'bbbl': bbl(row['billboro'], row['billblock'], row['billlot']),
-            'condoflag': bool(row['condoflag']),
+            'condoflag': bool(row['condoflag'].strip()),
             'condonum': row['condonum'],
             'coopnum': row['coopnum'],
             'numbf': row['numbf'],
             'numaddr': row['numaddr'],
-            'vacant': bool(row['vacant']),
-            'interior': bool(row['interior'])
+            'vacant': bool(row['vacant'].strip()),
+            'interior': bool(row['interior'].strip())
         }
 
     @classmethod
@@ -72,10 +72,7 @@ class TaxLot(BaseDatasetModel, models.Model):
     @classmethod
     def seed_or_update_self(self, **kwargs):
         logger.debug("Seeding/Updating {}", self.__name__)
-        self.bulk_seed(**kwargs)
-        dataset = c.Dataset.objects.filter(model_name='AddressRecord').first()
-        if dataset:
-            async_create_update.delay(dataset.id)
+        self.bulk_seed(**kwargs, overwrite=True)
 
     def __str__(self):
         return str(self.bbl)

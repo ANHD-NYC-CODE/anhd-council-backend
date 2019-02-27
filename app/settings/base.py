@@ -356,5 +356,6 @@ ACTIVE_MODELS = [
     'TaxLien',
     'LisPenden',
     'LisPendenComment',
-    'AddressRecord'
+    'AddressRecord',
+    'TaxLot'
 ]
