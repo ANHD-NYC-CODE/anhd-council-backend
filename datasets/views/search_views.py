@@ -52,14 +52,14 @@ class SearchViewSet(ApplicationViewSet, viewsets.ReadOnlyModelViewSet):
 
                 return ds.AddressRecord.objects.extra(
                     select=select, where=[where_q], order_by=order
-                )[:4]
+                )[:8]
 
                 # return ds.Building.objects.filter(bin__in=bins).annotate(rank=bins['rank'])
 
             qs = construct_search_query(search_term, True).union(
-                construct_search_query(search_term, False)).order_by('-rank')[:4]
+                construct_search_query(search_term, False)).order_by('-rank')[:8]
             keys = list(doc.key for doc in qs)
-            self.queryset = ds.AddressRecord.objects.filter(key__in=keys).distinct('bin')
+            self.queryset = ds.AddressRecord.objects.filter(key__in=keys).distinct('bbl')
 
         else:
             self.queryset = ds.Building.objects.all().order_by('pk')

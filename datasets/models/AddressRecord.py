@@ -39,7 +39,6 @@ class AddressRecord(BaseDatasetModel, models.Model):
 
     class Meta:
         indexes = [GinIndex(fields=['address'])]
-        unique_together = ('number', 'letter', 'street', 'borough')
 
     @classmethod
     def write_row_from_building(self, number='', letter='', building=None, temp_file=None):
@@ -53,18 +52,21 @@ class AddressRecord(BaseDatasetModel, models.Model):
         except Exception as e:
             bin = None
 
-        temp_file.write('%s,%s,%s,%s,%s,%s,%s,%s,%s\n' %
-                        (number + letter + building.stname.replace(' ', '') + str(building.boro) + str(building.zipcode) + str(
-                            bin),
-                         bbl,
-                         bin,
-                         number,
-                         letter,
-                         building.stname,
-                         code_to_boro(building.boro),
-                         building.zipcode,
-                         ''
-                         ))
+        key = str(number) + str(letter) + building.stname.replace(' ', '') + \
+            str(building.boro) + str(building.zipcode) + str(bin)
+        letter = letter if letter else None
+
+        temp_file.write('%s,%s,%s,%s,%s,%s,%s,%s,%s\n' % (
+            key,
+            bbl,
+            bin,
+            number,
+            letter,
+            building.stname,
+            code_to_boro(building.boro),
+            building.zipcode,
+            ''
+        ))
 
     @classmethod
     def generate_rangelist(self, low, high, prefix=None):
@@ -85,13 +87,13 @@ class AddressRecord(BaseDatasetModel, models.Model):
         # This gets number and 1/2 lol
         # (^([^\s]* (1\/2|1\/3|1\/4))|^[^\s]*)
 
-        letter = re.search(r"[a-zA-Z]*", house).group()
+        letter = re.search(r"[a-zA-Z]+", house)
         if letter:
-            letter = letter
+            letter = letter.group()
             number = house.split(letter)[0]
         else:
             letter = None
-            numeber = house
+            number = house
 
         return (number, letter)
 
@@ -150,7 +152,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
 
         if number_letter:
             number = re.search(r"\d*", number_letter.group()).group()
-            letter = re.search(r"[a-zA-Z]**", number_letter.group()).group()
+            letter = re.search(r"[a-zA-Z]*", number_letter.group()).group()
             street = property.address.split(number_letter.group())[1].strip()
             zipcode = property.zipcode
             borough = abrv_to_borough(property.borough)

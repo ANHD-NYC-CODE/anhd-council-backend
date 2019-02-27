@@ -108,6 +108,7 @@ def copy_insert_from_csv(table_name, temp_file_path, **kwargs):
 
         with transaction.atomic():
             if 'overwrite' in kwargs and kwargs['overwrite']:
+                logger.debug('Overwriting table...')
                 connection.cursor().execute('DELETE FROM {};'.format(table_name))
             logger.debug("* Beginning Bulk CSV copy.")
             connection.cursor().copy_expert(sql, temp_file)
