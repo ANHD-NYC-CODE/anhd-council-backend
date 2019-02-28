@@ -517,6 +517,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         query = '/properties/?q=*condition_0=AND+filter_0=acrisreallegals__documentid__docdate__gte=2017-01-01,acrisreallegals__documentid__docdate__lte=2018-01-01,acrisreallegals__documentid__docamount__gte=5'
 
         response = self.client.get(query, format="json")
+
         content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
@@ -784,3 +785,35 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.assertEqual(len(content), 2)
         self.assertEqual(any(d['bbl'] == '1' for d in content), True)
         self.assertEqual(any(d['bbl'] == '2' for d in content), True)
+
+    def test_validations_1(self):
+        # Unknown / misspelled datasets
+        query = '/properties/?q=*condition_0=AND+filter_0=fakedataset__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5'
+        response = self.client.get(query, format="json")
+
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual('"fakedataset" is not a valid dataset.' in response.data['detail'], True)
+
+    def test_validations_2(self):
+        # incorrect conditions types
+        query = '/properties/?q=*condition_0=BOR+filter_0='
+        response = self.client.get(query, format="json")
+
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual('"BOR" is not a valid condition type.' in response.data['detail'], True)
+
+    def test_validations_3(self):
+        # no filters on the condition
+        query = '/properties/?q=*condition_0=AND+fir_0='
+        response = self.client.get(query, format="json")
+
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual('Condition 0 has no filters' in response.data['detail'], True)
+
+    def test_validations_4(self):
+        # invalid field on the dataset filter
+        query = '/properties/?q=*condition_0=AND+filter_0=hpdviolations__badfield__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5'
+        response = self.client.get(query, format="json")
+
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual('Field "badfield" is not valid for dataset "HPDViolation"' in response.data['detail'], True)

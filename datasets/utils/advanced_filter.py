@@ -1,7 +1,8 @@
+from django.db.models import FieldDoesNotExist
 from datasets import models as ds
 from django.db.models import Count, Q, ExpressionWrapper, F, FloatField
 from django.db.models.functions import Cast
-
+from django.conf import settings
 import re
 
 
@@ -69,17 +70,21 @@ def get_filters(string, annotation=False):
 
 
 def parse_filter_string(string):
-    if re.search(r'\bAND\b', string.upper()):
-        # Don't parse conditions
-        return None
-    if re.search(r'\bOR\b', string.upper()):
-        # Don't parse conditions
-        return None
-    if 'CONDITION' in string.upper():
-        # return the condition filter mapping
-        return {'condition': int(string.split('=')[1].split('_')[1])}
+    tokens = string.split('=', 1)
 
-    model = clean_model_name(string.lower().split('=', 1)[1].split('__')[0])
+    if 'CONDITION' in tokens[0].upper():
+        # don't parse conditions
+        return None
+    if 'CONDITION' in tokens[1].upper():
+        # Do parse filter conditions
+        # and return the condition filter mapping
+        return {'condition': int(tokens[1].split('_')[1])}
+
+    filter_value = tokens[1]
+    if not filter_value:
+        return None
+
+    model = clean_model_name(tokens[1].split('__')[0])
 
     return {
         'model': model,
@@ -89,6 +94,39 @@ def parse_filter_string(string):
         'query2_filters': get_filters(string.split('=', 1)[1], annotation=True)
 
     }
+
+
+def validate_mapping(request, mapping):
+    for (index, con) in enumerate(mapping):
+        if not re.search(r"(\bAND\b|\bOR\b)", con['type']):
+            raise Exception("\"{}\" is not a valid condition type. use only AND or OR".format(con['type']))
+        if not len(con['filters']):
+            raise Exception("Condition {} has no filters".format(str(index)))
+        for c_filter in con['filters']:
+            if 'model' in c_filter:
+                model_name = list(filter(lambda x: c_filter['model'].lower() == x.lower(), settings.ACTIVE_MODELS))
+                if not model_name:
+                    # Validate model names
+                    raise Exception(
+                        "\"{}\" is not a valid dataset. Was it spelled correctly?".format(c_filter['model']))
+                else:
+                    # valid model fields
+                    model = getattr(ds, model_name[0])
+
+                    for fil in c_filter['query1_filters']:
+                        for key in fil.keys():
+                            key_split = key.split('__')
+                            # remove dataset and comparison from front and end
+                            key_split.pop(0)
+                            if (len(key_split) >= 2):
+                                key_split.pop()
+                            # only valid on first field, can't validate here on related fields
+                            field = key_split[0]
+                            try:
+                                model._meta.get_field(field)
+                            except FieldDoesNotExist:
+                                raise Exception(
+                                    "Field \"{}\" is not valid for dataset \"{}\"".format(field, model.__name__))
 
 
 def convert_query_string_to_mapping(string):
@@ -112,10 +150,15 @@ def convert_query_string_to_mapping(string):
     conditions = []
     array = string.split('*')
     array = list(filter(None, array))
-    for condition in array:
+    for con in array:
+        try:
+            type = con.split('=', 1)[1].split(' ')[0]
+        except Exception as e:
+            type = None
+
         element = {
-            'type': condition.split('=', 1)[1].split(' ')[0],
-            'filters': list(filter(None, list(map(lambda x: parse_filter_string(x),  list(filter(None, condition.split(' ')))))))
+            'type': type,
+            'filters': list(filter(None, list(map(lambda x: parse_filter_string(x),  list(filter(None, con.split(' ')))))))
         }
         conditions.append(element)
 

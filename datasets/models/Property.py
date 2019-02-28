@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Q, F, Count, Exists, OuterRef, Prefetch
+from django.db.models import Q, F, Count, Sum, Exists, OuterRef, Prefetch
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from datasets.utils.validation_filters import is_null, exceeds_char_length
 from core.utils.transform import from_csv_file_to_gen, with_geo
@@ -31,9 +31,12 @@ class ObsoletePropertyManager(models.Manager):
 
 
 class PropertyQuerySet(models.QuerySet):
-    def rentstab_filter(self):
+    def historical_rentstab_filter(self):
         rentstab_records = ds.RentStabilizationRecord.objects.only('ucbbl').filter(ucbbl=OuterRef('bbl'))
         return self.filter(yearbuilt__lte=1974, yearbuilt__gte=1).annotate(has_rentstab=Exists(rentstab_records)).filter(has_rentstab=True)
+
+    def rentstab_filter(self):
+        return self.filter(yearbuilt__lte=1974, yearbuilt__gte=1).annotate(rs_units=Sum('unitsrentstabilized')).filter(rs_units__gte=1)
 
     def rentreg_filter(self, program=None):
         queryset = self.annotate(corerecords=Count('coresubsidyrecord'), subsidyj51records=Count('subsidyj51'), subsidy421arecords=Count(

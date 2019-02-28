@@ -109,21 +109,20 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         return switcher.get(value, queryset.none())
 
     def filter_advancedquery(self, queryset, name, values):
-        mappings = af.convert_query_string_to_mapping(values)
+        mapping = af.convert_query_string_to_mapping(values)
+
+        af.validate_mapping(self.request, mapping)
 
         # filter on non-annotating filters (like dates)
-        q1 = af.convert_condition_to_q(mappings[0], mappings, 'query1_filters')
+        q1 = af.convert_condition_to_q(mapping[0], mapping, 'query1_filters')
         q1_queryset = queryset.only('bbl').filter(q1).distinct()
 
         # filter on annotating filters (like counts)
-        q2 = af.convert_condition_to_q(mappings[0], mappings, 'query2_filters')
-        for condition in mappings:
+        q2 = af.convert_condition_to_q(mapping[0], mapping, 'query2_filters')
+        for condition in mapping:
             for c_filter in condition['filters']:
                 if 'condition' in c_filter:
                     # skip condition filters
-                    continue
-                if c_filter['model'].lower() not in (model.lower() for model in settings.ACTIVE_MODELS):
-                    # skip models not in list of models
                     continue
 
                 if c_filter['model'] == 'rentstabilizationrecord':

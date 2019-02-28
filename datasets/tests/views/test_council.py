@@ -50,7 +50,7 @@ class CouncilViewTests(BaseTest, TestCase):
         property3 = self.property_factory(council=council, unitsres=10)
         property4 = self.property_factory(council=council, unitsres=2)
         property5 = self.property_factory(council=council, unitsres=10)
-        self.taxbill_factory(property=property2, uc2017=6)
+        self.taxbill_factory(property=property2, uc2016=10, uc2017=6)
         self.coredata_factory(property=property3, programname="j-51")
         self.publichousingrecord_factory(property=property5)
 

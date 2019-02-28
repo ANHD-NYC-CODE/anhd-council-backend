@@ -5,7 +5,7 @@ from django.apps import apps
 from django.conf import settings
 from django_celery_results.models import TaskResult
 from core.tasks import async_seed_file, async_seed_table, async_send_update_success_mail
-from datasets import models as dataset_models
+from datasets import models as ds
 from core import models as c_models
 from django.utils import timezone
 
@@ -26,16 +26,16 @@ class Dataset(models.Model):
     download_endpoint = models.TextField(blank=True, null=True)
 
     def model(self):
-        return getattr(dataset_models, self.model_name)
+        return getattr(ds, self.model_name)
 
     def download(self):
-        return getattr(dataset_models, self.model_name).download()
+        return getattr(ds, self.model_name).download()
 
     def update(self):
         return Update.objects.create(dataset=self)
 
     def seed_dataset(self, **kwargs):
-        getattr(dataset_models, self.model_name).seed_or_update_self(**kwargs)
+        getattr(ds, self.model_name).seed_or_update_self(**kwargs)
         self.delete_old_files()
 
     def latest_update(self):
