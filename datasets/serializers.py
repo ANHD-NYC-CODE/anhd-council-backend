@@ -263,7 +263,7 @@ class BuildingSearchSerializer(serializers.BaseSerializer):
             'bbl': obj.bbl_id,
             'buildingnumber': obj.buildingnumber,
             'buildingstreet': obj.buildingstreet,
-            'propertyaddress': obj.address,
+            'propertyaddress': obj.propertyaddress,
             'borough': obj.borough,
             'zipcode': obj.zipcode,
             'alternateaddress': obj.alternateaddress
