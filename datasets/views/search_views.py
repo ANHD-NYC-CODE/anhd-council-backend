@@ -21,22 +21,22 @@ class SearchViewSet(ApplicationViewSet, viewsets.ReadOnlyModelViewSet):
             search_term = request.query_params['fts'].replace(',', '').strip()
 
             def construct_search_query(search_term, prefix_first=False):
-                split_terms = search_term.split(' ')
+                tokens = search_term.strip().split(' ')
 
                 ##
                 # Transforms
                 # 100 grand st
                 # to
                 # 100:* | grand:* | st:*
-                if len(split_terms) <= 1:
-                    terms = ':*'.join(split_terms)
+                if len(tokens) <= 1:
+                    terms = ':*'.join(tokens)
                 else:
-                    first_term = split_terms.pop(0)
+                    first_term = tokens.pop(0)
                     if prefix_first:
-                        terms = ':* & '.join([first_term] + split_terms)
+                        terms = ':* & '.join([first_term] + tokens)
                         terms = terms + ':*'
                     else:
-                        terms = first_term + ' & ' + ':* & '.join(split_terms)
+                        terms = first_term + ' & ' + ':* & '.join(tokens)
                         terms = terms + ':*'
 
                 # https://czep.net/17/full-text-search.html
@@ -52,12 +52,16 @@ class SearchViewSet(ApplicationViewSet, viewsets.ReadOnlyModelViewSet):
 
                 return ds.AddressRecord.objects.extra(
                     select=select, where=[where_q], order_by=order
-                )[:8]
+                ).order_by('-rank')[:8]
 
-                # return ds.Building.objects.filter(bin__in=bins).annotate(rank=bins['rank'])
+            # returns results mixed with 2 queries -
+            # 1: does not include :* on the first token only`
+            # 2: includes :* prefix on all tokens
+            # qs = construct_search_query(search_term, True).union(
+            #     construct_search_query(search_term, False)).order_by('-rank')[:8]
 
-            qs = construct_search_query(search_term, True).union(
-                construct_search_query(search_term, False)).order_by('-rank')[:8]
+            # Prefixes all tokens
+            qs = construct_search_query(search_term, True)
             keys = list(doc.key for doc in qs)
             self.queryset = ds.AddressRecord.objects.filter(key__in=keys).distinct('bin')
 

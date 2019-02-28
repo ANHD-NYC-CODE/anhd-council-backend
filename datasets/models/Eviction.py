@@ -29,11 +29,6 @@ class Eviction(BaseDatasetModel, models.Model):
     marshallastname = models.TextField(blank=True, null=True)
     residentialcommercialind = models.TextField(db_index=True, blank=True, null=True)
     schedulestatus = models.TextField(db_index=True, blank=True, null=True)
-    # cleanedaddress1 = models.TextField(blank=True, null=True)
-    # cleanedaddress2 = models.TextField(blank=True, null=True)
-    # lat = models.DecimalField(decimal_places=8, max_digits=16, blank=True, null=True)
-    # lng = models.DecimalField(decimal_places=8, max_digits=16, blank=True, null=True)
-    # geocoder = models.TextField(blank=True, null=True)
 
     @classmethod
     def download(self):
@@ -46,17 +41,9 @@ class Eviction(BaseDatasetModel, models.Model):
                 continue
             yield row
 
-    # trims down new update files to preserve memory
-    # uses original header values
     @classmethod
     def update_set_filter(self, csv_reader, headers):
         return csv_reader
-
-
-# from core.models import DataFile, Update;file_path = DataFile.objects.last().file.path;update = Update.objects.last();update.dataset.seed_dataset(file_path=file_path, update=update)
-
-# Because the CSV has commas in marshalllastname column - Smith,jr.
-
 
     @classmethod
     def clean_evictions_csv(self, gen_rows):
@@ -70,19 +57,6 @@ class Eviction(BaseDatasetModel, models.Model):
 
     @classmethod
     def link_eviction_to_pluto_by_address(self):
-        def search_property_address(eviction, address):
-            match = ds.Property.objects.filter(address__icontains=address)
-            if len(match) == 1:
-                eviction.bbl = match[0]
-                eviction.save()
-            elif len(match) > 1:
-                if not re.match(r"(\d+ (STREET|AVENUE))", address):
-                    eviction.bbl = match[0]
-                    eviction.save()
-                else:
-                    logger.debug("Unable to choose from multiple property matches: {}".format(address))
-            else:
-                logger.debug("No property match found: {}".format(address))
 
         evictions = self.objects.filter(bbl__isnull=True)
         for eviction in evictions:
@@ -100,12 +74,13 @@ class Eviction(BaseDatasetModel, models.Model):
                         eviction.bbl = address_match[0].bbl
                         eviction.save()
                     else:
-                        search_property_address(eviction, address)
+                        logger.debug(
+                            "no eviction match - multiple matches found on generic address: {}".format(eviction.evictionaddress))
                 else:
-                    search_property_address(eviction, address)
+                    logger.debug("no eviction match - no address matches: {}".format(eviction.evictionaddress))
 
             else:
-                logger.debug("no match: {}".format(eviction.evictionaddress))
+                logger.debug("no eviction match - no regex matches: {}".format(eviction.evictionaddress))
 
     @classmethod
     def transform_self(self, file_path, update=None):
