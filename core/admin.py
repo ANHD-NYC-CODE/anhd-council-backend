@@ -65,11 +65,11 @@ class DataFileAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return True
+    #
+    # def has_change_permission(self, request, obj=None):
+    #     return False
 
-    def has_change_permission(self, request, obj=None):
-        return False
-
-    list_display = ['id', 'dataset_link', 'uploaded_date', 'file_name']
+    list_display = ['id', 'dataset_link', 'uploaded_date', 'file_name', 'version']
     ordering = ['-uploaded_date']
     actions = []
 
