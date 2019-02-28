@@ -36,6 +36,11 @@ class AddressRecord(BaseDatasetModel, models.Model):
     borough = models.TextField(blank=True, null=True)
     zipcode = models.TextField(blank=True, null=True)
     address = SearchVectorField(blank=True, null=True)
+    buildingnumber = models.TextField(blank=True, null=True)
+    buildingletter = models.CharField(max_length=4, blank=True, null=True)
+    buildingstreet = models.TextField(blank=True, null=True)
+    propertyaddress = models.TextField(blank=True, null=True)
+    fromproperty = models.BooleanField(blank=True, null=True)
 
     class Meta:
         indexes = [GinIndex(fields=['address'])]
@@ -48,7 +53,8 @@ class AddressRecord(BaseDatasetModel, models.Model):
     @classmethod
     def write_row_from_building(self, number='', letter='', building=None, temp_file=None):
         try:
-            bbl = building.bbl.bbl
+            property = building.bbl
+            bbl = property.bbl
         except Exception as e:
             return
 
@@ -60,7 +66,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
         key = self.create_key(number, letter, building.stname, code_to_boro(
             building.boro), building.zipcode, building.bbl)
 
-        temp_file.write('%s,%s,%s,%s,%s,%s,%s,%s,%s\n' % (
+        temp_file.write('%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n' % (
             key,
             bbl,
             bin,
@@ -69,7 +75,11 @@ class AddressRecord(BaseDatasetModel, models.Model):
             building.stname,
             code_to_boro(building.boro),
             building.zipcode,
-            ''
+            '',
+            building.get_house_number(),
+            letter,
+            building.stname,
+            property.address
         ))
 
     @classmethod
@@ -176,16 +186,33 @@ class AddressRecord(BaseDatasetModel, models.Model):
 
             key = self.create_key(number, letter, street, borough, zipcode, property.bbl)
 
+            property_buildings = property.building_set.all()
+            if property_buildings.count() == 1:
+                building = property_buildings.first()
+                bin = building.bin
+                buildingletter = ''
+                buildingstreet = building.stname
+            else:
+                building = None
+                bin = None
+                buildingletter = ''
+                buildingstreet = None
+
             return {
                 'key': key,
                 'bbl': property.bbl,
-                'bin': "",
+                'bin': bin,
                 'number': number,
                 'letter': letter,
                 'street': street,
                 'borough': borough,
                 'zipcode': zipcode,
-                'address': ""
+                'address': "",
+                "buildingnumber": building.get_house_number() if building else None,
+                "buildingletter": buildingletter,
+                "buildingstreet": buildingstreet,
+                "propertyaddress": property.address,
+                "fromproperty": True
             }
 
     @classmethod
@@ -199,10 +226,13 @@ class AddressRecord(BaseDatasetModel, models.Model):
 
     @classmethod
     def build_table(self, **kwargs):
-        csv_path = self.build_table_csv()
-        copy_insert_from_csv(self._meta.db_table, csv_path, **kwargs)
+        batch_size = 1000000
+        # csv_path = self.build_table_csv()
+        # copy_insert_from_csv(self._meta.db_table, csv_path, **kwargs)
+        building_gen = self.build_building_gen()
+        batch_upsert_from_gen(self, property_gen, batch_size, **kwargs)
         property_gen = self.build_property_gen()
-        batch_upsert_from_gen(self, property_gen, 100000, **kwargs)
+        batch_upsert_from_gen(self, property_gen, batch_size, **kwargs)
 
         self.build_search()
 

@@ -44,10 +44,19 @@ class AddressRecordTests(BaseTest, TestCase):
         self.assertEqual(ds.AddressRecord.objects.count(), 12)
         address1 = ds.AddressRecord.objects.get(
             number="1", letter=None, street="Fake Street", borough="Manhattan", zipcode="99999")
+        self.assertEqual(address1.buildingstreet, 'Fake Street')
+        self.assertEqual(address1.buildingnumber, '1')
+        self.assertEqual(address1.propertyaddress, property.address)
+
         self.assertEqual(bool(address1), True)
         address2 = ds.AddressRecord.objects.get(
             number="1", letter="a", street="Fake Street", borough="Manhattan", zipcode="99999")
         self.assertEqual(bool(address2), True)
+        self.assertEqual(address2.buildingstreet, 'Fake Street')
+        self.assertEqual(address2.buildingnumber, '1')
+        self.assertEqual(address2.buildingletter, 'a')
+        self.assertEqual(address2.propertyaddress, property.address)
+
         address3 = ds.AddressRecord.objects.get(
             number="1", letter=None, street="Real Street", borough="Manhattan", zipcode="99999")
         self.assertEqual(bool(address3), True)
@@ -81,6 +90,9 @@ class AddressRecordTests(BaseTest, TestCase):
         address12 = ds.AddressRecord.objects.get(
             number="100", letter="a", street="Fake Street", borough="Manhattan", zipcode="99999")
         self.assertEqual(bool(address12), True)
+        self.assertEqual(address12.buildingstreet, None)
+        self.assertEqual(address12.buildingnumber, None)
+        self.assertEqual(address12.propertyaddress, property3.address)
 
     def test_seed_addresssearch_update(self):
         property = self.property_factory(bbl="1")

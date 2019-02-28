@@ -4,15 +4,6 @@ from django.forms.models import model_to_dict
 from core.utils.bbl import code_to_boro, abrv_to_borough
 
 
-def get_house_number(building):
-    if (building.lhnd == building.hhnd):
-        return building.lhnd
-    elif (building.lhnd and building.hhnd):
-        return "{}-{}".format(building.lhnd, building.hhnd)
-    else:
-        return building.lhnd
-
-
 class CouncilSerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Council
@@ -211,7 +202,7 @@ class PropertySummarySerializer(serializers.ModelSerializer):
         return {
             "items": list({
                 "bin": building.bin,
-                "house_number": get_house_number(building)
+                "house_number": building.get_house_number()
             } for building in property_buildings)
         }
 
@@ -239,40 +230,20 @@ class BuildingSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class BuildingSearchSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ds.AddressRecord
-        fields = ('bin', 'bbl', 'borough', 'number', 'housenumber', 'street',
-                  'zipcode', 'propertyaddress', 'propertyborough', 'propertyzipcode')
+class BuildingSearchSerializer(serializers.BaseSerializer):
+    def to_representation(self, obj):
 
-    housenumber = serializers.SerializerMethodField()
-    propertyaddress = serializers.SerializerMethodField()
-    propertyborough = serializers.SerializerMethodField()
-    propertyzipcode = serializers.SerializerMethodField()
-
-    # street = serializers.SerializerMethodField()
-    # rank = serializers.SerializerMethodField()
-
-    def get_housenumber(self, obj):
-        return get_house_number(obj.bin)
-
-    def get_propertyaddress(self, obj):
-        try:
-            return obj.bbl.address
-        except Exception as e:
-            return None
-
-    def get_propertyborough(self, obj):
-        try:
-            return abrv_to_borough(obj.bbl.borough)
-        except Exception as e:
-            return None
-
-    def get_propertyzipcode(self, obj):
-        try:
-            return obj.bbl.zipcode
-        except Exception as e:
-            return None
+        return {
+            'bin': obj.bin,
+            'bbl': obj.bbl,
+            'buildingnumber': obj.buildingnumber,
+            'buildingletter': obj.buildingletter,
+            'buildingstreet': obj.buildingstreet,
+            'propertyaddress': property.address,
+            'borough': obj.borough,
+            'zipcode': obj.zipcode,
+            'fromproperty': obj.fromproperty
+        }
 
 
 class HPDBuildingSerializer(serializers.ModelSerializer):
@@ -455,7 +426,7 @@ def property_lookup_serializer(property):
         "total": buildings.count(),
         "items": list({
             "bin": building.bin,
-            "house_number": get_house_number(building)
+            "house_number": building.get_house_number()
         } for building in buildings)
     }
 

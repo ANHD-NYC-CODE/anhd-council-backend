@@ -53,6 +53,14 @@ class Building(BaseDatasetModel, models.Model):
     zipcode = models.IntegerField(blank=True, null=True)
     physicalid = models.IntegerField(blank=True, null=True)
 
+    def get_house_number(self):
+        if (self.lhnd == self.hhnd):
+            return self.lhnd
+        elif (self.lhnd and self.hhnd):
+            return "{}-{}".format(self.lhnd, self.hhnd)
+        else:
+            return self.lhnd
+
     @classmethod
     def pre_validation_filters(self, gen_rows):
         for row in gen_rows:
