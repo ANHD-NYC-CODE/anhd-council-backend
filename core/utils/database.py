@@ -121,12 +121,14 @@ def copy_insert_from_csv(table_name, temp_file_path, **kwargs):
     os.remove(temp_file_path)
 
 
-def upsert_query(table_name, row, primary_key):
+def upsert_query(table_name, row, primary_key, no_conflict=False):
     fields = ', '.join(row.keys())
     upsert_fields = ', '.join([k + "= EXCLUDED." + k for k in row.keys()])
     placeholders = ', '.join(["%s" for v in row.values()])
-    sql = "INSERT INTO {table_name} ({fields}) VALUES ({values}) ON CONFLICT ({primary_key}) DO UPDATE SET {upsert_fields};"
-    return sql.format(table_name=table_name, fields=fields, values=placeholders, primary_key=primary_key, upsert_fields=upsert_fields)
+    conflict_action = "DO NOTHING" if no_conflict else "DO UPDATE SET {}".format(upsert_fields)
+    sql = "INSERT INTO {table_name} ({fields}) VALUES ({values}) ON CONFLICT ({primary_key}) {conflict_action};"
+
+    return sql.format(table_name=table_name, fields=fields, values=placeholders, primary_key=primary_key, conflict_action=conflict_action)
 
 
 def insert_query(table_name, row):
@@ -173,7 +175,8 @@ def batch_upsert_from_gen(model, rows, batch_size, **kwargs):
                     else:
                         logger.debug("Seeding next batch for {}.".format(model.__name__))
                         update = kwargs['update'] if 'update' in kwargs else None
-                        batch_upsert_rows(model, batch, batch_size, update=update)
+                        no_conflict = kwargs['no_conflict'] if 'no_conflict' in kwargs else None
+                        batch_upsert_rows(model, batch, batch_size, update=update, no_conflict=no_conflict)
 
                     if 'callback' in kwargs and kwargs['callback']:
                         kwargs['callback']()
@@ -182,7 +185,7 @@ def batch_upsert_from_gen(model, rows, batch_size, **kwargs):
             raise e
 
 
-def batch_upsert_rows(model, rows, batch_size, update=None):
+def batch_upsert_rows(model, rows, batch_size, update=None, no_conflict=False):
     table_name = model._meta.db_table
     primary_key = model._meta.pk.name
     """ Inserts many row, all in the same transaction"""
@@ -191,7 +194,7 @@ def batch_upsert_rows(model, rows, batch_size, update=None):
         try:
             starting_count = model.objects.count()
             with transaction.atomic():
-                curs.executemany(upsert_query(table_name, rows[0], primary_key), tuple(
+                curs.executemany(upsert_query(table_name, rows[0], primary_key, no_conflict=no_conflict), tuple(
                     build_row_values(row) for row in rows))
 
             if update:

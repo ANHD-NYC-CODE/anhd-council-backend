@@ -210,9 +210,9 @@ class AddressRecord(BaseDatasetModel, models.Model):
         # csv_path = self.build_table_csv()
         # copy_insert_from_csv(self._meta.db_table, csv_path, **kwargs)
         building_gen = self.build_building_gen()
-        batch_upsert_from_gen(self, building_gen, batch_size, **kwargs)
+        batch_upsert_from_gen(self, building_gen, batch_size, no_conflict=False, **kwargs)
         property_gen = self.build_property_gen()
-        batch_upsert_from_gen(self, property_gen, batch_size, **kwargs)
+        batch_upsert_from_gen(self, property_gen, batch_size, no_conflict=True, **kwargs)
 
         self.build_search()
 
