@@ -59,7 +59,7 @@ class SearchViewSet(ApplicationViewSet, viewsets.ReadOnlyModelViewSet):
             qs = construct_search_query(search_term, True).union(
                 construct_search_query(search_term, False)).order_by('-rank')[:8]
             keys = list(doc.key for doc in qs)
-            self.queryset = ds.AddressRecord.objects.filter(key__in=keys).distinct('bbl')
+            self.queryset = ds.AddressRecord.objects.filter(key__in=keys).distinct('bin')
 
         else:
             self.queryset = ds.Building.objects.all().order_by('pk')

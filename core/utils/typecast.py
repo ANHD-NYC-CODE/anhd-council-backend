@@ -60,7 +60,7 @@ def char(x, n):
     if len(val) > n:
         return val.strip()[0:n]
     else:
-        return val
+        return val.strip()
 
 
 def numeric(x):
