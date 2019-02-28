@@ -18,16 +18,12 @@ import logging
 logger = logging.getLogger('app')
 
 
-#
-
-
 class Dataset(models.Model):
     name = models.CharField(unique=True, max_length=255, blank=False, null=False)
     model_name = models.CharField(unique=True, max_length=255, blank=False, null=False)
     automated = models.BooleanField(blank=True, null=True)
     update_instructions = models.TextField(blank=True, null=True)
     download_endpoint = models.TextField(blank=True, null=True)
-    version = models.TextField(blank=True, null=True)
 
     def model(self):
         return getattr(dataset_models, self.model_name)
@@ -55,6 +51,13 @@ class Dataset(models.Model):
         except Exception as e:
             return None
 
+    def latest_version(self):
+        latest_file = self.latest_file()
+        if latest_file:
+            return latest_file.version
+        else:
+            return None
+
     def delete_old_files(self):
         # Deletes all but the last 2 files saved for this dataset.
         old_files = self.datafile_set.all().order_by('-uploaded_date')[2:]
@@ -76,6 +79,7 @@ class DataFile(models.Model):
     file = models.FileField(upload_to=construct_directory_path)
     dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
     uploaded_date = models.DateTimeField(default=timezone.now)
+    version = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.file.name
