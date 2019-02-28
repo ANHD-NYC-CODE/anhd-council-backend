@@ -1,1 +1,1 @@
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d --force-recreate --build --remove-orphans nginx
+docker exec -it nginx_server nginx -s reload
