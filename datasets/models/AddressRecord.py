@@ -178,13 +178,16 @@ class AddressRecord(BaseDatasetModel, models.Model):
 
             property_buildings = property.building_set.all()
             if property_buildings.count() == 1:
+                # Try to return some building info if property only has 1 building
                 building = property_buildings.first()
                 bin = building.bin
                 buildingstreet = building.stname
+                buildingnumber = building.get_house_number()
             else:
                 building = None
                 bin = None
                 buildingstreet = None
+                buildingnumber = None
 
             return {
                 'key': key,
@@ -196,7 +199,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
                 'borough': borough,
                 'zipcode': zipcode,
                 'address': "",
-                "buildingnumber": building.get_house_number() if building else None,
+                "buildingnumber": buildingnumber,
                 "buildingstreet": buildingstreet,
                 "propertyaddress": property.address,
                 "alternateaddress": True
