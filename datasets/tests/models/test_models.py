@@ -486,11 +486,13 @@ class RentStabilizationRecordTests(BaseTest, TestCase):
         self.clean_tests()
 
     def test_seed_record(self):
+        property = self.property_factory(bbl='6050720025')
         update = self.update_factory(model_name="RentStabilizationRecord",
                                      file_name="mock_rent_stabilization_records.csv")
         ds.RentStabilizationRecord.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds.RentStabilizationRecord.objects.count(), 12)
         self.assertEqual(update.rows_created, 12)
+        self.assertEqual(ds.Property.objects.get(bbl="6050720025").unitsrentstabilized, 63)
 
     def test_seed_record_after_update(self):
         update = self.update_factory(model_name="RentStabilizationRecord",

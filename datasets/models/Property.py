@@ -32,8 +32,7 @@ class ObsoletePropertyManager(models.Manager):
 
 class PropertyQuerySet(models.QuerySet):
     def rentstab_filter(self):
-        rentstab_records = ds.RentStabilizationRecord.objects.only('ucbbl', 'uc2007', 'uc2008', 'uc2009', 'uc2010', 'uc2011',
-                                                                   'uc2012', 'uc2013', 'uc2014', 'uc2015', 'uc2016', 'uc2017', 'uc2018', 'uc2019', 'uc2020',).filter(ucbbl=OuterRef('bbl'))
+        rentstab_records = ds.RentStabilizationRecord.objects.only('ucbbl').filter(ucbbl=OuterRef('bbl'))
         return self.filter(yearbuilt__lte=1974, yearbuilt__gte=1).annotate(has_rentstab=Exists(rentstab_records)).filter(has_rentstab=True)
 
     def rentreg_filter(self, program=None):
@@ -50,6 +49,7 @@ class PropertyQuerySet(models.QuerySet):
     def marketrate_filter(self):
         return self.annotate(
             publichousingcount=Count('publichousingrecord'),
+            rentsubsidized=Count('coresubsidyrecord'),
             rentstabilizationrecord2007=Count('rentstabilizationrecord',
                                               filter=Q(rentstabilizationrecord__uc2007__gt=0)),
             rentstabilizationrecord2008=Count('rentstabilizationrecord',
@@ -80,6 +80,7 @@ class PropertyQuerySet(models.QuerySet):
                                               filter=Q(rentstabilizationrecord__uc2020__gt=0))
         ).filter(Q(
             unitsres__gte=6,
+            rentsubsidized=0,
             publichousingcount=0,
             rentstabilizationrecord2007=0,
             rentstabilizationrecord2008=0,
@@ -274,8 +275,10 @@ class Property(BaseDatasetModel, models.Model):
     edesigdate = models.DateTimeField(blank=True, null=True)
     geom = models.TextField(blank=True, null=True)
     version = models.TextField(db_index=True, blank=True, null=True)
+    # Custom fields
     lng = models.DecimalField(decimal_places=16, max_digits=32, blank=True, null=True)
     lat = models.DecimalField(decimal_places=16, max_digits=32, blank=True, null=True)
+    unitsrentstabilized = models.IntegerField(blank=True, null=True)
 
     def get_rentstabilized_units(self):
         try:

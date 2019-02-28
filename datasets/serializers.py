@@ -2,6 +2,7 @@ from rest_framework import serializers
 from datasets import models as ds
 from django.forms.models import model_to_dict
 from core.utils.bbl import code_to_boro, abrv_to_borough
+from django.db.models import Sum
 
 
 class CouncilSerializer(serializers.ModelSerializer):
@@ -22,13 +23,38 @@ class CouncilHousingTypeSummarySerializer(serializers.ModelSerializer):
         program = self.context['request'].query_params['program'] if 'program' in self.context['request'].query_params else None
         unitsres = self.context['request'].query_params['unitsres'] if 'unitsres' in self.context['request'].query_params else '6'
 
+        residential_properties = council_properties.residential()
+        rent_stabilized = council_properties.rentstab()
+        rent_regulated = council_properties.rentreg(program=program)
+        small_homes = council_properties.smallhome(units=unitsres)
+        market_rate = council_properties.marketrate()
+        public_housing = council_properties.publichousing()
+
         return {
-            "residential_properties_count": council_properties.residential().count(),
-            "rent_stabilized_count": council_properties.rentstab().count(),
-            "rent_regulated_count": council_properties.rentreg(program=program).count(),
-            "small_homes_count": council_properties.smallhome(units=unitsres).count(),
-            "market_rate_count": council_properties.marketrate().count(),
-            "public_housing_count": council_properties.publichousing().count()
+            "residential_properties": {
+                'count': residential_properties.count(),
+                'units': residential_properties.aggregate(Sum('unitsres'))['unitsres__sum']
+            },
+            "rent_stabilized": {
+                'count': rent_stabilized.count(),
+                'units': rent_stabilized.aggregate(Sum('unitsrentstabilized'))['unitsrentstabilized__sum']
+            },
+            "rent_regulated": {
+                'count': rent_regulated.count(),
+                'units': rent_regulated.aggregate(Sum('unitsres'))['unitsres__sum']
+            },
+            "small_homes":  {
+                'count': small_homes.count(),
+                'units': small_homes.aggregate(Sum('unitsres'))['unitsres__sum']
+            },
+            "market_rate": {
+                'count': market_rate.count(),
+                'units': market_rate.aggregate(Sum('unitsres'))['unitsres__sum']
+            },
+            "public_housing": {
+                'count':  public_housing.count(),
+                'units': public_housing.aggregate(Sum('unitsres'))['unitsres__sum']
+            }
         }
 
 

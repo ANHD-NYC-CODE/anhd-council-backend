@@ -142,7 +142,20 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        return self.bulk_seed(**kwargs, overwrite=True)
+        update = self.bulk_seed(**kwargs, overwrite=True)
+        self.annotate_properties()
+        return update
+
+    @classmethod
+    def annotate_properties(self):
+        for record in self.objects.all():
+            try:
+                property = record.ucbbl
+
+                property.unitsrentstabilized = property.get_rentstabilized_units()
+                property.save()
+            except Exception as e:
+                continue
 
     def __str__(self):
         return str(self.id)
