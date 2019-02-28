@@ -17,16 +17,16 @@ def boro_to_abrv(boro):
         'STATEN ISLAND': 'SI'
     }
 
-    return mapping[boro]
+    return mapping[boro.upper()]
 
 
 def abrv_to_borough(abrv):
     mapping = {
-        'MN': 'MANHATTAN',
-        'BX': 'BRONX',
-        'BK': 'BROOKLYN',
-        'QN': 'QUEENS',
-        'SI': 'STATEN ISLAND'
+        'MN': 'Manhattan',
+        'BX': 'Bronx',
+        'BK': 'Brooklyn',
+        'QN': 'Queens',
+        'SI': 'Staten Island'
     }
 
     return mapping[abrv]

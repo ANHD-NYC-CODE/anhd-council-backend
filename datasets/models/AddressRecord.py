@@ -41,6 +41,11 @@ class AddressRecord(BaseDatasetModel, models.Model):
         indexes = [GinIndex(fields=['address'])]
 
     @classmethod
+    def create_key(self, number, letter, street, borough, zipcode, bbl):
+        return str(number).upper() + str(letter).upper() + street.replace(' ', '').upper() + \
+            str(borough).upper() + str(zipcode).upper() + str(bbl).upper()
+
+    @classmethod
     def write_row_from_building(self, number='', letter='', building=None, temp_file=None):
         try:
             bbl = building.bbl.bbl
@@ -52,8 +57,8 @@ class AddressRecord(BaseDatasetModel, models.Model):
         except Exception as e:
             bin = None
 
-        key = str(number) + str(letter) + building.stname.replace(' ', '') + \
-            str(building.boro) + str(building.zipcode) + str(bin)
+        key = self.create_key(number, letter, building.stname, code_to_boro(
+            building.boro), building.zipcode, building.bbl)
 
         temp_file.write('%s,%s,%s,%s,%s,%s,%s,%s,%s\n' % (
             key,
@@ -153,19 +158,27 @@ class AddressRecord(BaseDatasetModel, models.Model):
     def build_property_object(self, property):
         if not property.address:
             return
+
         number_letter = re.search(r"(?=\d*)^.*?(?=\s\b)", property.address)
 
         if number_letter:
-            number = re.search(r"\d*", number_letter.group()).group()
-            letter = re.search(r"[a-zA-Z]*", number_letter.group()).group()
+            number = re.search(r".*(?=[a-zA-Z])", number_letter.group())
+            if number:
+                number = number.group()
+                letter = re.search(r"[a-zA-Z]+", number_letter.group()).group()
+            else:
+                number = number_letter.group()
+                letter = ''
+
             street = property.address.split(number_letter.group())[1].strip()
             zipcode = property.zipcode
             borough = abrv_to_borough(property.borough)
 
-            key = str(number) + letter + street.replace(' ', '') + borough + str(zipcode) + str(property.bbl)
+            key = self.create_key(number, letter, street, borough, zipcode, property.bbl)
+
             return {
                 'key': key,
-                'bbl': property,
+                'bbl': property.bbl,
                 'bin': "",
                 'number': number,
                 'letter': letter,
@@ -190,6 +203,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
         copy_insert_from_csv(self._meta.db_table, csv_path, **kwargs)
         property_gen = self.build_property_gen()
         batch_upsert_from_gen(self, property_gen, 100000, **kwargs)
+
         self.build_search()
 
     @classmethod

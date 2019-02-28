@@ -167,7 +167,6 @@ def batch_upsert_from_gen(model, rows, batch_size, **kwargs):
             with transaction.atomic():
                 while True:
                     batch = list(itertools.islice(rows, 0, batch_size))
-
                     if len(batch) == 0:
                         logger.info("Database - Batch upserts completed for {}.".format(model.__name__))
                         break
@@ -202,7 +201,7 @@ def batch_upsert_rows(model, rows, batch_size, update=None):
                 update.save()
 
         except Exception as e:
-            logger.info('Database - error upserting rows. Ro single row upsert. - Error: {}'.format(e))
+            logger.info('Database - error upserting rows. Doing single row upsert. - Error: {}'.format(e))
             upsert_single_rows(model, rows, update=update)
 
 
