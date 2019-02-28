@@ -42,13 +42,13 @@ class SearchTests(BaseTest, TestCase):
         # Search:
         # 50 M
         building = self.building_factory()
-        self.address_factory(building=building, number="50", letter="",
+        self.address_factory(building=building, number="50",
                              street="MAIN STREET", borough="Brooklyn", zipcode='11111')
-        self.address_factory(building=building, number="52", letter="",
+        self.address_factory(building=building, number="52",
                              street="MAID STREET", borough="Brooklyn", zipcode='11111')
-        self.address_factory(building=building, number="12", letter="",
+        self.address_factory(building=building, number="12",
                              street="MAINE AVENUE", borough="Brooklyn", zipcode='11111')
-        self.address_factory(building=building, number="50", letter="",
+        self.address_factory(building=building, number="50",
                              street="JONES AVENUE", borough="Brooklyn", zipcode='11111')
 
         ds.AddressRecord.build_search()
@@ -62,13 +62,13 @@ class SearchTests(BaseTest, TestCase):
     def test_building_search_3(self):
         # Search:
         # 5 MA
-        self.address_factory(number="50", letter="",
+        self.address_factory(number="50",
                              street="MAIN STREET", borough="Brooklyn", zipcode='11111')
-        self.address_factory(number="52", letter="",
+        self.address_factory(number="52",
                              street="MAID DRIVE", borough="Brooklyn", zipcode='11111')
-        self.address_factory(number="12", letter="",
+        self.address_factory(number="12",
                              street="MOOSE AVENUE", borough="Brooklyn", zipcode='11111')
-        self.address_factory(number="50", letter="",
+        self.address_factory(number="50",
                              street="JONES AVENUE", borough="Brooklyn", zipcode='11111')
 
         ds.AddressRecord.build_search()

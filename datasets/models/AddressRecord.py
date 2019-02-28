@@ -31,7 +31,6 @@ class AddressRecord(BaseDatasetModel, models.Model):
     bin = models.ForeignKey('Building', on_delete=models.SET_NULL, null=True,
                             db_column='bin', db_constraint=False)
     number = models.TextField(blank=True, null=True)
-    letter = models.TextField(blank=True, null=True)
     street = models.TextField(blank=True, null=True)
     borough = models.TextField(blank=True, null=True)
     zipcode = models.TextField(blank=True, null=True)
@@ -45,12 +44,12 @@ class AddressRecord(BaseDatasetModel, models.Model):
         indexes = [GinIndex(fields=['address'])]
 
     @classmethod
-    def create_key(self, number, letter, street, borough, zipcode, bbl):
-        return str(number).upper() + str(letter).upper() + street.replace(' ', '').upper() + \
+    def create_key(self, number, street, borough, zipcode, bbl):
+        return str(number).upper() + street.replace(' ', '').upper() + \
             str(borough).upper() + str(zipcode).upper() + str(bbl).upper()
 
     @classmethod
-    def address_row_from_building(self, number='', letter='', building=None):
+    def address_row_from_building(self, number='', building=None):
         try:
             property = building.bbl
             bbl = property.bbl
@@ -62,7 +61,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
         except Exception as e:
             bin = None
 
-        key = self.create_key(number, letter, building.stname, code_to_boro(
+        key = self.create_key(number, building.stname, code_to_boro(
             building.boro), building.zipcode, building.bbl)
 
         return {
@@ -70,7 +69,6 @@ class AddressRecord(BaseDatasetModel, models.Model):
             'bbl': bbl,
             'bin': bin,
             'number': number,
-            'letter': letter,
             'street': building.stname,
             'borough': code_to_boro(building.boro),
             'zipcode': building.zipcode,
@@ -120,8 +118,8 @@ class AddressRecord(BaseDatasetModel, models.Model):
                 low_number, low_letter = self.split_number_letter(building.lhnd)
                 high_number, high_letter = self.split_number_letter(building.hhnd)
                 # create rangelist
-                if low_number.strip() == high_number.strip():
-                    yield self.address_row_from_building(number=low_number, letter=low_letter,
+                if building.lhnd.strip() == building.hhnd.strip():
+                    yield self.address_row_from_building(number=building.lhnd,
                                                          building=building)
                 else:
                     # For that one number that has a lhnd = 52 and hhnd = 54 1/2
@@ -132,7 +130,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
                         high_number = low_number.split(' ')[0]
                     house_numbers = self.generate_rangelist(int(low_number), int(high_number))
                     for number in house_numbers:
-                        yield self.address_row_from_building(number=number, letter='',
+                        yield self.address_row_from_building(number=number,
                                                              building=building)
 
             # numbers formatted: 50-10
@@ -147,34 +145,26 @@ class AddressRecord(BaseDatasetModel, models.Model):
                     house_numbers = self.generate_rangelist(
                         int(low_numbers[1][0]), int(high_numbers[1][0]), prefix=low_numbers[0][0] + '-')
                     for number in house_numbers:
-                        yield self.address_row_from_building(number=number, letter='',
+                        yield self.address_row_from_building(number=number,
                                                              building=building)
                 else:
                     combined_number = low_numbers[0][0] + "-" + low_numbers[1][0]
                     yield self.address_row_from_building(
-                        number=combined_number, letter='', building=building)
+                        number=combined_number, building=building)
 
     @classmethod
     def address_row_from_property(self, property):
         if not property.address:
             return
 
-        number_letter = re.search(r"(?=\d*)^.*?(?=\s\b)", property.address)
+        number_letter = re.search(r"(?=\d*)^.*?(?=\s\b)", property.address).group()
 
         if number_letter:
-            number = re.search(r".*(?=[a-zA-Z])", number_letter.group())
-            if number:
-                number = number.group()
-                letter = re.search(r"[a-zA-Z]+", number_letter.group()).group()
-            else:
-                number = number_letter.group()
-                letter = ''
-
-            street = property.address.split(number_letter.group())[1].strip()
+            street = property.address.split(number_letter)[1].strip()
             zipcode = property.zipcode
             borough = abrv_to_borough(property.borough)
 
-            key = self.create_key(number, letter, street, borough, zipcode, property.bbl)
+            key = self.create_key(number_letter, street, borough, zipcode, property.bbl)
 
             property_buildings = property.building_set.all()
             if property_buildings.count() == 1:
@@ -193,8 +183,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
                 'key': key,
                 'bbl': property.bbl,
                 'bin': bin,
-                'number': number,
-                'letter': letter,
+                'number': number_letter,
                 'street': street,
                 'borough': borough,
                 'zipcode': zipcode,
@@ -229,6 +218,6 @@ class AddressRecord(BaseDatasetModel, models.Model):
     @classmethod
     def build_search(self):
         logger.debug("Updating address search vector: {}".format(self.__name__))
-        address_vector = SearchVector('number', weight='A') + SearchVector('letter', weight='D') + SearchVector(
+        address_vector = SearchVector('number', weight='A') + SearchVector(
             'street', weight='B') + SearchVector('borough', rank='C') + SearchVector('zipcode', rank='C')
         self.objects.update(address=address_vector)
