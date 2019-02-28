@@ -157,9 +157,10 @@ class AddressRecord(BaseDatasetModel, models.Model):
         if not property.address:
             return
 
-        number_letter = re.search(r"(?=\d*)^.*?(?=\s\b)", property.address).group()
+        number_letter = re.search(r"(?=\d*)^.*?(?=\s\b)", property.address)
 
         if number_letter:
+            number_letter = number_letter.group()
             street = property.address.split(number_letter)[1].strip()
             zipcode = property.zipcode
             borough = abrv_to_borough(property.borough)
