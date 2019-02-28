@@ -232,17 +232,15 @@ class BuildingSerializer(serializers.ModelSerializer):
 
 class BuildingSearchSerializer(serializers.BaseSerializer):
     def to_representation(self, obj):
-
         return {
-            'bin': obj.bin,
-            'bbl': obj.bbl,
+            'bin': obj.bin_id,
+            'bbl': obj.bbl_id,
             'buildingnumber': obj.buildingnumber,
-            'buildingletter': obj.buildingletter,
             'buildingstreet': obj.buildingstreet,
-            'propertyaddress': property.address,
+            'propertyaddress': obj.address,
             'borough': obj.borough,
             'zipcode': obj.zipcode,
-            'fromproperty': obj.fromproperty
+            'alternateaddress': obj.alternateaddress
         }
 
 

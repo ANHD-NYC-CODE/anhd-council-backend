@@ -37,10 +37,9 @@ class AddressRecord(BaseDatasetModel, models.Model):
     zipcode = models.TextField(blank=True, null=True)
     address = SearchVectorField(blank=True, null=True)
     buildingnumber = models.TextField(blank=True, null=True)
-    buildingletter = models.CharField(max_length=4, blank=True, null=True)
     buildingstreet = models.TextField(blank=True, null=True)
     propertyaddress = models.TextField(blank=True, null=True)
-    fromproperty = models.BooleanField(blank=True, null=True)
+    alternateaddress = models.BooleanField(blank=True, null=True)
 
     class Meta:
         indexes = [GinIndex(fields=['address'])]
@@ -51,7 +50,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
             str(borough).upper() + str(zipcode).upper() + str(bbl).upper()
 
     @classmethod
-    def write_row_from_building(self, number='', letter='', building=None, temp_file=None):
+    def address_row_from_building(self, number='', letter='', building=None):
         try:
             property = building.bbl
             bbl = property.bbl
@@ -66,21 +65,21 @@ class AddressRecord(BaseDatasetModel, models.Model):
         key = self.create_key(number, letter, building.stname, code_to_boro(
             building.boro), building.zipcode, building.bbl)
 
-        temp_file.write('%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n' % (
-            key,
-            bbl,
-            bin,
-            number,
-            letter,
-            building.stname,
-            code_to_boro(building.boro),
-            building.zipcode,
-            '',
-            building.get_house_number(),
-            letter,
-            building.stname,
-            property.address
-        ))
+        return {
+            'key': key,
+            'bbl': bbl,
+            'bin': bin,
+            'number': number,
+            'letter': letter,
+            'street': building.stname,
+            'borough': code_to_boro(building.boro),
+            'zipcode': building.zipcode,
+            'address': "",
+            "buildingnumber": building.get_house_number(),
+            "buildingstreet": building.stname,
+            "propertyaddress": property.address,
+            "alternateaddress": False
+        }
 
     @classmethod
     def generate_rangelist(self, low, high, prefix=None):
@@ -112,60 +111,51 @@ class AddressRecord(BaseDatasetModel, models.Model):
         return (number, letter)
 
     @classmethod
-    def build_table_csv(self):
-        BATCH_SIZE = 100000
-        headers = [field.name for field in self._meta.get_fields()]
-        temp_file_path = os.path.join(settings.MEDIA_TEMP_ROOT, str(uuid.uuid4().hex) + '.csv')
-        logger.debug("Building Table: {}", self.__name__)
-
-        with open(temp_file_path, 'w') as temp_file:
-            temp_file.write(','.join(headers) + '\n')
-            for building in ds.Building.objects.filter(bbl__isnull=False):
-                lhnd_split = building.lhnd.split('-')
-                hhnd_split = building.hhnd.split('-')
-                # numbers formatted: 50
-                if len(lhnd_split) <= 1:
-                    low_number, low_letter = self.split_number_letter(building.lhnd)
-                    high_number, high_letter = self.split_number_letter(building.hhnd)
-                    # create rangelist
-                    if low_number.strip() == high_number.strip():
-                        self.write_row_from_building(number=low_number, letter=low_letter,
-                                                     building=building, temp_file=temp_file)
-                    else:
-                        # For that one number that has a lhnd = 52 and hhnd = 54 1/2
-                        # Removing the 1/2 part from the high number
-                        if re.search(r'(1/2|1/3|1/4)', low_number):
-                            low_number = low_number.split(' ')[0]
-                        if re.search(r'(1/2|1/3|1/4)', high_number):
-                            high_number = low_number.split(' ')[0]
-                        house_numbers = self.generate_rangelist(int(low_number), int(high_number))
-                        for number in house_numbers:
-                            self.write_row_from_building(number=number, letter='',
-                                                         building=building, temp_file=temp_file)
-
-                # numbers formatted: 50-10
+    def build_building_gen(self):
+        for building in ds.Building.objects.filter(bbl__isnull=False):
+            lhnd_split = building.lhnd.split('-')
+            hhnd_split = building.hhnd.split('-')
+            # numbers formatted: 50
+            if len(lhnd_split) <= 1:
+                low_number, low_letter = self.split_number_letter(building.lhnd)
+                high_number, high_letter = self.split_number_letter(building.hhnd)
+                # create rangelist
+                if low_number.strip() == high_number.strip():
+                    yield self.address_row_from_building(number=low_number, letter=low_letter,
+                                                         building=building)
                 else:
-                    low_numbers = (self.split_number_letter(
-                        lhnd_split[0]), self.split_number_letter(lhnd_split[1]))
-                    # outputs: ((1, a), (2, a))
-                    high_numbers = (self.split_number_letter(
-                        hhnd_split[0]), self.split_number_letter(hhnd_split[1]))
-                    # create rangelist
-                    if low_numbers[1][0].strip() != high_numbers[1][0].strip():
-                        house_numbers = self.generate_rangelist(
-                            int(low_numbers[1][0]), int(high_numbers[1][0]), prefix=low_numbers[0][0] + '-')
-                        for number in house_numbers:
-                            self.write_row_from_building(number=number, letter='',
-                                                         building=building, temp_file=temp_file)
-                    else:
-                        combined_number = low_numbers[0][0] + "-" + low_numbers[1][0]
-                        self.write_row_from_building(
-                            number=combined_number, letter='', building=building, temp_file=temp_file)
+                    # For that one number that has a lhnd = 52 and hhnd = 54 1/2
+                    # Removing the 1/2 part from the high number
+                    if re.search(r'(1/2|1/3|1/4)', low_number):
+                        low_number = low_number.split(' ')[0]
+                    if re.search(r'(1/2|1/3|1/4)', high_number):
+                        high_number = low_number.split(' ')[0]
+                    house_numbers = self.generate_rangelist(int(low_number), int(high_number))
+                    for number in house_numbers:
+                        yield self.address_row_from_building(number=number, letter='',
+                                                             building=building)
 
-        return temp_file_path
+            # numbers formatted: 50-10
+            else:
+                low_numbers = (self.split_number_letter(
+                    lhnd_split[0]), self.split_number_letter(lhnd_split[1]))
+                # outputs: ((1, a), (2, a))
+                high_numbers = (self.split_number_letter(
+                    hhnd_split[0]), self.split_number_letter(hhnd_split[1]))
+                # create rangelist
+                if low_numbers[1][0].strip() != high_numbers[1][0].strip():
+                    house_numbers = self.generate_rangelist(
+                        int(low_numbers[1][0]), int(high_numbers[1][0]), prefix=low_numbers[0][0] + '-')
+                    for number in house_numbers:
+                        yield self.address_row_from_building(number=number, letter='',
+                                                             building=building)
+                else:
+                    combined_number = low_numbers[0][0] + "-" + low_numbers[1][0]
+                    yield self.address_row_from_building(
+                        number=combined_number, letter='', building=building)
 
     @classmethod
-    def build_property_object(self, property):
+    def address_row_from_property(self, property):
         if not property.address:
             return
 
@@ -190,12 +180,10 @@ class AddressRecord(BaseDatasetModel, models.Model):
             if property_buildings.count() == 1:
                 building = property_buildings.first()
                 bin = building.bin
-                buildingletter = ''
                 buildingstreet = building.stname
             else:
                 building = None
                 bin = None
-                buildingletter = ''
                 buildingstreet = None
 
             return {
@@ -209,16 +197,15 @@ class AddressRecord(BaseDatasetModel, models.Model):
                 'zipcode': zipcode,
                 'address': "",
                 "buildingnumber": building.get_house_number() if building else None,
-                "buildingletter": buildingletter,
                 "buildingstreet": buildingstreet,
                 "propertyaddress": property.address,
-                "fromproperty": True
+                "alternateaddress": True
             }
 
     @classmethod
     def build_property_gen(self):
         for property in ds.Property.objects.all():
-            yield self.build_property_object(property)
+            yield self.address_row_from_property(property)
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
@@ -230,7 +217,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
         # csv_path = self.build_table_csv()
         # copy_insert_from_csv(self._meta.db_table, csv_path, **kwargs)
         building_gen = self.build_building_gen()
-        batch_upsert_from_gen(self, property_gen, batch_size, **kwargs)
+        batch_upsert_from_gen(self, building_gen, batch_size, **kwargs)
         property_gen = self.build_property_gen()
         batch_upsert_from_gen(self, property_gen, batch_size, **kwargs)
 

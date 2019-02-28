@@ -53,8 +53,7 @@ class AddressRecordTests(BaseTest, TestCase):
             number="1", letter="a", street="Fake Street", borough="Manhattan", zipcode="99999")
         self.assertEqual(bool(address2), True)
         self.assertEqual(address2.buildingstreet, 'Fake Street')
-        self.assertEqual(address2.buildingnumber, '1')
-        self.assertEqual(address2.buildingletter, 'a')
+        self.assertEqual(address2.buildingnumber, '1a')
         self.assertEqual(address2.propertyaddress, property.address)
 
         address3 = ds.AddressRecord.objects.get(
