@@ -268,7 +268,7 @@ class BuildingSearchSerializer(serializers.ModelSerializer):
         except Exception as e:
             return None
 
-    def get_propertyaddress(self, obj):
+    def get_propertyzipcode(self, obj):
         try:
             return obj.bbl.zipcode
         except Exception as e:
