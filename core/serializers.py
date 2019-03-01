@@ -13,7 +13,7 @@ class DatasetSerializer(serializers.ModelSerializer):
     version = serializers.SerializerMethodField()
 
     def get_last_update(self, obj):
-        update = obj.last_update()
+        update = obj.latest_update()
 
         if update:
             return update.completed_date
