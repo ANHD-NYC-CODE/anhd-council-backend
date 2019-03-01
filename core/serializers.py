@@ -7,16 +7,16 @@ from core import models as c
 class DatasetSerializer(serializers.ModelSerializer):
     class Meta:
         model = c.Dataset
-        fields = ('name', 'model_name', 'latest_version', 'latest_update')
+        fields = ('name', 'model_name', 'version', 'last_update')
 
-    latest_update = serializers.SerializerMethodField()
-    latest_version = serializers.SerializerMethodField()
+    last_update = serializers.SerializerMethodField()
+    version = serializers.SerializerMethodField()
 
-    def get_latest_update(self, obj):
-        update = obj.latest_update()
+    def get_last_update(self, obj):
+        update = obj.last_update()
 
         if update:
             return update.completed_date
 
-    def get_latest_version(self, obj):
-        return obj.latest_version()
+    def get_version(self, obj):
+        return obj.version()
