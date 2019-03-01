@@ -19,4 +19,4 @@ class DatasetSerializer(serializers.ModelSerializer):
             return update.completed_date
 
     def get_version(self, obj):
-        return obj.version()
+        return obj.latest_version()
