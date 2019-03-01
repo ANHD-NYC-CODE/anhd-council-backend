@@ -131,7 +131,7 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['bbl'], '1')
 
-    def test_dobpermitissuedjoineds_field(self):
+    def test_dobpermitsissueds_field(self):
         council = self.council_factory(id=1)
         # 10 in range
         property1 = self.property_factory(bbl=1, council=council)
@@ -152,6 +152,7 @@ class PropertyFilterTests(BaseTest, TestCase):
         # 10 permits between 2017-2018
         query = '/properties/?dobpermitissuedjoined__start=2017-01-01&dobpermitissuedjoined__end=2018-01-01&dobpermitissuedjoined__gte=10'
         response = self.client.get(query, format="json")
+
         content = response.data['results']
 
         self.assertEqual(response.status_code, 200)

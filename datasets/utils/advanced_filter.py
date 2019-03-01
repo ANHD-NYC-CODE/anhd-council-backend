@@ -54,7 +54,7 @@ def get_annotation_key(string):
     string = re.sub(r"(?=filter)(.*?)(?=\=)", '', string)
     # returns entire ,.*__count filter string minus the comparison
     for filter in string.split(','):
-        if 'count' in filter.lower() or 'percent' in filter.lower():
+        if bool(re.search(r"(count|percent)", filter.lower())):
             filter = re.sub(r"(__gte\b|__gt\b|__exact\b|__lt\b|__lte\b|)", '', filter.split('=')[0])
             return filter
 
