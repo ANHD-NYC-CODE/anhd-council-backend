@@ -4,6 +4,7 @@ from django.db.models import Count, Q, ExpressionWrapper, F, FloatField
 from django.db.models.functions import Cast
 from django.conf import settings
 import re
+import collections
 
 
 def annotate_dataset(queryset, c_filter):
@@ -78,7 +79,8 @@ def parse_filter_string(string):
     if 'CONDITION' in tokens[1].upper():
         # Do parse filter conditions
         # and return the condition filter mapping
-        return {'condition': int(tokens[1].split('_')[1])}
+
+        return {'condition': tokens[1].split('_')[1]}
 
     filter_value = tokens[1]
     if not filter_value:
@@ -97,12 +99,13 @@ def parse_filter_string(string):
 
 
 def validate_mapping(request, mapping):
-    for (index, con) in enumerate(mapping):
-        if not re.search(r"(\bAND\b|\bOR\b)", con['type']):
-            raise Exception("\"{}\" is not a valid condition type. use only AND or OR".format(con['type']))
-        if not len(con['filters']):
-            raise Exception("Condition {} has no filters".format(str(index)))
-        for c_filter in con['filters']:
+    for condition_key in mapping.keys():
+        if not re.search(r"(\bAND\b|\bOR\b)", mapping[condition_key]['type']):
+            raise Exception("\"{}\" is not a valid condition type. use only AND or OR".format(
+                mapping[condition_key]['type']))
+        if not len(mapping[condition_key]['filters']):
+            raise Exception("Condition {} has no filters".format(condition_key))
+        for c_filter in mapping[condition_key]['filters']:
             if 'model' in c_filter:
                 model_name = list(filter(lambda x: c_filter['model'].lower() == x.lower(), settings.ACTIVE_MODELS))
                 if not model_name:
@@ -147,7 +150,7 @@ def convert_query_string_to_mapping(string):
     #     ]
     #   }
     # ]
-    conditions = []
+    conditions = collections.OrderedDict()
     array = string.split('*')
     array = list(filter(None, array))
     for con in array:
@@ -157,11 +160,11 @@ def convert_query_string_to_mapping(string):
             type = None
 
         element = {
+            'id': con.split('=', 1)[0].split('_')[1],
             'type': type,
             'filters': list(filter(None, list(map(lambda x: parse_filter_string(x),  list(filter(None, con.split(' ')))))))
         }
-        conditions.append(element)
-
+        conditions[element['id']] = element
     return conditions
 
 
@@ -187,25 +190,26 @@ def construct_and_q(query_list):
     return query
 
 
-def convert_condition_to_q(condition, conditions, type='query1_filters'):
+def convert_condition_to_q(condition_key, mapping, filter_pass='query1_filters'):
     # only seed condition0 in view-filter, let it recurisvely construct rest of Q
     q = Q()
-    if condition['type'].lower() == 'and':
-        for c_filter in condition['filters']:
+
+    if mapping[condition_key]['type'].upper() == 'AND':
+        for c_filter in mapping[condition_key]['filters']:
             if 'condition' in c_filter:
-                q &= convert_condition_to_q(conditions[c_filter['condition']], conditions, type)
+                q &= convert_condition_to_q(c_filter['condition'], mapping, filter_pass)
             else:
-                if type == 'query2_filters' and c_filter['annotation_key']:
-                    q &= construct_and_q(c_filter[type])
-                elif type == 'query1_filters':
-                    q &= construct_and_q(c_filter[type])
-    elif condition['type'].lower() == 'or':
-        for c_filter in condition['filters']:
+                if filter_pass == 'query2_filters' and c_filter['annotation_key']:
+                    q &= construct_and_q(c_filter[filter_pass])
+                elif filter_pass == 'query1_filters':
+                    q &= construct_and_q(c_filter[filter_pass])
+    elif mapping[condition_key]['type'].upper() == 'OR':
+        for c_filter in mapping[condition_key]['filters']:
             if 'condition' in c_filter:
-                q |= convert_condition_to_q(conditions[c_filter['condition']], conditions, type)
+                q |= convert_condition_to_q(c_filter['condition'], mapping, filter_pass)
             else:
-                if type == 'query2_filters' and c_filter['annotation_key']:
-                    q |= construct_and_q(c_filter[type])
-                elif type == 'query1_filters':
-                    q |= construct_and_q(c_filter[type])
+                if filter_pass == 'query2_filters' and c_filter['annotation_key']:
+                    q |= construct_and_q(c_filter[filter_pass])
+                elif filter_pass == 'query1_filters':
+                    q |= construct_and_q(c_filter[filter_pass])
     return q

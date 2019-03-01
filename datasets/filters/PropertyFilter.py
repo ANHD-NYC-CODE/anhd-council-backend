@@ -114,13 +114,13 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         af.validate_mapping(self.request, mapping)
 
         # filter on non-annotating filters (like dates)
-        q1 = af.convert_condition_to_q(mapping[0], mapping, 'query1_filters')
+        q1 = af.convert_condition_to_q(next(iter(mapping)), mapping, 'query1_filters')
         q1_queryset = queryset.only('bbl').filter(q1).distinct()
 
         # filter on annotating filters (like counts)
-        q2 = af.convert_condition_to_q(mapping[0], mapping, 'query2_filters')
-        for condition in mapping:
-            for c_filter in condition['filters']:
+        q2 = af.convert_condition_to_q(next(iter(mapping)), mapping, 'query2_filters')
+        for con in mapping.keys():
+            for c_filter in mapping[con]['filters']:
                 if 'condition' in c_filter:
                     # skip condition filters
                     continue
