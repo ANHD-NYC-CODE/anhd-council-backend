@@ -119,7 +119,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
                 high_number, high_letter = self.split_number_letter(building.hhnd)
                 # create rangelist
                 if building.lhnd.strip() == building.hhnd.strip():
-                    yield self.address_row_from_building(number=building.lhnd,
+                    yield self.address_row_from_building(number=building.lhnd.strip(),
                                                          building=building)
                 else:
                     # For that one number that has a lhnd = 52 and hhnd = 54 1/2
@@ -198,7 +198,9 @@ class AddressRecord(BaseDatasetModel, models.Model):
     @classmethod
     def build_property_gen(self):
         for property in ds.Property.objects.all():
-            yield self.address_row_from_property(property)
+            record = self.address_row_from_property(property)
+            if record:
+                yield record
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
