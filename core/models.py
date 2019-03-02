@@ -134,8 +134,8 @@ def auto_seed_on_create(sender, instance, created, **kwargs):
 
             logger.debug("Creating Worker for update {}".format(instance.id))
             if instance.file:
-                worker = async_seed_file.apply_async(args=[instance.file.file.path, instance.id], kwargs=[
-                                                     {'dataset_id': instance.dataset.id}], countdown=2)
+                worker = async_seed_file.apply_async(args=[instance.file.file.path, instance.id], kwargs={
+                                                     'dataset_id': instance.dataset.id}, countdown=2)
             else:
                 worker = async_seed_table.apply_async(args=[instance.id], countdown=2)
 

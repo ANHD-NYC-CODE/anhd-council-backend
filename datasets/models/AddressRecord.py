@@ -112,8 +112,9 @@ class AddressRecord(BaseDatasetModel, models.Model):
         return (number, letter)
 
     @classmethod
-    def build_building_gen(self, file=None):
-        building_gen = ds.Building.transform_self(file.file.path)
+    def build_building_gen(self, file_path=None):
+        logger.debug("Generating Addresses from building csv...")
+        building_gen = ds.Building.transform_self(file_path)
 
         for building in building_gen:
             lhnd_split = building['lhnd'].split('-')
@@ -202,6 +203,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
 
     @classmethod
     def build_property_gen(self):
+        logger.debug("Generating Addresses from property objects...")
         for property in ds.Property.objects.all():
             record = self.address_row_from_property(property)
             if record:
@@ -209,15 +211,13 @@ class AddressRecord(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        self.build_table(file=kwargs['file'], overwrite=True)
+        self.build_table(file_path=kwargs['file_path'], overwrite=True)
 
     @classmethod
     def build_table(self, **kwargs):
-        file = kwargs['file']
+        file_path = kwargs['file_path']
         batch_size = 1000000
-        # csv_path = self.build_table_csv()
-        # copy_insert_from_csv(self._meta.db_table, csv_path, **kwargs)
-        building_gen = self.build_building_gen(file=file)
+        building_gen = self.build_building_gen(file_path=file_path)
         batch_upsert_from_gen(self, building_gen, batch_size, no_conflict=False, **kwargs)
         property_gen = self.build_property_gen()
         batch_upsert_from_gen(self, property_gen, batch_size, no_conflict=True, **kwargs)

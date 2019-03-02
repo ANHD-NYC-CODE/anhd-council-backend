@@ -44,7 +44,7 @@ class AddressRecordTests(BaseTest, TestCase):
         building7 = self.building_factory(bin=7, lhnd="10 1/2", hhnd="10 1/2", stname="Half Street",
                                           boro="1", zipcode="99999", property=property)
 
-        ds.AddressRecord.build_table(file=file, overwrite=True)
+        ds.AddressRecord.build_table(file_path=file.file.path, overwrite=True)
 
         # self.assertEqual(ds.AddressRecord.objects.count(), 12)
         address1 = ds.AddressRecord.objects.get(
@@ -108,12 +108,12 @@ class AddressRecordTests(BaseTest, TestCase):
         building1 = self.building_factory(bin=1, lhnd="1", hhnd="1", stname="Fake Street",
                                           boro="1", zipcode="99999", property=property)
 
-        ds.AddressRecord.build_table(file=file, overwrite=True)
+        ds.AddressRecord.build_table(file_path=file.file.path, overwrite=True)
         file2 = c_models.DataFile.objects.create(file=self.get_file(
             'mock_buildings_2_diff.csv'), dataset=dataset)
         building2 = self.building_factory(bin=2, lhnd="1", hhnd="1", stname="Real Street",
                                           boro="1", zipcode="99999", property=property)
 
-        ds.AddressRecord.build_table(file=file2, overwrite=True)
+        ds.AddressRecord.build_table(file_path=file2.file.path, overwrite=True)
 
         self.assertEqual(ds.AddressRecord.objects.count(), 2)
