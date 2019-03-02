@@ -10,6 +10,10 @@ council_housing = v.council_views.CouncilViewSet.as_view({
     'get': 'council_housing',
 })
 
+community_housing = v.community_views.CommunityViewSet.as_view({
+    'get': 'community_housing',
+})
+
 property_summary = v.property_views.PropertyViewSet.as_view({
     'get': 'property_summary',
 })
@@ -29,11 +33,21 @@ class NestedDefaultRouter(NestedRouterMixin, DefaultRouter):
 
 router = NestedDefaultRouter()
 councils_router = router.register(r'councils', v.council_views.CouncilViewSet)
+
 councils_router.register(
     'properties',
     v.property_views.PropertyViewSet,
     base_name='council-properties',
     parents_query_lookups=['council']
+)
+
+communities_router = router.register(r'communities', v.community_views.CommunityViewSet)
+
+communities_router.register(
+    'properties',
+    v.property_views.PropertyViewSet,
+    base_name='community-properties',
+    parents_query_lookups=['cd']
 )
 
 properties_router = router.register(r'properties', v.property_views.PropertyViewSet)
@@ -360,6 +374,7 @@ router.register(r'foreclosures', v.lispenden_views.LisPendenViewSet)
 
 custom_routes = format_suffix_patterns([
     path('councils/<int:pk>/housing/', council_housing, name='council-housingtype-summary'),
+    path('communities/<int:pk>/housing/', community_housing, name='community-housingtype-summary'),
     path('properties/<str:pk>/summary/', property_summary, name='property-summary'),
     path('search/buildings/', building_search, name='buildings-search'),
 ])

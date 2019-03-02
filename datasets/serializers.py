@@ -58,6 +58,59 @@ class CouncilHousingTypeSummarySerializer(serializers.ModelSerializer):
         }
 
 
+class CommunitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.Community
+        fields = '__all__'
+
+
+class CommunityHousingTypeSummarySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.Community
+        fields = ('pk', 'housing_types')
+
+    housing_types = serializers.SerializerMethodField()
+
+    def get_housing_types(self, obj):
+        community_properties = ds.Property.objects.community(obj.pk)
+        program = self.context['request'].query_params['program'] if 'program' in self.context['request'].query_params else None
+        unitsres = self.context['request'].query_params['unitsres'] if 'unitsres' in self.context['request'].query_params else '6'
+
+        residential_properties = community_properties.residential()
+        rent_stabilized = community_properties.rentstab()
+        rent_regulated = community_properties.rentreg(program=program)
+        small_homes = community_properties.smallhome(units=unitsres)
+        market_rate = community_properties.marketrate()
+        public_housing = community_properties.publichousing()
+
+        return {
+            "residential_properties": {
+                'count': residential_properties.count(),
+                'units': residential_properties.aggregate(Sum('unitsres'))['unitsres__sum']
+            },
+            "rent_stabilized": {
+                'count': rent_stabilized.count(),
+                'units': rent_stabilized.aggregate(Sum('unitsrentstabilized'))['unitsrentstabilized__sum']
+            },
+            "rent_regulated": {
+                'count': rent_regulated.count(),
+                'units': rent_regulated.aggregate(Sum('unitsres'))['unitsres__sum']
+            },
+            "small_homes":  {
+                'count': small_homes.count(),
+                'units': small_homes.aggregate(Sum('unitsres'))['unitsres__sum']
+            },
+            "market_rate": {
+                'count': market_rate.count(),
+                'units': market_rate.aggregate(Sum('unitsres'))['unitsres__sum']
+            },
+            "public_housing": {
+                'count':  public_housing.count(),
+                'units': public_housing.aggregate(Sum('unitsres'))['unitsres__sum']
+            }
+        }
+
+
 class PropertySerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Property

@@ -106,6 +106,9 @@ class PropertyQuerySet(models.QuerySet):
     def council(self, number):
         return self.filter(council=number)
 
+    def community(self, number):
+        return self.filter(cd=number)
+
     def residential(self):
         return self.filter(unitsres__gte=1)
 
@@ -154,6 +157,9 @@ class PropertyManager(models.Manager):
     def council(self, number):
         return self.get_queryset().council(number)
 
+    def community(self, number):
+        return self.get_queryset().community(number)
+
     def residential(self):
         return self.get_queryset().residential()
 
@@ -186,7 +192,8 @@ class Property(BaseDatasetModel, models.Model):
     borough = models.TextField(blank=True, null=True)
     block = models.TextField(blank=True, null=True)
     lot = models.TextField(blank=True, null=True)
-    cd = models.SmallIntegerField(db_index=True, blank=True, null=True)
+    cd = models.ForeignKey('Community', on_delete=models.SET_NULL, null=True,
+                           db_column='cd', db_constraint=False)
     ct2010 = models.TextField(blank=True, null=True)
     cb2010 = models.TextField(blank=True, null=True)
     schooldist = models.SmallIntegerField(blank=True, null=True)

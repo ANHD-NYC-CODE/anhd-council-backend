@@ -111,6 +111,20 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         )
         return factory
 
+    def community_factory(self, id=None, geometry='{"type":"Polygon","coordinates":[]}', **kwargs):
+        name = 'Community'
+        if not id:
+            id = random.randint(1, 1000000)
+        if not len(c_models.Dataset.objects.filter(name=name)):
+            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+
+        factory = d_models.Community.objects.create(
+            id=id,
+            geometry=geometry,
+            **kwargs
+        )
+        return factory
+
     def property_factory(self, bbl=None, council=None, unitsres=1, unitstotal=1, borough=1, block='0001', lot='00001', **kwargs):
         name = 'Property'
         if not bbl:
