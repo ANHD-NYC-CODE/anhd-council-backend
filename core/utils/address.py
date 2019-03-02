@@ -344,7 +344,9 @@ def clean_number_and_streets(string, include_house_number):
     string = re.sub(r"\bP ARK\b", "PARK", string)
     string = re.sub(r"\bAMSTERD AM\b", "AMSTERDAM", string)
     string = re.sub(r"\bSTR\b", "STREET", string)
-    string = re.sub(r"\SQUAR\b", "SQUARE", string)
+    string = re.sub(r"\bSQUAR\b", "SQUARE", string)
+    string = re.sub(r"\bEA ST\b", "EAST", string)
+    string = re.sub(r"\bWE ST\b", "WEST", string)
 
     # Replace Street Appreviations
     HOLY_SAINTS = ['FELIX', 'ANDREWS', 'PAULS', 'JOSEPH', 'MARKS', 'LAWRENCE', 'JAMES',
@@ -406,7 +408,7 @@ def clean_number_and_streets(string, include_house_number):
 
     if (include_house_number):
         # replace 143 street with 143rd st
-        match = re.search(r"(?<!^)(?=\s\d+ (STREET|AVENUE))( \d+ (STREET|AVENUE))", string)
+        match = re.search(r"(?<!^)(?=\s\d+ (DRIVE|STREET|AVENUE))( \d+ (DRIVE|STREET|AVENUE))", string)
         if match:
             original = match.group().strip()
             number, rest = original.split(' ', 1)
