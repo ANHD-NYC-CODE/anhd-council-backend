@@ -54,7 +54,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
             bbl = building['bbl']
             property = ds.Property.objects.get(bbl=bbl)
         except Exception as e:
-            return
+            return None
 
         bin = building['bin']
         building_low = building['lhnd']
@@ -125,8 +125,10 @@ class AddressRecord(BaseDatasetModel, models.Model):
                 high_number, high_letter = self.split_number_letter(building['hhnd'])
                 # create rangelist
                 if building['lhnd'].strip() == building['hhnd'].strip():
-                    yield self.address_row_from_building(number=building['lhnd'].strip(),
-                                                         building=building)
+                    address_row = self.address_row_from_building(number=building['lhnd'].strip(),
+                                                                 building=building)
+                    if address_row:
+                        yield address_row
                 else:
                     # For that one number that has a lhnd = 52 and hhnd = 54 1/2
                     # Removing the 1/2 part from the high number
@@ -136,8 +138,10 @@ class AddressRecord(BaseDatasetModel, models.Model):
                         high_number = low_number.split(' ')[0]
                     house_numbers = self.generate_rangelist(int(low_number), int(high_number))
                     for number in house_numbers:
-                        yield self.address_row_from_building(number=number,
-                                                             building=building)
+                        address_row = self.address_row_from_building(number=number,
+                                                                     building=building)
+                        if address_row:
+                            yield address_row
 
             # numbers formatted: 50-10
             else:
@@ -151,12 +155,16 @@ class AddressRecord(BaseDatasetModel, models.Model):
                     house_numbers = self.generate_rangelist(
                         int(low_numbers[1][0]), int(high_numbers[1][0]), prefix=low_numbers[0][0] + '-')
                     for number in house_numbers:
-                        yield self.address_row_from_building(number=number,
-                                                             building=building)
+                        address_row = self.address_row_from_building(number=number,
+                                                                     building=building)
+                        if address_row:
+                            yield address_row
                 else:
                     combined_number = low_numbers[0][0] + "-" + low_numbers[1][0]
-                    yield self.address_row_from_building(
+                    address_row = self.address_row_from_building(
                         number=combined_number, building=building)
+                    if address_row:
+                        yield address_row
 
     @classmethod
     def address_row_from_property(self, property):
