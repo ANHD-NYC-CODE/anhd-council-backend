@@ -31,8 +31,8 @@ class Dataset(models.Model):
     def download(self):
         return getattr(ds, self.model_name).download()
 
-    def update(self):
-        return Update.objects.create(dataset=self)
+    def update(self, file=None):
+        return Update.objects.create(dataset=self, file=file)
 
     def seed_dataset(self, **kwargs):
         getattr(ds, self.model_name).seed_or_update_self(**kwargs)

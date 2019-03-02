@@ -62,6 +62,15 @@ class Building(BaseDatasetModel, models.Model):
             return self.lhnd
 
     @classmethod
+    def construct_house_number(self, low, high):
+        if (low == high):
+            return low
+        elif (low and high):
+            return "{}-{}".format(low, high)
+        else:
+            return low
+
+    @classmethod
     def pre_validation_filters(self, gen_rows):
         for row in gen_rows:
             if is_null(row['bin']):
@@ -93,7 +102,7 @@ class Building(BaseDatasetModel, models.Model):
         self.bulk_seed(**kwargs, overwrite=True)
         dataset = c.Dataset.objects.filter(model_name='AddressRecord').first()
         if dataset:
-            async_create_update.delay(dataset.id)
+            async_create_update.delay(dataset.id, file_id=kwargs['file'].id)
 
     def __str__(self):
         return str(self.bin)

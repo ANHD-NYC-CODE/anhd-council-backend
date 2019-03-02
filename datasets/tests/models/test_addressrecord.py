@@ -1,5 +1,6 @@
 from django.test import TestCase
 from app.tests.base_test import BaseTest
+from core import models as c_models
 
 from datasets import models as ds
 
@@ -12,9 +13,13 @@ class AddressRecordTests(BaseTest, TestCase):
         self.clean_tests()
 
     def test_seed_addresssearch(self):
-        property = self.property_factory(bbl="1", address="123 Fake Street", borough="MN", zipcode="99999")
-        property2 = self.property_factory(bbl="2", address="1-20 Real Street", borough="MN", zipcode="99999")
-        property3 = self.property_factory(bbl="3", address="100a Fake Street", borough="MN", zipcode="99999")
+        dataset = c_models.Dataset.objects.create(name='Building', model_name='Building')
+        file = c_models.DataFile.objects.create(file=self.get_file(
+            'mock_buildings_1.csv'), dataset=dataset)
+
+        property = self.property_factory(bbl="1000010010", address="123 Fake Street", borough="MN", zipcode="99999")
+        property2 = self.property_factory(bbl="1000010011", address="1-20 Real Street", borough="MN", zipcode="99999")
+        property3 = self.property_factory(bbl="1000010012", address="100a Fake Street", borough="MN", zipcode="99999")
 
         # no range, number
         building1 = self.building_factory(bin=1, lhnd="1", hhnd="1", stname="Fake Street",
@@ -36,10 +41,10 @@ class AddressRecordTests(BaseTest, TestCase):
                                           boro="1", zipcode="99999", property=property2)
 
         # no range, 1/2 number
-        building6 = self.building_factory(bin=7, lhnd="10 1/2", hhnd="10 1/2", stname="Half Street",
+        building7 = self.building_factory(bin=7, lhnd="10 1/2", hhnd="10 1/2", stname="Half Street",
                                           boro="1", zipcode="99999", property=property)
 
-        ds.AddressRecord.build_table(overwrite=True)
+        ds.AddressRecord.build_table(file=file, overwrite=True)
 
         # self.assertEqual(ds.AddressRecord.objects.count(), 12)
         address1 = ds.AddressRecord.objects.get(
@@ -94,16 +99,21 @@ class AddressRecordTests(BaseTest, TestCase):
         self.assertEqual(address12.propertyaddress, property3.address)
 
     def test_seed_addresssearch_update(self):
-        property = self.property_factory(bbl="1")
+        dataset = c_models.Dataset.objects.create(name='Building', model_name='Building')
+        file = c_models.DataFile.objects.create(file=self.get_file(
+            'mock_buildings_2.csv'), dataset=dataset)
+
+        property = self.property_factory(bbl="1000010010")
         # no range, number
         building1 = self.building_factory(bin=1, lhnd="1", hhnd="1", stname="Fake Street",
                                           boro="1", zipcode="99999", property=property)
 
-        ds.AddressRecord.build_table(overwrite=True)
-
+        ds.AddressRecord.build_table(file=file, overwrite=True)
+        file2 = c_models.DataFile.objects.create(file=self.get_file(
+            'mock_buildings_2_diff.csv'), dataset=dataset)
         building2 = self.building_factory(bin=2, lhnd="1", hhnd="1", stname="Real Street",
                                           boro="1", zipcode="99999", property=property)
 
-        ds.AddressRecord.build_table(overwrite=True)
+        ds.AddressRecord.build_table(file=file2, overwrite=True)
 
         self.assertEqual(ds.AddressRecord.objects.count(), 2)

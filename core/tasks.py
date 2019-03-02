@@ -30,12 +30,13 @@ def async_send_update_success_mail(self, update_id):
 
 
 @app.task(bind=True, queue='celery', acks_late=True, max_retries=1)
-def async_create_update(self, dataset_id):
+def async_create_update(self, dataset_id, file_id=None):
+    file = ds.DataFile.get(id=file_id) if file_id else None
     try:
         dataset = c.Dataset.objects.filter(id=dataset_id).first()
         logger.info("Starting async download for dataset: {}".format(dataset.name))
         if dataset:
-            dataset.update()
+            dataset.update(file=file)
         else:
             logger.error("*ERROR* - Task Failure - No dataset found in async_download_start")
             raise Exception("No dataset.")

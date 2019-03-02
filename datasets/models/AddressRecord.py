@@ -51,30 +51,33 @@ class AddressRecord(BaseDatasetModel, models.Model):
     @classmethod
     def address_row_from_building(self, number='', building=None):
         try:
-            property = building.bbl
-            bbl = property.bbl
+            bbl = building['bbl']
+            property = ds.Property.objects.get(bbl=bbl)
         except Exception as e:
             return
 
-        try:
-            bin = building.bin
-        except Exception as e:
-            bin = None
+        bin = building['bin']
+        building_low = building['lhnd']
+        building_high = building['hhnd']
+        building_street = building['stname']
+        building_zip = building['zipcode']
+        building_boro = building['boro']
 
-        key = self.create_key(number, building.stname, code_to_boro(
-            building.boro), building.zipcode, building.bbl)
+        key = self.create_key(number, building_street, code_to_boro(
+            building_boro), building_zip, bbl)
 
         return {
             'key': key,
             'bbl': bbl,
             'bin': bin,
             'number': number,
-            'street': building.stname,
-            'borough': code_to_boro(building.boro),
-            'zipcode': building.zipcode,
+            'street': building_street,
+            'borough': code_to_boro(building_boro),
+            'zipcode': building_zip,
             'address': "",
-            "buildingnumber": building.get_house_number(),
-            "buildingstreet": building.stname,
+            "buildingnumber": ds.Building.construct_house_number(building_low,
+                                                                 building_high),
+            "buildingstreet": building_street,
             "propertyaddress": property.address,
             "alternateaddress": False
         }
@@ -109,17 +112,19 @@ class AddressRecord(BaseDatasetModel, models.Model):
         return (number, letter)
 
     @classmethod
-    def build_building_gen(self):
-        for building in ds.Building.objects.filter(bbl__isnull=False):
-            lhnd_split = building.lhnd.split('-')
-            hhnd_split = building.hhnd.split('-')
+    def build_building_gen(self, file=None):
+        building_gen = ds.Building.transform_self(file.file.path)
+
+        for building in building_gen:
+            lhnd_split = building['lhnd'].split('-')
+            hhnd_split = building['hhnd'].split('-')
             # numbers formatted: 50
             if len(lhnd_split) <= 1:
-                low_number, low_letter = self.split_number_letter(building.lhnd)
-                high_number, high_letter = self.split_number_letter(building.hhnd)
+                low_number, low_letter = self.split_number_letter(building['lhnd'])
+                high_number, high_letter = self.split_number_letter(building['hhnd'])
                 # create rangelist
-                if building.lhnd.strip() == building.hhnd.strip():
-                    yield self.address_row_from_building(number=building.lhnd.strip(),
+                if building['lhnd'].strip() == building['hhnd'].strip():
+                    yield self.address_row_from_building(number=building['lhnd'].strip(),
                                                          building=building)
                 else:
                     # For that one number that has a lhnd = 52 and hhnd = 54 1/2
@@ -204,14 +209,15 @@ class AddressRecord(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        self.build_table(overwrite=True)
+        self.build_table(file=kwargs['file'], overwrite=True)
 
     @classmethod
     def build_table(self, **kwargs):
+        file = kwargs['file']
         batch_size = 1000000
         # csv_path = self.build_table_csv()
         # copy_insert_from_csv(self._meta.db_table, csv_path, **kwargs)
-        building_gen = self.build_building_gen()
+        building_gen = self.build_building_gen(file=file)
         batch_upsert_from_gen(self, building_gen, batch_size, no_conflict=False, **kwargs)
         property_gen = self.build_property_gen()
         batch_upsert_from_gen(self, property_gen, batch_size, no_conflict=True, **kwargs)
