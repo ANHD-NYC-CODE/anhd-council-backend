@@ -74,7 +74,7 @@ class PropertySummarySerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Property
         fields = (
-            'bbl', 'council', 'yearbuilt', 'unitsres', 'unitstotal',
+            'bbl', 'council', 'cd', 'yearbuilt', 'unitsres', 'unitstotal',
             'bldgclass', 'numbldgs', 'numfloors', 'address', 'lat', 'lng', 'cb2010', 'ct2010',
             'hpdviolations', 'hpdcomplaints', 'dobcomplaints', 'dobviolations', 'ecbviolations',
             'acrisrealmasters', 'hpdregistration', 'hpdregistrationcontacts',
