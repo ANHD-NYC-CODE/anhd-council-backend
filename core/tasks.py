@@ -31,7 +31,7 @@ def async_send_update_success_mail(self, update_id):
 
 @app.task(bind=True, queue='celery', acks_late=True, max_retries=1)
 def async_create_update(self, dataset_id, file_id=None):
-    file = ds.DataFile.get(id=file_id) if file_id else None
+    file = c.DataFile.objects.get(id=file_id) if file_id else None
     try:
         dataset = c.Dataset.objects.filter(id=dataset_id).first()
         logger.info("Starting async download for dataset: {}".format(dataset.name))
@@ -47,13 +47,14 @@ def async_create_update(self, dataset_id, file_id=None):
 
 
 @app.task(bind=True, queue='update', acks_late=True, max_retries=1)
-def async_seed_file(self, file_path, update_id):
+def async_seed_file(self, file_path, update_id, dataset_id=None):
     try:
         # manually set file and previous file in admin ui
         update = c.Update.objects.get(id=update_id)
         file_path = os.path.join(settings.MEDIA_ROOT, os.path.basename(file_path))
+        dataset = c.Dataset.get(id=kwargs['dataset_id']) if 'dataset_id' in kwargs else update.file.dataset
         logger.info("Beginning async seeding - {} - c.Update: {}".format(update.file.dataset.name, update.id))
-        update.file.dataset.seed_dataset(file_path=file_path, update=update)
+        dataset.seed_dataset(file_path=file_path, update=update)
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
         if update:
