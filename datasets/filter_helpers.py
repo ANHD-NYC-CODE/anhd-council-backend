@@ -55,6 +55,50 @@ class TotalWithDateFilter(django_filters.Filter):
     field_class = TotalWithDateField
 
 
+class CommaSeparatedConditionWidget(django_filters.widgets.SuffixedMultiWidget):
+    """Character widget parsing comma separated values. ex: param__any=1,2,3"""
+
+    def __init__(self, attrs=None):
+        widgets = (forms.TextInput, forms.TextInput, forms.TextInput, forms.TextInput,)
+        super().__init__(widgets, attrs)
+    suffixes = ['_any', '_all', '', '_icontains']
+
+
+class CommaSeparatedConditionField(django_filters.fields.RangeField):
+    widget = CommaSeparatedConditionWidget
+
+    def __init__(self, *args, **kwargs):
+        fields = (
+            forms.CharField(), forms.CharField(),  forms.CharField(), forms.CharField(),)
+
+        super(CommaSeparatedConditionField, self).__init__(fields, *args, **kwargs)
+
+    def compress(self, data_list):
+        if data_list:
+            data = {'any': None, 'all': None, 'exact': None, 'icontains': None}
+            any, all, exact, icontains = data_list
+            if exact:
+                data['exact'] = exact
+                return data
+            if icontains:
+                data['icontains'] = icontains
+            if any:
+                any = any.split(',')
+                any = list(map(lambda x: x.strip(), any))
+                data['any'] = any
+                # data.append(reduce(operator.or_, (Q(*{[name]: item}) for item in any)))
+            if all:
+                all = all.split(',')
+                all = list(map(lambda x: x.strip(), all))
+                data['all'] = all
+                # data.append(reduce(operator.or_, (Q(*{[name]: item}) for item in all)))
+            return data
+
+
+class CommaSeparatedConditionFilter(django_filters.Filter):
+    field_class = CommaSeparatedConditionField
+
+
 class PercentWithDateWidget(django_filters.widgets.SuffixedMultiWidget):
     """Date widget to help filter by *_start and *_end."""
 

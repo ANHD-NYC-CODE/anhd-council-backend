@@ -62,6 +62,10 @@ class AddressRecord(BaseDatasetModel, models.Model):
         building_street = building['stname']
         building_zip = building['zipcode']
         building_boro = building['boro']
+        building_number = ds.Building.construct_house_number(building_low,
+                                                             building_high)
+        if building_number:
+            building_number = building_number.strip().replace(' ', '')
 
         key = self.create_key(number, building_street, code_to_boro(
             building_boro), building_zip, bbl)
@@ -75,8 +79,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
             'borough': code_to_boro(building_boro),
             'zipcode': building_zip,
             'address': "",
-            "buildingnumber": ds.Building.construct_house_number(building_low,
-                                                                 building_high),
+            "buildingnumber": building_number,
             "buildingstreet": building_street,
             "propertyaddress": property.address,
             "alternateaddress": False
@@ -188,6 +191,8 @@ class AddressRecord(BaseDatasetModel, models.Model):
                 bin = building.bin
                 buildingstreet = building.stname
                 buildingnumber = building.get_house_number()
+                if buildingnumber:
+                    buildingnumber = buildingnumber.strip().replace(' ', '')
             else:
                 building = None
                 bin = None
@@ -231,6 +236,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
         batch_upsert_from_gen(self, property_gen, batch_size, no_conflict=True, **kwargs)
 
         self.build_search()
+        logger.debug("Address Record seeding complete!")
 
     @classmethod
     def build_search(self):

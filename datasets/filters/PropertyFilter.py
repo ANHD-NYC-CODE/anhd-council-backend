@@ -5,8 +5,11 @@ from django.db.models.functions import Cast
 import django_filters
 from django import forms
 from copy import deepcopy
-from datasets.filter_helpers import TotalWithDateFilter, RSLostPercentWithDateFilter, AdvancedQueryFilter
+from datasets.filter_helpers import CommaSeparatedConditionFilter, TotalWithDateFilter, RSLostPercentWithDateFilter, AdvancedQueryFilter
 from datasets.utils import advanced_filter as af
+import operator
+from functools import reduce
+from django.db.models import Q
 
 from collections import OrderedDict
 from django.conf import settings
@@ -75,13 +78,17 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     taxlien__gt = django_filters.NumberFilter(field_name='taxlien__year', lookup_expr='gt')
     taxlien__gte = django_filters.NumberFilter(field_name='taxlien__year', lookup_expr='gte')
 
-    subsidy__enddate__lte = django_filters.DateFilter(field_name='coresubsidyrecord__enddate', lookup_expr='date__lte')
-    subsidy__enddate__lt = django_filters.DateFilter(field_name='coresubsidyrecord__enddate', lookup_expr='date__lt')
-    subsidy__enddate = django_filters.DateFilter(field_name='coresubsidyrecord__enddate', lookup_expr='date__exact')
-    subsidy__enddate__gte = django_filters.DateFilter(field_name='coresubsidyrecord__enddate', lookup_expr='date__gte')
-    subsidy__enddate__gt = django_filters.DateFilter(field_name='coresubsidyrecord__enddate', lookup_expr='date__gt')
-    subsidy__programname = django_filters.CharFilter(
-        field_name='coresubsidyrecord__programname', lookup_expr='icontains')
+    coresubsidyrecord__enddate__lte = django_filters.DateFilter(
+        field_name='coresubsidyrecord__enddate', lookup_expr='date__lte')
+    coresubsidyrecord__enddate__lt = django_filters.DateFilter(
+        field_name='coresubsidyrecord__enddate', lookup_expr='date__lt')
+    coresubsidyrecord__enddate = django_filters.DateFilter(
+        field_name='coresubsidyrecord__enddate', lookup_expr='date__exact')
+    coresubsidyrecord__enddate__gte = django_filters.DateFilter(
+        field_name='coresubsidyrecord__enddate', lookup_expr='date__gte')
+    coresubsidyrecord__enddate__gt = django_filters.DateFilter(
+        field_name='coresubsidyrecord__enddate', lookup_expr='date__gt')
+    coresubsidyrecord__programname = CommaSeparatedConditionFilter(method="filter_programnames")
 
     def parse_totaldate_field_values(self, date_prefix, totals_prefix, values):
         date_filters = {}
@@ -275,6 +282,23 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
     def filter_ecbviolations_lte(self, queryset, name, value):
         return queryset.annotate(ecbviolations=Count('ecbviolation', distinct=True)).filter(ecbviolations__lte=value)
+
+    # Subsidy Program Names
+
+    def filter_programnames(self, queryset, name, value):
+        qs = []
+        if value['exact']:
+            return queryset.filter(**{name: value['exact']})
+        if value['icontains']:
+            return queryset.filter(**{"{}__icontains".format(name): value['icontains']})
+        if value['any']:
+            qs.append(reduce(operator.or_, (Q(**{name: item}) for item in value['any'])))
+        if value['all']:
+            qs.append(reduce(operator.and_, (Q(**{[name]: item}) for item in value['all'])))
+
+        combined_q = reduce(operator.and_, (q for q in qs))
+
+        return queryset.filter(combined_q)
 
     class Meta:
         model = ds.Property

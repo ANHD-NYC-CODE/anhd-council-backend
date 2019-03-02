@@ -221,13 +221,39 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.coredata_factory(property=property3, enddate="2025-01-01", programname="lihtc")
 
         # any lihtc buildings ending 2018
-        query = '/properties/?subsidy__programname=lihtc&subsidy__enddate__lte=2018-01-01'
+        query = '/properties/?coresubsidyrecord__programname=lihtc&coresubsidyrecord__enddate__lte=2018-01-01'
         response = self.client.get(query, format="json")
         content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['bbl'], '1')
+
+    def test_subsidy_field_multiple_programs(self):
+        council = self.council_factory(id=1)
+        # * has lihtc ending 2018
+        property1 = self.property_factory(bbl=1, council=council)
+        # * has j-51 ending 2018
+        property2 = self.property_factory(bbl=2, council=council)
+        # has lihtc ending 2025
+        property3 = self.property_factory(bbl=3, council=council)
+        # has 421-a ending 2018
+        property4 = self.property_factory(bbl=4, council=council)
+
+        self.coredata_factory(property=property1, enddate="2018-01-01", programname="lihtc")
+        self.coredata_factory(property=property2, enddate="2018-01-01", programname="j-51")
+        self.coredata_factory(property=property3, enddate="2025-01-01", programname="lihtc")
+        self.coredata_factory(property=property4, enddate="2018-01-01", programname="421-a")
+
+        # any lihtc buildings ending 2018
+        query = '/properties/?coresubsidyrecord__programname__any=lihtc,j-51&coresubsidyrecord__enddate__lte=2018-01-01'
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+        self.assertEqual(content[0]['bbl'], '1')
+        self.assertEqual(content[1]['bbl'], '2')
 
 
 class PropertyAdvancedFilterTests(BaseTest, TestCase):
@@ -777,7 +803,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
             self.ecbviolation_factory(property=property6, issuedate="2018-01-01")
 
         # properties in council 1 with rent regulated j-51 and with 5 HPD violations b/t 2018- 2019 AND (5 DOB violations b/t 2018-2019 OR 5 ECB violations b/t 2018-2019)
-        query = '/properties/?council=1&housingtype=rr&subsidy__programname=j-51&q=*condition_0=AND+filter_0=condition_1+filter_0=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5+*condition_1=OR+filter_1=dobviolations__issuedate__gte=2018-01-01,dobviolations__issuedate__lte=2019-01-01,dobviolations__count__gte=5+filter_1=ecbviolations__issuedate__gte=2018-01-01,ecbviolations__issuedate__lte=2019-01-01,ecbviolations__count__gte=5'
+        query = '/properties/?council=1&housingtype=rr&coresubsidyrecord__programname=j-51&q=*condition_0=AND+filter_0=condition_1+filter_0=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5+*condition_1=OR+filter_1=dobviolations__issuedate__gte=2018-01-01,dobviolations__issuedate__lte=2019-01-01,dobviolations__count__gte=5+filter_1=ecbviolations__issuedate__gte=2018-01-01,ecbviolations__issuedate__lte=2019-01-01,ecbviolations__count__gte=5'
 
         response = self.client.get(query, format="json")
         content = response.data['results']
