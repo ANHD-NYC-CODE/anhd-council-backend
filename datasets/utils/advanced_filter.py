@@ -3,6 +3,8 @@ from datasets import models as ds
 from django.db.models import Count, Q, ExpressionWrapper, F, FloatField
 from django.db.models.functions import Cast
 from django.conf import settings
+from rest_framework.exceptions import APIException
+
 import re
 import collections
 
@@ -101,16 +103,16 @@ def parse_filter_string(string):
 def validate_mapping(request, mapping):
     for condition_key in mapping.keys():
         if not re.search(r"(\bAND\b|\bOR\b)", mapping[condition_key]['type']):
-            raise Exception("\"{}\" is not a valid condition type. use only AND or OR".format(
+            raise APIException("\"{}\" is not a valid condition type. use only AND or OR".format(
                 mapping[condition_key]['type']))
         if not len(mapping[condition_key]['filters']):
-            raise Exception("Condition {} has no filters".format(condition_key))
+            raise APIException("Condition {} has no filters".format(condition_key))
         for c_filter in mapping[condition_key]['filters']:
             if 'model' in c_filter:
                 model_name = list(filter(lambda x: c_filter['model'].lower() == x.lower(), settings.ACTIVE_MODELS))
                 if not model_name:
                     # Validate model names
-                    raise Exception(
+                    raise APIException(
                         "\"{}\" is not a valid dataset. Was it spelled correctly?".format(c_filter['model']))
                 else:
                     # valid model fields
@@ -128,7 +130,7 @@ def validate_mapping(request, mapping):
                             try:
                                 model._meta.get_field(field)
                             except FieldDoesNotExist:
-                                raise Exception(
+                                raise APIException(
                                     "Field \"{}\" is not valid for dataset \"{}\"".format(field, model.__name__))
 
 
@@ -156,7 +158,7 @@ def convert_query_string_to_mapping(string):
     for con in array:
         try:
             type = con.split('=', 1)[1].split(' ')[0]
-        except Exception as e:
+        except APIException as e:
             type = None
 
         element = {

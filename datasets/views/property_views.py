@@ -38,10 +38,10 @@ class PropertyViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyM
     def list(self, request, *args, **kwargs):
         if not request.user.is_authenticated and 'q' in request.query_params and 'lispenden' in request.query_params['q']:
             return Response({'detail': 'Please login to view lispenden results'}, status=401)
-        try:
-            return super().list(request, *args, **kwargs)
-        except Exception as e:
-            return Response({'detail': ",".join(e.args)}, status=500)
+        return super().list(request, *args, **kwargs)
+        # try:
+        # except Exception as e:
+        #     return Response(e, status=500)
 
     @cache_me()
     def retrieve(self, request, *args, **kwargs):
