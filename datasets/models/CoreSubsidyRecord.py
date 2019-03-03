@@ -6,6 +6,7 @@ from core.utils.transform import from_xlsx_file_to_gen, with_bbl
 from datasets.utils.validation_filters import is_null
 import logging
 import datetime
+import re
 logger = logging.getLogger('app')
 
 
@@ -51,10 +52,46 @@ class CoreSubsidyRecord(BaseDatasetModel, models.Model):
     dataoutputdate = models.DateTimeField(blank=True, null=True)
 
     @classmethod
+    def standardize_programnames(self, row):
+        # Raw:
+        # 420-c Tax Incentive Program
+        # 421a Affordable
+        # 421a Tax Incentive Program
+        # 421-g Tax Incentive Program
+        # Article 8A/HRP
+        # Federal Public Housing
+        # Inclusionary Housing
+        # J-51 Tax Incentive
+        # LAMP - HDC
+        # LIHTC 4%
+        # LIHTC 9%
+        # LIHTC Year 15
+        # Loan Management Set-Aside
+        # Mitchell-Lama
+        # Multi-Family Program
+        # Neighborhood Entrepreneur Program
+        # Neighborhood Redevelopment Program
+        # NYCHA - Mixed Financing
+        # Other HPD Programs
+        # Other HUD Financing
+        # Other HUD Project-Based Rental Assistance
+        # Participation Loan Program
+        # Project-Based Section 8
+        # Project Rental Assistance Contract / 202
+        # Section 202/8
+        # Section 221d(3) and Section 221d(4) Mortgage Insurance
+        # Section 223(f)
+        # Section 8 - RAD
+        # TPT
+        row['programname'] = re.sub(r"\b421-a\b", "421a", row['programname'])
+        return row
+
+    @classmethod
     def pre_validation_filters(self, gen_rows):
+        # Clean and standardize the program names
         for row in gen_rows:
-            if '421-a' in row['programname']:
-                row['programname'] = row['programname'].replace('421-a', '421a')
+            row = self.standardize_programnames(row)
+
             yield row
 
     @classmethod

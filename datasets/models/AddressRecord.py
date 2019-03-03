@@ -205,14 +205,14 @@ class AddressRecord(BaseDatasetModel, models.Model):
                 'key': key,
                 'bbl': property.bbl,
                 'bin': bin,
-                'number': number_letter.strip(),
-                'street': street.strip(),
-                'borough': borough.strip(),
-                'zipcode': zipcode.strip(),
+                'number': number_letter.strip() if number_letter else None,
+                'street': street.strip() if street else None,
+                'borough': borough.strip() if borough else None,
+                'zipcode': zipcode.strip() if zipcode else None,
                 'address': "",
                 "buildingnumber": buildingnumber,
                 "buildingstreet": buildingstreet,
-                "propertyaddress": property.address.strip(),
+                "propertyaddress": property.address.strip() if property.address else None,
                 "alternateaddress": True
             }
 
