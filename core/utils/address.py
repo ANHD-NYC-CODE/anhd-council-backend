@@ -408,14 +408,15 @@ def clean_number_and_streets(string, include_house_number):
 
     if (include_house_number):
         # replace 143 street with 143rd st
-        match = re.search(r"(?<!^)(?=\s\d+ (DRIVE|STREET|AVENUE))( \d+ (DRIVE|STREET|AVENUE))", string)
+        match = re.search(
+            r"(?<!^)(?=\s\d+ (DRIVE|ROAD|PLACE|STREET|AVENUE))( \d+ (DRIVE|ROAD|PLACE|STREET|AVENUE))", string)
         if match:
             original = match.group().strip()
             number, rest = original.split(' ', 1)
             match = " ".join([number_to_text(number), rest])
             string = string.upper().replace(original, match)
     else:
-        match = re.search(r"(?=\d* (STREET|AVENUE))(\d+ (STREET|AVENUE))", string)
+        match = re.search(r"(?=\d* (DRIVE|ROAD|PLACE|STREET|AVENUE))(\d+ (DRIVE|ROAD|PLACE|STREET|AVENUE))", string)
         if match:
             original = match.group().strip()
             number, rest = original.split(' ', 1)
