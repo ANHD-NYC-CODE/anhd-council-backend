@@ -74,14 +74,14 @@ class AddressRecord(BaseDatasetModel, models.Model):
             'key': key,
             'bbl': bbl,
             'bin': bin,
-            'number': number,
-            'street': building_street,
-            'borough': code_to_boro(building_boro),
-            'zipcode': building_zip,
+            'number': number.strip(),
+            'street': building_street.strip(),
+            'borough': code_to_boro(building_boro).strip(),
+            'zipcode': building_zip.strip(),
             'address': "",
-            "buildingnumber": building_number,
-            "buildingstreet": building_street,
-            "propertyaddress": property.address,
+            "buildingnumber": building_number.strip(),
+            "buildingstreet": building_street.strip(),
+            "propertyaddress": property.address.strip(),
             "alternateaddress": False
         }
 
@@ -156,14 +156,16 @@ class AddressRecord(BaseDatasetModel, models.Model):
                 # create rangelist
                 if low_numbers[1][0].strip() != high_numbers[1][0].strip():
                     house_numbers = self.generate_rangelist(
-                        int(low_numbers[1][0]), int(high_numbers[1][0]), prefix=low_numbers[0][0] + '-')
+                        low_numbers[1][0], high_numbers[1][0], prefix=low_numbers[0][0] + '-')
                     for number in house_numbers:
+                        number = number.strip().replace(' ', '')
                         address_row = self.address_row_from_building(number=number,
                                                                      building=building)
                         if address_row:
                             yield address_row
                 else:
                     combined_number = low_numbers[0][0] + "-" + low_numbers[1][0]
+                    combined_number = combined_number.strip().replace(' ', '')
                     address_row = self.address_row_from_building(
                         number=combined_number, building=building)
                     if address_row:
@@ -192,7 +194,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
                 buildingstreet = building.stname
                 buildingnumber = building.get_house_number()
                 if buildingnumber:
-                    buildingnumber = buildingnumber.strip().replace(' ', '')
+                    buildingnumber = buildingnumber.replace(' ', '')
             else:
                 building = None
                 bin = None
@@ -203,14 +205,14 @@ class AddressRecord(BaseDatasetModel, models.Model):
                 'key': key,
                 'bbl': property.bbl,
                 'bin': bin,
-                'number': number_letter,
-                'street': street,
-                'borough': borough,
-                'zipcode': zipcode,
+                'number': number_letter.strip(),
+                'street': street.strip(),
+                'borough': borough.strip(),
+                'zipcode': zipcode.strip(),
                 'address': "",
-                "buildingnumber": buildingnumber,
-                "buildingstreet": buildingstreet,
-                "propertyaddress": property.address,
+                "buildingnumber": buildingnumber.strip(),
+                "buildingstreet": buildingstreet.strip(),
+                "propertyaddress": property.address, strip(),
                 "alternateaddress": True
             }
 
