@@ -194,7 +194,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
                 buildingstreet = building.stname.strip()
                 buildingnumber = building.get_house_number()
                 if buildingnumber:
-                    buildingnumber = buildingnumber.replace(' ', ''), strip()
+                    buildingnumber = buildingnumber.replace(' ', '').strip()
             else:
                 building = None
                 bin = None
