@@ -57,11 +57,11 @@ class AddressRecord(BaseDatasetModel, models.Model):
             return None
 
         bin = building['bin']
-        building_low = building['lhnd']
-        building_high = building['hhnd']
-        building_street = building['stname']
-        building_zip = building['zipcode']
-        building_boro = building['boro']
+        building_low = building['lhnd'].strip()
+        building_high = building['hhnd'].strip()
+        building_street = building['stname'].strip()
+        building_zip = building['zipcode'].strip()
+        building_boro = building['boro'].strip()
         building_number = ds.Building.construct_house_number(building_low,
                                                              building_high)
         if building_number:
@@ -74,14 +74,14 @@ class AddressRecord(BaseDatasetModel, models.Model):
             'key': key,
             'bbl': bbl,
             'bin': bin,
-            'number': number.strip(),
-            'street': building_street.strip(),
-            'borough': code_to_boro(building_boro).strip(),
-            'zipcode': building_zip.strip(),
+            'number': number,
+            'street': building_street,
+            'borough': code_to_boro(building_boro),
+            'zipcode': building_zip,
             'address': "",
-            "buildingnumber": building_number.strip(),
-            "buildingstreet": building_street.strip(),
-            "propertyaddress": property.address.strip(),
+            "buildingnumber": building_number,
+            "buildingstreet": building_street,
+            "propertyaddress": property.address,
             "alternateaddress": False
         }
 
@@ -191,10 +191,10 @@ class AddressRecord(BaseDatasetModel, models.Model):
                 # Try to return some building info if property only has 1 building
                 building = property_buildings.first()
                 bin = building.bin
-                buildingstreet = building.stname
+                buildingstreet = building.stname.strip()
                 buildingnumber = building.get_house_number()
                 if buildingnumber:
-                    buildingnumber = buildingnumber.replace(' ', '')
+                    buildingnumber = buildingnumber.replace(' ', ''), strip()
             else:
                 building = None
                 bin = None
@@ -210,9 +210,9 @@ class AddressRecord(BaseDatasetModel, models.Model):
                 'borough': borough.strip(),
                 'zipcode': zipcode.strip(),
                 'address': "",
-                "buildingnumber": buildingnumber.strip(),
-                "buildingstreet": buildingstreet.strip(),
-                "propertyaddress": property.address, strip(),
+                "buildingnumber": buildingnumber,
+                "buildingstreet": buildingstreet,
+                "propertyaddress": property.address.strip(),
                 "alternateaddress": True
             }
 
