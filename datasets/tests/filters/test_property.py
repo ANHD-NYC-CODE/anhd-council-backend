@@ -78,7 +78,7 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.taxbill_factory(property=property1, uc2007=10, uc2017=1)
         self.taxbill_factory(property=property2, uc2007=10, uc2017=5)
 
-        query = '/properties/?rsunitslost__start=2007&rsunitslost__end=2017&rsunitslost__gte=0.9'
+        query = '/properties/?rsunitslost__year__gte=2007&rsunitslost__year__lte=2017&rsunitslost__gte=0.9'
         response = self.client.get(query, format="json")
         content = response.data['results']
 
