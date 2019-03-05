@@ -93,7 +93,7 @@ def parse_filter_string(string):
     return {
         'model': model,
         'prefetch_key': model + '_set',
-        'annotation_key': get_annotation_key(string),
+        'annotation_key': get_annotation_key(string.split('=', 1)[1]),
         'query1_filters': get_filters(string.split('=', 1)[1], annotation=False),
         'query2_filters': get_filters(string.split('=', 1)[1], annotation=True)
 

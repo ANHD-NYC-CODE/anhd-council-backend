@@ -126,6 +126,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
         # filter on annotating filters (like counts)
         q2 = af.convert_condition_to_q(next(iter(mapping)), mapping, 'query2_filters')
+
         for con in mapping.keys():
             for c_filter in mapping[con]['filters']:
                 if 'condition' in c_filter:

@@ -276,7 +276,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
 
         # properties with 5 HPD violations b/t 2018- 2019
         # query = '/properties/?q=condition_0=AND+group_0A=hpdviolation__approveddate__gte=2018-01-01,hpdviolation__approveddate__lte=2019-01-01,hpdviolation__count__gte=5'
-        query = '/properties/?q=*condition_0=AND+filter_0=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5'
+        query = '/properties/?q=*condition_0=AND+filter_0=hpdviolations__count__gte=5,hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01'
 
         response = self.client.get(query, format="json")
         content = response.data['results']
