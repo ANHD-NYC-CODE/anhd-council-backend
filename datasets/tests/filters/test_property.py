@@ -507,9 +507,10 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.taxbill_factory(property=property4, uc2007=10, uc2017=10)
 
         # properties that lost over 50% of rent stabilized units between 2007 and 2017
-        query = '/properties/?q=*condition_0=AND+filter_0=rentstabilizationrecords__uc2007__gt=0,rentstabilizationrecords__uc2017__gt=0,rentstabilizationrecords__percent__gte=0.5'
+        query = '/properties/?q=*condition_0=AND+filter_0=rentstabilizationrecords__year__gte=2007,rentstabilizationrecords__year__gte=2017,rentstabilizationrecords__percent__gte=0.5'
 
         response = self.client.get(query, format="json")
+
         content = response.data['results']
 
         self.assertEqual(response.status_code, 200)

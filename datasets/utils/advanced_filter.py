@@ -37,6 +37,7 @@ def annotate_rentstabilized(queryset, c_filter):
 
     start_year = [*rsvalues[0].keys()][0].split('__', 2)[1].split('uc', 1)[1]
     end_year = [*rsvalues[1].keys()][0].split('__', 2)[1].split('uc', 1)[1]
+
     queryset = queryset.annotate(**{'rentstabilizationrecord' + start_year: F('rentstabilizationrecord__uc' + start_year)}).annotate(**{
         'rentstabilizationrecord' + end_year: F('rentstabilizationrecord__uc' + end_year)})
     queryset = queryset.annotate(
@@ -69,6 +70,14 @@ def get_filters(string, annotation=False):
         # convert the date fields to singular model names
         filter_strings = list(map(lambda x: "__".join(
             [clean_model_name(x.split('__', 1)[0]), x.split('__', 1)[1]]), filter_strings))
+
+        # RentstabilizationRecord special string
+        # converts "rentstabilizationrecords__year__gte=2007"
+        # into "rentstabilizationrecord__uc2017__gt=0"
+        if 'rentstabilizationrecord' in string:
+            filter_strings = list(map(lambda x: "__".join(
+                [clean_model_name(x.split('__', 1)[0]) + '__uc' + x.split('=', 1)[1] + '__gt=0']), filter_strings))
+
     return list(map(lambda x: {x.split('=')[0]: x.split('=')[1]}, filter_strings))
 
 
@@ -96,7 +105,6 @@ def parse_filter_string(string):
         'annotation_key': get_annotation_key(string.split('=', 1)[1]),
         'query1_filters': get_filters(string.split('=', 1)[1], annotation=False),
         'query2_filters': get_filters(string.split('=', 1)[1], annotation=True)
-
     }
 
 
@@ -166,6 +174,7 @@ def convert_query_string_to_mapping(string):
             'type': type,
             'filters': list(filter(None, list(map(lambda x: parse_filter_string(x),  list(filter(None, con.split(' ')))))))
         }
+
         conditions[element['id']] = element
     return conditions
 
