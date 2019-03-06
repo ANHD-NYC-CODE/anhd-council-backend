@@ -86,6 +86,26 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['bbl'], '1')
 
+    def test_rsunitslost_field_2(self):
+        # With only a start year in url
+        # Use the taxbills version year # as latest year to search (default is 2017)
+        dataset = self.dataset_factory(name="RentStabilizationRecord")
+        file = self.datafile_factory(dataset=dataset, version="2018")
+
+        council = self.council_factory(id=1)
+        property1 = self.property_factory(bbl=1, council=council)
+        property2 = self.property_factory(bbl=2, council=council)
+        self.taxbill_factory(property=property1, uc2007=10, uc2018=1)
+        self.taxbill_factory(property=property2, uc2007=10, uc2018=5)
+
+        query = '/properties/?rsunitslost__start=2007&rsunitslost__gte=0.9'
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+        self.assertEqual(content[0]['bbl'], '1')
+
     def test_acrisrealmasteramount_field(self):
         council = self.council_factory(id=1)
         property1 = self.property_factory(bbl=1, council=council)

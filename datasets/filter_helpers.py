@@ -1,6 +1,7 @@
 import django_filters
 import rest_framework_filters as filters
 from django import forms
+from datasets import models as ds
 
 
 class TotalWithDateWidget(django_filters.widgets.SuffixedMultiWidget):
@@ -143,6 +144,9 @@ class PercentWithDateField(django_filters.fields.RangeField):
 
         if data_list:
             start_year, end_year, lt_value, lte_value, exact_value, gt_value, gte_value = data_list
+            if not end_year:
+                end_year = ds.RentStabilizationRecord.get_dataset().latest_version() or '2017'
+
             filters = {
                 'start_year': 'rentstabilizationrecord{}'.format(start_year),
                 'end_year': 'rentstabilizationrecord{}'.format(end_year),

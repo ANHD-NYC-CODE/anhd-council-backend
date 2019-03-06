@@ -87,6 +87,12 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         )
         return factory
 
+    def dataset_factory(self, name=None, **kwargs):
+        return c_models.Dataset.objects.create(name=name, model_name=name)
+
+    def datafile_factory(self, dataset=None, **kwargs):
+        return c_models.DataFile.objects.create(dataset=dataset, **kwargs)
+
     def update_factory(self, dataset=None, model_name=None, file_name=None, previous_file_name=None):
         if not dataset:
             dataset = c_models.Dataset.objects.create(name=model_name, model_name=model_name)
