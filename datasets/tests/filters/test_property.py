@@ -98,7 +98,7 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.taxbill_factory(property=property1, uc2007=10, uc2018=1)
         self.taxbill_factory(property=property2, uc2007=10, uc2018=5)
 
-        query = '/properties/?rsunitslost__start=2007&rsunitslost__gte=0.9'
+        query = '/properties/?rsunitslost__gte=0.9&rsunitslost__start=2007'
         response = self.client.get(query, format="json")
         content = response.data['results']
 
@@ -833,6 +833,41 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.assertEqual(len(content), 2)
         self.assertEqual(any(d['bbl'] == '1' for d in content), True)
         self.assertEqual(any(d['bbl'] == '2' for d in content), True)
+
+    def test_council_with_housingtype_with_q_3(self):
+        council = self.council_factory(id=1)
+        council2 = self.council_factory(id=2)
+        # full match
+        property1 = self.property_factory(bbl=1, council=council, unitsrentstabilized=1, yearbuilt=1950)
+        self.taxbill_factory(property=property1, uc2007=10, uc2017=1)
+        # council match, no housing type match
+        property2 = self.property_factory(bbl=2, council=council, unitsrentstabilized=10, yearbuilt=1950)
+        self.taxbill_factory(property=property2, uc2007=10, uc2017=10)
+        # council match, housing type match, no record match
+        property3 = self.property_factory(bbl=3, council=council, unitsrentstabilized=1, yearbuilt=1950)
+        self.taxbill_factory(property=property3, uc2007=10, uc2017=1)
+        # council match, no housing type match
+        property4 = self.property_factory(bbl=4, council=council)
+
+        # no council match, housing type match, record match
+        property5 = self.property_factory(bbl=5, council=council2, unitsrentstabilized=1, yearbuilt=1950)
+        self.taxbill_factory(property=property5, uc2007=10, uc2017=1)
+
+        for i in range(5):
+            self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
+            self.hpdviolation_factory(property=property2, approveddate="2018-01-01")
+            self.hpdviolation_factory(property=property4, approveddate="2018-01-01")
+            self.hpdviolation_factory(property=property5, approveddate="2018-01-01")
+
+        # properties in council 1 with rent regulated j-51 and with 5 HPD violations b/t 2018- 2019 AND (5 DOB violations b/t 2018-2019 OR 5 ECB violations b/t 2018-2019)
+        query = '/properties/?council=1&housingtype=rs&rsunitslost__gte=0.5&rsunitslost__start=2007&q=*condition_0=AND+filter_0=hpdviolations__count__gte=5,hpdviolations__approveddate__gte=2018-01-01'
+
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+        self.assertEqual(any(d['bbl'] == '1' for d in content), True)
 
     def test_validations_1(self):
         # Unknown / misspelled datasets

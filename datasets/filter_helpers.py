@@ -145,7 +145,10 @@ class PercentWithDateField(django_filters.fields.RangeField):
         if data_list:
             start_year, end_year, lt_value, lte_value, exact_value, gt_value, gte_value = data_list
             if not end_year:
-                end_year = ds.RentStabilizationRecord.get_dataset().latest_version() or '2017'
+                if ds.RentStabilizationRecord.get_dataset():
+                    end_year = ds.RentStabilizationRecord.get_dataset().latest_version() or '2017'
+                else:
+                    end_year = '2017'
 
             filters = {
                 'start_year': 'rentstabilizationrecord{}'.format(start_year),
