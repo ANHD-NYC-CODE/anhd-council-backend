@@ -106,6 +106,32 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['bbl'], '1')
 
+    def test_rsunitslost_field_3(self):
+        dataset = self.dataset_factory(name="RentStabilizationRecord")
+        file = self.datafile_factory(dataset=dataset, version="2018")
+
+        council = self.council_factory(id=1)
+        property1 = self.property_factory(bbl=1, council=council)
+        property2 = self.property_factory(bbl=2, council=council)
+        property3 = self.property_factory(bbl=3, council=council)
+        property4 = self.property_factory(bbl=4, council=council)
+        property5 = self.property_factory(bbl=5, council=council)
+
+        self.taxbill_factory(property=property1, uc2007=10, uc2018=1)
+        self.taxbill_factory(property=property2, uc2007=10, uc2018=5)
+        self.taxbill_factory(property=property3, uc2007=10, uc2018=10)
+        self.taxbill_factory(property=property4, uc2007=0, uc2018=11)
+        self.taxbill_factory(property=property5, uc2007=10, uc2018=0)
+
+        query = '/properties/?rsunitslost__gte=0.9&rsunitslost__start=2007'
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+        self.assertEqual(content[0]['bbl'], '1')
+        self.assertEqual(content[1]['bbl'], '5')
+
     def test_acrisrealmasteramount_field(self):
         council = self.council_factory(id=1)
         property1 = self.property_factory(bbl=1, council=council)

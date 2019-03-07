@@ -1,6 +1,6 @@
 from datasets import models as ds
 import rest_framework_filters as filters
-from django.db.models import Count, Q, ExpressionWrapper, F, FloatField
+from django.db.models import Count, Q, ExpressionWrapper, F, FloatField, Case, When, Value
 from django.db.models.functions import Cast
 import django_filters
 from django import forms
@@ -123,12 +123,10 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         # Divide by Zero error occurs in context of parallel postgres workers
         # running without the rs_annotation being guaranteed on the queryset in all filter instances.
         # filter on non-annotating filters (like dates)
-        if 'rsunitslost' in self.request.query_params:
-            queryset = queryset.rs_annotate()
+
         q1 = af.convert_condition_to_q(next(iter(mapping)), mapping, 'query1_filters')
         q1_queryset = queryset.only('bbl').filter(q1).distinct()
-        if 'rsunitslost' in self.request.query_params:
-            q1_queryset = q1_queryset.rs_annotate()
+
         # filter on annotating filters (like counts)
         q2 = af.convert_condition_to_q(next(iter(mapping)), mapping, 'query2_filters')
 
@@ -146,8 +144,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
                     q1_queryset = af.annotate_dataset(q1_queryset, c_filter)
 
         q2_queryset = q1_queryset.only('bbl').filter(q2).distinct()
-        if 'rsunitslost' in self.request.query_params:
-            q2_queryset = q2_queryset.rs_annotate()
+
         final_bbls = q2_queryset.values('bbl')
 
         return ds.Property.objects.filter(bbl__in=final_bbls)
@@ -155,7 +152,8 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     # Rent stabilized units lost
 
     def filter_stabilizedunitslost_percent_and_dates(self, queryset, name, values):
-        return queryset.rs_annotate().annotate(rslostpercent=ExpressionWrapper(1 - Cast(F(values['end_year']), FloatField()) / Cast(F(values['start_year']), FloatField()), output_field=FloatField())).filter(**values['percent_query'])
+
+        return queryset.rs_annotate().annotate(rslostpercent=Case(When(**{values['start_year']: 0}, then=0), When(**{values['end_year']: 0}, then=1), default=ExpressionWrapper(1 - Cast(F(values['end_year']), FloatField()) / Cast(F(values['start_year']), FloatField()), output_field=FloatField()), output_field=FloatField())).filter(**values['percent_query'])
 
     def filter_acrisrealmasteramounts_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(
