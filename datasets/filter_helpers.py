@@ -151,8 +151,8 @@ class PercentWithDateField(django_filters.fields.RangeField):
                     end_year = '2017'
 
             filters = {
-                'start_year': 'rentstabilizationrecord{}'.format(start_year),
-                'end_year': 'rentstabilizationrecord{}'.format(end_year),
+                'start_year': 'rentstabilizationrecord__uc{}'.format(start_year),
+                'end_year': 'rentstabilizationrecord__uc{}'.format(end_year),
                 'percent_query': get_percent_query()
             }
 
