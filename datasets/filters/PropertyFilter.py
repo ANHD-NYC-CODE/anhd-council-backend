@@ -120,6 +120,8 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
         af.validate_mapping(self.request, mapping)
 
+        if 'rsunitslost__start' in self.request.query_params:
+            queryset = queryset.rs_annotate()
         # filter on non-annotating filters (like dates)
         q1 = af.convert_condition_to_q(next(iter(mapping)), mapping, 'query1_filters')
         q1_queryset = queryset.only('bbl').filter(q1).distinct()
