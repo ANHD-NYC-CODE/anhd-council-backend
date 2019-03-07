@@ -120,12 +120,15 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
         af.validate_mapping(self.request, mapping)
 
-        if 'rsunitslost__start' in self.request.query_params:
-            queryset = queryset.rs_annotate()
+        # Divide by Zero error occurs in context of parallel postgres workers
+        # running without the rs_annotation being guaranteed on the queryset in all filter instances.
         # filter on non-annotating filters (like dates)
+        if 'rsunitslost' in self.request.query_params:
+            queryset = queryset.rs_annotate()
         q1 = af.convert_condition_to_q(next(iter(mapping)), mapping, 'query1_filters')
         q1_queryset = queryset.only('bbl').filter(q1).distinct()
-
+        if 'rsunitslost' in self.request.query_params:
+            q1_queryset = q1_queryset.rs_annotate()
         # filter on annotating filters (like counts)
         q2 = af.convert_condition_to_q(next(iter(mapping)), mapping, 'query2_filters')
 
@@ -143,6 +146,8 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
                     q1_queryset = af.annotate_dataset(q1_queryset, c_filter)
 
         q2_queryset = q1_queryset.only('bbl').filter(q2).distinct()
+        if 'rsunitslost' in self.request.query_params:
+            q2_queryset = q2_queryset.rs_annotate()
         final_bbls = q2_queryset.values('bbl')
 
         return ds.Property.objects.filter(bbl__in=final_bbls)

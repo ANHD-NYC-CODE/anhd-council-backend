@@ -181,7 +181,10 @@ def convert_query_string_to_mapping(string):
 
 def construct_or_q(query_list):
     ql = query_list[:]
-    query = Q(**ql.pop())
+    if (len(ql)):
+        query = Q(**ql.pop())
+    else:
+        query = Q()
 
     if len(ql):
         for item in ql:
@@ -192,7 +195,10 @@ def construct_or_q(query_list):
 
 def construct_and_q(query_list):
     ql = query_list[:]
-    query = Q(**ql.pop())
+    if (len(ql)):
+        query = Q(**ql.pop())
+    else:
+        query = Q()
 
     if len(ql):
         for item in ql:

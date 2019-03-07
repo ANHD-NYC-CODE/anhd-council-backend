@@ -305,6 +305,32 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['bbl'], '1')
 
+    def test_single_all_condition_single_field(self):
+        council = self.council_factory(id=1)
+        property1 = self.property_factory(bbl=1, council=council, yearbuilt=2000)
+        property2 = self.property_factory(bbl=2, council=council, yearbuilt=1900)
+        property3 = self.property_factory(bbl=3, council=council, yearbuilt=1900)
+
+        for i in range(5):
+            self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
+
+        for i in range(5):
+            self.hpdviolation_factory(property=property2, approveddate="2017-01-01")
+
+        for i in range(1):
+            self.hpdviolation_factory(property=property3, approveddate="2018-01-01")
+
+        # properties with 5 HPD violations any date
+        query = '/properties/?q=*condition_0=AND+filter_0=hpdviolations__count__gte=5'
+
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+        self.assertEqual(content[0]['bbl'], '1')
+        self.assertEqual(content[1]['bbl'], '2')
+
     def test_single_any_condition(self):
         council = self.council_factory(id=1)
         # 5 HPD Violations in range
