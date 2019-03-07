@@ -113,7 +113,7 @@ class PropertyQuerySet(models.QuerySet):
         return self.filter(unitsres__gte=1)
 
     def rentstab(self):
-        return self.residential().rentstab_filter()
+        return self.residential().rs_annotate().rentstab_filter()
 
     def rentreg(self, program=None):
         return self.residential().rentreg_filter(program)

@@ -114,13 +114,8 @@ class CommunityHousingTypeSummarySerializer(serializers.ModelSerializer):
 class PropertySerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Property
-        fields = ('bbl', 'zipcode', 'council', 'borough', 'yearbuilt', 'unitsres', 'rentstabilizedunits', 'unitstotal',
-                  'bldgclass', 'numbldgs', 'numfloors', 'address', 'lat', 'lng', 'cb2010', 'ct2010')
-
-    rentstabilizedunits = serializers.SerializerMethodField()
-
-    def get_rentstabilizedunits(self, obj):
-        return obj.get_rentstabilized_units()
+        fields = ('bbl', 'zipcode', 'council', 'cd', 'borough', 'yearbuilt', 'unitsres', 'unitsrentstabilized', 'unitstotal',
+                  'bldgclass', 'numbldgs', 'numfloors', 'address', 'lat', 'lng')
 
 
 class PropertySummarySerializer(serializers.ModelSerializer):
