@@ -93,4 +93,4 @@ class ECBViolation(BaseDatasetModel, models.Model):
         return self.seed_or_update_from_set_diff(**kwargs)
 
     def __str__(self):
-        return str(self.violationid)
+        return str(self.ecbviolationnumber)

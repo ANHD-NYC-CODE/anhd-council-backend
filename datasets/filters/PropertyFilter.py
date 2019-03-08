@@ -25,6 +25,8 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     def qs(self):
         return super(PropertyFilter, self).qs
 
+    council = django_filters.NumberFilter(method='filter_council_exact')
+    cd = django_filters.NumberFilter(method='filter_community_exact')
     q = AdvancedQueryFilter(method='filter_advancedquery')
 
     housingtype = filters.CharFilter(method='filter_housingtype')
@@ -90,6 +92,12 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         field_name='coresubsidyrecord__enddate', lookup_expr='date__gt')
     coresubsidyrecord__programname = CommaSeparatedConditionFilter(method="filter_programnames")
 
+    def filter_council_exact(self, queryset, name, value):
+        return queryset.council(value)
+
+    def filter_community_exact(self, queryset, name, value):
+        return queryset.community(value)
+
     def parse_totaldate_field_values(self, date_prefix, totals_prefix, values):
         date_filters = {}
         total_filters = {}
@@ -125,7 +133,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         # filter on non-annotating filters (like dates)
 
         q1 = af.convert_condition_to_q(next(iter(mapping)), mapping, 'query1_filters')
-        q1_queryset = queryset.filter(q1).distinct()
+        q1_queryset = queryset.filter(q1)
 
         # filter on annotating filters (like counts)
         q2 = af.convert_condition_to_q(next(iter(mapping)), mapping, 'query2_filters')
@@ -143,7 +151,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
                 else:
                     q1_queryset = af.annotate_dataset(q1_queryset, c_filter)
 
-        q2_queryset = q1_queryset.filter(q2).distinct()
+        q2_queryset = q1_queryset.filter(q2)
 
         final_bbls = q2_queryset.values('bbl')
 
@@ -309,8 +317,6 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     class Meta:
         model = ds.Property
         fields = {
-            'council': ['exact'],
-            'cd': ['exact'],
             'borough': ['exact'],
             'address': ['exact', 'icontains'],
             'yearbuilt': ['exact', 'lt', 'lte', 'gt', 'gte'],

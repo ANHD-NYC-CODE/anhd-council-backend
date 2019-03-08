@@ -95,4 +95,4 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
         logger.debug("Completed seed into {} for {}", self.__name__, now_table._meta.db_table)
 
     def __str__(self):
-        return str(self.jobfilingnumber)
+        return str(self.key)

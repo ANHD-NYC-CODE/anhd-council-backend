@@ -65,10 +65,12 @@ class PropertyQuerySet(models.QuerySet):
         return self.annotate(publichousingrecords=Count('publichousingrecord')).filter(publichousingrecords__gte=1)
 
     def council(self, number):
-        return self.filter(council=number)
+        return self.prefetch_related(Prefetch(
+            'council', queryset=ds.Council.objects.all().only('id'))).filter(council=number)
 
     def community(self, number):
-        return self.filter(cd=number)
+        return self.prefetch_related(Prefetch(
+            'community', queryset=ds.Community.objects.all().only('id'))).filter(cd=number)
 
     def residential(self):
         return self.filter(unitsres__gte=1)

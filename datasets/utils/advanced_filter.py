@@ -1,6 +1,6 @@
 from django.db.models import FieldDoesNotExist
 from datasets import models as ds
-from django.db.models import Count, Q, ExpressionWrapper, F, FloatField
+from django.db.models import Count, Q, ExpressionWrapper, F, FloatField, Prefetch
 from django.db.models.functions import Cast
 from django.conf import settings
 from rest_framework.exceptions import APIException
@@ -13,7 +13,9 @@ def annotate_dataset(queryset, c_filter):
     model_name = list(filter(lambda x: c_filter['model'].lower() == x.lower(), settings.ACTIVE_MODELS))
     model = getattr(ds, model_name[0])
 
-    queryset = queryset.prefetch_related(c_filter['prefetch_key']).only(*model.slim_query_fields)
+    queryset = queryset.prefetch_related(Prefetch(
+        c_filter['prefetch_key'], queryset=model.objects.all().only(*model.slim_query_fields)))
+
     if c_filter['annotation_key']:
         queryset = queryset.annotate(**{c_filter['annotation_key']: Count(
             c_filter['model'],
