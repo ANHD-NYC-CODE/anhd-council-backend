@@ -69,7 +69,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     acrisrealmasteramounts = TotalWithDateFilter(method="filter_acrisrealmasteramounts_total_and_dates")
     acrisrealmastersales = TotalWithDateFilter(method="filter_acrisrealmastersales_total_and_dates")
 
-    dobpermitissued = TotalWithDateFilter(method="filter_dobpermitissued_total_and_dates")
+    dobissuedpermits = TotalWithDateFilter(method="filter_dobpermitissued_total_and_dates")
     evictions = TotalWithDateFilter(method="filter_eviction_total_and_dates")
 
     taxlien = django_filters.NumberFilter(field_name='taxlien__year', lookup_expr='exact')
@@ -172,8 +172,8 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
     def filter_dobpermitissued_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(
-            'dobpermitissued__issuedate', 'dobpermitissueds', values)
-        return queryset.filter(**date_filters).annotate(dobpermitissueds=Count('dobpermitissued', distinct=True)).filter(**total_filters)
+            'dobissuedpermit__issuedate', 'dobissuedpermits', values)
+        return queryset.filter(**date_filters).annotate(dobissuedpermits=Count('dobissuedpermit', distinct=True)).filter(**total_filters)
 
     def filter_eviction_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(

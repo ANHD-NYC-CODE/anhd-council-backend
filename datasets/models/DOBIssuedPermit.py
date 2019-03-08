@@ -17,7 +17,7 @@ logger = logging.getLogger('app')
 # TODO rename to DOBPermitIssued
 
 
-class DOBPermitIssued(BaseDatasetModel, models.Model):
+class DOBIssuedPermit(BaseDatasetModel, models.Model):
     key = models.TextField(primary_key=True, blank=False, null=False)
     jobfilingnumber = models.TextField(blank=True, null=True)
     workpermit = models.TextField(blank=True, null=True)

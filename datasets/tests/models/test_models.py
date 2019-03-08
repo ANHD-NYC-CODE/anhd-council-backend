@@ -701,20 +701,20 @@ class DOBPermitIssuedTests(BaseTest, TestCase):
         self.clean_tests()
 
     def test_seed_joined_table(self):
-        update = self.update_factory(model_name="DOBPermitIssued",
+        update = self.update_factory(model_name="DOBIssuedPermit",
                                      file_name="mock_dob_permit_issued_now.csv")
         for i in range(5):
             self.permitissuedlegacy_factory()
             self.permitissuednow_factory()
 
-        ds.DOBPermitIssued.seed_or_update_self(update=update)
-        self.assertEqual(ds.DOBPermitIssued.objects.count(), 10)
+        ds.DOBIssuedPermit.seed_or_update_self(update=update)
+        self.assertEqual(ds.DOBIssuedPermit.objects.count(), 10)
         self.assertEqual(update.total_rows, 10)
         self.assertEqual(update.rows_created, 10)
         self.assertEqual(update.rows_updated, 0)
 
     def test_seed_joined_table_with_update(self):
-        update = self.update_factory(model_name="DOBPermitIssued")
+        update = self.update_factory(model_name="DOBIssuedPermit")
 
         changed_record_legacy = self.permitissuedlegacy_factory(job="a", permitsino="1", jobtype="A1")
         changed_record_now = self.permitissuednow_factory(jobfilingnumber="b", workpermit="1", jobdescription="Hi")
@@ -723,8 +723,8 @@ class DOBPermitIssuedTests(BaseTest, TestCase):
             self.permitissuedlegacy_factory()
             self.permitissuednow_factory()
 
-        ds.DOBPermitIssued.seed_or_update_self(update=update)
-        update2 = self.update_factory(dataset=update.dataset, model_name="DOBPermitIssued")
+        ds.DOBIssuedPermit.seed_or_update_self(update=update)
+        update2 = self.update_factory(dataset=update.dataset, model_name="DOBIssuedPermit")
         changed_record_legacy.jobtype = "B1"
         changed_record_legacy.save()
         changed_record_now.jobdescription = "bye"
@@ -734,11 +734,11 @@ class DOBPermitIssuedTests(BaseTest, TestCase):
             self.permitissuedlegacy_factory()
             self.permitissuednow_factory()
 
-        ds.DOBPermitIssued.seed_or_update_self(update=update2)
+        ds.DOBIssuedPermit.seed_or_update_self(update=update2)
 
-        self.assertEqual(ds.DOBPermitIssued.objects.count(), 22)
-        self.assertEqual(ds.DOBPermitIssued.objects.get(key="a1").jobdescription, "B1")
-        self.assertEqual(ds.DOBPermitIssued.objects.get(key="b1").jobdescription, "bye")
+        self.assertEqual(ds.DOBIssuedPermit.objects.count(), 22)
+        self.assertEqual(ds.DOBIssuedPermit.objects.get(key="a1").jobdescription, "B1")
+        self.assertEqual(ds.DOBIssuedPermit.objects.get(key="b1").jobdescription, "bye")
         self.assertEqual(update2.total_rows, 22)
         self.assertEqual(update2.rows_created, 10)
         self.assertEqual(update2.rows_updated, 12)

@@ -177,7 +177,7 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['bbl'], '1')
 
-    def test_dobissuedpermitss_field(self):
+    def test_dobissuedpermits_field(self):
         council = self.council_factory(id=1)
         # 10 in range
         property1 = self.property_factory(bbl=1, council=council)
@@ -196,7 +196,7 @@ class PropertyFilterTests(BaseTest, TestCase):
             self.permitissuedjoined_factory(property=property3, issuedate="2018-01-01")
 
         # 10 permits between 2017-2018
-        query = '/properties/?dobpermitissued__start=2017-01-01&dobpermitissued__end=2018-01-01&dobpermitissued__gte=10'
+        query = '/properties/?dobissuedpermits__start=2017-01-01&dobissuedpermits__end=2018-01-01&dobissuedpermits__gte=10'
         response = self.client.get(query, format="json")
 
         content = response.data['results']
@@ -667,9 +667,10 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
             self.permitissuedjoined_factory(property=property3, issuedate="2018-01-01")
 
         # 10 permits between 2017-2018
-        query = '/properties/?q=*condition_0=AND+filter_0=dobpermitissued__issuedate__gte=2017-01-01,dobpermitissued__issuedate__lte=2018-01-01,dobpermitissued__count__gte=10'
+        query = '/properties/?q=*condition_0=AND+filter_0=dobissuedpermits__issuedate__gte=2017-01-01,dobissuedpermits__issuedate__lte=2018-01-01,dobissuedpermits__count__gte=10'
 
         response = self.client.get(query, format="json")
+
         content = response.data['results']
 
         self.assertEqual(response.status_code, 200)

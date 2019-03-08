@@ -462,7 +462,7 @@ class DOBPermitIssuedNowSerializer(serializers.ModelSerializer):
 
 class DOBPermitIssuedSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ds.DOBPermitIssued
+        model = ds.DOBIssuedPermit
         fields = '__all__'
 
 
