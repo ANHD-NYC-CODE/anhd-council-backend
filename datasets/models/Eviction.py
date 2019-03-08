@@ -13,6 +13,10 @@ logger = logging.getLogger('app')
 
 
 class Eviction(BaseDatasetModel, models.Model):
+    class Meta:
+        indexes = [
+            models.Index(fields=['bbl', 'executeddate']),
+        ]
     download_endpoint = "https://data.cityofnewyork.us/api/views/6z8x-wfk4/rows.csv?accessType=DOWNLOAD"
 
     courtindexnumber = models.TextField(primary_key=True, blank=False, null=False)

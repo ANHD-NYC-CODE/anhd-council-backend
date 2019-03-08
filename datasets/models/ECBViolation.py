@@ -8,6 +8,10 @@ logger = logging.getLogger('app')
 
 
 class ECBViolation(BaseDatasetModel, models.Model):
+    class Meta:
+        indexes = [
+            models.Index(fields=['bbl', 'issuedate']),
+        ]
     download_endpoint = "https://data.cityofnewyork.us/api/views/6bgk-3dad/rows.csv?accessType=DOWNLOAD"
 
     ecbviolationnumber = models.TextField(primary_key=True, blank=False, null=False)

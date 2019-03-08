@@ -8,6 +8,11 @@ logger = logging.getLogger('app')
 
 
 class HPDViolation(BaseDatasetModel, models.Model):
+    class Meta:
+        indexes = [
+            models.Index(fields=['bbl', 'approveddate']),
+        ]
+
     download_endpoint = "https://data.cityofnewyork.us/api/views/wvxf-dwi5/rows.csv?accessType=DOWNLOAD"
 
     violationid = models.IntegerField(primary_key=True, blank=False, null=False)

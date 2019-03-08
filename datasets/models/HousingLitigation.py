@@ -8,6 +8,10 @@ logger = logging.getLogger('app')
 
 
 class HousingLitigation(BaseDatasetModel, models.Model):
+    class Meta:
+        indexes = [
+            models.Index(fields=['bbl', 'caseopendate']),
+        ]
     download_endpoint = "https://data.cityofnewyork.us/api/views/59kj-x8nc/rows.csv?accessType=DOWNLOAD"
 
     litigationid = models.IntegerField(primary_key=True, blank=False, null=False)
@@ -24,7 +28,7 @@ class HousingLitigation(BaseDatasetModel, models.Model):
     block = models.SmallIntegerField(blank=True, null=True)
     lot = models.IntegerField(blank=True, null=True)
     casetype = models.TextField(blank=True, null=True)
-    caseopendate = models.DateTimeField(blank=True, null=True)
+    caseopendate = models.DateTimeField(db_index=True, blank=True, null=True)
     casestatus = models.TextField(blank=True, null=True)
     openjudgement = models.TextField(blank=True, null=True)
     findingofharassment = models.TextField(blank=True, null=True)

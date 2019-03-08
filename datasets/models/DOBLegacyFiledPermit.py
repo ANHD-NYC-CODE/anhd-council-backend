@@ -14,6 +14,11 @@ logger = logging.getLogger('app')
 class DOBLegacyFiledPermit(BaseDatasetModel, models.Model):
     download_endpoint = "https://data.cityofnewyork.us/api/views/ic3t-wcy2/rows.csv?accessType=DOWNLOAD"
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['bbl', 'dobrundate']),
+        ]
+
     job = models.TextField(blank=False, null=False)
     jobs1no = models.TextField(blank=False, null=False)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
@@ -99,7 +104,7 @@ class DOBLegacyFiledPermit(BaseDatasetModel, models.Model):
     zip = models.TextField(blank=True, null=True)
     ownersphone = models.TextField(blank=True, null=True)
     jobdescription = models.TextField(blank=True, null=True)
-    dobrundate = models.DateTimeField(blank=True, null=True)
+    dobrundate = models.DateTimeField(db_index=True, blank=True, null=True)
     totalconstructionfloorarea = models.TextField(blank=True, null=True)
     withdrawalflag = models.TextField(blank=True, null=True)
     signoffdate = models.DateTimeField(blank=True, null=True)

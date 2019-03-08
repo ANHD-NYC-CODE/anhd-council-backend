@@ -18,6 +18,11 @@ logger = logging.getLogger('app')
 
 
 class DOBIssuedPermit(BaseDatasetModel, models.Model):
+    class Meta:
+        indexes = [
+            models.Index(fields=['bbl', 'issuedate']),
+        ]
+
     key = models.TextField(primary_key=True, blank=False, null=False)
     jobfilingnumber = models.TextField(blank=True, null=True)
     workpermit = models.TextField(blank=True, null=True)

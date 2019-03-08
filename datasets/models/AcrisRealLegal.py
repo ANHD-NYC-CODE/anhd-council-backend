@@ -7,6 +7,11 @@ from datasets.utils.validation_filters import is_null
 class AcrisRealLegal(BaseDatasetModel, models.Model):
     download_endpoint = 'https://data.cityofnewyork.us/api/views/8h5j-fqxa/rows.csv?accessType=DOWNLOAD'
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['bbl', 'documentid']),
+        ]
+
     documentid = models.ForeignKey('AcrisRealMaster', db_column='documentid', db_constraint=False,
                                    on_delete=models.SET_NULL, null=True, blank=True)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,

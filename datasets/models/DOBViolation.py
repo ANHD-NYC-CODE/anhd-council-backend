@@ -8,6 +8,10 @@ logger = logging.getLogger('app')
 
 
 class DOBViolation(BaseDatasetModel, models.Model):
+    class Meta:
+        indexes = [
+            models.Index(fields=['bbl', 'issuedate']),
+        ]
     download_endpoint = "https://data.cityofnewyork.us/api/views/3h2n-5cm9/rows.csv?accessType=DOWNLOAD"
 
     isndobbisviol = models.TextField(primary_key=True, blank=False, null=False)

@@ -8,6 +8,10 @@ logger = logging.getLogger('app')
 
 
 class HPDComplaint(BaseDatasetModel, models.Model):
+    class Meta:
+        indexes = [
+            models.Index(fields=['bbl', 'receiveddate']),
+        ]
     download_endpoint = "https://data.cityofnewyork.us/api/views/uwyv-629c/rows.csv?accessType=DOWNLOAD"
 
     complaintid = models.IntegerField(primary_key=True, blank=False, null=False)

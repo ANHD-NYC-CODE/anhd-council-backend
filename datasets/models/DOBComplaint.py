@@ -10,6 +10,10 @@ logger = logging.getLogger('app')
 
 
 class DOBComplaint(BaseDatasetModel, models.Model):
+    class Meta:
+        indexes = [
+            models.Index(fields=['bbl', 'dateentered']),
+        ]
     download_endpoint = "https://nycopendata.socrata.com/api/views/eabe-havv/rows.csv?accessType=DOWNLOAD"
 
     complaintnumber = models.IntegerField(primary_key=True, blank=False, null=False)
