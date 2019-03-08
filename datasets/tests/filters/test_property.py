@@ -177,7 +177,7 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['bbl'], '1')
 
-    def test_dobpermitsissueds_field(self):
+    def test_dobissuedpermitss_field(self):
         council = self.council_factory(id=1)
         # 10 in range
         property1 = self.property_factory(bbl=1, council=council)

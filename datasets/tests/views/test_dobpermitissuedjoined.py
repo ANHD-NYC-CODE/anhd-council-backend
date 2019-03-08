@@ -17,17 +17,17 @@ class DOBPermitIssuedJoinedTests(BaseTest, TestCase):
         self.permitissuedjoined_factory()
         self.permitissuedjoined_factory()
 
-        response = self.client.get('/dobpermitsissued/', format="json")
+        response = self.client.get('/dobissuedpermits/', format="json")
         content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
     def test_retrieve(self):
-        dobpermitsissued = self.permitissuedjoined_factory()
+        dobissuedpermits = self.permitissuedjoined_factory()
 
-        response = self.client.get('/dobpermitsissued/{}/'.format(dobpermitsissued.key))
+        response = self.client.get('/dobissuedpermits/{}/'.format(dobissuedpermits.key))
         content = response.data
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(content["key"], dobpermitsissued.key)
+        self.assertEqual(content["key"], dobissuedpermits.key)

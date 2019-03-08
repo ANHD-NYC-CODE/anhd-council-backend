@@ -126,7 +126,7 @@ class PropertySummarySerializer(serializers.ModelSerializer):
             'bldgclass', 'numbldgs', 'numfloors', 'address', 'lat', 'lng', 'cb2010', 'ct2010',
             'hpdviolations', 'hpdcomplaints', 'dobcomplaints', 'dobviolations', 'ecbviolations',
             'acrisrealmasters', 'hpdregistration', 'hpdregistrationcontacts',
-            'coresubsidyrecords', 'dobpermitsissued', 'dobpermitfiled',
+            'coresubsidyrecords', 'dobissuedpermits', 'dobpermitfiled',
             'housinglitigations', 'taxliens', 'evictions', 'taxbill', 'lispendens', 'buildings'
         )
 
@@ -212,13 +212,13 @@ class PropertySummarySerializer(serializers.ModelSerializer):
             "count": len(coresubsidyrecords)
         }
 
-    dobpermitsissued = serializers.SerializerMethodField()
+    dobissuedpermits = serializers.SerializerMethodField()
 
-    def get_dobpermitsissued(self, obj):
-        dobpermitsissued = ds.DOBPermitIssuedJoined.objects.filter(bbl=obj).all()
+    def get_dobissuedpermits(self, obj):
+        dobissuedpermits = ds.DOBPermitIssuedJoined.objects.filter(bbl=obj).all()
 
         return {
-            "count": len(dobpermitsissued)
+            "count": len(dobissuedpermits)
         }
 
     dobpermitfiled = serializers.SerializerMethodField()

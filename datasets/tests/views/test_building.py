@@ -132,12 +132,12 @@ class BuildingViewTests(BaseTest, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
-    def test_building_dobpermitsissued(self):
+    def test_building_dobissuedpermits(self):
         building = self.building_factory(bin="1")
         self.permitissuedjoined_factory(building=building)
         self.permitissuedjoined_factory(building=building)
 
-        response = self.client.get('/buildings/1/dobpermitsissued/')
+        response = self.client.get('/buildings/1/dobissuedpermits/')
         content = response.data['results']
 
         self.assertEqual(response.status_code, 200)

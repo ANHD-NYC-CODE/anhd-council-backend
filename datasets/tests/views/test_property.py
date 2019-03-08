@@ -236,7 +236,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.permitissuedjoined_factory(property=property)
         self.permitissuedjoined_factory(property=property)
 
-        response = self.client.get('/properties/1/dobpermitsissued/')
+        response = self.client.get('/properties/1/dobissuedpermits/')
         content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
