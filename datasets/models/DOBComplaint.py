@@ -31,6 +31,8 @@ class DOBComplaint(BaseDatasetModel, models.Model):
     inspectiondate = models.DateTimeField(db_index=True, blank=True, null=True)
     dobrundate = models.DateTimeField(db_index=True, blank=True, null=True)
 
+    slim_query_fields = ["complaintnumber", "bbl", "dateentered"]
+
     @classmethod
     def download(self):
         return self.download_file(self.download_endpoint)

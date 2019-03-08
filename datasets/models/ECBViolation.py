@@ -61,6 +61,8 @@ class ECBViolation(BaseDatasetModel, models.Model):
     hearingstatus = models.TextField(blank=True, null=True)
     certificationstatus = models.TextField(blank=True, null=True)
 
+    slim_query_fields = ["ecbviolationnumber", "bbl", "issuedate"]
+
     @classmethod
     def download(self):
         return self.download_file(self.download_endpoint)

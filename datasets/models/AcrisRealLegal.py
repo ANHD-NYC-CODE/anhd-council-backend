@@ -25,6 +25,8 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
     unit = models.TextField(blank=True, null=True)
     goodthroughdate = models.DateTimeField(blank=True, null=True)
 
+    slim_query_fields = ["bbl", "documentid"]
+
     @classmethod
     def download(self):
         return self.download_file(self.download_endpoint)

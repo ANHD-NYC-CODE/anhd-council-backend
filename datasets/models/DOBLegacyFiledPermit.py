@@ -114,6 +114,8 @@ class DOBLegacyFiledPermit(BaseDatasetModel, models.Model):
     gisntaname = models.TextField(blank=True, null=True)
     gisbin = models.TextField(blank=True, null=True)
 
+    slim_query_fields = ["id", "bbl", "dobrundate"]
+
     # class Meta:
     #     unique_together = ('job', 'jobs1no',)
 

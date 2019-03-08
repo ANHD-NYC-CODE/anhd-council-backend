@@ -30,6 +30,8 @@ class Eviction(BaseDatasetModel, models.Model):
     residentialcommercialind = models.TextField(db_index=True, blank=True, null=True)
     schedulestatus = models.TextField(db_index=True, blank=True, null=True)
 
+    slim_query_fields = ["courtindexnumber", "bbl", "executeddate"]
+
     @classmethod
     def download(self):
         return self.download_file(self.download_endpoint)

@@ -32,6 +32,8 @@ class LisPenden(BaseDatasetModel, models.Model):
         'foreclosure': 'foreclosure'
     }
 
+    slim_query_fields = ["key", "bbl", "fileddate"]
+
     @classmethod
     def pre_validation_filters(self, gen_rows):
         for row in gen_rows:

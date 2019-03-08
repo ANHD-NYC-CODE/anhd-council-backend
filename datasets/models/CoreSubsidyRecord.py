@@ -51,6 +51,8 @@ class CoreSubsidyRecord(BaseDatasetModel, models.Model):
     taxdelinquency2016 = models.SmallIntegerField(blank=True, null=True)
     dataoutputdate = models.DateTimeField(blank=True, null=True)
 
+    slim_query_fields = ["id", "bbl", "programname", "enddate"]
+
     @classmethod
     def standardize_programnames(self, row):
         # Raw:

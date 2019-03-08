@@ -29,6 +29,8 @@ class HPDComplaint(BaseDatasetModel, models.Model):
     status = models.TextField(db_index=True, blank=True, null=True)
     statusdate = models.DateTimeField(db_index=True, blank=True, null=True)
 
+    slim_query_fields = ["complaintid", "bbl", "receiveddate"]
+
     @classmethod
     def download(self):
         return self.download_file(self.download_endpoint)

@@ -32,6 +32,8 @@ class DOBViolation(BaseDatasetModel, models.Model):
     violationcategory = models.TextField(db_index=True, blank=True, null=True)
     violationtype = models.TextField(db_index=True, blank=True, null=True)
 
+    slim_query_fields = ["isndobbisviol", "bbl", "issuedate"]
+
     @classmethod
     def download(self):
         return self.download_file(self.download_endpoint)

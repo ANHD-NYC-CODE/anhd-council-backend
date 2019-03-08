@@ -39,6 +39,8 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
     foreign_key = models.TextField(blank=True, null=True)
     type = models.TextField(blank=True, null=True)
 
+    slim_query_fields = ["key", "bbl", "issuedate"]
+
     @classmethod
     def pre_validation_filters(self, gen_rows):
         return gen_rows

@@ -33,6 +33,8 @@ class TaxLien(BaseDatasetModel, models.Model):
     waterdebtonly = models.TextField(blank=True, null=True)
     year = models.SmallIntegerField(db_index=True, blank=True, null=True)
 
+    slim_query_fields = ["id", 'bbl', 'year']
+
     @classmethod
     def pre_validation_filters(self, gen_rows):
         return gen_rows

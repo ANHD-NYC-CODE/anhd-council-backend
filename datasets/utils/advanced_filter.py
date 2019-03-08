@@ -10,7 +10,10 @@ import collections
 
 
 def annotate_dataset(queryset, c_filter):
-    queryset = queryset.prefetch_related(c_filter['prefetch_key'])
+    model_name = list(filter(lambda x: c_filter['model'].lower() == x.lower(), settings.ACTIVE_MODELS))
+    model = getattr(ds, model_name[0])
+
+    queryset = queryset.prefetch_related(c_filter['prefetch_key']).only(*model.slim_query_fields)
     if c_filter['annotation_key']:
         queryset = queryset.annotate(**{c_filter['annotation_key']: Count(
             c_filter['model'],

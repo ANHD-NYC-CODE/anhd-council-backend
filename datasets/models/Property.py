@@ -50,55 +50,16 @@ class PropertyQuerySet(models.QuerySet):
         return self.filter(unitsres__lte=units)
 
     def marketrate_filter(self):
+        rentstab_records = ds.RentStabilizationRecord.objects.only('ucbbl').filter(ucbbl=OuterRef('bbl'))
         return self.annotate(
             publichousingcount=Count('publichousingrecord'),
             rentsubsidized=Count('coresubsidyrecord'),
-            rentstabilizationrecord2007=Count('rentstabilizationrecord',
-                                              filter=Q(rentstabilizationrecord__uc2007__gt=0)),
-            rentstabilizationrecord2008=Count('rentstabilizationrecord',
-                                              filter=Q(rentstabilizationrecord__uc2008__gt=0)),
-            rentstabilizationrecord2009=Count('rentstabilizationrecord',
-                                              filter=Q(rentstabilizationrecord__uc2009__gt=0)),
-            rentstabilizationrecord2010=Count('rentstabilizationrecord',
-                                              filter=Q(rentstabilizationrecord__uc2010__gt=0)),
-            rentstabilizationrecord2011=Count('rentstabilizationrecord',
-                                              filter=Q(rentstabilizationrecord__uc2011__gt=0)),
-            rentstabilizationrecord2012=Count('rentstabilizationrecord',
-                                              filter=Q(rentstabilizationrecord__uc2012__gt=0)),
-            rentstabilizationrecord2013=Count('rentstabilizationrecord',
-                                              filter=Q(rentstabilizationrecord__uc2013__gt=0)),
-            rentstabilizationrecord2014=Count('rentstabilizationrecord',
-                                              filter=Q(rentstabilizationrecord__uc2014__gt=0)),
-            rentstabilizationrecord2015=Count('rentstabilizationrecord',
-                                              filter=Q(rentstabilizationrecord__uc2015__gt=0)),
-            rentstabilizationrecord2016=Count('rentstabilizationrecord',
-                                              filter=Q(rentstabilizationrecord__uc2016__gt=0)),
-            rentstabilizationrecord2017=Count('rentstabilizationrecord',
-                                              filter=Q(rentstabilizationrecord__uc2017__gt=0)),
-            rentstabilizationrecord2018=Count('rentstabilizationrecord',
-                                              filter=Q(rentstabilizationrecord__uc2018__gt=0)),
-            rentstabilizationrecord2019=Count('rentstabilizationrecord',
-                                              filter=Q(rentstabilizationrecord__uc2019__gt=0)),
-            rentstabilizationrecord2020=Count('rentstabilizationrecord',
-                                              filter=Q(rentstabilizationrecord__uc2020__gt=0))
+            has_rentstab=Exists(rentstab_records)
         ).filter(Q(
             unitsres__gte=6,
             rentsubsidized=0,
             publichousingcount=0,
-            rentstabilizationrecord2007=0,
-            rentstabilizationrecord2008=0,
-            rentstabilizationrecord2009=0,
-            rentstabilizationrecord2010=0,
-            rentstabilizationrecord2011=0,
-            rentstabilizationrecord2012=0,
-            rentstabilizationrecord2013=0,
-            rentstabilizationrecord2014=0,
-            rentstabilizationrecord2015=0,
-            rentstabilizationrecord2016=0,
-            rentstabilizationrecord2017=0,
-            rentstabilizationrecord2018=0,
-            rentstabilizationrecord2019=0,
-            rentstabilizationrecord2020=0) | Q(unitsres__lte=5))
+            has_rentstab=False) | Q(unitsres__lte=5))
 
     def publichousing_filter(self):
         return self.annotate(publichousingrecords=Count('publichousingrecord')).filter(publichousingrecords__gte=1)

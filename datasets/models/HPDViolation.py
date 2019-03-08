@@ -54,6 +54,8 @@ class HPDViolation(BaseDatasetModel, models.Model):
     censustract = models.TextField(blank=True, null=True)
     nta = models.TextField(blank=True, null=True)
 
+    slim_query_fields = ["violationid", "bbl", "approveddate"]
+
     @classmethod
     def download(self):
         return self.download_file(self.download_endpoint)
