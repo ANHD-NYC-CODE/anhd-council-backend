@@ -247,7 +247,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.permitfiledlegacy_factory(property=property)
         self.permitfiledlegacy_factory(property=property)
 
-        response = self.client.get('/properties/1/dobpermitfiledlegacy/')
+        response = self.client.get('/properties/1/doblegacyfiledpermits/')
         content = response.data['results']
 
         self.assertEqual(response.status_code, 200)

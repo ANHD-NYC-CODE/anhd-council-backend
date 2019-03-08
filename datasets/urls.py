@@ -180,15 +180,15 @@ properties_router.register(
 
 properties_router.register(
     'dobissuedpermits',
-    v.dobissuedpermits_view.DOBPermitIssuedJoinedViewSet,
+    v.dobissuedpermit_view.DOBPermitIssuedJoinedViewSet,
     base_name='property-dobissuedpermits',
     parents_query_lookups=['bbl']
 )
 
 properties_router.register(
-    'dobpermitfiledlegacy',
-    v.dobpermitfiledlegacy_views.DOBPermitFiledLegacyViewSet,
-    base_name='property-dobpermitfiledlegacy',
+    'doblegacyfiledpermits',
+    v.doblegacyfiledpermit_views.DOBLegacyFiledPermitViewSet,
+    base_name='property-doblegacyfiledpermit',
     parents_query_lookups=['bbl']
 )
 
@@ -275,14 +275,14 @@ buildings_router.register(
 
 buildings_router.register(
     'dobissuedpermits',
-    v.dobissuedpermits_view.DOBPermitIssuedJoinedViewSet,
+    v.dobissuedpermit_view.DOBPermitIssuedJoinedViewSet,
     base_name='building-dobissuedpermits',
     parents_query_lookups=['bin']
 )
 
 buildings_router.register(
-    'dobpermitfiledlegacy',
-    v.dobpermitfiledlegacy_views.DOBPermitFiledLegacyViewSet,
+    'doblegacyfiledpermits',
+    v.doblegacyfiledpermit_views.DOBLegacyFiledPermitViewSet,
     base_name='building-dobnowfiledpermits',
     parents_query_lookups=['bin']
 )
@@ -367,8 +367,8 @@ router.register(r'subsidy421a', v.subsidy421a_views.Subsidy421aViewSet)
 router.register(r'coredata', v.coresubsidyrecord_views.CoreSubsidyRecordViewSet)
 router.register(r'dobpermitissuedlegacy', v.dobpermitissuedlegacy_views.DOBPermitIssuedLegacyViewSet)
 router.register(r'dobpermitissuednow', v.dobpermitissuednow_views.DOBPermitIssuedNowViewSet)
-router.register(r'dobissuedpermits', v.dobissuedpermits_view.DOBPermitIssuedJoinedViewSet)
-router.register(r'dobpermitfiledlegacy', v.dobpermitfiledlegacy_views.DOBPermitFiledLegacyViewSet)
+router.register(r'dobissuedpermits', v.dobissuedpermit_view.DOBPermitIssuedJoinedViewSet)
+router.register(r'doblegacyfiledpermits', v.doblegacyfiledpermit_views.DOBLegacyFiledPermitViewSet)
 router.register(r'publichousingrecords', v.publichousingrecord_views.PublicHousingRecordViewSet)
 router.register(r'foreclosures', v.lispenden_views.LisPendenViewSet)
 

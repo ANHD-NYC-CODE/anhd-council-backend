@@ -143,12 +143,12 @@ class BuildingViewTests(BaseTest, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
-    def test_building_dobpermitfiledlegacy(self):
+    def test_building_doblegacyfiledpermit(self):
         building = self.building_factory(bin="1")
         self.permitfiledlegacy_factory(building=building)
         self.permitfiledlegacy_factory(building=building)
 
-        response = self.client.get('/buildings/1/dobpermitfiledlegacy/')
+        response = self.client.get('/buildings/1/doblegacyfiledpermits/')
         content = response.data['results']
 
         self.assertEqual(response.status_code, 200)

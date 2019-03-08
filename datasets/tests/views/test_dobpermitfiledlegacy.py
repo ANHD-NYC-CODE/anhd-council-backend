@@ -17,17 +17,17 @@ class DOBPermitFiledLegacyTests(BaseTest, TestCase):
         self.permitfiledlegacy_factory()
         self.permitfiledlegacy_factory()
 
-        response = self.client.get('/dobpermitfiledlegacy/', format="json")
+        response = self.client.get('/doblegacyfiledpermits/', format="json")
         content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
     def test_retrieve(self):
-        dobpermitfiledlegacy = self.permitfiledlegacy_factory()
+        doblegacyfiledpermit = self.permitfiledlegacy_factory()
 
-        response = self.client.get('/dobpermitfiledlegacy/{}/'.format(dobpermitfiledlegacy.id))
+        response = self.client.get('/doblegacyfiledpermits/{}/'.format(doblegacyfiledpermit.id))
         content = response.data
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(content["id"], dobpermitfiledlegacy.id)
+        self.assertEqual(content["id"], doblegacyfiledpermit.id)
