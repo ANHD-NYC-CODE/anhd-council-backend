@@ -18,6 +18,28 @@ logger = logging.getLogger('app')
 class RentStabilizationRecord(BaseDatasetModel, models.Model):
     download_endpoint = "http://taxbills.nyc/joined.csv"
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['ucbbl', 'uc2007']),
+            models.Index(fields=['ucbbl', 'uc2008']),
+            models.Index(fields=['ucbbl', 'uc2009']),
+            models.Index(fields=['ucbbl', 'uc2010']),
+            models.Index(fields=['ucbbl', 'uc2011']),
+            models.Index(fields=['ucbbl', 'uc2012']),
+            models.Index(fields=['ucbbl', 'uc2013']),
+            models.Index(fields=['ucbbl', 'uc2014']),
+            models.Index(fields=['ucbbl', 'uc2015']),
+            models.Index(fields=['ucbbl', 'uc2016']),
+            models.Index(fields=['ucbbl', 'uc2017']),
+            models.Index(fields=['ucbbl', 'uc2018']),
+            models.Index(fields=['ucbbl', 'uc2019']),
+            models.Index(fields=['ucbbl', 'uc2020']),
+            models.Index(fields=['ucbbl', 'uc2021']),
+            models.Index(fields=['ucbbl', 'uc2022']),
+            models.Index(fields=['ucbbl', 'uc2023']),
+            models.Index(fields=['ucbbl', 'uc2024']),
+        ]
+
     ucbbl = models.OneToOneField('Property', db_column='ucbbl', db_constraint=False,
                                  on_delete=models.SET_NULL, null=True, blank=True)
     borough = models.TextField(blank=True, null=True)

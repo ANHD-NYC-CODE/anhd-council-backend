@@ -18,6 +18,12 @@ logger = logging.getLogger('app')
 # Extract ZIP and upload xlsx file through admin, then update
 
 class CoreSubsidyRecord(BaseDatasetModel, models.Model):
+    class Meta:
+        indexes = [
+            models.Index(fields=['bbl', 'programname']),
+            models.Index(fields=['bbl', 'enddate']),
+        ]
+
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
     fcsubsidyid = models.BigIntegerField(blank=True, null=True)

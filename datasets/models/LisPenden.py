@@ -11,6 +11,11 @@ logger = logging.getLogger('app')
 
 
 class LisPenden(BaseDatasetModel, models.Model):
+    class Meta:
+        indexes = [
+            models.Index(fields=['bbl', 'fileddate']),
+        ]
+
     key = models.TextField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
