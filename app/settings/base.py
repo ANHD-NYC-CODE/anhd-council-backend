@@ -238,6 +238,7 @@ CELERY_DISABLE_RATE_LIMITS = False
 CELERY_BROKER_TRANSPORT_OPTIONS = {
     'visibility_timeout': 36000  # 10 hours
 }
+DJANGO_LOG_LEVEL = "DEBUG"
 
 LOGGING = {
     'version': 1,
@@ -294,12 +295,14 @@ LOGGING = {
         'sql': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
-            'formatter': 'sql'
+            'formatter': 'sql',
+            'filters': ['require_debug_false']
         },
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
-            'formatter': 'standard'
+            'formatter': 'standard',
+            'filters': ['require_debug_false']
         },
     },
     'loggers': {
