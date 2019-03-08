@@ -70,16 +70,8 @@ MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
-
-def show_toolbar(request):
-    return True
-
-
-SHOW_TOOLBAR_CALLBACK = show_toolbar
-
 INTERNAL_IPS = [
-    '127.0.0.1',
-    '74.73.242.43'
+    '127.0.0.1'
 ]
 
 CORS_ORIGIN_ALLOW_ALL = False
@@ -300,7 +292,7 @@ LOGGING = {
             'formatter': 'standard',
         },
         'sql': {
-            'level': 'INFO',
+            'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'sql'
         },
