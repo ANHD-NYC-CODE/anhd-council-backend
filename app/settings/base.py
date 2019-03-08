@@ -338,7 +338,7 @@ ACTIVE_MODELS = [
     'AcrisRealParty',
     'CoreSubsidyRecord',
     'DOBComplaint',
-    'DOBPermitFiledLegacy',
+    'DOBLegacyFiledPermit',
     'DOBPermitIssuedLegacy',
     'DOBPermitIssuedNow',
     'DOBIssuedPermit',

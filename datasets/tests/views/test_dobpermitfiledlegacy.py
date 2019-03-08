@@ -8,7 +8,7 @@ import logging
 logging.disable(logging.CRITICAL)
 
 
-class DOBPermitFiledLegacyTests(BaseTest, TestCase):
+class DOBLegacyFiledPermitTests(BaseTest, TestCase):
 
     def tearDown(self):
         self.clean_tests()

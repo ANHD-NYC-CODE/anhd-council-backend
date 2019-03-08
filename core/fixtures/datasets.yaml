@@ -54,7 +54,7 @@
   pk: 9
   fields:
     name: DOB Permits Filed (Legacy)
-    model_name: DOBPermitFiledLegacy
+    model_name: DOBLegacyFiledPermit
     automated: True
 - model: core.dataset
   pk: 10

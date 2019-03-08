@@ -749,26 +749,26 @@ class DOBPermitFiledTests(BaseTest, TestCase):
         self.clean_tests()
 
     def test_seed_record(self):
-        update = self.update_factory(model_name="DOBPermitFiledLegacy",
+        update = self.update_factory(model_name="DOBLegacyFiledPermit",
                                      file_name="mock_dob_permit_filed_legacy.csv")
-        ds.DOBPermitFiledLegacy.seed_or_update_self(file_path=update.file.file.path, update=update)
+        ds.DOBLegacyFiledPermit.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(update.total_rows, 5)
-        self.assertEqual(ds.DOBPermitFiledLegacy.objects.count(), 4)
+        self.assertEqual(ds.DOBLegacyFiledPermit.objects.count(), 4)
         self.assertEqual(update.rows_created, 4)
 
     def test_seed_record_after_update(self):
-        update = self.update_factory(model_name="DOBPermitFiledLegacy",
+        update = self.update_factory(model_name="DOBLegacyFiledPermit",
                                      file_name="mock_dob_permit_filed_legacy.csv")
-        ds.DOBPermitFiledLegacy.seed_or_update_self(file_path=update.file.file.path, update=update)
+        ds.DOBLegacyFiledPermit.seed_or_update_self(file_path=update.file.file.path, update=update)
 
-        new_update = self.update_factory(dataset=update.dataset, model_name="DOBPermitFiledLegacy",
+        new_update = self.update_factory(dataset=update.dataset, model_name="DOBLegacyFiledPermit",
                                          file_name="mock_dob_permit_filed_legacy_diff.csv", previous_file_name="mock_dob_permit_issued_now.csv")
-        ds.DOBPermitFiledLegacy.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
-        self.assertEqual(ds.DOBPermitFiledLegacy.objects.count(), 5)
+        ds.DOBLegacyFiledPermit.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
+        self.assertEqual(ds.DOBLegacyFiledPermit.objects.count(), 5)
         self.assertEqual(new_update.rows_created, 5)
         self.assertEqual(new_update.rows_updated, 0)
 
-        changed_record = ds.DOBPermitFiledLegacy.objects.filter(
+        changed_record = ds.DOBLegacyFiledPermit.objects.filter(
             job='421677974')[0]
         self.assertEqual(changed_record.jobstatusdescrp, 'PERMIT ISSUED - ENTIRE JOB/WORK')
 

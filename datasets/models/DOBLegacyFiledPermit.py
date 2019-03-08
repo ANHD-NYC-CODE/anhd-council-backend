@@ -11,7 +11,7 @@ logger = logging.getLogger('app')
 #
 
 
-class DOBPermitFiledLegacy(BaseDatasetModel, models.Model):
+class DOBLegacyFiledPermit(BaseDatasetModel, models.Model):
     download_endpoint = "https://data.cityofnewyork.us/api/views/ic3t-wcy2/rows.csv?accessType=DOWNLOAD"
 
     job = models.TextField(blank=False, null=False)

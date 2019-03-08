@@ -677,6 +677,35 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['bbl'], '1')
 
+    def test_legacyfiledpermit_rules(self):
+        council = self.council_factory(id=1)
+        # 10 in range
+        property1 = self.property_factory(bbl=1, council=council)
+        # 10 out of range
+        property2 = self.property_factory(bbl=2, council=council)
+        # 5 in range
+        property3 = self.property_factory(bbl=3, council=council)
+
+        for i in range(10):
+            self.permitfiledlegacy_factory(property=property1, dobrundate="2018-01-01")
+
+        for i in range(10):
+            self.permitfiledlegacy_factory(property=property2, dobrundate="2010-01-01")
+
+        for i in range(5):
+            self.permitfiledlegacy_factory(property=property3, dobrundate="2018-01-01")
+
+        # 10 permits between 2017-2018
+        query = '/properties/?q=*condition_0=AND+filter_0=doblegacyfiledpermits__dobrundate__gte=2017-01-01,doblegacyfiledpermits__dobrundate__lte=2018-01-01,doblegacyfiledpermits__count__gte=10'
+
+        response = self.client.get(query, format="json")
+
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+        self.assertEqual(content[0]['bbl'], '1')
+
     def test_eviction_rules(self):
         council = self.council_factory(id=1)
         # 10 in range

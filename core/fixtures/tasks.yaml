@@ -176,7 +176,7 @@
 - model: django_celery_beat.periodictask
   pk: 10
   fields:
-    name: "Update DOBPermitFiledLegacy"
+    name: "Update DOBLegacyFiledPermit"
     description: "Updates DOB (Legacy) Construction Permit Filings data every day 10pm"
     task: "core.tasks.async_download_and_update"
     crontab: 6

@@ -395,7 +395,7 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         return factory
 
     def permitfiledlegacy_factory(self, job=None, jobs1no=None, property=None, building=None, **kwargs):
-        name = 'DOBPermitFiledLegacy'
+        name = 'DOBLegacyFiledPermit'
         if not job:
             job = random.randint(1, 1000000)
         if not jobs1no:
@@ -406,7 +406,7 @@ class BaseTest(APITestCase, URLPatternsTestCase):
             building = self.building_factory(bin=random.randint(1, 1000000), property=property, boro=property.borough,
                                              block=property.block, lot=property.lot)
 
-        factory = d_models.DOBPermitFiledLegacy.objects.create(
+        factory = d_models.DOBLegacyFiledPermit.objects.create(
             job=job,
             jobs1no=jobs1no,
             bbl=property,
