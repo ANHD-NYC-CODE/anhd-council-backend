@@ -296,7 +296,6 @@ LOGGING = {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'sql',
-            'filters': ['require_debug_false']
         },
         'console': {
             'level': 'DEBUG',
@@ -312,9 +311,9 @@ LOGGING = {
             'propagate': True,
         },
         'django.db.backends': {
-            'handlers': ['sql', 'console'],
+            'handlers': ['sql'],
             'level': 'DEBUG',
-            'propagate': True,
+            'propagate': False,
         },
         'django.template': {
             'handlers': ['logfile'],
