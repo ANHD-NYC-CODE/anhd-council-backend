@@ -75,6 +75,14 @@
     # every minute
     minute: "*"
     timezone: "America/New_York"
+- model: django_celery_beat.crontabschedule
+  pk: 11
+  fields:
+    # 9PM every 2nd of the month
+    minute: "0"
+    hour: "21"
+    day_of_month: "2"
+    timezone: "America/New_York"
 - model: django_celery_beat.periodictask
   pk: 1
   fields:
@@ -119,9 +127,9 @@
   pk: 5
   fields:
     name: "Update HPDComplaint"
-    description: "Updates HPD Complaints data every day 9pm"
+    description: "HPD Complaint Update every 2nd of the month at 9pm"
     task: "core.tasks.async_download_and_update"
-    crontab: 5
+    crontab: 11
     args: "[17]"
     kwargs: "{}"
     date_changed: "2019-01-01"
@@ -129,9 +137,9 @@
   pk: 6
   fields:
     name: "Update HPDProblem"
-    description: "Updates HPD Problems data every day 9pm"
+    description: "HPD Problem Update every 2nd of the month at 9pm"
     task: "core.tasks.async_download_and_update"
-    crontab: 5
+    crontab: 11
     args: "[18]"
     kwargs: "{}"
     date_changed: "2019-01-01"
@@ -273,5 +281,25 @@
     task: "app.tasks.clear_cache"
     crontab: 9
     args: "[]"
+    kwargs: "{}"
+    date_changed: "2019-01-01"
+- model: django_celery_beat.periodictask
+  pk: 21
+  fields:
+    name: "Update HPDComplaint"
+    description: "Backup HPD Complaints Update every 7th of the month at midnight"
+    task: "core.tasks.async_download_and_update"
+    crontab: 4
+    args: "[17]"
+    kwargs: "{}"
+    date_changed: "2019-01-01"
+- model: django_celery_beat.periodictask
+  pk: 22
+  fields:
+    name: "Update HPDProblem"
+    description: "Backup HPD Problem Update every 7th of the month at midnight"
+    task: "core.tasks.async_download_and_update"
+    crontab: 4
+    args: "[18]"
     kwargs: "{}"
     date_changed: "2019-01-01"
