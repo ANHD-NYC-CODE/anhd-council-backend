@@ -78,7 +78,8 @@ def show_toolbar(request):
 SHOW_TOOLBAR_CALLBACK = show_toolbar
 
 INTERNAL_IPS = [
-    '127.0.0.1'
+    '127.0.0.1',
+    '74.73.242.43'
 ]
 
 CORS_ORIGIN_ALLOW_ALL = False
