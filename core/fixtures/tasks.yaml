@@ -206,7 +206,7 @@
 - model: django_celery_beat.periodictask
   pk: 13
   fields:
-    name: "Update DOBPermitIssuedJoined"
+    name: "Update DOBPermitIssued"
     description: "Updates joined DOB Construction Permit Issued data every day 11pm"
     task: "core.tasks.async_create_update"
     crontab: 7

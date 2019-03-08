@@ -215,7 +215,7 @@ class PropertySummarySerializer(serializers.ModelSerializer):
     dobissuedpermits = serializers.SerializerMethodField()
 
     def get_dobissuedpermits(self, obj):
-        dobissuedpermits = ds.DOBPermitIssuedJoined.objects.filter(bbl=obj).all()
+        dobissuedpermits = ds.DOBPermitIssued.objects.filter(bbl=obj).all()
 
         return {
             "count": len(dobissuedpermits)
@@ -460,9 +460,9 @@ class DOBPermitIssuedNowSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class DOBPermitIssuedJoinedSerializer(serializers.ModelSerializer):
+class DOBPermitIssuedSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ds.DOBPermitIssuedJoined
+        model = ds.DOBPermitIssued
         fields = '__all__'
 
 

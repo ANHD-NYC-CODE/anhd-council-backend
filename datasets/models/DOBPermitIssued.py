@@ -14,10 +14,10 @@ logger = logging.getLogger('app')
 
 # Create an update in admin with this model name, no file.
 
-# TODO rename to DOBPermitIssuedJoined
+# TODO rename to DOBPermitIssued
 
 
-class DOBPermitIssuedJoined(BaseDatasetModel, models.Model):
+class DOBPermitIssued(BaseDatasetModel, models.Model):
     key = models.TextField(primary_key=True, blank=False, null=False)
     jobfilingnumber = models.TextField(blank=True, null=True)
     workpermit = models.TextField(blank=True, null=True)

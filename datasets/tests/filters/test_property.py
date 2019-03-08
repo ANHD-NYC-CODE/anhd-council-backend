@@ -196,7 +196,7 @@ class PropertyFilterTests(BaseTest, TestCase):
             self.permitissuedjoined_factory(property=property3, issuedate="2018-01-01")
 
         # 10 permits between 2017-2018
-        query = '/properties/?dobpermitissuedjoined__start=2017-01-01&dobpermitissuedjoined__end=2018-01-01&dobpermitissuedjoined__gte=10'
+        query = '/properties/?dobpermitissued__start=2017-01-01&dobpermitissued__end=2018-01-01&dobpermitissued__gte=10'
         response = self.client.get(query, format="json")
 
         content = response.data['results']
@@ -667,7 +667,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
             self.permitissuedjoined_factory(property=property3, issuedate="2018-01-01")
 
         # 10 permits between 2017-2018
-        query = '/properties/?q=*condition_0=AND+filter_0=dobpermitissuedjoined__issuedate__gte=2017-01-01,dobpermitissuedjoined__issuedate__lte=2018-01-01,dobpermitissuedjoined__count__gte=10'
+        query = '/properties/?q=*condition_0=AND+filter_0=dobpermitissued__issuedate__gte=2017-01-01,dobpermitissued__issuedate__lte=2018-01-01,dobpermitissued__count__gte=10'
 
         response = self.client.get(query, format="json")
         content = response.data['results']

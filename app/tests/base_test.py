@@ -441,7 +441,7 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         return factory
 
     def permitissuedjoined_factory(self, jobfilingnumber=None, workpermit=None, property=None, building=None, **kwargs):
-        name = 'DOBPermitIssuedJoined'
+        name = 'DOBPermitIssued'
 
         if not workpermit:
             workpermit = random.randint(1, 1000000)
@@ -455,7 +455,7 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         if not building:
             building = self.building_factory(bin=random.randint(1, 1000000), property=property, boro=property.borough,
                                              block=property.block, lot=property.lot)
-        factory = d_models.DOBPermitIssuedJoined.objects.create(
+        factory = d_models.DOBPermitIssued.objects.create(
             key=key,
             jobfilingnumber=jobfilingnumber,
             workpermit=workpermit,

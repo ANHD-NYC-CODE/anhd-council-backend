@@ -8,7 +8,7 @@ import logging
 logging.disable(logging.CRITICAL)
 
 
-class DOBPermitIssuedJoinedTests(BaseTest, TestCase):
+class DOBPermitIssuedTests(BaseTest, TestCase):
 
     def tearDown(self):
         self.clean_tests()

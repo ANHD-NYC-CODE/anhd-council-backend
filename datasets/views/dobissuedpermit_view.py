@@ -8,10 +8,10 @@ from datasets import serializers as serial
 from datasets import models as ds
 
 
-class DOBPermitIssuedJoinedViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
+class DOBPermitIssuedViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
-    queryset = ds.DOBPermitIssuedJoined.objects.all().order_by('pk')
-    serializer_class = serial.DOBPermitIssuedJoinedSerializer
+    queryset = ds.DOBPermitIssued.objects.all().order_by('pk')
+    serializer_class = serial.DOBPermitIssuedSerializer
 
     @cache_me()
     def list(self, request, *args, **kwargs):

@@ -160,7 +160,7 @@
   pk: 26
   fields:
     name: DOB Permits Issued (Joined)
-    model_name: DOBPermitIssuedJoined
+    model_name: DOBPermitIssued
     automated: True
 - model: core.dataset
   pk: 27

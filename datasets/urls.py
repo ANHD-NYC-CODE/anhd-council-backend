@@ -180,7 +180,7 @@ properties_router.register(
 
 properties_router.register(
     'dobissuedpermits',
-    v.dobissuedpermit_view.DOBPermitIssuedJoinedViewSet,
+    v.dobissuedpermit_view.DOBPermitIssuedViewSet,
     base_name='property-dobissuedpermits',
     parents_query_lookups=['bbl']
 )
@@ -275,7 +275,7 @@ buildings_router.register(
 
 buildings_router.register(
     'dobissuedpermits',
-    v.dobissuedpermit_view.DOBPermitIssuedJoinedViewSet,
+    v.dobissuedpermit_view.DOBPermitIssuedViewSet,
     base_name='building-dobissuedpermits',
     parents_query_lookups=['bin']
 )
@@ -367,7 +367,7 @@ router.register(r'subsidy421a', v.subsidy421a_views.Subsidy421aViewSet)
 router.register(r'coredata', v.coresubsidyrecord_views.CoreSubsidyRecordViewSet)
 router.register(r'dobpermitissuedlegacy', v.dobpermitissuedlegacy_views.DOBPermitIssuedLegacyViewSet)
 router.register(r'dobpermitissuednow', v.dobpermitissuednow_views.DOBPermitIssuedNowViewSet)
-router.register(r'dobissuedpermits', v.dobissuedpermit_view.DOBPermitIssuedJoinedViewSet)
+router.register(r'dobissuedpermits', v.dobissuedpermit_view.DOBPermitIssuedViewSet)
 router.register(r'doblegacyfiledpermits', v.doblegacyfiledpermit_views.DOBLegacyFiledPermitViewSet)
 router.register(r'publichousingrecords', v.publichousingrecord_views.PublicHousingRecordViewSet)
 router.register(r'foreclosures', v.lispenden_views.LisPendenViewSet)
