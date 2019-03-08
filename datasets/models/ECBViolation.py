@@ -11,6 +11,7 @@ class ECBViolation(BaseDatasetModel, models.Model):
     class Meta:
         indexes = [
             models.Index(fields=['bbl', 'issuedate']),
+            models.Index(fields=['issuedate', 'bbl']),
         ]
     download_endpoint = "https://data.cityofnewyork.us/api/views/6bgk-3dad/rows.csv?accessType=DOWNLOAD"
 

@@ -10,6 +10,8 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
     class Meta:
         indexes = [
             models.Index(fields=['bbl', 'documentid']),
+            models.Index(fields=['documentid', 'documentid']),
+
         ]
 
     documentid = models.ForeignKey('AcrisRealMaster', db_column='documentid', db_constraint=False,

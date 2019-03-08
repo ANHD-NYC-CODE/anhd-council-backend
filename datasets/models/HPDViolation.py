@@ -11,6 +11,7 @@ class HPDViolation(BaseDatasetModel, models.Model):
     class Meta:
         indexes = [
             models.Index(fields=['bbl', 'approveddate']),
+            models.Index(fields=['approveddate', 'bbl']),
         ]
 
     download_endpoint = "https://data.cityofnewyork.us/api/views/wvxf-dwi5/rows.csv?accessType=DOWNLOAD"

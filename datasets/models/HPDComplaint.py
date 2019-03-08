@@ -11,6 +11,8 @@ class HPDComplaint(BaseDatasetModel, models.Model):
     class Meta:
         indexes = [
             models.Index(fields=['bbl', 'receiveddate']),
+            models.Index(fields=['receiveddate', 'bbl']),
+
         ]
     download_endpoint = "https://data.cityofnewyork.us/api/views/uwyv-629c/rows.csv?accessType=DOWNLOAD"
 

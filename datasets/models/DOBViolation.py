@@ -11,6 +11,8 @@ class DOBViolation(BaseDatasetModel, models.Model):
     class Meta:
         indexes = [
             models.Index(fields=['bbl', 'issuedate']),
+            models.Index(fields=['issuedate', 'bbl']),
+
         ]
     download_endpoint = "https://data.cityofnewyork.us/api/views/3h2n-5cm9/rows.csv?accessType=DOWNLOAD"
 

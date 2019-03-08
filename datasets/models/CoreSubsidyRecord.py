@@ -22,6 +22,8 @@ class CoreSubsidyRecord(BaseDatasetModel, models.Model):
         indexes = [
             models.Index(fields=['bbl', 'programname']),
             models.Index(fields=['bbl', 'enddate']),
+            models.Index(fields=['programname', 'bbl']),
+            models.Index(fields=['enddate', 'bbl']),
         ]
 
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,

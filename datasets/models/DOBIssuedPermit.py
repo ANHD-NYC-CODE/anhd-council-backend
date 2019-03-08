@@ -21,6 +21,8 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
     class Meta:
         indexes = [
             models.Index(fields=['bbl', 'issuedate']),
+            models.Index(fields=['issuedate', 'issuedate']),
+
         ]
 
     key = models.TextField(primary_key=True, blank=False, null=False)

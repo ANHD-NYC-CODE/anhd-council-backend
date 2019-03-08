@@ -13,6 +13,7 @@ class DOBComplaint(BaseDatasetModel, models.Model):
     class Meta:
         indexes = [
             models.Index(fields=['bbl', 'dateentered']),
+            models.Index(fields=['dateentered', 'bbl']),
         ]
     download_endpoint = "https://nycopendata.socrata.com/api/views/eabe-havv/rows.csv?accessType=DOWNLOAD"
 

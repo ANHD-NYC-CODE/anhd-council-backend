@@ -17,6 +17,8 @@ class DOBLegacyFiledPermit(BaseDatasetModel, models.Model):
     class Meta:
         indexes = [
             models.Index(fields=['bbl', 'dobrundate']),
+            models.Index(fields=['dobrundate', 'dobrundate']),
+
         ]
 
     job = models.TextField(blank=False, null=False)

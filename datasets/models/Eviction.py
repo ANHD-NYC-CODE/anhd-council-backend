@@ -16,6 +16,8 @@ class Eviction(BaseDatasetModel, models.Model):
     class Meta:
         indexes = [
             models.Index(fields=['bbl', 'executeddate']),
+            models.Index(fields=['executeddate', 'executeddate']),
+
         ]
     download_endpoint = "https://data.cityofnewyork.us/api/views/6z8x-wfk4/rows.csv?accessType=DOWNLOAD"
 
