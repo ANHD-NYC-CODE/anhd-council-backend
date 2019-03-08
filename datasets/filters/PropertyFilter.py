@@ -125,7 +125,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         # filter on non-annotating filters (like dates)
 
         q1 = af.convert_condition_to_q(next(iter(mapping)), mapping, 'query1_filters')
-        q1_queryset = queryset.only('bbl').filter(q1).distinct()
+        q1_queryset = queryset.only('bbl').filter(q1).distinct().all()
 
         # filter on annotating filters (like counts)
         q2 = af.convert_condition_to_q(next(iter(mapping)), mapping, 'query2_filters')
