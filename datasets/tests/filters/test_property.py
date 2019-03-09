@@ -840,7 +840,8 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         query = '/properties/?format=json&council=1&housingtype=sh&unitsres__lte=4&q=*condition_0=AND+filter_0=condition_1+filter_0=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5+*condition_1=OR+filter_1=dobviolations__issuedate__gte=2018-01-01,dobviolations__issuedate__lte=2019-01-01,dobviolations__count__gte=5+filter_1=ecbviolations__issuedate__gte=2018-01-01,ecbviolations__issuedate__lte=2019-01-01,ecbviolations__count__gte=5'
 
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        # json response
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
