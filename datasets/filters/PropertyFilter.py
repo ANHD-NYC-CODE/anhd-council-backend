@@ -141,8 +141,8 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
                 else:
                     queryset = af.annotate_dataset(queryset, c_filter)
 
-        q1 = af.convert_condition_to_q(next(iter(mapping)), mapping, 'query1_filters')
-        q1_queryset = queryset.filter(q1)
+        # q1 = af.convert_condition_to_q(next(iter(mapping)), mapping, 'query1_filters')
+        # q1_queryset = queryset.filter(q1)
 
         # filter on annotating filters (like counts)
         q2 = af.convert_condition_to_q(next(iter(mapping)), mapping, 'query2_filters')
@@ -151,7 +151,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         #
         # final_bbls = q2_queryset.values('bbl')
 
-        return q1_queryset.filter(q2)
+        return queryset.filter(q2)
 
     # Rent stabilized units lost
 
