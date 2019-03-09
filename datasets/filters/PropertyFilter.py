@@ -5,7 +5,7 @@ from django.db.models.functions import Cast
 import django_filters
 from django import forms
 from copy import deepcopy
-from datasets.filter_helpers import CommaSeparatedConditionFilter, TotalWithDateFilter, RSLostPercentWithDateFilter, AdvancedQueryFilter
+from datasets.filter_helpers import CommaSeparatedConditionFilter, TotalWithDateFilter, RSLostPercentWithDateFilter, PercentWithDateField, AdvancedQueryFilter
 from datasets.utils import advanced_filter as af
 import operator
 from functools import reduce
@@ -125,8 +125,70 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
     def filter_advancedquery(self, queryset, name, values):
         # Turns out the queryset that comes here is not guaranteed to be pre-filled with
-        # council or housing type filters
+        # council or housing type filters / subqueries
 
+        # Need to override the queryset to ensure subqueries come before joins
+        queryset = ds.Property.objects
+        params = dict(self.request.query_params)
+
+        # converts the param values into an array for some reason...
+        del params['q']
+        if 'council' in params:
+            queryset = queryset.council(params['council'][0])
+            del params['council']
+        elif 'community' in params:
+            queryset = queryset.community(params['community'][0])
+            del params['community']
+        if 'housingtype' in params:
+            queryset = self.filter_housingtype(queryset, name, params['housingtype'][0])
+            del params['housingtype']
+        if 'rsunitslost__start' in params:
+            start = params['rsunitslost__start'][0]
+            del params['rsunitslost__start']
+            end = None
+            lt = None
+            lte = None
+            exact = None
+            gt = None
+            gte = None
+            if 'rsunitslost__end' in params:
+                end = params['rsunitslost__end'][0]
+                del params['rsunitslost__end']
+            if 'rsunitslost__lt' in params:
+                lt = params['rsunitslost__lt'][0]
+                del params['rsunitslost__lt']
+            if 'rsunitslost__lte' in params:
+                lte = params['rsunitslost__lte'][0]
+                del params['rsunitslost__lte']
+            if 'rsunitslost__exact' in params:
+                exact = params['rsunitslost__exact'][0]
+                del params['rsunitslost__exact']
+            if 'rsunitslost__gt' in params:
+                gt = params['rsunitslost__gt'][0]
+                del params['rsunitslost__gt']
+            if 'rsunitslost__gte' in params:
+                gte = params['rsunitslost__gte'][0]
+                del params['rsunitslost__gte']
+
+            rsunitslost_params = (start,
+                                  end,
+                                  lt,
+                                  lte,
+                                  exact,
+                                  gt,
+                                  gte,)
+
+            queryset = self.filter_stabilizedunitslost_percent_and_dates(
+                queryset, name, PercentWithDateField.compress(self, rsunitslost_params))
+
+        # add all the other params
+        for key, value in params.items():
+            queryset = queryset.filter(**{key: value[0]})
+
+        # finally, construct subquery
+        queryset = queryset.filter(bbl__in=queryset.only('bbl'))
+
+        # NOW parse the q advanced query
         mapping = af.convert_query_string_to_mapping(values)
 
         af.validate_mapping(self.request, mapping)

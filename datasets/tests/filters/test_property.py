@@ -154,10 +154,9 @@ class PropertyFilterTests(BaseTest, TestCase):
         content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(content), 1)
         self.assertEqual(len(content), 2)  # number has somehow gone up
         self.assertEqual(content[0]['bbl'], '3')
-        self.assertEqual(content[0]['bbl'], '4')
+        self.assertEqual(content[1]['bbl'], '4')
 
     def test_acrisrealmasteramount_field(self):
         council = self.council_factory(id=1)
