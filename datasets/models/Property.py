@@ -85,19 +85,19 @@ class PropertyQuerySet(models.QuerySet):
 
     def rentstab(self):
         # return self.residential().rs_annotate().rentstab_filter()
-        return self.residential().rentstab_filter()
+        return self.rentstab_filter()
 
     def rentreg(self, program=None):
-        return self.residential().rentreg_filter(program)
+        return self.rentreg_filter(program)
 
     def smallhome(self, units=6):
-        return self.residential().smallhome_filter(units=units)
+        return self.smallhome_filter(units=units)
 
     def marketrate(self):
         return self.residential().marketrate_filter()
 
     def publichousing(self):
-        return self.residential().publichousing_filter()
+        return self.publichousing_filter()
 
     def annotate_all(self):
         return self.annotate(hpdcomplaints__count=Count('hpdcomplaint', distinct=True), hpdviolations__count=Count('hpdviolation', distinct=True), dobviolations__count=Count('dobviolation', distinct=True), ecbviolations__count=Count('ecbviolation', distinct=True))

@@ -983,6 +983,56 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.assertEqual(len(content), 1)
         self.assertEqual(any(d['bbl'] == '1' for d in content), True)
 
+    def test_council_with_housingtype_with_q_4(self):
+        council = self.council_factory(id=1)
+        council2 = self.council_factory(id=2)
+
+        # full match
+        property1 = self.property_factory(bbl=1, council=council, unitsrentstabilized=1, yearbuilt=1950)
+        self.taxbill_factory(property=property1, uc2007=10, uc2017=1)
+        # council match, no housing type match
+        property2 = self.property_factory(bbl=2, council=council, unitsrentstabilized=10, yearbuilt=1950)
+        self.taxbill_factory(property=property2, uc2007=10, uc2017=10)
+        # council match, housing type match, no record match
+        property3 = self.property_factory(bbl=3, council=council, unitsrentstabilized=1, yearbuilt=1950)
+        self.taxbill_factory(property=property3, uc2007=10, uc2017=1)
+        # council match, no housing type match
+        property4 = self.property_factory(bbl=4, council=council)
+
+        # no council match, housing type match, record match
+        property5 = self.property_factory(bbl=5, council=council2, unitsrentstabilized=1, yearbuilt=1950)
+        self.taxbill_factory(property=property5, uc2007=10, uc2017=1)
+
+        # sold for $10 in date range
+        acrismaster1 = self.acrismaster_factory(documentid="a", doctype="DEED", docamount=10, docdate="2018-01-01")
+        self.acrislegal_factory(property=property1, master=acrismaster1)
+
+        # sold for $1 in date range
+        acrismaster2 = self.acrismaster_factory(documentid="b", doctype="DEED", docamount=1, docdate="2018-01-01")
+        self.acrislegal_factory(property=property2, master=acrismaster2)
+
+        # sold for $10 out of date range
+        acrismaster3 = self.acrismaster_factory(documentid="c", doctype="DEED", docamount=10, docdate="2011-01-01")
+        self.acrislegal_factory(property=property3, master=acrismaster3)
+
+        # tax document for $10 in date range
+        acrismaster4 = self.acrismaster_factory(documentid="d", doctype="RPTT", docamount=10, docdate="2017-01-01")
+        self.acrislegal_factory(property=property4, master=acrismaster4)
+
+        # sold for $10 in date range
+        acrismaster5 = self.acrismaster_factory(documentid="e", doctype="DEED", docamount=10, docdate="2018-01-01")
+        self.acrislegal_factory(property=property5, master=acrismaster5)
+
+        # properties in council 1 with rent regulated j-51 and with 5 HPD violations b/t 2018- 2019 AND (5 DOB violations b/t 2018-2019 OR 5 ECB violations b/t 2018-2019)
+        query = '/properties/?council=1&housingtype=rs&rsunitslost__gte=0.5&rsunitslost__start=2007&q=*condition_0=AND+filter_0=acrisreallegals__documentid__docdate__gte=2017-01-01,acrisreallegals__documentid__docdate__lte=2018-01-01,acrisreallegals__documentid__docamount__gte=5'
+
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+        self.assertEqual(any(d['bbl'] == '1' for d in content), True)
+
     def test_validations_1(self):
         # Unknown / misspelled datasets
         query = '/properties/?q=*condition_0=AND+filter_0=fakedataset__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5'

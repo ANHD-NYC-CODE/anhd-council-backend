@@ -40,13 +40,14 @@ class AdvancedPropertyFilter(django_filters.rest_framework.FilterSet):
         if 'format' in params:
             del params['format']
         if 'council' in params:
-            queryset = queryset.council(params['council'][0])
+            queryset = queryset.filter(bbl__in=queryset.council(params['council'][0]).values('bbl'))
             del params['council']
         elif 'community' in params:
-            queryset = queryset.community(params['community'][0])
+            queryset = queryset.filter(bbl__in=queryset.community(params['community'][0]).values('bbl'))
             del params['community']
         if 'housingtype' in params:
-            queryset = housingtype_filter(self, queryset, name, params['housingtype'][0])
+            queryset = queryset.filter(bbl__in=housingtype_filter(
+                self, queryset, name, params['housingtype'][0]).values('bbl'))
             del params['housingtype']
         if 'rsunitslost__start' in params:
             start = params['rsunitslost__start'][0]
@@ -84,9 +85,8 @@ class AdvancedPropertyFilter(django_filters.rest_framework.FilterSet):
                                   gt,
                                   gte,)
 
-            queryset = rsunits_filter(self,
-                                      queryset, name, PercentWithDateField.compress(self, rsunitslost_params))
-
+            queryset = queryset.filter(bbl__in=rsunits_filter(self,
+                                                              queryset, name, PercentWithDateField.compress(self, rsunitslost_params)))
         # add all the other params
         for key, value in params.items():
             try:

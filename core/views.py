@@ -8,7 +8,7 @@ from rest_framework.response import Response
 
 
 class DatasetViewSet(ApplicationViewSet, viewsets.ReadOnlyModelViewSet):
-    queryset = c.Dataset.objects.all().order_by('pk')
+    queryset = c.Dataset.objects.prefetch_related('update_set').prefetch_related('datafile_set').all().order_by('pk')
     serializer_class = serial.DatasetSerializer
     lookup_field = "model_name"
 
