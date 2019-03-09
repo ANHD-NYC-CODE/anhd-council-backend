@@ -128,16 +128,6 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
         af.validate_mapping(self.request, mapping)
 
-        # Divide by Zero error occurs in context of parallel postgres workers
-        # running without the rs_annotation being guaranteed on the queryset in all filter instances.
-        # filter on non-annotating filters (like dates)
-
-        q1 = af.convert_condition_to_q(next(iter(mapping)), mapping, 'query1_filters')
-        q1_queryset = queryset.filter(q1)
-
-        # filter on annotating filters (like counts)
-        q2 = af.convert_condition_to_q(next(iter(mapping)), mapping, 'query2_filters')
-
         for con in mapping.keys():
             for c_filter in mapping[con]['filters']:
                 if 'condition' in c_filter:
@@ -145,11 +135,17 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
                     continue
 
                 if c_filter['model'] == 'rentstabilizationrecord':
-                    q1_queryset = af.annotate_rentstabilized(q1_queryset, c_filter)
+                    queryset = af.annotate_rentstabilized(queryset, c_filter)
                 elif c_filter['model'].lower() == 'acrisreallegal':
-                    q1_queryset = af.annotate_acrislegals(q1_queryset, c_filter)
+                    queryset = af.annotate_acrislegals(queryset, c_filter)
                 else:
-                    q1_queryset = af.annotate_dataset(q1_queryset, c_filter)
+                    queryset = af.annotate_dataset(queryset, c_filter)
+
+        q1 = af.convert_condition_to_q(next(iter(mapping)), mapping, 'query1_filters')
+        q1_queryset = queryset.filter(q1)
+
+        # filter on annotating filters (like counts)
+        q2 = af.convert_condition_to_q(next(iter(mapping)), mapping, 'query2_filters')
 
         # q2_queryset = q1_queryset.filter(q2)
         #
