@@ -96,6 +96,7 @@ class AdvancedPropertyFilter(django_filters.rest_framework.FilterSet):
                 logger.debug("AdvancedFilter processed a non-property field: {}".format(e))
 
         # finally, construct subquery
+
         queryset = queryset.filter(bbl__in=queryset.only('bbl'))
 
         # NOW parse the q advanced query

@@ -162,10 +162,13 @@ class PropertyFilterTests(BaseTest, TestCase):
         council = self.council_factory(id=1)
         property1 = self.property_factory(bbl=1, council=council)
         property2 = self.property_factory(bbl=2, council=council)
-        acrismaster1 = self.acrismaster_factory(docamount=10, docdate="2018-01-01")
-        acrismaster2 = self.acrismaster_factory(docamount=1, docdate="2018-01-01")
+        property3 = self.property_factory(bbl=3, council=council)
+        acrismaster1 = self.acrismaster_factory(docamount=10, docdate="2018-01-01", doctype="DEED")
+        acrismaster2 = self.acrismaster_factory(docamount=1, docdate="2018-01-01", doctype="DEED")
+        acrismaster3 = self.acrismaster_factory(docamount=10, docdate="2018-01-01", doctype="RPTT")
         self.acrislegal_factory(master=acrismaster1, property=property1)
         self.acrislegal_factory(master=acrismaster2, property=property2)
+        self.acrislegal_factory(master=acrismaster3, property=property3)
 
         query = '/properties/?acrisrealmasteramounts__start=2017-01-01&acrisrealmasteramounts__end=2018-01-01&acrisrealmasteramounts__gte=5'
         response = self.client.get(query, format="json")
@@ -647,6 +650,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
+
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['bbl'], '1')
 

@@ -1,6 +1,6 @@
 from datasets import models as ds
 import rest_framework_filters as filters
-from django.db.models import Count, Q, ExpressionWrapper, F, FloatField, Case, When, Value
+from django.db.models import Count, Q, ExpressionWrapper, F, FloatField, Case, When, Value, Exists, OuterRef, FilteredRelation, Prefetch
 from django.db.models.functions import Cast
 import django_filters
 from django import forms
@@ -136,18 +136,37 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
     def filter_acrisrealmasteramounts_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(
-            'acrisreallegal__documentid__docdate', 'acrisreallegal__documentid__docamount', values)
-        return queryset.filter(**date_filters).annotate(acrisrealmasters=Count('acrisreallegal__documentid', filter=Q(**total_filters), distinct=True)).filter(acrisrealmasters__gte=1)
+            'documentid__docdate', 'documentid__docamount', values)
+        documenttype_queryset = ds.AcrisRealLegal.objects.filter(documentid__in=ds.AcrisRealMaster.construct_sales_query(
+            'acrisreallegal__documentid').only('documentid'))
+
+        # clean filters, since the advanced search typically tacks on the property field
+        # but we need the acrisreallegal field since we're going to be doing a subquery on it
+
+        # subquery for acris real legals using the documenttype subquery
+        filtered_acris = documenttype_queryset.filter(
+            **date_filters).filter(**total_filters).only('bbl').filter(bbl=OuterRef('bbl'))
+
+        queryset = queryset.annotate(has_filtered_acris=Exists(filtered_acris)).filter(has_filtered_acris=True)
+
+        return queryset
 
     def filter_acrisrealmastersales_total_and_dates(self, queryset, name, values):
 
-        q_list = []
-        for type in ds.AcrisRealMaster.SALE_DOC_TYPES:
-            q_list.append(Q(**{'acrisreallegal__documentid__doctype': type}))
+        date_filters, total_filters = self.parse_totaldate_field_values('documentid__docdate', 'documentid', values)
+        documenttype_queryset = ds.AcrisRealLegal.objects.filter(
+            documentid__in=ds.AcrisRealMaster.construct_sales_query('acrisreallegal__documentid')).only('documentid', 'bbl')
 
-        date_filters, total_filters = self.parse_totaldate_field_values(
-            'acrisreallegal__documentid__docdate', 'acrisrealmasters', values)
-        return queryset.filter(**date_filters).annotate(acrisrealmasters=Count('acrisreallegal__documentid', filter=ds.AcrisRealMaster.construct_sales_query('acrisreallegal__documentid'), distinct=True)).filter(**total_filters)
+        # clean filters, since the advanced search typically tacks on the property field
+        # but we need the acrisreallegal field since we're going to be doing a subquery on it
+
+        # subquery for acris real legals using the documenttype subquery
+        filtered_acris = documenttype_queryset.filter(
+            **date_filters).filter(**total_filters).only('bbl').filter(bbl=OuterRef('bbl'))
+
+        queryset = queryset.annotate(has_filtered_acris=Exists(filtered_acris)).filter(has_filtered_acris=True)
+
+        return queryset
 
     def filter_dobpermitissued_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(

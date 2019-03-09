@@ -62,4 +62,4 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
         return self.bulk_seed(**kwargs, overwrite=True)
 
     def __str__(self):
-        return self.documentid
+        return str('bbl: {}, documentid: {}'.format(self.bbl, self.documentid))

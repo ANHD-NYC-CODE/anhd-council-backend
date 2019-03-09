@@ -35,10 +35,11 @@ class AcrisRealMaster(BaseDatasetModel, models.Model):
     def construct_sales_query(self, relation_path):
         q_list = []
         for type in self.SALE_DOC_TYPES:
-            q_list.append({relation_path + '__doctype': type})
+            q_list.append({'doctype': type})
 
         sales_filter = af.construct_or_q(q_list)
-        return sales_filter
+
+        return self.objects.filter(sales_filter).only('documentid')
 
     @classmethod
     def download(self):

@@ -1,6 +1,6 @@
 from django.db.models import FieldDoesNotExist
 from datasets import models as ds
-from django.db.models import Count, Q, ExpressionWrapper, F, FloatField, Prefetch, FilteredRelation
+from django.db.models import Count, Q, ExpressionWrapper, F, FloatField, Prefetch, FilteredRelation, OuterRef, Exists
 from django.db.models.functions import Cast
 from django.conf import settings
 from rest_framework.exceptions import APIException
@@ -28,17 +28,24 @@ def annotate_dataset(queryset, c_filter):
 
 
 def annotate_acrislegals(queryset, c_filter):
-    queryset = queryset.filter(
-        ds.AcrisRealMaster.construct_sales_query('acrisreallegal__documentid'))
+    documenttype_queryset = ds.AcrisRealLegal.objects.filter(
+        documentid__in=ds.AcrisRealMaster.construct_sales_query('acrisreallegal__documentid').only('documentid'))
 
-    filter = construct_and_q(c_filter['query1_filters'])
-    if c_filter['annotation_key']:
-        queryset = queryset.annotate(**{c_filter['annotation_key']: Count(
-            c_filter['model'],
-            filter=filter,
-            distinct=True
-        )})
-    return queryset.filter(filter)
+    # clean filters, since the advanced search typically tacks on the property field
+    # but we need the acrisreallegal field since we're going to be doing a subquery on it
+    cleaned_filters = []
+    for f in c_filter['query1_filters']:
+        for key in f.keys():
+            cleaned_filters.append({key.replace('acrisreallegal__', ''): f[key]})
+
+    # subquery for acris real legals using the documenttype subquery
+    filtered_acris = documenttype_queryset.filter(construct_and_q(
+        cleaned_filters)).only('bbl').filter(bbl=OuterRef('bbl'))
+
+    queryset = queryset.annotate(has_filtered_acris=Exists(filtered_acris)).filter(
+        has_filtered_acris=True).annotate(acrisreallegals__documentid__count=Count('acrisreallegal', distinct=True))
+
+    return queryset
 
 
 def annotate_rentstabilized(queryset, c_filter):
