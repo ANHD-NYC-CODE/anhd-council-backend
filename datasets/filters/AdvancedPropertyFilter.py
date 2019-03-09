@@ -37,6 +37,7 @@ class AdvancedPropertyFilter(django_filters.rest_framework.FilterSet):
 
         # converts the param values into an array for some reason...
         del params['q']
+        del params['format']
         if 'council' in params:
             queryset = queryset.council(params['council'][0])
             del params['council']
