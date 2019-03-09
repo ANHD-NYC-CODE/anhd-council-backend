@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Q, F, Count, Sum, Exists, OuterRef, Prefetch
+from django.db.models import Q, F, Count, Sum, Exists, OuterRef, Prefetch, FilteredRelation
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from datasets.utils.validation_filters import is_null, exceeds_char_length
 from core.utils.transform import from_csv_file_to_gen, with_geo

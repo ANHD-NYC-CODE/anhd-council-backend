@@ -151,11 +151,11 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
                 else:
                     q1_queryset = af.annotate_dataset(q1_queryset, c_filter)
 
-        q2_queryset = q1_queryset.filter(q2)
+        # q2_queryset = q1_queryset.filter(q2)
+        #
+        # final_bbls = q2_queryset.values('bbl')
 
-        final_bbls = q2_queryset.values('bbl')
-
-        return ds.Property.objects.filter(bbl__in=final_bbls)
+        return q2_queryset
 
     # Rent stabilized units lost
 
