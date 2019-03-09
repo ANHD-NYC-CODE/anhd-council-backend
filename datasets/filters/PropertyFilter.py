@@ -160,7 +160,6 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     # Rent stabilized units lost
 
     def filter_stabilizedunitslost_percent_and_dates(self, queryset, name, values):
-
         return queryset.rs_annotate().annotate(rslostpercent=Case(When(**{values['start_year']: 0}, then=0), When(**{values['end_year']: 0}, then=1), default=ExpressionWrapper(1 - Cast(F(values['end_year']), FloatField()) / Cast(F(values['start_year']), FloatField()), output_field=FloatField()), output_field=FloatField())).filter(**values['percent_query'])
 
     def filter_acrisrealmasteramounts_total_and_dates(self, queryset, name, values):

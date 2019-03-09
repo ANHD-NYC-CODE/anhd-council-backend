@@ -129,15 +129,15 @@ class PercentWithDateField(django_filters.fields.RangeField):
     def compress(self, data_list):
         def get_percent_query():
             queries = {}
-            if lt_value:
+            if lt_value or lt_value == 0:
                 queries['rslostpercent__lt'] = lt_value
-            if lte_value:
+            if lte_value or lte_value == 0:
                 queries['rslostpercent__lte'] = lte_value
-            if exact_value:
+            if exact_value or exact_value == 0:
                 queries['rslostpercent'] = exact_value
-            if gt_value:
+            if gt_value or gt_value == 0:
                 queries['rslostpercent__gt'] = gt_value
-            if gte_value:
+            if gte_value or gte_value == 0:
                 queries['rslostpercent__gte'] = gte_value
 
             return queries
