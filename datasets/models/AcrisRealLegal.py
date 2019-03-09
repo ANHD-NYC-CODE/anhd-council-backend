@@ -10,7 +10,7 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
     class Meta:
         indexes = [
             models.Index(fields=['bbl', 'documentid']),
-            models.Index(fields=['documentid', 'documentid']),
+            models.Index(fields=['documentid', 'bbl']),
 
         ]
 

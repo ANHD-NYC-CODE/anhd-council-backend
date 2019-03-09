@@ -11,7 +11,7 @@ class HousingLitigation(BaseDatasetModel, models.Model):
     class Meta:
         indexes = [
             models.Index(fields=['bbl', 'caseopendate']),
-            models.Index(fields=['caseopendate', 'caseopendate']),
+            models.Index(fields=['caseopendate', 'bbl']),
 
         ]
     download_endpoint = "https://data.cityofnewyork.us/api/views/59kj-x8nc/rows.csv?accessType=DOWNLOAD"
