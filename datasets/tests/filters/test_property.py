@@ -709,10 +709,11 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         # sold 5 times not in date range, not with price, and 1 time in date range with price
         property5 = self.property_factory(bbl=5, council=council)
         for i in range(5):
-            am = self.acrismaster_factory(doctype="DEED", docamount=10, docdate="2011-01-01")
+            am = self.acrismaster_factory(doctype="DEED", docamount=1, docdate="2011-01-01")
             self.acrislegal_factory(property=property5, master=am)
         am = self.acrismaster_factory(doctype="DEED", docamount=10, docdate="2018-01-01")
         self.acrislegal_factory(property=property5, master=am)
+
         # properties with 5 sales between 2017-2018 and sold for over $5 between 2017-2018
         query = '/properties/?q=*condition_0=AND+filter_0=acrisreallegals__documentid__count__gte=5,acrisreallegals__documentid__docdate__gte=2018-01-01+filter_1=acrisreallegals__documentid__docamount__gte=10,acrisreallegals__documentid__docdate__gte=2018-01-01'
         response = self.client.get(query, format="json")
