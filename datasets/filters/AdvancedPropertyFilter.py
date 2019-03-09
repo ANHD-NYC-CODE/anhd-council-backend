@@ -89,7 +89,11 @@ class AdvancedPropertyFilter(django_filters.rest_framework.FilterSet):
 
         # add all the other params
         for key, value in params.items():
-            queryset = queryset.filter(**{key: value[0]})
+            try:
+                queryset = queryset.filter(**{key: value[0]})
+            except Exception as e:
+                print("AdvancedFilter processed a non-property field: {}".format(e))
+                logger.debug("AdvancedFilter processed a non-property field: {}".format(e))
 
         # finally, construct subquery
         queryset = queryset.filter(bbl__in=queryset.only('bbl'))
