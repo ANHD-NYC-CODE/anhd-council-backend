@@ -39,8 +39,15 @@ class PropertyQuerySet(models.QuerySet):
         return self.filter(yearbuilt__lte=1974, yearbuilt__gte=1).annotate(rs_units=Sum('unitsrentstabilized')).filter(rs_units__gte=1)
 
     def rentreg_filter(self, program=None):
-        queryset = self.annotate(corerecords=Count('coresubsidyrecord'), subsidyj51records=Count('subsidyj51'), subsidy421arecords=Count(
-            'subsidy421a')).filter(Q(unitsres__gte=1), Q(corerecords__gte=1) | Q(subsidyj51records__gte=1) | Q(subsidy421arecords__gte=1))
+        corerecords = ds.CoreSubsidyRecord.objects.only('bbl').filter(bbl=OuterRef('bbl'))
+        j51records = ds.SubsidyJ51.objects.only('bbl').filter(bbl=OuterRef('bbl'))
+        subsidy421a = ds.Subsidy421a.objects.only('bbl').filter(bbl=OuterRef('bbl'))
+
+        queryset = self.annotate(has_core=Exists(corerecords), has_subsidyj51=Exists(j51records), has_subsidy421a=Exists(
+            subsidy421a)).filter(Q(has_core=True) | Q(has_subsidyj51=True) | Q(has_subsidy421a=True))
+
+        # queryset = self.annotate(corerecords=Count('coresubsidyrecord'), subsidyj51records=Count('subsidyj51'), subsidy421arecords=Count(
+        #     'subsidy421a')).filter(Q(corerecords__gte=1) | Q(subsidyj51records__gte=1) | Q(subsidy421arecords__gte=1))
         if program:
             return queryset.prefetch_related('coresubsidyrecord').filter(coresubsidyrecord__programname__icontains=program)
         else:
@@ -51,15 +58,16 @@ class PropertyQuerySet(models.QuerySet):
 
     def marketrate_filter(self):
         rentstab_records = ds.RentStabilizationRecord.objects.only('ucbbl').filter(ucbbl=OuterRef('bbl'))
+        corerecords = ds.CoreSubsidyRecord.objects.only('bbl').filter(bbl=OuterRef('bbl'))
+        publichousingrecords = ds.PublicHousingRecord.objects.only('bbl').filter(bbl=OuterRef('bbl'))
         return self.annotate(
-            publichousingcount=Count('publichousingrecord'),
-            rentsubsidized=Count('coresubsidyrecord'),
-            has_rentstab=Exists(rentstab_records)
+            has_rentstab=Exists(rentstab_records),
+            has_core=Exists(corerecords),
+            has_publichousing=Exists(publichousingrecords)
         ).filter(Q(
-            unitsres__gte=6,
-            rentsubsidized=0,
-            publichousingcount=0,
-            has_rentstab=False) | Q(unitsres__lte=5))
+            has_core=False,
+            has_publichousing=False,
+            has_rentstab=False))
 
     def publichousing_filter(self):
         return self.annotate(publichousingrecords=Count('publichousingrecord')).filter(publichousingrecords__gte=1)
@@ -76,7 +84,8 @@ class PropertyQuerySet(models.QuerySet):
         return self.filter(unitsres__gte=1)
 
     def rentstab(self):
-        return self.residential().rs_annotate().rentstab_filter()
+        # return self.residential().rs_annotate().rentstab_filter()
+        return self.residential().rentstab_filter()
 
     def rentreg(self, program=None):
         return self.residential().rentreg_filter(program)
