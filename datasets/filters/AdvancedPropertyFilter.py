@@ -121,7 +121,6 @@ class AdvancedPropertyFilter(django_filters.rest_framework.FilterSet):
         # q1_queryset = queryset.filter(q1)
 
         # filter on annotating filters (like counts)
-
         q2 = af.convert_condition_to_q(next(iter(mapping)), mapping, 'query2_filters')
 
         # q2_queryset = q1_queryset.filter(q2)

@@ -657,19 +657,57 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
     def test_acrissales_rules(self):
         council = self.council_factory(id=1)
 
-        # sold for $10 in date range
+        # sold 5 times in date range
         property1 = self.property_factory(bbl=1, council=council)
         for i in range(5):
             am = self.acrismaster_factory(doctype="DEED", docamount=10, docdate="2018-01-01")
             self.acrislegal_factory(property=property1, master=am)
 
-        # sold for $1 in date range
+        # sold 1 time in date range
         acrismaster2 = self.acrismaster_factory(documentid="b", doctype="DEED", docamount=1, docdate="2018-01-01")
         property2 = self.property_factory(bbl=2, council=council)
         self.acrislegal_factory(property=property2, master=acrismaster2)
 
         # properties with 5 sales between 2017-2018
         query = '/properties/?q=*condition_0=AND+filter_0=acrisreallegals__documentid__docdate__gte=2017-01-01,acrisreallegals__documentid__docdate__lte=2018-01-01,acrisreallegals__documentid__count__gte=5'
+
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+        self.assertEqual(content[0]['bbl'], '1')
+
+    def test_acrissales_rules(self):
+        council = self.council_factory(id=1)
+
+        # sold 5 times in date range, once with price
+        property1 = self.property_factory(bbl=1, council=council)
+        for i in range(5):
+            am = self.acrismaster_factory(doctype="DEED", docamount=1, docdate="2018-01-01")
+            self.acrislegal_factory(property=property1, master=am)
+        am = self.acrismaster_factory(doctype="DEED", docamount=10, docdate="2018-01-01")
+        self.acrislegal_factory(property=property1, master=am)
+
+        # sold 1 time in date range with price
+        acrismaster2 = self.acrismaster_factory(documentid="b", doctype="DEED", docamount=10, docdate="2018-01-01")
+        property2 = self.property_factory(bbl=2, council=council)
+        self.acrislegal_factory(property=property2, master=acrismaster2)
+
+        # sold 5 times with price, out of date range
+        property3 = self.property_factory(bbl=3, council=council)
+        for i in range(5):
+            am = self.acrismaster_factory(doctype="DEED", docamount=10, docdate="2011-01-01")
+            self.acrislegal_factory(property=property3, master=am)
+
+        # sold 5 times in date range, not with price
+        property4 = self.property_factory(bbl=4, council=council)
+        for i in range(5):
+            am = self.acrismaster_factory(doctype="DEED", docamount=1, docdate="2018-01-01")
+            self.acrislegal_factory(property=property4, master=am)
+
+        # properties with 5 sales between 2017-2018 and sold for over $5 between 2017-2018
+        query = '/properties/?q=*condition_0=AND+filter_0=acrisreallegals__documentid__docdate__gte=2017-01-01,acrisreallegals__documentid__docdate__lte=2018-01-01,acrisreallegals__documentid__docamount__gte=10+filter_1=acrisreallegals__documentid__docdate__gte=2017-01-01,acrisreallegals__documentid__docdate__lte=2018-01-01,acrisreallegals__documentid__count__gte=5'
 
         response = self.client.get(query, format="json")
         content = response.data['results']
