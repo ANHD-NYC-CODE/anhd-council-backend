@@ -678,7 +678,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['bbl'], '1')
 
-    def test_acrissales_rules(self):
+    def test_acriscombined_rules(self):
         council = self.council_factory(id=1)
 
         # sold 5 times in date range, once with price
@@ -697,18 +697,24 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         # sold 5 times with price, out of date range
         property3 = self.property_factory(bbl=3, council=council)
         for i in range(5):
-            am = self.acrismaster_factory(doctype="DEED", docamount=10, docdate="2011-01-01")
-            self.acrislegal_factory(property=property3, master=am)
+            am3 = self.acrismaster_factory(doctype="DEED", docamount=10, docdate="2011-01-01")
+            self.acrislegal_factory(property=property3, master=am3)
 
         # sold 5 times in date range, not with price
         property4 = self.property_factory(bbl=4, council=council)
         for i in range(5):
-            am = self.acrismaster_factory(doctype="DEED", docamount=1, docdate="2018-01-01")
-            self.acrislegal_factory(property=property4, master=am)
+            am4 = self.acrismaster_factory(doctype="DEED", docamount=1, docdate="2018-01-01")
+            self.acrislegal_factory(property=property4, master=am4)
 
+        # sold 5 times not in date range, not with price, and 1 time in date range with price
+        property5 = self.property_factory(bbl=5, council=council)
+        for i in range(5):
+            am = self.acrismaster_factory(doctype="DEED", docamount=10, docdate="2011-01-01")
+            self.acrislegal_factory(property=property5, master=am)
+        am = self.acrismaster_factory(doctype="DEED", docamount=10, docdate="2018-01-01")
+        self.acrislegal_factory(property=property5, master=am)
         # properties with 5 sales between 2017-2018 and sold for over $5 between 2017-2018
-        query = '/properties/?q=*condition_0=AND+filter_0=acrisreallegals__documentid__docdate__gte=2017-01-01,acrisreallegals__documentid__docdate__lte=2018-01-01,acrisreallegals__documentid__docamount__gte=10+filter_1=acrisreallegals__documentid__docdate__gte=2017-01-01,acrisreallegals__documentid__docdate__lte=2018-01-01,acrisreallegals__documentid__count__gte=5'
-
+        query = '/properties/?q=*condition_0=AND+filter_0=acrisreallegals__documentid__count__gte=5,acrisreallegals__documentid__docdate__gte=2018-01-01+filter_1=acrisreallegals__documentid__docamount__gte=10,acrisreallegals__documentid__docdate__gte=2018-01-01'
         response = self.client.get(query, format="json")
         content = response.data['results']
 

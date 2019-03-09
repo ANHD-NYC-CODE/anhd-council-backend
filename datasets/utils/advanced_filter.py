@@ -43,7 +43,11 @@ def annotate_acrislegals(queryset, c_filter):
         cleaned_filters)).only('bbl').filter(bbl=OuterRef('bbl'))
 
     queryset = queryset.annotate(has_filtered_acris=Exists(filtered_acris)).filter(
-        has_filtered_acris=True).annotate(acrisreallegals__documentid__count=Count('acrisreallegal', distinct=True))
+        has_filtered_acris=True)
+
+    if c_filter['annotation_key']:
+        queryset = queryset.annotate(acrisreallegals__documentid__count=Count(
+            'acrisreallegal', filter=construct_and_q(c_filter['query1_filters']), distinct=True))
 
     return queryset
 
