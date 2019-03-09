@@ -16,9 +16,23 @@ from django.conf import settings
 from psycopg2.extras import DateRange
 
 
+def housingtype_filter(self, queryset, name, value):
+    switcher = {
+        "rs": queryset.rentstab(),
+        "rr": queryset.rentreg(),
+        "sh": queryset.smallhome(),
+        "mr": queryset.marketrate(),
+        "ph": queryset.publichousing()
+    }
+    return switcher.get(value, queryset.none())
+
+
+def rsunits_filter(self, queryset, name, values):
+    return queryset.rs_annotate().annotate(rslostpercent=Case(When(**{values['start_year']: 0}, then=0), When(**{values['end_year']: 0}, then=1), default=ExpressionWrapper(1 - Cast(F(values['end_year']), FloatField()) / Cast(F(values['start_year']), FloatField()), output_field=FloatField()), output_field=FloatField())).filter(**values['percent_query'])
+
+
 class PropertyFilter(django_filters.rest_framework.FilterSet):
     def __init__(self, *args, **kwargs):
-        self.q_filters = []
         return super(PropertyFilter, self).__init__(*args, **kwargs)
 
     @property
@@ -27,7 +41,6 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
     council = django_filters.NumberFilter(method='filter_council_exact')
     cd = django_filters.NumberFilter(method='filter_community_exact')
-    q = AdvancedQueryFilter(method='filter_advancedquery')
 
     housingtype = filters.CharFilter(method='filter_housingtype')
 
@@ -114,115 +127,12 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         return (date_filters, total_filters)
 
     def filter_housingtype(self, queryset, name, value):
-        switcher = {
-            "rs": queryset.rentstab(),
-            "rr": queryset.rentreg(),
-            "sh": queryset.smallhome(),
-            "mr": queryset.marketrate(),
-            "ph": queryset.publichousing()
-        }
-        return switcher.get(value, queryset.none())
-
-    def filter_advancedquery(self, queryset, name, values):
-        # Turns out the queryset that comes here is not guaranteed to be pre-filled with
-        # council or housing type filters / subqueries
-
-        # Need to override the queryset to ensure subqueries come before joins
-        queryset = ds.Property.objects
-        params = dict(self.request.query_params)
-
-        # converts the param values into an array for some reason...
-        del params['q']
-        if 'council' in params:
-            queryset = queryset.council(params['council'][0])
-            del params['council']
-        elif 'community' in params:
-            queryset = queryset.community(params['community'][0])
-            del params['community']
-        if 'housingtype' in params:
-            queryset = self.filter_housingtype(queryset, name, params['housingtype'][0])
-            del params['housingtype']
-        if 'rsunitslost__start' in params:
-            start = params['rsunitslost__start'][0]
-            del params['rsunitslost__start']
-            end = None
-            lt = None
-            lte = None
-            exact = None
-            gt = None
-            gte = None
-            if 'rsunitslost__end' in params:
-                end = params['rsunitslost__end'][0]
-                del params['rsunitslost__end']
-            if 'rsunitslost__lt' in params:
-                lt = params['rsunitslost__lt'][0]
-                del params['rsunitslost__lt']
-            if 'rsunitslost__lte' in params:
-                lte = params['rsunitslost__lte'][0]
-                del params['rsunitslost__lte']
-            if 'rsunitslost__exact' in params:
-                exact = params['rsunitslost__exact'][0]
-                del params['rsunitslost__exact']
-            if 'rsunitslost__gt' in params:
-                gt = params['rsunitslost__gt'][0]
-                del params['rsunitslost__gt']
-            if 'rsunitslost__gte' in params:
-                gte = params['rsunitslost__gte'][0]
-                del params['rsunitslost__gte']
-
-            rsunitslost_params = (start,
-                                  end,
-                                  lt,
-                                  lte,
-                                  exact,
-                                  gt,
-                                  gte,)
-
-            queryset = self.filter_stabilizedunitslost_percent_and_dates(
-                queryset, name, PercentWithDateField.compress(self, rsunitslost_params))
-
-        # add all the other params
-        for key, value in params.items():
-            queryset = queryset.filter(**{key: value[0]})
-
-        # finally, construct subquery
-        queryset = queryset.filter(bbl__in=queryset.only('bbl'))
-
-        # NOW parse the q advanced query
-        mapping = af.convert_query_string_to_mapping(values)
-
-        af.validate_mapping(self.request, mapping)
-
-        for con in mapping.keys():
-            for c_filter in mapping[con]['filters']:
-                if 'condition' in c_filter:
-                    # skip condition filters
-                    continue
-
-                if c_filter['model'] == 'rentstabilizationrecord':
-                    queryset = af.annotate_rentstabilized(queryset, c_filter)
-                elif c_filter['model'].lower() == 'acrisreallegal':
-                    queryset = af.annotate_acrislegals(queryset, c_filter)
-                else:
-                    queryset = af.annotate_dataset(queryset, c_filter)
-
-        # q1 = af.convert_condition_to_q(next(iter(mapping)), mapping, 'query1_filters')
-        # q1_queryset = queryset.filter(q1)
-
-        # filter on annotating filters (like counts)
-
-        q2 = af.convert_condition_to_q(next(iter(mapping)), mapping, 'query2_filters')
-
-        # q2_queryset = q1_queryset.filter(q2)
-        #
-        # final_bbls = q2_queryset.values('bbl')
-
-        return queryset.filter(q2)
+        return housingtype_filter(self, queryset, name, value)
 
     # Rent stabilized units lost
 
     def filter_stabilizedunitslost_percent_and_dates(self, queryset, name, values):
-        return queryset.rs_annotate().annotate(rslostpercent=Case(When(**{values['start_year']: 0}, then=0), When(**{values['end_year']: 0}, then=1), default=ExpressionWrapper(1 - Cast(F(values['end_year']), FloatField()) / Cast(F(values['start_year']), FloatField()), output_field=FloatField()), output_field=FloatField())).filter(**values['percent_query'])
+        return rsunits_filter(self, queryset, name, values)
 
     def filter_acrisrealmasteramounts_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(

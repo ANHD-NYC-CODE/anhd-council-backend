@@ -12,7 +12,7 @@ from rest_framework_extensions.mixins import NestedViewSetMixin
 from django.core.cache import cache
 from datasets.helpers.api_helpers import cache_me, properties_by_housingtype, ApplicationViewSet
 from datasets.serializers import property_query_serializer
-from datasets.filters import PropertyFilter
+from datasets.filters import PropertyFilter, AdvancedPropertyFilter
 from datasets import serializers as serial
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -36,6 +36,10 @@ class PropertyViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyM
     def list(self, request, *args, **kwargs):
         if not request.user.is_authenticated and 'q' in request.query_params and 'lispenden' in request.query_params['q']:
             return Response({'detail': 'Please login to view lispenden results'}, status=401)
+
+        if 'q' in request.query_params:
+            self.filterset_class = AdvancedPropertyFilter
+
         return super().list(request, *args, **kwargs)
         # try:
         # except Exception as e:
