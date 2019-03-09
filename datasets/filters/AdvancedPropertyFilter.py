@@ -129,4 +129,4 @@ class AdvancedPropertyFilter(django_filters.rest_framework.FilterSet):
         #
         # final_bbls = q2_queryset.values('bbl')
 
-        return queryset.filter(q1).filter(q2)
+        return queryset.filter(q2)
