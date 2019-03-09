@@ -9,6 +9,17 @@ from django.db.models import Q
 class AcrisRealMaster(BaseDatasetModel, models.Model):
     download_endpoint = 'https://data.cityofnewyork.us/api/views/bnx9-e6tj/rows.csv?accessType=DOWNLOAD'
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['documentid', 'doctype']),
+            models.Index(fields=['doctype', 'documentid']),
+            models.Index(fields=['documentid', 'docdate']),
+            models.Index(fields=['docdate', 'documentid']),
+            models.Index(fields=['documentid', 'docamount']),
+            models.Index(fields=['docamount', 'documentid']),
+
+        ]
+
     documentid = models.TextField(primary_key=True, blank=False, null=False)
     recordtype = models.TextField(blank=True, null=True)
     crfn = models.TextField(blank=True, null=True)
