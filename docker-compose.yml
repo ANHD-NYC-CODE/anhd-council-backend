@@ -116,7 +116,7 @@ services:
     image: postgres:11
     container_name: "postgres"
     # https://blog.2ndquadrant.com/basics-of-tuning-checkpoints/
-    command: ["-c","statement_timeout=1000", "-c", "enable_seqscan=ON", "-c","huge_pages=try", "-c","effective_io_concurrency=1", "-c", "max_parallel_workers_per_gather=4", "-c", "max_stack_depth=6MB", "-c", "maintenance_work_mem=2GB", "-c", "temp_buffers=128MB", "-c", "shared_buffers=4GB", "-c", "default_statistics_target=1000", "-c", "checkpoint_timeout=30min", "-c", "checkpoint_completion_target=0.93", "-c", "max_wal_size=2GB", "-c", "min_wal_size=1GB", "-c", "effective_cache_size=12GB", "-c", "work_mem=512MB", "-c", "max_connections=200", "-c", "random_page_cost=1", "-c", "seq_page_cost=1"]
+    command: ["-c","statement_timeout=600000", "-c", "enable_seqscan=ON", "-c","huge_pages=try", "-c","effective_io_concurrency=1", "-c", "max_parallel_workers_per_gather=4", "-c", "max_stack_depth=6MB", "-c", "maintenance_work_mem=2GB", "-c", "temp_buffers=128MB", "-c", "shared_buffers=4GB", "-c", "default_statistics_target=1000", "-c", "checkpoint_timeout=30min", "-c", "checkpoint_completion_target=0.93", "-c", "max_wal_size=2GB", "-c", "min_wal_size=1GB", "-c", "effective_cache_size=12GB", "-c", "work_mem=512MB", "-c", "max_connections=200", "-c", "random_page_cost=1", "-c", "seq_page_cost=1"]
     shm_size: '2GB'
     environment:
       - POSTGRES_DB=anhd
