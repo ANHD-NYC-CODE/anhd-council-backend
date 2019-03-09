@@ -124,6 +124,9 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         return switcher.get(value, queryset.none())
 
     def filter_advancedquery(self, queryset, name, values):
+        # Turns out the queryset that comes here is not guaranteed to be pre-filled with
+        # council or housing type filters
+
         mapping = af.convert_query_string_to_mapping(values)
 
         af.validate_mapping(self.request, mapping)
@@ -145,6 +148,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         # q1_queryset = queryset.filter(q1)
 
         # filter on annotating filters (like counts)
+
         q2 = af.convert_condition_to_q(next(iter(mapping)), mapping, 'query2_filters')
 
         # q2_queryset = q1_queryset.filter(q2)

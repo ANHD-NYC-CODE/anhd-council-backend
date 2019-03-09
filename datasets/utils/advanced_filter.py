@@ -28,18 +28,18 @@ def annotate_dataset(queryset, c_filter):
 
 
 def annotate_acrislegals(queryset, c_filter):
-    queryset = queryset.annotate(
-        **{c_filter['prefetch_key']: FilteredRelation(c_filter['model'], condition=construct_and_q(c_filter['query1_filters']))})
+    # queryset = queryset.annotate(
+    #     **{c_filter['prefetch_key']: FilteredRelation(c_filter['model'], condition=construct_and_q(c_filter['query1_filters']))})
 
     queryset = queryset.filter(
         ds.AcrisRealMaster.construct_sales_query('acrisreallegal__documentid'))
     if c_filter['annotation_key']:
-        # queryset = queryset.annotate(**{c_filter['annotation_key']: Count(
-        #     c_filter['model'],
-        #     filter=construct_and_q(c_filter['query1_filters']),
-        #     distinct=True
-        # )})
-        queryset = queryset.annotate(**{c_filter['annotation_key']: Count(c_filter['prefetch_key'], distinct=True)})
+        queryset = queryset.annotate(**{c_filter['annotation_key']: Count(
+            c_filter['model'],
+            filter=construct_and_q(c_filter['query1_filters']),
+            distinct=True
+        )})
+        # queryset = queryset.annotate(**{c_filter['annotation_key']: Count(c_filter['prefetch_key'], distinct=True)})
 
     return queryset
 
