@@ -155,7 +155,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         #
         # final_bbls = q2_queryset.values('bbl')
 
-        return q2_queryset
+        return q1_queryset.filter(q2)
 
     # Rent stabilized units lost
 
