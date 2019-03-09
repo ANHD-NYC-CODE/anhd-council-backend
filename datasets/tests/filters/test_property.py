@@ -837,7 +837,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
             self.ecbviolation_factory(property=property6, issuedate="2018-01-01")
 
         # properties in council 1 with small homes and with 5 HPD violations b/t 2018- 2019 AND (5 DOB violations b/t 2018-2019 OR 5 ECB violations b/t 2018-2019)
-        query = '/properties/?council=1&housingtype=sh&unitsres__lte=4&q=*condition_0=AND+filter_0=condition_1+filter_0=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5+*condition_1=OR+filter_1=dobviolations__issuedate__gte=2018-01-01,dobviolations__issuedate__lte=2019-01-01,dobviolations__count__gte=5+filter_1=ecbviolations__issuedate__gte=2018-01-01,ecbviolations__issuedate__lte=2019-01-01,ecbviolations__count__gte=5'
+        query = '/properties/?format=json&council=1&housingtype=sh&unitsres__lte=4&q=*condition_0=AND+filter_0=condition_1+filter_0=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5+*condition_1=OR+filter_1=dobviolations__issuedate__gte=2018-01-01,dobviolations__issuedate__lte=2019-01-01,dobviolations__count__gte=5+filter_1=ecbviolations__issuedate__gte=2018-01-01,ecbviolations__issuedate__lte=2019-01-01,ecbviolations__count__gte=5'
 
         response = self.client.get(query, format="json")
         content = response.data['results']
