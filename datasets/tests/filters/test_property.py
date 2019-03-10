@@ -1023,10 +1023,11 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         acrismaster5 = self.acrismaster_factory(documentid="e", doctype="DEED", docamount=10, docdate="2018-01-01")
         self.acrislegal_factory(property=property5, master=acrismaster5)
 
-        # properties in council 1 with rent regulated j-51 and with 5 HPD violations b/t 2018- 2019 AND (5 DOB violations b/t 2018-2019 OR 5 ECB violations b/t 2018-2019)
+        # properties in council 1 lost 50% rs units and sold for at least $5 betwen 2017-2018
         query = '/properties/?council=1&housingtype=rs&rsunitslost__gte=0.5&rsunitslost__start=2007&q=*condition_0=AND+filter_0=acrisreallegals__documentid__docdate__gte=2017-01-01,acrisreallegals__documentid__docdate__lte=2018-01-01,acrisreallegals__documentid__docamount__gte=5'
 
         response = self.client.get(query, format="json")
+
         content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
