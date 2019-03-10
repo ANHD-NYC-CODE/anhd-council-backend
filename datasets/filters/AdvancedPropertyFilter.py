@@ -1,19 +1,12 @@
 from datasets import models as ds
 import rest_framework_filters as filters
-from django.db.models import Count, Q, ExpressionWrapper, F, FloatField, Case, When, Value
-from django.db.models.functions import Cast
 import django_filters
-from django import forms
-from copy import deepcopy
-from datasets.filter_helpers import CommaSeparatedConditionFilter, TotalWithDateFilter, RSLostPercentWithDateFilter, PercentWithDateField, AdvancedQueryFilter
+from django.db.models import Count, Q, ExpressionWrapper, F, FloatField, Case, When, Value
 from datasets.utils import advanced_filter as af
-import operator
-from functools import reduce
+
+from datasets.filter_helpers import PercentWithDateField, AdvancedQueryFilter
 from django.db.models import Q
 
-from collections import OrderedDict
-from django.conf import settings
-from psycopg2.extras import DateRange
 from datasets.filters.PropertyFilter import housingtype_filter, rsunits_filter
 
 
@@ -113,9 +106,9 @@ class AdvancedPropertyFilter(django_filters.rest_framework.FilterSet):
                 if c_filter['model'] == 'rentstabilizationrecord':
                     queryset = af.annotate_rentstabilized(queryset, c_filter)
                 elif c_filter['model'].lower() == 'acrisreallegal':
-                    queryset = af.annotate_acrislegals(queryset, c_filter)
+                    queryset = af.annotate_acrislegals(queryset, c_filter, queryset.values('bbl'))
                 else:
-                    queryset = af.annotate_dataset(queryset, c_filter)
+                    queryset = af.annotate_dataset(queryset, c_filter, queryset.values('bbl'))
 
         # q1 = af.convert_condition_to_q(next(iter(mapping)), mapping, 'query1_filters')
         # q1_queryset = queryset.filter(q1)
