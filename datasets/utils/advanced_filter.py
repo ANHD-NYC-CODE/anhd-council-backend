@@ -28,8 +28,9 @@ def annotate_dataset(queryset, c_filter, bbl_values):
 
 
 def annotate_acrislegals(queryset, c_filter, bbl_values):
-    documenttype_queryset = ds.AcrisRealLegal.objects.filter(
-        documentid__in=ds.AcrisRealMaster.construct_sales_query('acrisreallegal__documentid').only('documentid'))
+    docid_values = ds.AcrisRealMaster.construct_sales_query('acrisreallegal__documentid').only('documentid')
+    documenttype_queryset = ds.AcrisRealLegal.objects.filter(bbl__in=bbl_values,
+                                                             documentid__in=docid_values)
 
     # clean filters, since the advanced search typically tacks on the property field
     # but we need the acrisreallegal field since we're going to be doing a subquery on it
