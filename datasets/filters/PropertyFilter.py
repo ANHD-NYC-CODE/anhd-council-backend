@@ -165,10 +165,6 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         documenttype_queryset = ds.AcrisRealLegal.objects.filter(bbl__in=queryset.values('bbl'),
                                                                  documentid__in=docid_values).only('bbl', 'documentid')
 
-        # clean filters, since the advanced search typically tacks on the property field
-        # but we need the acrisreallegal field since we're going to be doing a subquery on it
-
-        # subquery for acris real legals using the documenttype subquery
         filtered_acris = documenttype_queryset.filter(
             **date_filters).filter(**total_filters).only('bbl').filter(bbl=OuterRef('bbl'))
 
