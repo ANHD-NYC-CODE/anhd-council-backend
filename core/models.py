@@ -43,15 +43,19 @@ class Dataset(models.Model):
         try:
             latest = self.filter(task_result__status="SUCCESS").latest('created_date')
         except Exception as e:
-            latest = self.update_set.filter(task_result__status="SUCCESS").latest('created_date')
+            latest = None
         return latest
 
     def latest_file(self):
         # Make sure to prefetch_related('datefile_set')
         try:
+
             return self.latest('uploaded_date')
-        except Exception as e:
-            return self.datafile_set.latest('uploaded_date')
+        except AttributeError as e:
+            try:
+                return self.datafile_set.latest('uploaded_date')
+            except Exception as e:
+                return None
 
     def latest_version(self):
         latest_file = self.latest_file()
