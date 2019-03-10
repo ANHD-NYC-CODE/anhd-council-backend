@@ -302,18 +302,20 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         )
         return factory
 
-    def dobcomplaint_factory(self, complaintnumber=None, building=None, **kwargs):
+    def dobcomplaint_factory(self, complaintnumber=None, building=None, property=None, **kwargs):
         name = 'DOBComplaint'
         if not complaintnumber:
             complaintnumber = random.randint(1, 1000000)
 
-        if not building:
+        if not property:
             property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+        if not building:
             building = self.building_factory(bin=random.randint(1, 1000000), property=property, boro=property.borough,
                                              block=property.block, lot=property.lot)
 
         factory = d_models.DOBComplaint.objects.create(
             complaintnumber=complaintnumber,
+            bbl=property,
             bin=building,
             **kwargs
         )
@@ -394,7 +396,7 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         )
         return factory
 
-    def permitfiledlegacy_factory(self, job=None, jobs1no=None, property=None, building=None, **kwargs):
+    def doblegacyfiledpermit_factory(self, job=None, jobs1no=None, property=None, building=None, **kwargs):
         name = 'DOBLegacyFiledPermit'
         if not job:
             job = random.randint(1, 1000000)
@@ -440,7 +442,7 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         )
         return factory
 
-    def permitissuedjoined_factory(self, jobfilingnumber=None, workpermit=None, property=None, building=None, **kwargs):
+    def dobissuedpermit_factory(self, jobfilingnumber=None, workpermit=None, property=None, building=None, **kwargs):
         name = 'DOBIssuedPermit'
 
         if not workpermit:

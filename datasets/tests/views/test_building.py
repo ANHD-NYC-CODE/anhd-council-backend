@@ -134,8 +134,8 @@ class BuildingViewTests(BaseTest, TestCase):
 
     def test_building_dobissuedpermits(self):
         building = self.building_factory(bin="1")
-        self.permitissuedjoined_factory(building=building)
-        self.permitissuedjoined_factory(building=building)
+        self.dobissuedpermit_factory(building=building)
+        self.dobissuedpermit_factory(building=building)
 
         response = self.client.get('/buildings/1/dobissuedpermits/')
         content = response.data['results']
@@ -145,8 +145,8 @@ class BuildingViewTests(BaseTest, TestCase):
 
     def test_building_doblegacyfiledpermit(self):
         building = self.building_factory(bin="1")
-        self.permitfiledlegacy_factory(building=building)
-        self.permitfiledlegacy_factory(building=building)
+        self.doblegacyfiledpermit_factory(building=building)
+        self.doblegacyfiledpermit_factory(building=building)
 
         response = self.client.get('/buildings/1/doblegacyfiledpermits/')
         content = response.data['results']

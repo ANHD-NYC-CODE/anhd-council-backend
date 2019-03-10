@@ -14,8 +14,8 @@ class DOBPermitIssuedTests(BaseTest, TestCase):
         self.clean_tests()
 
     def test_list(self):
-        self.permitissuedjoined_factory()
-        self.permitissuedjoined_factory()
+        self.dobissuedpermit_factory()
+        self.dobissuedpermit_factory()
 
         response = self.client.get('/dobissuedpermits/', format="json")
         content = response.data['results']
@@ -24,7 +24,7 @@ class DOBPermitIssuedTests(BaseTest, TestCase):
         self.assertEqual(len(content), 2)
 
     def test_retrieve(self):
-        dobissuedpermits = self.permitissuedjoined_factory()
+        dobissuedpermits = self.dobissuedpermit_factory()
 
         response = self.client.get('/dobissuedpermits/{}/'.format(dobissuedpermits.key))
         content = response.data

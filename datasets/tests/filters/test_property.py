@@ -71,6 +71,160 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['bbl'], '1')
 
+    def test_dobviolationsdates_field(self):
+        council = self.council_factory(id=1)
+        property1 = self.property_factory(bbl=1, council=council)
+        property2 = self.property_factory(bbl=2, council=council)
+
+        for i in range(5):
+            self.dobviolation_factory(property=property1, issuedate="2018-01-01")
+
+        for i in range(5):
+            self.dobviolation_factory(property=property1, issuedate="2017-01-01")
+
+        for i in range(1):
+            self.dobviolation_factory(property=property2, issuedate="2018-01-01")
+
+        query = '/properties/?dobviolations__start=2018-01-01&dobviolations__end=2019-01-01&dobviolations__gte=5'
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+        self.assertEqual(content[0]['bbl'], '1')
+
+    def test_ecbviolationsdates_field(self):
+        council = self.council_factory(id=1)
+        property1 = self.property_factory(bbl=1, council=council)
+        property2 = self.property_factory(bbl=2, council=council)
+
+        for i in range(5):
+            self.ecbviolation_factory(property=property1, issuedate="2018-01-01")
+
+        for i in range(5):
+            self.ecbviolation_factory(property=property1, issuedate="2017-01-01")
+
+        for i in range(1):
+            self.ecbviolation_factory(property=property2, issuedate="2018-01-01")
+
+        query = '/properties/?ecbviolations__start=2018-01-01&ecbviolations__end=2019-01-01&ecbviolations__gte=5'
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+        self.assertEqual(content[0]['bbl'], '1')
+
+    def test_hpdcomplaintsdates_field(self):
+        council = self.council_factory(id=1)
+        property1 = self.property_factory(bbl=1, council=council)
+        property2 = self.property_factory(bbl=2, council=council)
+
+        for i in range(5):
+            self.hpdcomplaint_factory(property=property1, receiveddate="2018-01-01")
+
+        for i in range(5):
+            self.hpdcomplaint_factory(property=property1, receiveddate="2017-01-01")
+
+        for i in range(1):
+            self.hpdcomplaint_factory(property=property2, receiveddate="2018-01-01")
+
+        query = '/properties/?hpdcomplaints__start=2018-01-01&hpdcomplaints__end=2019-01-01&hpdcomplaints__gte=5'
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+        self.assertEqual(content[0]['bbl'], '1')
+
+    def test_dobcomplaintsdates_field(self):
+        council = self.council_factory(id=1)
+        property1 = self.property_factory(bbl=1, council=council)
+        property2 = self.property_factory(bbl=2, council=council)
+
+        for i in range(5):
+            self.dobcomplaint_factory(property=property1, dateentered="2018-01-01")
+
+        for i in range(5):
+            self.dobcomplaint_factory(property=property1, dateentered="2017-01-01")
+
+        for i in range(1):
+            self.dobcomplaint_factory(property=property2, dateentered="2018-01-01")
+
+        query = '/properties/?dobcomplaints__start=2018-01-01&dobcomplaints__end=2019-01-01&dobcomplaints__gte=5'
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+        self.assertEqual(content[0]['bbl'], '1')
+
+    def test_evictionsdates_field(self):
+        council = self.council_factory(id=1)
+        property1 = self.property_factory(bbl=1, council=council)
+        property2 = self.property_factory(bbl=2, council=council)
+
+        for i in range(5):
+            self.eviction_factory(property=property1, executeddate="2018-01-01")
+
+        for i in range(5):
+            self.eviction_factory(property=property1, executeddate="2017-01-01")
+
+        for i in range(1):
+            self.eviction_factory(property=property2, executeddate="2018-01-01")
+
+        query = '/properties/?evictions__start=2018-01-01&evictions__end=2019-01-01&evictions__gte=5'
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+        self.assertEqual(content[0]['bbl'], '1')
+
+    def test_dobissuedpermitsdates_field(self):
+        council = self.council_factory(id=1)
+        property1 = self.property_factory(bbl=1, council=council)
+        property2 = self.property_factory(bbl=2, council=council)
+
+        for i in range(5):
+            self.dobissuedpermit_factory(property=property1, issuedate="2018-01-01")
+
+        for i in range(5):
+            self.dobissuedpermit_factory(property=property1, issuedate="2017-01-01")
+
+        for i in range(1):
+            self.dobissuedpermit_factory(property=property2, issuedate="2018-01-01")
+
+        query = '/properties/?dobissuedpermits__start=2018-01-01&dobissuedpermits__end=2019-01-01&dobissuedpermits__gte=5'
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+        self.assertEqual(content[0]['bbl'], '1')
+
+    def test_doblegacyfiledpermitsdates_field(self):
+        council = self.council_factory(id=1)
+        property1 = self.property_factory(bbl=1, council=council)
+        property2 = self.property_factory(bbl=2, council=council)
+
+        for i in range(5):
+            self.doblegacyfiledpermit_factory(property=property1, dobrundate="2018-01-01")
+
+        for i in range(5):
+            self.doblegacyfiledpermit_factory(property=property1, dobrundate="2017-01-01")
+
+        for i in range(1):
+            self.doblegacyfiledpermit_factory(property=property2, dobrundate="2018-01-01")
+
+        query = '/properties/?doblegacyfiledpermits__start=2018-01-01&doblegacyfiledpermits__end=2019-01-01&doblegacyfiledpermits__gte=5'
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+        self.assertEqual(content[0]['bbl'], '1')
+
     def test_rsunitslost_field(self):
         council = self.council_factory(id=1)
         property1 = self.property_factory(bbl=1, council=council)
@@ -216,13 +370,13 @@ class PropertyFilterTests(BaseTest, TestCase):
         property3 = self.property_factory(bbl=3, council=council)
 
         for i in range(10):
-            self.permitissuedjoined_factory(property=property1, issuedate="2018-01-01")
+            self.dobissuedpermit_factory(property=property1, issuedate="2018-01-01")
 
         for i in range(10):
-            self.permitissuedjoined_factory(property=property2, issuedate="2010-01-01")
+            self.dobissuedpermit_factory(property=property2, issuedate="2010-01-01")
 
         for i in range(5):
-            self.permitissuedjoined_factory(property=property3, issuedate="2018-01-01")
+            self.dobissuedpermit_factory(property=property3, issuedate="2018-01-01")
 
         # 10 permits between 2017-2018
         query = '/properties/?dobissuedpermits__start=2017-01-01&dobissuedpermits__end=2018-01-01&dobissuedpermits__gte=10'
@@ -733,13 +887,13 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         property3 = self.property_factory(bbl=3, council=council)
 
         for i in range(10):
-            self.permitissuedjoined_factory(property=property1, issuedate="2018-01-01")
+            self.dobissuedpermit_factory(property=property1, issuedate="2018-01-01")
 
         for i in range(10):
-            self.permitissuedjoined_factory(property=property2, issuedate="2010-01-01")
+            self.dobissuedpermit_factory(property=property2, issuedate="2010-01-01")
 
         for i in range(5):
-            self.permitissuedjoined_factory(property=property3, issuedate="2018-01-01")
+            self.dobissuedpermit_factory(property=property3, issuedate="2018-01-01")
 
         # 10 permits between 2017-2018
         query = '/properties/?q=*condition_0=AND+filter_0=dobissuedpermits__issuedate__gte=2017-01-01,dobissuedpermits__issuedate__lte=2018-01-01,dobissuedpermits__count__gte=10'
@@ -762,13 +916,13 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         property3 = self.property_factory(bbl=3, council=council)
 
         for i in range(10):
-            self.permitfiledlegacy_factory(property=property1, dobrundate="2018-01-01")
+            self.doblegacyfiledpermit_factory(property=property1, dobrundate="2018-01-01")
 
         for i in range(10):
-            self.permitfiledlegacy_factory(property=property2, dobrundate="2010-01-01")
+            self.doblegacyfiledpermit_factory(property=property2, dobrundate="2010-01-01")
 
         for i in range(5):
-            self.permitfiledlegacy_factory(property=property3, dobrundate="2018-01-01")
+            self.doblegacyfiledpermit_factory(property=property3, dobrundate="2018-01-01")
 
         # 10 permits between 2017-2018
         query = '/properties/?q=*condition_0=AND+filter_0=doblegacyfiledpermits__dobrundate__gte=2017-01-01,doblegacyfiledpermits__dobrundate__lte=2018-01-01,doblegacyfiledpermits__count__gte=10'

@@ -14,8 +14,8 @@ class DOBLegacyFiledPermitTests(BaseTest, TestCase):
         self.clean_tests()
 
     def test_list(self):
-        self.permitfiledlegacy_factory()
-        self.permitfiledlegacy_factory()
+        self.doblegacyfiledpermit_factory()
+        self.doblegacyfiledpermit_factory()
 
         response = self.client.get('/doblegacyfiledpermits/', format="json")
         content = response.data['results']
@@ -24,7 +24,7 @@ class DOBLegacyFiledPermitTests(BaseTest, TestCase):
         self.assertEqual(len(content), 2)
 
     def test_retrieve(self):
-        doblegacyfiledpermit = self.permitfiledlegacy_factory()
+        doblegacyfiledpermit = self.doblegacyfiledpermit_factory()
 
         response = self.client.get('/doblegacyfiledpermits/{}/'.format(doblegacyfiledpermit.id))
         content = response.data

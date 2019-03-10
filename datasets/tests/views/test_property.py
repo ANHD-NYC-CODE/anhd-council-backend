@@ -233,8 +233,8 @@ class PropertyViewTests(BaseTest, TestCase):
 
     def test_property_dobjoinedpermitissued(self):
         property = self.property_factory(bbl="1")
-        self.permitissuedjoined_factory(property=property)
-        self.permitissuedjoined_factory(property=property)
+        self.dobissuedpermit_factory(property=property)
+        self.dobissuedpermit_factory(property=property)
 
         response = self.client.get('/properties/1/dobissuedpermits/')
         content = response.data['results']
@@ -244,8 +244,8 @@ class PropertyViewTests(BaseTest, TestCase):
 
     def test_property_doblegacypermitfiled(self):
         property = self.property_factory(bbl="1")
-        self.permitfiledlegacy_factory(property=property)
-        self.permitfiledlegacy_factory(property=property)
+        self.doblegacyfiledpermit_factory(property=property)
+        self.doblegacyfiledpermit_factory(property=property)
 
         response = self.client.get('/properties/1/doblegacyfiledpermits/')
         content = response.data['results']

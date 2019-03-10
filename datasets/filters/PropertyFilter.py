@@ -84,7 +84,8 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     acrisrealmasteramounts = TotalWithDateFilter(method="filter_acrisrealmasteramounts_total_and_dates")
     acrisrealmastersales = TotalWithDateFilter(method="filter_acrisrealmastersales_total_and_dates")
 
-    dobissuedpermits = TotalWithDateFilter(method="filter_dobpermitissued_total_and_dates")
+    doblegacyfiledpermits = TotalWithDateFilter(method="filter_doblegacyfiledpermits_total_and_dates")
+    dobissuedpermits = TotalWithDateFilter(method="filter_dobissuedpermits_total_and_dates")
     evictions = TotalWithDateFilter(method="filter_eviction_total_and_dates")
 
     taxlien = django_filters.NumberFilter(field_name='taxlien__year', lookup_expr='exact')
@@ -170,22 +171,42 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
         return queryset
 
-    def filter_dobpermitissued_total_and_dates(self, queryset, name, values):
+    def filter_dobissuedpermits_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(
             'dobissuedpermit__issuedate', 'dobissuedpermits', values)
-        return queryset.filter(**date_filters).annotate(dobissuedpermits=Count('dobissuedpermit', distinct=True)).filter(**total_filters)
+
+        queryset = queryset.annotate(dobissuedpermit_set=FilteredRelation('dobissuedpermit', condition=Q(
+            af.construct_and_q([date_filters]), Q(dobissuedpermit__bbl__in=queryset.values('bbl')))))
+        queryset = queryset.annotate(dobissuedpermits=Count('dobissuedpermit_set', distinct=True))
+        return queryset.filter(**total_filters)
+
+    def filter_doblegacyfiledpermits_total_and_dates(self, queryset, name, values):
+        date_filters, total_filters = self.parse_totaldate_field_values(
+            'doblegacyfiledpermit__dobrundate', 'doblegacyfiledpermits', values)
+
+        queryset = queryset.annotate(doblegacyfiledpermit_set=FilteredRelation('doblegacyfiledpermit', condition=Q(
+            af.construct_and_q([date_filters]), Q(doblegacyfiledpermit__bbl__in=queryset.values('bbl')))))
+        queryset = queryset.annotate(doblegacyfiledpermits=Count('doblegacyfiledpermit_set', distinct=True))
+        return queryset.filter(**total_filters)
 
     def filter_eviction_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(
             'eviction__executeddate', 'evictions', values)
-        return queryset.filter(**date_filters).annotate(evictions=Count('eviction', distinct=True)).filter(**total_filters)
+        queryset = queryset.annotate(eviction_set=FilteredRelation('eviction', condition=Q(
+            af.construct_and_q([date_filters]), Q(eviction__bbl__in=queryset.values('bbl')))))
+        queryset = queryset.annotate(evictions=Count('eviction_set', distinct=True))
+        return queryset.filter(**total_filters)
 
     # HPD Complaints
 
     def filter_hpdcomplaints_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(
             'hpdcomplaint__receiveddate', 'hpdcomplaints', values)
-        return queryset.filter(**date_filters).annotate(hpdcomplaints=Count('hpdcomplaint', distinct=True)).filter(**total_filters)
+        queryset = queryset.annotate(hpdcomplaint_set=FilteredRelation('hpdcomplaint', condition=Q(
+            af.construct_and_q([date_filters]), Q(hpdcomplaint__bbl__in=queryset.values('bbl')))))
+        queryset = queryset.annotate(hpdcomplaints=Count('hpdcomplaint_set', distinct=True))
+
+        return queryset.filter(**total_filters)
 
     def filter_hpdcomplaints_exact(self, queryset, name, value):
         return queryset.annotate(hpdcomplaints=Count('hpdcomplaint', distinct=True)).filter(hpdcomplaints=value)
@@ -234,7 +255,10 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     def filter_dobcomplaints_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(
             'dobcomplaint__dateentered', 'dobcomplaints', values)
-        return queryset.filter(**date_filters).annotate(dobcomplaints=Count('dobcomplaint', distinct=True)).filter(**total_filters)
+        queryset = queryset.annotate(dobcomplaint_set=FilteredRelation('dobcomplaint', condition=Q(
+            af.construct_and_q([date_filters]), Q(dobcomplaint__bbl__in=queryset.values('bbl')))))
+        queryset = queryset.annotate(dobcomplaints=Count('dobcomplaint_set', distinct=True))
+        return queryset.filter(**total_filters)
 
     def filter_dobcomplaints_exact(self, queryset, name, value):
         return queryset.annotate(dobcomplaints=Count('dobcomplaint', distinct=True)).filter(dobcomplaints=value)
@@ -255,7 +279,11 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     def filter_dobviolations_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(
             'dobviolation__issuedate', 'dobviolations', values)
-        return queryset.filter(**date_filters).annotate(dobviolations=Count('dobviolation', distinct=True)).filter(**total_filters)
+        queryset = queryset.annotate(dobviolation_set=FilteredRelation('dobviolation', condition=Q(
+            af.construct_and_q([date_filters]), Q(dobviolation__bbl__in=queryset.values('bbl')))))
+        queryset = queryset.annotate(dobviolations=Count('dobviolation_set', distinct=True))
+
+        return queryset.filter(**total_filters)
 
     def filter_dobviolations_exact(self, queryset, name, value):
         return queryset.annotate(dobviolations=Count('dobviolation', distinct=True)).filter(dobviolations=value)
@@ -276,7 +304,11 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     def filter_ecbviolations_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(
             'ecbviolation__issuedate', 'ecbviolations', values)
-        return queryset.filter(**date_filters).annotate(ecbviolations=Count('ecbviolation', distinct=True)).filter(**total_filters)
+        queryset = queryset.annotate(ecbviolation_set=FilteredRelation('ecbviolation', condition=Q(
+            af.construct_and_q([date_filters]), Q(ecbviolation__bbl__in=queryset.values('bbl')))))
+        queryset = queryset.annotate(ecbviolations=Count('ecbviolation_set', distinct=True))
+
+        return queryset.filter(**total_filters)
 
     def filter_ecbviolations_exact(self, queryset, name, value):
         return queryset.annotate(ecbviolations=Count('ecbviolation', distinct=True)).filter(ecbviolations=value)
