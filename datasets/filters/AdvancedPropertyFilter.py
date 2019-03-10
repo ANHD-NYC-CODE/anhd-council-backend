@@ -4,10 +4,13 @@ import django_filters
 from django.db.models import Count, Q, ExpressionWrapper, F, FloatField, Case, When, Value
 from datasets.utils import advanced_filter as af
 
-from datasets.filter_helpers import PercentWithDateField, AdvancedQueryFilter
+from datasets.filter_helpers import PercentWithDateField, AdvancedQueryFilter, CommaSeparatedConditionField
 from django.db.models import Q
 
-from datasets.filters.PropertyFilter import housingtype_filter, rsunits_filter
+from datasets.filters.PropertyFilter import housingtype_filter, rsunits_filter, programnames_filter
+import logging
+
+logger = logging.getLogger('app')
 
 
 class AdvancedPropertyFilter(django_filters.rest_framework.FilterSet):
@@ -80,6 +83,12 @@ class AdvancedPropertyFilter(django_filters.rest_framework.FilterSet):
 
             bbl_queryset = bbl_queryset.filter(bbl__in=rsunits_filter(self,
                                                                       bbl_queryset, name, PercentWithDateField.compress(self, rsunitslost_params)))
+
+        if 'coresubsidyrecord__programname__any' in params:
+            programname_params = (params['coresubsidyrecord__programname__any'][0], None, None, None)
+
+            bbl_queryset = bbl_queryset.filter(bbl__in=programnames_filter(
+                self, bbl_queryset, 'coresubsidyrecord__programname', CommaSeparatedConditionField.compress(self, programname_params)))
         # add all the other params
         for key, value in params.items():
             try:

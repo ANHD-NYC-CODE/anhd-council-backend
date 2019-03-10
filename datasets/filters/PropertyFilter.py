@@ -3,17 +3,17 @@ import rest_framework_filters as filters
 from django.db.models import Count, Q, ExpressionWrapper, F, FloatField, Case, When, Value, Exists, OuterRef, FilteredRelation, Prefetch
 from django.db.models.functions import Cast
 import django_filters
-from django import forms
-from copy import deepcopy
 from datasets.filter_helpers import CommaSeparatedConditionFilter, TotalWithDateFilter, RSLostPercentWithDateFilter, PercentWithDateField, AdvancedQueryFilter
 from datasets.utils import advanced_filter as af
 import operator
 from functools import reduce
 from django.db.models import Q
 
-from collections import OrderedDict
 from django.conf import settings
-from psycopg2.extras import DateRange
+
+import logging
+
+logger = logging.getLogger('app')
 
 
 def housingtype_filter(self, queryset, name, value):
@@ -29,6 +29,24 @@ def housingtype_filter(self, queryset, name, value):
 
 def rsunits_filter(self, queryset, name, values):
     return queryset.rs_annotate().annotate(rslostpercent=Case(When(**{values['start_year']: 0}, then=0), When(**{values['end_year']: 0}, then=1), default=ExpressionWrapper(1 - Cast(F(values['end_year']), FloatField()) / Cast(F(values['start_year']), FloatField()), output_field=FloatField()), output_field=FloatField())).filter(**values['percent_query'])
+
+# Subsidy Program Names
+
+
+def programnames_filter(self, queryset, name, value):
+    qs = []
+    if value['exact']:
+        return queryset.filter(**{name: value['exact']})
+    if value['icontains']:
+        return queryset.filter(**{"{}__icontains".format(name): value['icontains']})
+    if value['any']:
+        qs.append(reduce(operator.or_, (Q(**{name: item}) for item in value['any'])))
+    if value['all']:
+        qs.append(reduce(operator.and_, (Q(**{[name]: item}) for item in value['all'])))
+
+    combined_q = reduce(operator.and_, (q for q in qs))
+
+    return queryset.filter(combined_q)
 
 
 class PropertyFilter(django_filters.rest_framework.FilterSet):
@@ -134,6 +152,11 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
     def filter_stabilizedunitslost_percent_and_dates(self, queryset, name, values):
         return rsunits_filter(self, queryset, name, values)
+
+    # Subsidy Program Names
+
+    def filter_programnames(self, queryset, name, value):
+        return programnames_filter(self, queryset, name, values)
 
     def filter_acrisrealmasteramounts_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(
@@ -324,23 +347,6 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
     def filter_ecbviolations_lte(self, queryset, name, value):
         return queryset.annotate(ecbviolations=Count('ecbviolation', distinct=True)).filter(ecbviolations__lte=value)
-
-    # Subsidy Program Names
-
-    def filter_programnames(self, queryset, name, value):
-        qs = []
-        if value['exact']:
-            return queryset.filter(**{name: value['exact']})
-        if value['icontains']:
-            return queryset.filter(**{"{}__icontains".format(name): value['icontains']})
-        if value['any']:
-            qs.append(reduce(operator.or_, (Q(**{name: item}) for item in value['any'])))
-        if value['all']:
-            qs.append(reduce(operator.and_, (Q(**{[name]: item}) for item in value['all'])))
-
-        combined_q = reduce(operator.and_, (q for q in qs))
-
-        return queryset.filter(combined_q)
 
     class Meta:
         model = ds.Property
