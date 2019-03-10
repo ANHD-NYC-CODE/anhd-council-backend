@@ -28,28 +28,36 @@ def annotate_dataset(queryset, c_filter, bbl_values):
 
 
 def annotate_acrislegals(queryset, c_filter, bbl_values):
-    docid_values = ds.AcrisRealMaster.construct_sales_query('acrisreallegal__documentid').only('documentid')
-    documenttype_queryset = ds.AcrisRealLegal.objects.filter(bbl__in=bbl_values,
-                                                             documentid__in=docid_values).only('bbl', 'documentid')
-
-    # clean filters, since the advanced search typically tacks on the property field
-    # but we need the acrisreallegal field since we're going to be doing a subquery on it
+    # docid_values = ds.AcrisRealMaster.construct_sales_query('acrisreallegal__documentid').only('documentid')
+    # documenttype_queryset = ds.AcrisRealLegal.objects.filter(bbl__in=bbl_values,
+    #                                                          documentid__in=docid_values).only('bbl', 'documentid')
+    #
+    # # clean filters, since the advanced search typically tacks on the property field
+    # # but we need the acrisreallegal field since we're going to be doing a subquery on it
     cleaned_filters = []
     for f in c_filter['query1_filters']:
         for key in f.keys():
-            cleaned_filters.append({key.replace('acrisreallegal__', ''): f[key]})
-
-    # subquery for acris real legals using the documenttype subquery
-    filtered_acris = documenttype_queryset.filter(construct_and_q(
-        cleaned_filters)).only('bbl').filter(bbl=OuterRef('bbl'))
-
-    queryset = queryset.annotate(has_filtered_acris=Exists(filtered_acris)).filter(
-        has_filtered_acris=True)
+            cleaned_filters.append({key.replace('acrisreallegal__documentid__', ''): f[key]})
+    #
+    # # subquery for acris real legals using the documenttype subquery
+    # filtered_acris = documenttype_queryset.filter(construct_and_q(
+    #     cleaned_filters)).only('bbl').filter(bbl=OuterRef('bbl'))
+    #
+    # queryset = queryset.annotate(has_filtered_acris=Exists(filtered_acris)).filter(
+    #     has_filtered_acris=True)
+    masterdocid_values = ds.AcrisRealMaster.construct_sales_query('acrisreallegal__documentid').only('documentid')
+    masterdocid_values = masterdocid_values.filter(construct_and_q(cleaned_filters)).values('documentid')
+    queryset = queryset.annotate(
+        **{c_filter['prefetch_key']: FilteredRelation(c_filter['model'], condition=Q(Q(**{c_filter['model'] + '__documentid__in': masterdocid_values}), Q(**{c_filter['model'] + '__bbl__in': bbl_values})))})
 
     if c_filter['annotation_key']:
-        queryset = queryset.annotate(acrisreallegals__documentid__count=Count(
-            'acrisreallegal', filter=construct_and_q(c_filter['query1_filters']), distinct=True))
-
+        if 'acrisreallegals__documentid__docamount' in c_filter['annotation_key']:
+            # annotate on value of docamount column
+            queryset = queryset.annotate(
+                **{c_filter['annotation_key']: F('acrisreallegal_set__documentid__docamount')})
+        else:
+            # annotate on count of acris records
+            queryset = queryset.annotate(**{c_filter['annotation_key']: Count(c_filter['prefetch_key'], distinct=True)})
     return queryset
 
 
@@ -78,14 +86,14 @@ def get_annotation_key(string):
     string = re.sub(r"(?=filter)(.*?)(?=\=)", '', string)
     # returns entire ,.*__count filter string minus the comparison
     for filter in string.split(','):
-        if bool(re.search(r"(count|percent)", filter.lower())):
+        if bool(re.search(r"(count|percent|docamount)", filter.lower())):
             filter = re.sub(r"(__gte\b|__gt\b|__exact\b|__lt\b|__lte\b|)", '', filter.split('=')[0])
             return filter
 
 
 def get_filters(string, annotation=False):
     filter_strings = list(
-        filter(lambda x: bool(re.search(r"(count|percent)", x.lower())) == annotation, string.split(',')))
+        filter(lambda x: bool(re.search(r"(count|percent|docamount)", x.lower())) == annotation, string.split(',')))
 
     if not annotation:
         # convert the date fields to singular model names

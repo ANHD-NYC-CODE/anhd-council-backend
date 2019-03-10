@@ -127,8 +127,9 @@ class AdvancedPropertyFilter(django_filters.rest_framework.FilterSet):
         # q1 = af.convert_condition_to_q(next(iter(mapping)), mapping, 'query1_filters')
         q2 = af.convert_condition_to_q(next(iter(mapping)), mapping, 'query2_filters')
 
+        queryset = queryset.filter(q2, bbl__in=bbl_queryset.values('bbl'))
         # q2_queryset = q1_queryset.filter(q2)
         #
         # final_bbls = q2_queryset.values('bbl')
 
-        return queryset.filter(q2, bbl__in=bbl_queryset.values('bbl'))
+        return queryset

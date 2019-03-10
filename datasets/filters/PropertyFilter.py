@@ -156,7 +156,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     # Subsidy Program Names
 
     def filter_programnames(self, queryset, name, value):
-        return programnames_filter(self, queryset, name, values)
+        return programnames_filter(self, queryset, name, value)
 
     def filter_acrisrealmasteramounts_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(

@@ -808,6 +808,49 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['bbl'], '1')
 
+    def test_acrisamount_rules_2(self):
+        council = self.council_factory(id=1)
+
+        # sold for $10 in date range
+        acrismaster1 = self.acrismaster_factory(documentid="a", doctype="DEED", docamount=10, docdate="2018-01-01")
+        property1 = self.property_factory(bbl=1, council=council)
+        self.acrislegal_factory(property=property1, master=acrismaster1)
+
+        # sold for $1 in date range
+        acrismaster2 = self.acrismaster_factory(documentid="b", doctype="DEED", docamount=1, docdate="2018-01-01")
+        property2 = self.property_factory(bbl=2, council=council)
+        self.acrislegal_factory(property=property2, master=acrismaster2)
+
+        # sold for $10 out of date range
+        acrismaster3 = self.acrismaster_factory(documentid="c", doctype="DEED", docamount=10, docdate="2011-01-01")
+        property3 = self.property_factory(bbl=3, council=council)
+        self.acrislegal_factory(property=property3, master=acrismaster3)
+
+        # tax document for $10 in date range
+        acrismaster4 = self.acrismaster_factory(documentid="d", doctype="RPTT", docamount=10, docdate="2017-01-01")
+        property4 = self.property_factory(bbl=4, council=council)
+        self.acrislegal_factory(property=property4, master=acrismaster4)
+
+        # only hpd violations
+        property5 = self.property_factory(bbl=5, council=council)
+
+        for i in range(5):
+            # self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
+            self.hpdviolation_factory(property=property5, approveddate="2018-01-01")
+
+        # properties that sold for over $5 between 2017-2018 OR +5 hpd violations
+        query = '/properties/?q=*condition_0=OR+filter_0=acrisreallegals__documentid__docdate__gte=2017-01-01,acrisreallegals__documentid__docdate__lte=2018-01-01,acrisreallegals__documentid__docamount__gte=5+filter_1=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5'
+
+        response = self.client.get(query, format="json")
+
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(len(content), 2)
+        self.assertEqual(content[0]['bbl'], '1')
+        self.assertEqual(content[1]['bbl'], '5')
+
     def test_acrissales_rules(self):
         council = self.council_factory(id=1)
 
