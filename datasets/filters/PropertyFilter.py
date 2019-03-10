@@ -137,8 +137,9 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     def filter_acrisrealmasteramounts_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(
             'documentid__docdate', 'documentid__docamount', values)
-        documenttype_queryset = ds.AcrisRealLegal.objects.filter(documentid__in=ds.AcrisRealMaster.construct_sales_query(
-            'acrisreallegal__documentid').only('documentid'))
+        docid_values = ds.AcrisRealMaster.construct_sales_query('acrisreallegal__documentid').only('documentid')
+        documenttype_queryset = ds.AcrisRealLegal.objects.filter(bbl__in=queryset.values('bbl'),
+                                                                 documentid__in=docid_values).only('bbl', 'documentid')
 
         # clean filters, since the advanced search typically tacks on the property field
         # but we need the acrisreallegal field since we're going to be doing a subquery on it
@@ -154,8 +155,9 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     def filter_acrisrealmastersales_total_and_dates(self, queryset, name, values):
 
         date_filters, total_filters = self.parse_totaldate_field_values('documentid__docdate', 'documentid', values)
-        documenttype_queryset = ds.AcrisRealLegal.objects.filter(
-            documentid__in=ds.AcrisRealMaster.construct_sales_query('acrisreallegal__documentid')).only('documentid', 'bbl')
+        docid_values = ds.AcrisRealMaster.construct_sales_query('acrisreallegal__documentid').only('documentid')
+        documenttype_queryset = ds.AcrisRealLegal.objects.filter(bbl__in=queryset.values('bbl'),
+                                                                 documentid__in=docid_values).only('bbl', 'documentid')
 
         # clean filters, since the advanced search typically tacks on the property field
         # but we need the acrisreallegal field since we're going to be doing a subquery on it
@@ -204,7 +206,11 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     def filter_hpdviolations_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(
             'hpdviolation__approveddate', 'hpdviolations', values)
-        return queryset.filter(**date_filters).annotate(hpdviolations=Count('hpdviolation', distinct=True)).filter(**total_filters)
+        queryset = queryset.annotate(hpdviolation_set=FilteredRelation('hpdviolation', condition=Q(
+            af.construct_and_q([date_filters]), Q(hpdviolation__bbl__in=queryset.values('bbl')))))
+        queryset = queryset.annotate(hpdviolations=Count('hpdviolation_set', distinct=True))
+
+        return queryset.filter(**total_filters)
 
     def filter_hpdviolations_exact(self, queryset, name, value):
         return queryset.annotate(hpdviolations=Count('hpdviolation', distinct=True)).filter(hpdviolations=value)

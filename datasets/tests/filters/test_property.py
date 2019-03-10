@@ -30,7 +30,7 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['bbl'], '1')
 
-    def mock_hpdviolations_field(self):
+    def test_hpdviolations_field(self):
         council = self.council_factory(id=1)
         property1 = self.property_factory(bbl=1, council=council)
         property2 = self.property_factory(bbl=2, council=council)
@@ -49,7 +49,7 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['bbl'], '1')
 
-    def mock_hpdviolationsdates_field(self):
+    def test_hpdviolationsdates_field(self):
         council = self.council_factory(id=1)
         property1 = self.property_factory(bbl=1, council=council)
         property2 = self.property_factory(bbl=2, council=council)
