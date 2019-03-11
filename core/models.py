@@ -49,7 +49,6 @@ class Dataset(models.Model):
     def latest_file(self):
         # Make sure to prefetch_related('datefile_set')
         try:
-
             return self.latest('uploaded_date')
         except AttributeError as e:
             try:
