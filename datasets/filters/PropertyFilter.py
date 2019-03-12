@@ -22,7 +22,8 @@ def housingtype_filter(self, queryset, name, value):
         "rr": queryset.rentreg(),
         "sh": queryset.smallhome(),
         "mr": queryset.marketrate(),
-        "ph": queryset.publichousing()
+        "ph": queryset.publichousing(),
+        "all": queryset.residential()
     }
     return switcher.get(value, queryset.none())
 

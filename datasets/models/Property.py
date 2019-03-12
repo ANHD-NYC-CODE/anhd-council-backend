@@ -54,7 +54,7 @@ class PropertyQuerySet(models.QuerySet):
             return queryset
 
     def smallhome_filter(self, units=6):
-        return self.filter(unitsres__lte=units)
+        return self.filter(unitsres__gt=0, unitsres__lte=units)
 
     def marketrate_filter(self):
         rentstab_records = ds.RentStabilizationRecord.objects.only('ucbbl').filter(ucbbl=OuterRef('bbl'))
