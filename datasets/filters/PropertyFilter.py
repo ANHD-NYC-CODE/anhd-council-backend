@@ -248,7 +248,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         date_filters, total_filters = self.parse_totaldate_field_values(
             'hpdviolation__approveddate', 'hpdviolations', values)
         queryset = queryset.annotate(hpdviolation_set=FilteredRelation('hpdviolation', condition=Q(
-            af.construct_and_q([date_filters]), Q(hpdviolation__bbl__in=queryset.values('bbl')))))
+            Q(hpdviolation__bbl__in=queryset.values('bbl')), af.construct_and_q([date_filters]))))
         queryset = queryset.annotate(hpdviolations=Count('hpdviolation_set', distinct=True))
 
         return queryset.filter(**total_filters)

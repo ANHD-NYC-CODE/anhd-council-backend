@@ -27,7 +27,7 @@ class ApplicationViewSet():
         self.pagination_class = StandardResultsSetPagination
         if ('format' in request.query_params and request.query_params['format'] == 'csv') or ('format' in request.query_params and request.query_params['format'] == 'csv'):
             self.pagination_class = None
-        if ('format' in request.query_params and request.query_params['format'] == 'json'):
+        if ('page' not in request.query_params and 'format' in request.query_params and request.query_params['format'] == 'json'):
             self.pagination_class = None
         return super().list(request, *args, **kwargs)
 
