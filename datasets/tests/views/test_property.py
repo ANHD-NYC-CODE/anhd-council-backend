@@ -265,7 +265,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(len(content), 2)
 
     def test_property_unauthorized_lispendens(self):
-        response = self.client.get('/properties/1/foreclosures/')
+        response = self.client.get('/properties/1/lispendens/')
 
         self.assertEqual(response.status_code, 401)
 
@@ -277,7 +277,7 @@ class PropertyViewTests(BaseTest, TestCase):
         token = self.get_access_token()
 
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
-        response = self.client.get('/properties/1/foreclosures/', format="json")
+        response = self.client.get('/properties/1/lispendens/', format="json")
         content = response.data['results']
 
         self.assertEqual(response.status_code, 200)

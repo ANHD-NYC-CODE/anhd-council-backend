@@ -200,9 +200,9 @@ properties_router.register(
 )
 
 properties_router.register(
-    'foreclosures',
+    'lispendens',
     v.lispenden_views.LisPendenViewSet,
-    base_name='property-foreclosures',
+    base_name='property-lispendens',
     parents_query_lookups=['bbl']
 )
 
@@ -370,7 +370,7 @@ router.register(r'dobpermitissuednow', v.dobpermitissuednow_views.DOBPermitIssue
 router.register(r'dobissuedpermits', v.dobissuedpermit_view.DOBIssuedPermitViewSet)
 router.register(r'doblegacyfiledpermits', v.doblegacyfiledpermit_views.DOBLegacyFiledPermitViewSet)
 router.register(r'publichousingrecords', v.publichousingrecord_views.PublicHousingRecordViewSet)
-router.register(r'foreclosures', v.lispenden_views.LisPendenViewSet)
+router.register(r'lispendens', v.lispenden_views.LisPendenViewSet)
 
 custom_routes = format_suffix_patterns([
     path('councils/<int:pk>/housing/', council_housing, name='council-housingtype-summary'),
