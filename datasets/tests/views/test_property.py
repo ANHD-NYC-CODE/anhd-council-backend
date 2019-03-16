@@ -109,8 +109,8 @@ class PropertyViewTests(BaseTest, TestCase):
 
     def test_property_acrismasters(self):
         property = self.property_factory(bbl="1")
-        master1 = self.acrismaster_factory(documentid="1")
-        master2 = self.acrismaster_factory(documentid="2")
+        master1 = self.acrismaster_factory(doctype="DEED", documentid="1")
+        master2 = self.acrismaster_factory(doctype="DEED", documentid="2")
         self.acrislegal_factory(master=master1, property=property)
         self.acrislegal_factory(master=master2, property=property)
 

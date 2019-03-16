@@ -65,8 +65,7 @@ class HPDComplaint(BaseDatasetModel, models.Model):
     def add_bins_from_buildingid(self):
         logger.debug(" * Adding BINs through building for HPD Complaints.")
         bin = ds.HPDBuildingRecord.objects.filter(buildingid=OuterRef('buildingid')).values_list('bin')[:1]
-
-        self.objects.prefetch_related('hpdbuildingrecord').all().update(bin=Subquery(bin))
+        self.objects.prefetch_related('buildingid').all().update(bin=Subquery(bin))
 
     @classmethod
     def transform_self(self, file_path, update=None):

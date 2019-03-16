@@ -9,7 +9,7 @@ import logging
 logging.disable(logging.CRITICAL)
 
 
-class PropertyFilterTests(BaseTest, TestCase):
+class AcrisRealMasterFilterTests(BaseTest, TestCase):
     urlpatterns = [
         path('', include('datasets.urls')),
     ]
@@ -18,8 +18,8 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.clean_tests()
 
     def test_docamount_field(self):
-        acrismaster1 = self.acrismaster_factory(documentid="a", docamount=10, docdate="2018-01-01")
-        acrismaster2 = self.acrismaster_factory(documentid="b", docamount=1, docdate="2018-01-01")
+        acrismaster1 = self.acrismaster_factory(documentid="a", doctype="DEED", docamount=10, docdate="2018-01-01")
+        acrismaster2 = self.acrismaster_factory(documentid="b", doctype="DEED", docamount=1, docdate="2018-01-01")
 
         query = '/acrisrealmasters/?docamount__gte=10'
         response = self.client.get(query, format="json")
@@ -56,9 +56,9 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.assertEqual(content[1]['documentid'], 'c')
 
     def test_docdate_field(self):
-        acrismaster1 = self.acrismaster_factory(documentid="a", docdate="2018-01-01")
-        acrismaster2 = self.acrismaster_factory(documentid="b", docdate="2010-01-01")
-        acrismaster3 = self.acrismaster_factory(documentid="c", docdate="2018-01-01")
+        acrismaster1 = self.acrismaster_factory(documentid="a", doctype="DEED", docdate="2018-01-01")
+        acrismaster2 = self.acrismaster_factory(documentid="b", doctype="DEED", docdate="2010-01-01")
+        acrismaster3 = self.acrismaster_factory(documentid="c", doctype="DEED", docdate="2018-01-01")
 
         query = '/acrisrealmasters/?docdate__gte=2018-01-01'
         response = self.client.get(query, format="json")
