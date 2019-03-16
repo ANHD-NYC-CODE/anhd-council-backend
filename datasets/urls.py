@@ -220,7 +220,7 @@ buildings_router.register(
     'hpdcomplaints',
     v.hpdcomplaint_views.HPDComplaintViewSet,
     base_name='building-hpdcomplaints',
-    parents_query_lookups=['buildingid__bin']
+    parents_query_lookups=['bin']
 )
 
 

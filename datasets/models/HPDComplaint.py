@@ -2,6 +2,8 @@ from django.db import models
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.utils.validation_filters import is_null, is_older_than
+from django.db.models import OuterRef
+from datasets import models as ds
 import logging
 
 logger = logging.getLogger('app')
@@ -19,6 +21,8 @@ class HPDComplaint(BaseDatasetModel, models.Model):
     complaintid = models.IntegerField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
+    bin = models.ForeignKey('Building', db_column='bin', db_constraint=False,
+                            on_delete=models.SET_NULL, null=True, blank=True)
     buildingid = models.ForeignKey('HPDBuildingRecord', db_column='buildingid', db_constraint=False,
                                    on_delete=models.SET_NULL, null=True, blank=True)
     boroughid = models.IntegerField(blank=True, null=True)
@@ -58,12 +62,22 @@ class HPDComplaint(BaseDatasetModel, models.Model):
             yield row
 
     @classmethod
+    def add_bins_from_buildingid(self):
+        logger.debug(" * Adding BINs through building for HPD Complaints.")
+
+        bin = ds.HPDBuildingRecord.objects.filter(
+            buildingid=OuterRef('buildingid')
+        ).values_list(
+            'bin'
+        )[:1]
+
+    @classmethod
     def transform_self(self, file_path, update=None):
         return self.pre_validation_filters(with_bbl(from_csv_file_to_gen(file_path, update), allow_blank=True))
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        return self.seed_or_update_from_set_diff(**kwargs)
+        return self.seed_or_update_from_set_diff(callback=self.add_bins_from_buildingid, **kwargs)
 
     def __str__(self):
         return str(self.complaintid)

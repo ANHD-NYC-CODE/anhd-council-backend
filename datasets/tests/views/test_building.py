@@ -45,9 +45,8 @@ class BuildingViewTests(BaseTest, TestCase):
 
     def test_building_hpdcomplaints(self):
         building = self.building_factory(bin="1")
-        hpdbuilding = self.hpdbuilding_factory(building=building)
-        self.hpdcomplaint_factory(hpdbuilding=hpdbuilding)
-        self.hpdcomplaint_factory(hpdbuilding=hpdbuilding)
+        self.hpdcomplaint_factory(building=building)
+        self.hpdcomplaint_factory(building=building)
 
         response = self.client.get('/buildings/1/hpdcomplaints/')
         content = response.data['results']

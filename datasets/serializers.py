@@ -330,24 +330,24 @@ class HPDViolationSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class HPDProblemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.HPDProblem
+        fields = '__all__'
+
+
 class HPDComplaintSerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.HPDComplaint
         fields = '__all__'
 
-    bin = serializers.SerializerMethodField()
+    problems = serializers.SerializerMethodField()
 
-    def get_bin(self, obj):
+    def get_problems(self, obj):
         try:
-            return obj.buildingid.bin.bin
+            return HPDProblemSerializer.serialize(obj.hpd_problem_set)
         except Exception as e:
             return None
-
-
-class HPDProblemSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ds.HPDProblem
-        fields = '__all__'
 
 
 class DOBViolationSerializer(serializers.ModelSerializer):

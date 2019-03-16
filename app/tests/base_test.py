@@ -209,22 +209,24 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         )
         return factory
 
-    def hpdcomplaint_factory(self, complaintid=None, property=None, hpdbuilding=None, **kwargs):
+    def hpdcomplaint_factory(self, complaintid=None, property=None, building=None, hpdbuilding=None, **kwargs):
         name = 'HPDComplaint'
         if not complaintid:
             complaintid = random.randint(1, 1000000)
 
         if not property:
             property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
-        if not hpdbuilding:
+        if not building:
             building = self.building_factory(bin=random.randint(1, 1000000), property=property, boro=property.borough,
                                              block=property.block, lot=property.lot)
+        if not hpdbuilding:
             hpdbuilding = self.hpdbuilding_factory(buildingid=random.randint(
                 1, 100000), property=property, building=building)
 
         factory = d_models.HPDComplaint.objects.create(
             complaintid=complaintid,
             bbl=property,
+            bin=building,
             buildingid=hpdbuilding,
             **kwargs
         )
