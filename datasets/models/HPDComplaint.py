@@ -2,7 +2,7 @@ from django.db import models
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.utils.validation_filters import is_null, is_older_than
-from django.db.models import OuterRef
+from django.db.models import OuterRef, Subquery
 from datasets import models as ds
 import logging
 
@@ -64,12 +64,9 @@ class HPDComplaint(BaseDatasetModel, models.Model):
     @classmethod
     def add_bins_from_buildingid(self):
         logger.debug(" * Adding BINs through building for HPD Complaints.")
+        bin = ds.HPDBuildingRecord.objects.filter(buildingid=OuterRef('buildingid')).values_list('bin')[:1]
 
-        bin = ds.HPDBuildingRecord.objects.filter(
-            buildingid=OuterRef('buildingid')
-        ).values_list(
-            'bin'
-        )[:1]
+        self.objects.prefetch_related('hpdbuildingrecord').all().update(bin=Subquery(bin))
 
     @classmethod
     def transform_self(self, file_path, update=None):

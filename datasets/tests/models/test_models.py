@@ -224,6 +224,16 @@ class HPDComplaint(BaseTest, TestCase):
         self.assertEqual(ds.HPDComplaint.objects.count(), 9)
         self.assertEqual(update.rows_created, 9)
 
+    def test_seed_complaints_adds_bin(self):
+        update = self.update_factory(model_name="HPDComplaint",
+                                     file_name="mock_hpd_complaints.csv")
+        building = self.building_factory(bin=1)
+        hpdbuilding = self.hpdbuilding_factory(buildingid="3418", building=building)
+        ds.HPDComplaint.seed_or_update_self(file_path=update.file.file.path, update=update)
+        self.assertEqual(ds.HPDComplaint.objects.count(), 9)
+        self.assertEqual(update.rows_created, 9)
+        self.assertEqual(ds.HPDComplaint.objects.filter(bin=1).count(), 1)
+
     def test_seed_complaints_with_update(self):
         update = self.update_factory(model_name="HPDComplaint",
                                      file_name="mock_hpd_complaints.csv")
