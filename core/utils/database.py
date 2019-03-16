@@ -171,6 +171,8 @@ def batch_upsert_from_gen(model, rows, batch_size, **kwargs):
                     batch = list(itertools.islice(rows, 0, batch_size))
                     if len(batch) == 0:
                         logger.info("Database - Batch upserts completed for {}.".format(model.__name__))
+                        if 'callback' in kwargs and kwargs['callback']:
+                            kwargs['callback']()
                         break
                     else:
                         logger.debug("Seeding next batch for {}.".format(model.__name__))
@@ -178,8 +180,6 @@ def batch_upsert_from_gen(model, rows, batch_size, **kwargs):
                         no_conflict = kwargs['no_conflict'] if 'no_conflict' in kwargs else None
                         batch_upsert_rows(model, batch, batch_size, update=update, no_conflict=no_conflict)
 
-                    if 'callback' in kwargs and kwargs['callback']:
-                        kwargs['callback']()
         except Exception as e:
             logger.warning("Unable to batch upsert: {}".format(e))
             raise e
