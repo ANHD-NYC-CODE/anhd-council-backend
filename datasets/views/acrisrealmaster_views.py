@@ -12,7 +12,8 @@ from datasets import models as ds
 
 class AcrisRealMasterViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
-    queryset = ds.AcrisRealMaster.objects.filter(doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES).all().order_by('pk')
+    queryset = ds.AcrisRealMaster.objects.filter(doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES).prefetch_related(
+        'acrisrealparty_set').all().order_by('pk')
     serializer_class = serial.AcrisRealMasterSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = AcrisRealMasterFilter

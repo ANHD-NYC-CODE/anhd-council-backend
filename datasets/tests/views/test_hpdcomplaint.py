@@ -23,6 +23,19 @@ class HPDComplaintViewTests(BaseTest, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
+    def test_list_with_hpdproblems(self):
+        complaint1 = self.hpdcomplaint_factory(complaintid="1")
+        complaint2 = self.hpdcomplaint_factory(complaintid="2")
+        self.hpdproblem_factory(complaint=complaint1)
+        self.hpdproblem_factory(complaint=complaint1)
+        response = self.client.get('/hpdcomplaints/', format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+        self.assertEqual(len(content[0]['hpdproblems']), 2)
+        self.assertEqual(len(content[1]['hpdproblems']), 0)
+
     def test_retrieve(self):
         self.hpdcomplaint_factory(complaintid="1")
 

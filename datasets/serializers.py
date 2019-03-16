@@ -115,7 +115,7 @@ class PropertySerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Property
         fields = ('bbl', 'zipcode', 'council', 'cd', 'borough', 'yearbuilt', 'unitsres', 'unitsrentstabilized', 'unitstotal',
-                  'bldgclass', 'numbldgs', 'numfloors', 'address', 'lat', 'lng')
+                  'bldgclass', 'zonedist1', 'numbldgs', 'numfloors', 'address', 'lat', 'lng')
 
 
 class PropertySummarySerializer(serializers.ModelSerializer):
@@ -337,17 +337,19 @@ class HPDProblemSerializer(serializers.ModelSerializer):
 
 
 class HPDComplaintSerializer(serializers.ModelSerializer):
+    hpdproblems = HPDProblemSerializer(source='hpdproblem_set', many=True, read_only=True)
+
     class Meta:
         model = ds.HPDComplaint
-        fields = '__all__'
+        fields = ('complaintid', 'hpdproblems', 'status', 'statusid', 'statusdate', 'apartment', 'receiveddate')
 
-    problems = serializers.SerializerMethodField()
-
-    def get_problems(self, obj):
-        try:
-            return HPDProblemSerializer.serialize(obj.hpd_problem_set)
-        except Exception as e:
-            return None
+    # def get_problems(self, obj):
+    #     import pdb
+    #     pdb.set_trace()
+    #     try:
+    #         return HPDProblemSerializer.serialize(obj.hpd_problem_set)
+    #     except Exception as e:
+    #         return None
 
 
 class DOBViolationSerializer(serializers.ModelSerializer):
@@ -376,12 +378,6 @@ class ECBViolationSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class AcrisRealMasterSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ds.AcrisRealMaster
-        fields = '__all__'
-
-
 class AcrisRealLegalSerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.AcrisRealLegal
@@ -391,6 +387,14 @@ class AcrisRealLegalSerializer(serializers.ModelSerializer):
 class AcrisRealPartySerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.AcrisRealParty
+        fields = '__all__'
+
+
+class AcrisRealMasterSerializer(serializers.ModelSerializer):
+    acrisrealparties = AcrisRealPartySerializer(source='acrisrealparty_set', many=True, read_only=True)
+
+    class Meta:
+        model = ds.AcrisRealMaster
         fields = '__all__'
 
 
