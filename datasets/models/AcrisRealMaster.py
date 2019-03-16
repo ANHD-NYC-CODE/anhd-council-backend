@@ -36,7 +36,7 @@ class AcrisRealMaster(BaseDatasetModel, models.Model):
     goodthroughdate = models.DateTimeField(blank=True, null=True)
 
     # https://data.cityofnewyork.us/City-Government/ACRIS-Document-Control-Codes/7isb-wh4c
-    SALE_DOC_TYPES = ("DEED", "DEEDO", "DEED, LE", "DEED, RC", "DEED, TS", "MTGE", "CORRM", "ASPM",
+    SALE_DOC_TYPES = ("DEED", "DEEDO", "DEED, LE", "DEED, RC", "DEED, TS", "DEEDP", "MTGE", "CORRM", "ASPM",
                       "AGMT", "SPRD", "AL&R", "M&CON")
     LEASE_DOC_TYPES = ("LEAS", "ASSTO", "MLEA1")
 
