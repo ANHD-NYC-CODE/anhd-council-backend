@@ -209,13 +209,13 @@ class PropertyFilterTests(BaseTest, TestCase):
         property2 = self.property_factory(bbl=2, council=council)
 
         for i in range(5):
-            self.doblegacyfiledpermit_factory(property=property1, dobrundate="2018-01-01")
+            self.doblegacyfiledpermit_factory(property=property1, prefilingdate="2018-01-01")
 
         for i in range(5):
-            self.doblegacyfiledpermit_factory(property=property1, dobrundate="2017-01-01")
+            self.doblegacyfiledpermit_factory(property=property1, prefilingdate="2017-01-01")
 
         for i in range(1):
-            self.doblegacyfiledpermit_factory(property=property2, dobrundate="2018-01-01")
+            self.doblegacyfiledpermit_factory(property=property2, prefilingdate="2018-01-01")
 
         query = '/properties/?doblegacyfiledpermits__start=2018-01-01&doblegacyfiledpermits__end=2019-01-01&doblegacyfiledpermits__gte=5'
         response = self.client.get(query, format="json")
@@ -959,16 +959,16 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         property3 = self.property_factory(bbl=3, council=council)
 
         for i in range(10):
-            self.doblegacyfiledpermit_factory(property=property1, dobrundate="2018-01-01")
+            self.doblegacyfiledpermit_factory(property=property1, prefilingdate="2018-01-01")
 
         for i in range(10):
-            self.doblegacyfiledpermit_factory(property=property2, dobrundate="2010-01-01")
+            self.doblegacyfiledpermit_factory(property=property2, prefilingdate="2010-01-01")
 
         for i in range(5):
-            self.doblegacyfiledpermit_factory(property=property3, dobrundate="2018-01-01")
+            self.doblegacyfiledpermit_factory(property=property3, prefilingdate="2018-01-01")
 
         # 10 permits between 2017-2018
-        query = '/properties/?q=*condition_0=AND+filter_0=doblegacyfiledpermits__dobrundate__gte=2017-01-01,doblegacyfiledpermits__dobrundate__lte=2018-01-01,doblegacyfiledpermits__count__gte=10'
+        query = '/properties/?q=*condition_0=AND+filter_0=doblegacyfiledpermits__prefilingdate__gte=2017-01-01,doblegacyfiledpermits__prefilingdate__lte=2018-01-01,doblegacyfiledpermits__count__gte=10'
 
         response = self.client.get(query, format="json")
 

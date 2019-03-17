@@ -202,7 +202,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
     def filter_doblegacyfiledpermits_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(
-            'doblegacyfiledpermit__dobrundate', 'doblegacyfiledpermits', values)
+            'doblegacyfiledpermit__prefilingdate', 'doblegacyfiledpermits', values)
 
         queryset = queryset.annotate(doblegacyfiledpermit_set=FilteredRelation('doblegacyfiledpermit', condition=Q(
             af.construct_and_q([date_filters]), Q(doblegacyfiledpermit__bbl__in=queryset.values('bbl')))))
