@@ -50,7 +50,7 @@ class HPDRegistration(BaseDatasetModel, models.Model):
 
     @classmethod
     def transform_self(self, file_path, update=None):
-        return self.pre_validation_filters(hpd_registrations_address_cleanup(with_bbl(from_csv_file_to_gen(file_path, update), allow_blank=True)))
+        return self.pre_validation_filters(hpd_registrations_address_cleanup(with_bbl(from_csv_file_to_gen(file_path, update), borough='boroid', allow_blank=True)))
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
