@@ -111,15 +111,17 @@ class CommunityHousingTypeSummarySerializer(serializers.ModelSerializer):
         }
 
 
-class HPDRegistrationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ds.HPDRegistration
-        fields = '__all__'
-
-
 class HPDContactSerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.HPDContact
+        fields = '__all__'
+
+
+class HPDRegistrationSerializer(serializers.ModelSerializer):
+    contacts = HPDContactSerializer(source='hpdcontact_set', many=True, read_only=True)
+
+    class Meta:
+        model = ds.HPDRegistration
         fields = '__all__'
 
 
@@ -144,13 +146,12 @@ class PropertySummarySerializer(serializers.ModelSerializer):
         fields = (
             'bbl', 'zipcode', 'council', 'cd', 'borough', 'yearbuilt', 'unitsres', 'unitsrentstabilized', 'unitstotal',
             'bldgclass', 'zonedist1', 'numbldgs', 'numfloors', 'address', 'lat', 'lng', 'ownertype',
-            'ownername', 'taxliens', 'buildings', 'nycha', 'hpdregistrations', 'hpdcontacts', 'coresubsidyrecords'
+            'ownername', 'taxliens', 'buildings', 'nycha', 'hpdregistrations', 'coresubsidyrecords'
         )
 
     taxliens = serializers.SerializerMethodField()
     buildings = serializers.SerializerMethodField()
     nycha = serializers.SerializerMethodField()
-    hpdcontacts = serializers.SerializerMethodField()
 
     def get_taxliens(self, obj):
         latest_tax_lien = ds.TaxLien.objects.filter(bbl=obj).order_by('-year').first()
@@ -168,10 +169,6 @@ class PropertySummarySerializer(serializers.ModelSerializer):
 
     def get_nycha(self, obj):
         return bool(len(ds.PublicHousingRecord.objects.filter(bbl=obj.bbl)))
-
-    def get_hpdcontacts(self, obj):
-        registrations = ds.HPDRegistration.objects.filter(bbl=obj.pk)
-        return HPDContactSerializer(ds.HPDContact.objects.filter(registrationid__in=registrations).all(), many=True, read_only=True).data
 
 
 class BuildingSerializer(serializers.ModelSerializer):
