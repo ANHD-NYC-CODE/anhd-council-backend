@@ -70,7 +70,8 @@ def seed_from_csv_diff(original_file_path, new_file_path, model, **kwargs):
     diff_gen = from_csv_file_to_gen(temp_file_path, kwargs['update'])
     logger.debug(" * Csv diff completed, beginning batch upsert.")
     batch_upsert_from_gen(model, diff_gen, settings.BATCH_SIZE, **kwargs)
-    os.remove(temp_file_path)
+    if os.path.isfile(temp_file_path):
+        os.remove(temp_file_path)
     if 'callback' in kwargs and kwargs['callback']:
         kwargs['callback']()
 
@@ -118,7 +119,8 @@ def copy_insert_from_csv(table_name, temp_file_path, **kwargs):
             next(reader, None)  # skip headers
             kwargs['update'].rows_created = sum(1 for row in reader)
             kwargs['update'].save()
-    os.remove(temp_file_path)
+    if os.path.isfile(temp_file_path):
+        os.remove(temp_file_path)
 
 
 def upsert_query(table_name, row, primary_key, no_conflict=False):
