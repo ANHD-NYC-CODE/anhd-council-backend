@@ -111,191 +111,67 @@ class CommunityHousingTypeSummarySerializer(serializers.ModelSerializer):
         }
 
 
+class HPDRegistrationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.HPDRegistration
+        fields = '__all__'
+
+
+class HPDContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.HPDContact
+        fields = '__all__'
+
+
+class CoreSubsidyRecordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.CoreSubsidyRecord
+        fields = '__all__'
+
+
 class PropertySerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Property
-        fields = ('bbl', 'zipcode', 'council', 'cd', 'borough', 'yearbuilt', 'unitsres', 'unitsrentstabilized', 'unitstotal',
-                  'bldgclass', 'zonedist1', 'numbldgs', 'numfloors', 'address', 'lat', 'lng')
+        fields = '__all__'
 
 
 class PropertySummarySerializer(serializers.ModelSerializer):
+    hpdregistrations = HPDRegistrationSerializer(source='hpdregistration_set', many=True, read_only=True)
+    coresubsidyrecords = CoreSubsidyRecordSerializer(source='coresubsidyrecord_set', many=True, read_only=True)
+
     class Meta:
         model = ds.Property
         fields = (
-            'bbl', 'council', 'cd', 'yearbuilt', 'unitsres', 'unitstotal',
-            'bldgclass', 'numbldgs', 'numfloors', 'address', 'lat', 'lng', 'cb2010', 'ct2010',
-            'hpdviolations', 'hpdcomplaints', 'dobcomplaints', 'dobviolations', 'ecbviolations',
-            'acrisrealmasters', 'hpdregistration', 'hpdregistrationcontacts',
-            'coresubsidyrecords', 'dobissuedpermits', 'dobpermitfiled',
-            'housinglitigations', 'taxliens', 'evictions', 'taxbill', 'lispendens', 'buildings'
+            'bbl', 'zipcode', 'council', 'cd', 'borough', 'yearbuilt', 'unitsres', 'unitsrentstabilized', 'unitstotal',
+            'bldgclass', 'zonedist1', 'numbldgs', 'numfloors', 'address', 'lat', 'lng', 'ownertype',
+            'ownername', 'taxliens', 'buildings', 'nycha', 'hpdregistrations', 'hpdcontacts', 'coresubsidyrecords'
         )
 
-    hpdcomplaints = serializers.SerializerMethodField()
-
-    def get_hpdcomplaints(self, obj):
-        hpdcomplaints = ds.HPDComplaint.objects.filter(bbl=obj).all()
-
-        return {
-            "count": len(hpdcomplaints)
-        }
-
-    hpdviolations = serializers.SerializerMethodField()
-
-    def get_hpdviolations(self, obj):
-        hpdviolations = ds.HPDViolation.objects.filter(bbl=obj).all()
-
-        return {
-            "count": len(hpdviolations)
-        }
-
-    dobcomplaints = serializers.SerializerMethodField()
-
-    def get_dobcomplaints(self, obj):
-        dobcomplaints = ds.DOBComplaint.objects.filter(bbl=obj).all()
-
-        return {
-            "count": len(dobcomplaints)
-        }
-
-    dobviolations = serializers.SerializerMethodField()
-
-    def get_dobviolations(self, obj):
-        dobviolations = ds.DOBViolation.objects.filter(bbl=obj).all()
-
-        return {
-            "count": len(dobviolations)
-        }
-
-    ecbviolations = serializers.SerializerMethodField()
-
-    def get_ecbviolations(self, obj):
-        ecbviolations = ds.ECBViolation.objects.filter(bbl=obj).all()
-
-        return {
-            "count": len(ecbviolations)
-        }
-
-    acrisrealmasters = serializers.SerializerMethodField()
-
-    def get_acrisrealmasters(self, obj):
-        acrisrealmasters = ds.AcrisRealMaster.objects.prefetch_related(
-            'acrisreallegal_set').filter(acrisreallegal__bbl=obj).all()
-
-        return {
-            "count": len(acrisrealmasters)
-        }
-
-    hpdregistration = serializers.SerializerMethodField()
-
-    def get_hpdregistration(self, obj):
-        hpdregistration = ds.HPDRegistration.objects.filter(bbl=obj).all()
-
-        return {
-            "count": len(hpdregistration)
-        }
-
-    hpdregistrationcontacts = serializers.SerializerMethodField()
-
-    def get_hpdregistrationcontacts(self, obj):
-        hpdregistrationcontacts = ds.HPDContact.objects.filter(registrationid__bbl=obj).all()
-
-        return {
-            "count": len(hpdregistrationcontacts)
-        }
-
-    coresubsidyrecords = serializers.SerializerMethodField()
-
-    def get_coresubsidyrecords(self, obj):
-        coresubsidyrecords = ds.CoreSubsidyRecord.objects.filter(bbl=obj).all()
-
-        return {
-            "count": len(coresubsidyrecords)
-        }
-
-    dobissuedpermits = serializers.SerializerMethodField()
-
-    def get_dobissuedpermits(self, obj):
-        dobissuedpermits = ds.DOBPermitIssued.objects.filter(bbl=obj).all()
-
-        return {
-            "count": len(dobissuedpermits)
-        }
-
-    dobpermitfiled = serializers.SerializerMethodField()
-
-    def get_dobpermitfiled(self, obj):
-        dobpermitfiled = ds.DOBLegacyFiledPermit.objects.filter(bbl=obj).all()
-
-        return {
-            "count": len(dobpermitfiled)
-        }
-
-    housinglitigations = serializers.SerializerMethodField()
-
-    def get_housinglitigations(self, obj):
-        housinglitigations = ds.HousingLitigation.objects.filter(bbl=obj).all()
-
-        return {
-            "count": len(housinglitigations)
-        }
-
     taxliens = serializers.SerializerMethodField()
+    buildings = serializers.SerializerMethodField()
+    nycha = serializers.SerializerMethodField()
+    hpdcontacts = serializers.SerializerMethodField()
 
     def get_taxliens(self, obj):
-        taxliens = ds.TaxLien.objects.filter(bbl=obj).all()
+        latest_tax_lien = ds.TaxLien.objects.filter(bbl=obj).order_by('-year').first()
 
-        return {
-            "count": len(taxliens)
-        }
-
-    evictions = serializers.SerializerMethodField()
-
-    def get_evictions(self, obj):
-        evictions = ds.Eviction.objects.filter(bbl=obj).all()
-
-        return {
-            "count": len(evictions)
-        }
-
-    taxbill = serializers.SerializerMethodField()
-
-    def get_taxbill(self, obj):
-        taxbill = ds.RentStabilizationRecord.objects.filter(ucbbl=obj).all()
-
-        return {
-            "count": len(taxbill)
-        }
-
-    lispendens = serializers.SerializerMethodField()
-
-    buildings = serializers.SerializerMethodField()
+        return latest_tax_lien.year if latest_tax_lien else None
 
     def get_buildings(self, obj):
         property_buildings = ds.Building.objects.filter(bbl=obj.pk)
 
-        return {
-            "items": list({
-                "bin": building.bin,
-                "house_number": building.get_house_number()
-            } for building in property_buildings)
-        }
+        return list({
+            "bin": building.bin,
+            "house_number": building.get_house_number(),
+            "stname": building.stname
+        } for building in property_buildings)
 
-    def get_lispendens(self, obj):
-        return {
-            "count": 0,
-            "message": "Please sign in to view LisPendens",
-            "items": []
-        }
+    def get_nycha(self, obj):
+        return bool(len(ds.PublicHousingRecord.objects.filter(bbl=obj.bbl)))
 
-
-class AuthenticatedPropertySummarySerializer(PropertySummarySerializer, serializers.ModelSerializer):
-
-    def get_lispendens(self, obj):
-        lispendens = ds.LisPenden.objects.filter(bbl=obj).all()
-
-        return {
-            "count": len(lispendens)
-        }
+    def get_hpdcontacts(self, obj):
+        registrations = ds.HPDRegistration.objects.filter(bbl=obj.pk)
+        return HPDContactSerializer(ds.HPDContact.objects.filter(registrationid__in=registrations).all(), many=True, read_only=True).data
 
 
 class BuildingSerializer(serializers.ModelSerializer):
@@ -410,18 +286,6 @@ class HousingLitigationSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class HPDRegistrationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ds.HPDRegistration
-        fields = '__all__'
-
-
-class HPDContactSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ds.HPDContact
-        fields = '__all__'
-
-
 class TaxLienSerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.TaxLien
@@ -443,12 +307,6 @@ class SubsidyJ51Serializer(serializers.ModelSerializer):
 class Subsidy421aSerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Subsidy421a
-        fields = '__all__'
-
-
-class CoreSubsidyRecordSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ds.CoreSubsidyRecord
         fields = '__all__'
 
 

@@ -50,10 +50,7 @@ class PropertyViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyM
         return super().retrieve(request, *args, **kwargs)
 
     def property_summary(self, request, *args, **kwargs):
-        if request.user and request.user.is_authenticated:
-            self.serializer_class = serial.AuthenticatedPropertySummarySerializer
-        else:
-            self.serializer_class = serial.PropertySummarySerializer
+        self.serializer_class = serial.PropertySummarySerializer
         return super().retrieve(request, *args, **kwargs)
 
     @cache_me()
