@@ -124,27 +124,7 @@ class PropertyQuerySet(models.QuerySet):
 
 class PropertyManager(models.Manager):
     def get_queryset(self):
-        return PropertyQuerySet(self.model, using=self._db).only('bbl',
-                                                                 'council',
-                                                                 'borough',
-                                                                 'cd',
-                                                                 'zipcode',
-                                                                 'address',
-                                                                 'bldgclass',
-                                                                 'ownertype',
-                                                                 'ownername',
-                                                                 'numbldgs',
-                                                                 'numfloors',
-                                                                 'unitsres',
-                                                                 'unitstotal',
-                                                                 'yearbuilt',
-                                                                 'builtfar',
-                                                                 'residfar',
-                                                                 'condono',
-                                                                 'version',
-                                                                 'lng',
-                                                                 'lat',
-                                                                 'unitsrentstabilized',)
+        return PropertyQuerySet(self.model, using=self._db)
 
     def council(self, number):
         return self.get_queryset().council(number)
