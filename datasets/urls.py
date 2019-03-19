@@ -14,6 +14,14 @@ community_housing = v.community_views.CommunityViewSet.as_view({
     'get': 'community_housing',
 })
 
+council_summary = v.council_views.CouncilViewSet.as_view({
+    'get': 'council_summary',
+})
+
+community_summary = v.community_views.CommunityViewSet.as_view({
+    'get': 'community_summary',
+})
+
 property_summary = v.property_views.PropertyViewSet.as_view({
     'get': 'property_summary',
 })
@@ -373,7 +381,9 @@ router.register(r'publichousingrecords', v.publichousingrecord_views.PublicHousi
 router.register(r'lispendens', v.lispenden_views.LisPendenViewSet)
 
 custom_routes = format_suffix_patterns([
+    path('councils/<int:pk>/summary/', council_summary, name='council-summary'),
     path('councils/<int:pk>/housing/', council_housing, name='council-housingtype-summary'),
+    path('communities/<int:pk>/summary/', community_summary, name='community-summary'),
     path('communities/<int:pk>/housing/', community_housing, name='community-housingtype-summary'),
     path('properties/<str:pk>/summary/', property_summary, name='property-summary'),
     path('search/buildings/', building_search, name='buildings-search'),

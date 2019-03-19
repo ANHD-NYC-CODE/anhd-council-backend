@@ -8,8 +8,8 @@ from datasets import models as ds
 
 class CommunityViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     """
-    council_housing:
-    Returns the counts of each housing type in the council district.
+    community_housing:
+    Returns the counts of each housing type in the community district.
 
     ### Query Params:
 
@@ -33,4 +33,9 @@ class CommunityViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnly
     @cache_me()
     def community_housing(self, request, *args, **kwargs):
         self.serializer_class = serial.CommunityHousingTypeSummarySerializer
+        return super().retrieve(request, *args, **kwargs)
+
+    @cache_me()
+    def council_summary(self, request, *args, **kwargs):
+        self.serializer_class = serial.CommunitySummarySerializer
         return super().retrieve(request, *args, **kwargs)

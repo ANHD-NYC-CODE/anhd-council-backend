@@ -11,6 +11,12 @@ class CouncilSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class CouncilSummarySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.Council
+        fields = '__all__'
+
+
 class CouncilHousingTypeSummarySerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Council
@@ -59,6 +65,12 @@ class CouncilHousingTypeSummarySerializer(serializers.ModelSerializer):
 
 
 class CommunitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.Community
+        fields = '__all__'
+
+
+class CouncilSummarySerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Community
         fields = '__all__'
