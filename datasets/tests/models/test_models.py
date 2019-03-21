@@ -17,9 +17,23 @@ class CouncilTests(BaseTest, TestCase):
                                      file_name="mock_council_json.geojson")
 
         ds.Council.seed_or_update_self(file_path=update.file.file.path, update=update)
-        import pdb
-        pdb.set_trace()
+
         self.assertEqual(ds.Council.objects.count(), 1)
+        self.assertEqual(ds.Council.objects.first().id, 44)
+        self.assertEqual(update.rows_created, 1)
+
+
+class CommunityTests(BaseTest, TestCase):
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_seed_councils(self):
+        update = self.update_factory(model_name="Community",
+                                     file_name="mock_community_json.geojson")
+
+        ds.Community.seed_or_update_self(file_path=update.file.file.path, update=update)
+        self.assertEqual(ds.Community.objects.count(), 1)
+        self.assertEqual(ds.Community.objects.first().id, 311)
         self.assertEqual(update.rows_created, 1)
 
 
