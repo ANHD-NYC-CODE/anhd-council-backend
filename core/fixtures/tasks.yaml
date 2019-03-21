@@ -286,7 +286,7 @@
 - model: django_celery_beat.periodictask
   pk: 21
   fields:
-    name: "Update HPDComplaint"
+    name: "Update HPDComplaint backup"
     description: "Backup HPD Complaints Update every 7th of the month at midnight"
     task: "core.tasks.async_download_and_update"
     crontab: 4
@@ -296,7 +296,7 @@
 - model: django_celery_beat.periodictask
   pk: 22
   fields:
-    name: "Update HPDProblem"
+    name: "Update HPDProblem backup"
     description: "Backup HPD Problem Update every 7th of the month at midnight"
     task: "core.tasks.async_download_and_update"
     crontab: 4
