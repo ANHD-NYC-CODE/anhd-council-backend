@@ -271,6 +271,15 @@ class Property(BaseDatasetModel, models.Model):
     # uses original header values
 
     @classmethod
+    def recreate_community_relations(self):
+        for property in self.objects.all():
+            try:
+                property.cd = ds.Community.objects.get(id=property.cd_id)
+                property.save()
+            except Exception as e:
+                logger.debug('Unable to find community for {}'.format(property))
+
+    @classmethod
     def update_set_filter(self, csv_reader, headers):
         return csv_reader
 
