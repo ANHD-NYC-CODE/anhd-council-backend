@@ -84,25 +84,17 @@ def from_geojson(file_path, pk='CounDist'):
         rows = js['features']
 
         for row in rows:
-            for key, value in row['properties'].items():
-                row[key] = value
-            del row['properties']
+            # Add property information to the DB record
+            # for key, value in row['properties'].items():
+            #     row[key] = value
+            #
+            new_row = {}
+            new_row['id'] = row['properties'][pk]
 
-            row.pop('id')
-            row.pop('OBJECTID')
-            row.pop('type')
+            row['properties']['id'] = row['properties'][pk]
+            new_row['data'] = json.dumps(row)
 
-            row['geometry'] = json.dumps(row['geometry'])
-
-            row['id'] = row[pk]
-            row.pop(pk)
-
-            row['shapearea'] = row['Shape__Area']
-            row.pop('Shape__Area')
-
-            row['shapelength'] = row['Shape__Length']
-            row.pop('Shape__Length')
-            yield row
+            yield new_row
 
 
 def from_dict_list_to_gen(list_rows):

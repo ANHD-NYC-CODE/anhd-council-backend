@@ -13,9 +13,7 @@ from core.utils.transform import from_geojson
 
 class Council(BaseDatasetModel, models.Model):
     id = models.IntegerField(primary_key=True, blank=False, null=False)
-    shapearea = models.DecimalField(decimal_places=10, max_digits=24, blank=True, null=True)
-    shapelength = models.DecimalField(decimal_places=10, max_digits=24, blank=True, null=True)
-    geometry = JSONField(blank=True, null=True)
+    data = JSONField(blank=True, null=True)
 
     @classmethod
     def transform_self(self, file_path, update=None):

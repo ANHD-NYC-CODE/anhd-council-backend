@@ -103,7 +103,7 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         update = c_models.Update.objects.create(dataset=dataset, file=file, previous_file=previous_file)
         return update
 
-    def council_factory(self, id=None, geometry='{"type":"Polygon","coordinates":[]}', **kwargs):
+    def council_factory(self, id=None, **kwargs):
         name = 'Council'
         if not id:
             id = random.randint(1, 1000000)
@@ -112,12 +112,11 @@ class BaseTest(APITestCase, URLPatternsTestCase):
 
         factory = d_models.Council.objects.create(
             id=id,
-            geometry=geometry,
             **kwargs
         )
         return factory
 
-    def community_factory(self, id=None, geometry='{"type":"Polygon","coordinates":[]}', **kwargs):
+    def community_factory(self, id=None, **kwargs):
         name = 'Community'
         if not id:
             id = random.randint(1, 1000000)
@@ -126,7 +125,6 @@ class BaseTest(APITestCase, URLPatternsTestCase):
 
         factory = d_models.Community.objects.create(
             id=id,
-            geometry=geometry,
             **kwargs
         )
         return factory

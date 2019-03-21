@@ -17,6 +17,8 @@ class CouncilTests(BaseTest, TestCase):
                                      file_name="mock_council_json.geojson")
 
         ds.Council.seed_or_update_self(file_path=update.file.file.path, update=update)
+        import pdb
+        pdb.set_trace()
         self.assertEqual(ds.Council.objects.count(), 1)
         self.assertEqual(update.rows_created, 1)
 
