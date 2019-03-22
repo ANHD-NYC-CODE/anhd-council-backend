@@ -41,9 +41,6 @@ class PropertyViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyM
             self.filterset_class = AdvancedPropertyFilter
 
         return super().list(request, *args, **kwargs)
-        # try:
-        # except Exception as e:
-        #     return Response(e, status=500)
 
     @cache_me()
     def retrieve(self, request, *args, **kwargs):

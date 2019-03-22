@@ -2,6 +2,7 @@ from django.core.cache import cache
 from django.conf import settings
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
+from rest_framework import viewsets
 from collections import OrderedDict
 
 from datasets import models as ds
@@ -22,13 +23,31 @@ class StandardResultsSetPagination(PageNumberPagination):
     #     ]))
 
 
+def add_headers(headers, **kwargs):
+    return {'headers': headers, **kwargs}
+
+
 class ApplicationViewSet():
+    def dispatch(self, *args, **kwargs):
+        if ('format' in self.request.GET and self.request.GET['format'] == 'csv') or ('format' in self.request.GET and self.request.GET['format'] == 'csv'):
+
+            response = super(viewsets.ReadOnlyModelViewSet, self).dispatch(*args, **kwargs)
+
+            response['Content-Disposition'] = "attachment; filename=%s" % (
+                self.request.GET['filename'] or "dap-portal.csv")
+            return response
+        else:
+            response = super(viewsets.ReadOnlyModelViewSet, self).dispatch(*args, **kwargs)
+            return response
+
     def list(self, request, *args, **kwargs):
         self.pagination_class = StandardResultsSetPagination
         if ('format' in request.query_params and request.query_params['format'] == 'csv') or ('format' in request.query_params and request.query_params['format'] == 'csv'):
             self.pagination_class = None
+
         if ('page' not in request.query_params and 'format' in request.query_params and request.query_params['format'] == 'json'):
             self.pagination_class = None
+
         return super().list(request, *args, **kwargs)
 
 

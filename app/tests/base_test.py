@@ -102,7 +102,7 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         previous_file = c_models.DataFile.objects.create(file=self.get_file(
             previous_file_name), dataset=dataset) if previous_file_name else None
         update = c_models.Update.objects.create(
-            dataset=dataset, file=file, previous_file=previous_file, task_result=TaskResult.objects.create(status="SUCCESS"), **kwargs)
+            dataset=dataset, file=file, previous_file=previous_file, task_result=TaskResult.objects.create(task_id=random.randint(1, 1000000), status="SUCCESS"), **kwargs)
         return update
 
     def council_factory(self, id=None, **kwargs):
