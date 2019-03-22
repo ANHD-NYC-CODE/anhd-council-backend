@@ -7,7 +7,7 @@ from django.conf import settings
 from rest_framework.test import APITestCase, URLPatternsTestCase
 from django.urls import include, path
 from rest_framework_simplejwt import views as jwt_views
-
+from django_celery_results.models import TaskResult
 import os
 import zipfile
 from django.utils import timezone
@@ -18,6 +18,7 @@ class BaseTest(APITestCase, URLPatternsTestCase):
     urlpatterns = [
         path('', include('users.urls')),
         path('', include('datasets.urls')),
+        path('', include('core.urls')),
         path('api/token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
         path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
     ]
@@ -93,14 +94,15 @@ class BaseTest(APITestCase, URLPatternsTestCase):
     def datafile_factory(self, dataset=None, **kwargs):
         return c_models.DataFile.objects.create(dataset=dataset, **kwargs)
 
-    def update_factory(self, dataset=None, model_name=None, file_name=None, previous_file_name=None):
+    def update_factory(self, dataset=None, model_name=None, file_name=None, previous_file_name=None, **kwargs):
         if not dataset:
             dataset = c_models.Dataset.objects.create(name=model_name, model_name=model_name)
 
         file = c_models.DataFile.objects.create(file=self.get_file(file_name), dataset=dataset) if file_name else None
         previous_file = c_models.DataFile.objects.create(file=self.get_file(
             previous_file_name), dataset=dataset) if previous_file_name else None
-        update = c_models.Update.objects.create(dataset=dataset, file=file, previous_file=previous_file)
+        update = c_models.Update.objects.create(
+            dataset=dataset, file=file, previous_file=previous_file, task_result=TaskResult.objects.create(status="SUCCESS"), **kwargs)
         return update
 
     def council_factory(self, id=None, **kwargs):

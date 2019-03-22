@@ -41,7 +41,7 @@ class Dataset(models.Model):
     def latest_update(self):
         # Make sure to prefetch_related('update_set')
         try:
-            latest = self.filter(task_result__status="SUCCESS").latest('created_date')
+            latest = self.update_set.filter(task_result__status="SUCCESS").latest('created_date')
         except Exception as e:
             latest = None
         return latest
@@ -49,7 +49,7 @@ class Dataset(models.Model):
     def latest_file(self):
         # Make sure to prefetch_related('datefile_set')
         try:
-            return self.latest('uploaded_date')
+            return self.datafile_set.latest('uploaded_date')
         except AttributeError as e:
             try:
                 return self.datafile_set.latest('uploaded_date')
