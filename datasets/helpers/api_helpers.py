@@ -5,11 +5,12 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework import viewsets
 from collections import OrderedDict
 from datasets import serializers as serial
-
+from copy import deepcopy
 from datasets import models as ds
 from functools import wraps
 import logging
-
+import json
+import urllib
 logger = logging.getLogger('app')
 
 
@@ -64,7 +65,12 @@ def cache_me(relative_key_path=True, get_queryset=False):
     def cache_decorator(function):
         @wraps(function)
         def cached_view(*original_args, **original_kwargs):
-            cache_key = original_args[1].build_absolute_uri()
+
+            params = deepcopy(original_args[1].query_params)
+            params.pop('format', None)
+            params.pop('filename', None)
+            cache_key = original_args[1].path + '?' + urllib.parse.urlencode(params)
+
             # TODO - figure out a way to inject cached data into renderer / response for browsable API pagination
             # or skip caching on the django RF browsable api templates since they don't work ideally - loses pagination and filters
             # if original_args[1].accepted_renderer.format == 'api':
