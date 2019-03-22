@@ -129,6 +129,12 @@ class HPDContactSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class HPDRegistrationCsvSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.HPDRegistration
+        fields = '__all__'
+
+
 class HPDRegistrationSerializer(serializers.ModelSerializer):
     contacts = HPDContactSerializer(source='hpdcontact_set', many=True, read_only=True)
 
@@ -221,6 +227,12 @@ class HPDProblemSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class HPDComplaintCsvSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.HPDComplaint
+        fields = '__all__'
+
+
 class HPDComplaintSerializer(serializers.ModelSerializer):
     hpdproblems = HPDProblemSerializer(source='hpdproblem_set', many=True, read_only=True)
 
@@ -272,6 +284,13 @@ class AcrisRealLegalSerializer(serializers.ModelSerializer):
 class AcrisRealPartySerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.AcrisRealParty
+        fields = '__all__'
+
+
+class AcrisRealMasterCsvSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ds.AcrisRealMaster
         fields = '__all__'
 
 

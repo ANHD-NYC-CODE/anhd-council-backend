@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework import viewsets
 from collections import OrderedDict
+from datasets import serializers as serial
 
 from datasets import models as ds
 from functools import wraps
@@ -34,7 +35,7 @@ class ApplicationViewSet():
             response = super(viewsets.ReadOnlyModelViewSet, self).dispatch(*args, **kwargs)
 
             response['Content-Disposition'] = "attachment; filename=%s" % (
-                self.request.GET['filename'] or "dap-portal.csv")
+                self.request.GET['filename'] if 'filename' in self.request.GET else "dap-portal.csv")
             return response
         else:
             response = super(viewsets.ReadOnlyModelViewSet, self).dispatch(*args, **kwargs)
@@ -44,6 +45,14 @@ class ApplicationViewSet():
         self.pagination_class = StandardResultsSetPagination
         if ('format' in request.query_params and request.query_params['format'] == 'csv') or ('format' in request.query_params and request.query_params['format'] == 'csv'):
             self.pagination_class = None
+            import pdb
+            pdb.set_trace()
+            if self.serializer_class.__name__ == 'AcrisRealMasterSerializer':
+                self.serializer_class = serial.AcrisRealMasterCsvSerializer
+            if self.serializer_class.__name__ == 'HPDRegistrationSerializer':
+                self.serializer_class = serial.HPDRegistrationCsvSerializer
+            if self.serializer_class.__name__ == 'HPDComplaintSerializer':
+                self.serializer_class = serial.HPDComplaintCsvSerializer
 
         if ('page' not in request.query_params and 'format' in request.query_params and request.query_params['format'] == 'json'):
             self.pagination_class = None
