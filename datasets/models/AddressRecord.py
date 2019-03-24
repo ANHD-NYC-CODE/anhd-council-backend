@@ -126,6 +126,8 @@ class AddressRecord(BaseDatasetModel, models.Model):
             if len(lhnd_split) <= 1:
                 low_number, low_letter = self.split_number_letter(building['lhnd'])
                 high_number, high_letter = self.split_number_letter(building['hhnd'])
+                if re.search(r"(GARAGE|FRONT|REAR)", low_number):
+                    pass
                 # create rangelist
                 if building['lhnd'].strip() == building['hhnd'].strip():
                     address_row = self.address_row_from_building(number=building['lhnd'].strip(),

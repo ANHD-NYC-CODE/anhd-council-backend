@@ -415,6 +415,18 @@ def clean_number_and_streets(string, include_house_number):
             number, rest = original.split(' ', 1)
             match = " ".join([number_to_text(number), rest])
             string = string.upper().replace(original, match)
+
+        # Clean property addresses with weird typo - "1o" instead of "10"
+        string = re.sub(r"\b1o\b", "10", string)
+        string = re.sub(r"\b2o\b", "20", string)
+        string = re.sub(r"\b3o\b", "30", string)
+        string = re.sub(r"\b4o\b", "40", string)
+        string = re.sub(r"\b5o\b", "50", string)
+        string = re.sub(r"\b6o\b", "60", string)
+        string = re.sub(r"\b7o\b", "70", string)
+        string = re.sub(r"\b8o\b", "80", string)
+        string = re.sub(r"\b9o\b", "90", string)
+
     else:
         match = re.search(r"(?=\d* (DRIVE|ROAD|PLACE|STREET|AVENUE))(\d+ (DRIVE|ROAD|PLACE|STREET|AVENUE))", string)
         if match:
