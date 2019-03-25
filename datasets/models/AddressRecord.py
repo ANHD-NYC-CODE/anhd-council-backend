@@ -120,7 +120,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
         building_gen = ds.Building.transform_self(file_path)
 
         for building in building_gen:
-            if re.search(r"(GARAGE|FRONT|REAR|BEACH)", building['lhnd']):
+            if re.search(r"(GARAGE|FRONT|REAR|BEACH)", building['stname']):
                 pass
             lhnd_split = building['lhnd'].split('-')
             hhnd_split = building['hhnd'].split('-')
