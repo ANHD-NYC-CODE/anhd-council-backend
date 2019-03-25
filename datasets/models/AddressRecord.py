@@ -120,14 +120,14 @@ class AddressRecord(BaseDatasetModel, models.Model):
         building_gen = ds.Building.transform_self(file_path)
 
         for building in building_gen:
+            if re.search(r"(GARAGE|FRONT|REAR|BEACH)", building['lhnd']):
+                pass
             lhnd_split = building['lhnd'].split('-')
             hhnd_split = building['hhnd'].split('-')
             # numbers formatted: 50
             if len(lhnd_split) <= 1:
                 low_number, low_letter = self.split_number_letter(building['lhnd'])
                 high_number, high_letter = self.split_number_letter(building['hhnd'])
-                if re.search(r"(GARAGE|FRONT|REAR)", low_number):
-                    pass
                 # create rangelist
                 if building['lhnd'].strip() == building['hhnd'].strip():
                     address_row = self.address_row_from_building(number=building['lhnd'].strip(),
@@ -153,6 +153,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
                 low_numbers = (self.split_number_letter(
                     lhnd_split[0]), self.split_number_letter(lhnd_split[1]))
                 # outputs: ((1, a), (2, a))
+
                 high_numbers = (self.split_number_letter(
                     hhnd_split[0]), self.split_number_letter(hhnd_split[1]))
                 # create rangelist
