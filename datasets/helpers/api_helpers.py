@@ -43,11 +43,11 @@ class ApplicationViewSet():
             return response
 
     def list(self, request, *args, **kwargs):
+
         self.pagination_class = StandardResultsSetPagination
         if ('format' in request.query_params and request.query_params['format'] == 'csv') or ('format' in request.query_params and request.query_params['format'] == 'csv'):
             self.pagination_class = None
-            import pdb
-            pdb.set_trace()
+
             if self.serializer_class.__name__ == 'AcrisRealMasterSerializer':
                 self.serializer_class = serial.AcrisRealMasterCsvSerializer
             if self.serializer_class.__name__ == 'HPDRegistrationSerializer':
@@ -59,6 +59,22 @@ class ApplicationViewSet():
             self.pagination_class = None
 
         return super().list(request, *args, **kwargs)
+
+    def retrieve(self, request, *args, **kwargs):
+        if ('format' in request.query_params and request.query_params['format'] == 'csv') or ('format' in request.query_params and request.query_params['format'] == 'csv'):
+            self.pagination_class = None
+
+            if self.serializer_class.__name__ == 'AcrisRealMasterSerializer':
+                self.serializer_class = serial.AcrisRealMasterCsvSerializer
+            if self.serializer_class.__name__ == 'HPDRegistrationSerializer':
+                self.serializer_class = serial.HPDRegistrationCsvSerializer
+            if self.serializer_class.__name__ == 'HPDComplaintSerializer':
+                self.serializer_class = serial.HPDComplaintCsvSerializer
+
+        if ('page' not in request.query_params and 'format' in request.query_params and request.query_params['format'] == 'json'):
+            self.pagination_class = None
+
+        return super().retrieve(request, *args, **kwargs)
 
 
 def cache_me(relative_key_path=True, get_queryset=False):
