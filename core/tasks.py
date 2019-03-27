@@ -105,7 +105,7 @@ def async_download_and_update(self, dataset_id):
             previous_file_id = previous_file.id if previous_file else None
             file = dataset.download()
             async_update_from_file.delay(file.id, previous_file_id)
-            dataset.delete_old_files()
+
         else:
             logger.error("*ERROR* - Task Failure - No dataset found in async_download_start")
             raise Exception("No dataset.")
@@ -124,10 +124,43 @@ def async_update_from_file(self, file_id, previous_file_id):
         dataset = file.dataset
         logger.info("Starting async update for dataset: {}".format(dataset.name))
         update = c.Update.objects.create(dataset=dataset, file=file, previous_file=previous_file)
+        dataset.delete_old_files()
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
         if update:
             async_send_update_error_mail.delay(update.id, str(e))
         else:
             async_send_general_task_error_mail.delay(str(e))
+        raise e
+
+
+@app.task(bind=True, queue='celery', acks_late=True, max_retries=1)
+def async_download_all_dob_construction(self):
+    try:
+        dob_legacy_filed = c.Dataset.get(model_name='DOBLegacyFiledPermit')
+        dob_legacy_issued = c.Dataset.get(model_name='DOBPermitIssuedLegacy')
+        dob_now_issued = c.Dataset.get(model_name='DOBPermitIssuedNow')
+        dob_legacy_filed.download()
+        dob_legacy_issued.download()
+        dob_now_issued.download()
+
+    except Exception as e:
+        logger.error('Error during task: {}'.format(e))
+        async_send_general_task_error_mail.delay(str(e))
+        raise e
+
+
+@app.task(bind=True, queue='update', acks_late=True, max_retries=1)
+def async_download_all_dob_construction(self):
+    try:
+        dob_legacy_filed = c.Dataset.get(model_name='DOBLegacyFiledPermit')
+        dob_legacy_issued = c.Dataset.get(model_name='DOBPermitIssuedLegacy')
+        dob_now_issued = c.Dataset.get(model_name='DOBPermitIssuedNow')
+        dob_legacy_filed.download()
+        dob_legacy_issued.download()
+        dob_now_issued.download()
+
+    except Exception as e:
+        logger.error('Error during task: {}'.format(e))
+        async_send_general_task_error_mail.delay(str(e))
         raise e

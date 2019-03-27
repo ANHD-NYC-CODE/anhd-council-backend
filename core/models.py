@@ -53,6 +53,12 @@ class Dataset(models.Model):
         except Exception as e:
             return None
 
+    def second_latest_file(self):
+        try:
+            return self.datafile_set.order_by('-uploaded_date').all()[1]
+        except Exception as e:
+            return None
+
     def latest_version(self):
         latest_file = self.latest_file()
         if latest_file:
@@ -134,7 +140,7 @@ def auto_seed_on_create(sender, instance, created, **kwargs):
             elif not instance.dataset:
                 instance.dataset = instance.file.dataset
 
-            logger.debug("Creating Worker for update {}".format(instance.id))
+            logger.debug("Creating worker task for update {}".format(instance.id))
             if instance.file:
                 worker = async_seed_file.apply_async(args=[instance.file.file.path, instance.id], kwargs={
                                                      'dataset_id': instance.dataset.id}, countdown=2)

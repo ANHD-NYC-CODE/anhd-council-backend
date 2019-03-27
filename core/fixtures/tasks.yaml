@@ -98,13 +98,44 @@
     hour: "22"
     day_of_month: "2"
     timezone: "America/New_York"
+- model: django_celery_beat.crontabschedule
+  pk: 14
+  fields:
+    # 830pm Sundays
+    minute: "30"
+    hour: "20"
+    day_of_week: "7"
+    timezone: "America/New_York"
+- model: django_celery_beat.crontabschedule
+  pk: 15
+  fields:
+    # 1130pm Sundays
+    minute: "30"
+    hour: "23"
+    day_of_week: "7"
+    timezone: "America/New_York"
+- model: django_celery_beat.crontabschedule
+  pk: 16
+  fields:
+    # 1130pm Saturdays
+    minute: "30"
+    hour: "23"
+    day_of_week: "6"
+    timezone: "America/New_York"
+- model: django_celery_beat.crontabschedule
+  pk: 17
+  fields:
+    # 1am every night
+    minute: "0"
+    hour: "1"
+    timezone: "America/New_York"
 - model: django_celery_beat.periodictask
   pk: 1
   fields:
     name: "Update AcrisRealMaster"
-    description: "Updates Acris Real Property Masters data every Saturday 830pm"
+    description: "Updates Acris Real Property Masters data every Saturday 1130pm"
     task: "core.tasks.async_download_and_update"
-    crontab: 1
+    crontab: 16
     args: "[5]"
     kwargs: "{}"
     date_changed: "2019-01-01"
@@ -112,9 +143,9 @@
   pk: 2
   fields:
     name: "Update AcrisRealLegal"
-    description: "Updates Acris Real Property Legals data every Saturday 930pm"
+    description: "Updates Acris Real Property Legals data every Sunday 830pm"
     task: "core.tasks.async_download_and_update"
-    crontab: 2
+    crontab: 14
     args: "[4]"
     kwargs: "{}"
     date_changed: "2019-01-01"
@@ -122,9 +153,9 @@
   pk: 3
   fields:
     name: "Update AcrisRealParty"
-    description: "Updates Acris Real Property Parties data every Saturday 1030pm"
+    description: "Updates Acris Real Property Parties data every Sunday 1130pm"
     task: "core.tasks.async_download_and_update"
-    crontab: 3
+    crontab: 15
     args: "[6]"
     kwargs: "{}"
     date_changed: "2019-01-01"
@@ -202,9 +233,9 @@
   pk: 11
   fields:
     name: "Update DOBPermitIssuedLegacy"
-    description: "Updates DOB (Legacy) Construction Permit Issued data every day 10pm"
+    description: "Updates DOB (Legacy) Construction Permit Issued data every midnight"
     task: "core.tasks.async_download_and_update"
-    crontab: 7
+    crontab: 12
     args: "[10]"
     kwargs: "{}"
     date_changed: "2019-01-01"
@@ -212,7 +243,7 @@
   pk: 12
   fields:
     name: "Update DOBPermitIssuedNow"
-    description: "Updates DOB (NOW) Construction Permit Issued data every day 10pm"
+    description: "Updates DOB (NOW) Construction Permit Issued data every day 11pm"
     task: "core.tasks.async_download_and_update"
     crontab: 7
     args: "[11]"
@@ -222,9 +253,9 @@
   pk: 13
   fields:
     name: "Update DOBPermitIssued"
-    description: "Updates joined DOB Construction Permit Issued data every day 11pm"
+    description: "Updates joined DOB Construction Permit Issued data every 1am"
     task: "core.tasks.async_create_update"
-    crontab: 12
+    crontab: 17
     args: "[26]"
     kwargs: "{}"
     date_changed: "2019-01-01"
@@ -232,7 +263,7 @@
   pk: 14
   fields:
     name: "Update Eviction"
-    description: "Updates Eviction data every night at 11pm"
+    description: "Updates Eviction data every midnight"
     task: "core.tasks.async_download_and_update"
     crontab: 12
     args: "[14]"
@@ -262,7 +293,7 @@
   pk: 17
   fields:
     name: "Update Housing Litigation"
-    description: "Updates Housing Litigations data every 2nd of the month at midnight"
+    description: "Updates Housing Litigations data every 2nd of the month at 9pm"
     task: "core.tasks.async_download_and_update"
     crontab: 11
     args: "[15]"
@@ -282,7 +313,7 @@
   pk: 19
   fields:
     name: "Clean temp directory"
-    description: "Maintainence task."
+    description: "Maintainence task. 1pm every afternoon"
     task: "app.tasks.clean_temp_directory"
     crontab: 8
     args: "[]"
