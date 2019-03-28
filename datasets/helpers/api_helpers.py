@@ -11,6 +11,7 @@ from functools import wraps
 import logging
 import json
 import urllib
+import datetime
 logger = logging.getLogger('app')
 
 
@@ -31,12 +32,19 @@ def add_headers(headers, **kwargs):
 
 class ApplicationViewSet():
     def dispatch(self, *args, **kwargs):
+        # if filename and csv in params
         if ('format' in self.request.GET and self.request.GET['format'] == 'csv') and 'filename' in self.request.GET:
 
             response = super(viewsets.ReadOnlyModelViewSet, self).dispatch(*args, **kwargs)
 
             response['Content-Disposition'] = "attachment; filename=%s" % (
                 self.request.GET['filename'] if 'filename' in self.request.GET else "dap-portal.csv")
+            return response
+        # if csv and no filename in params
+        elif ('format' in self.request.GET and self.request.GET['format'] == 'csv') and 'filename' not in self.request.GET:
+            response = super(viewsets.ReadOnlyModelViewSet, self).dispatch(*args, **kwargs)
+            response['Content-Disposition'] = "attachment; filename=%s" % (
+                "{}-{}-dap-portal.csv".format(self.serializer_class.Meta.model.__name__, datetime.datetime.today().strftime('%Y-%m-%d')))
             return response
         else:
             response = super(viewsets.ReadOnlyModelViewSet, self).dispatch(*args, **kwargs)
