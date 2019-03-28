@@ -43,9 +43,8 @@ class ApplicationViewSet():
             return response
 
     def list(self, request, *args, **kwargs):
-
         self.pagination_class = StandardResultsSetPagination
-        if ('format' in request.query_params and request.query_params['format'] == 'csv') or ('format' in request.query_params and request.query_params['format'] == 'csv'):
+        if ('format' in request.query_params and request.query_params['format'] == 'csv'):
             self.pagination_class = None
 
             if self.serializer_class.__name__ == 'AcrisRealMasterSerializer':
@@ -61,9 +60,8 @@ class ApplicationViewSet():
         return super().list(request, *args, **kwargs)
 
     def retrieve(self, request, *args, **kwargs):
-        if ('format' in request.query_params and request.query_params['format'] == 'csv') or ('format' in request.query_params and request.query_params['format'] == 'csv'):
+        if ('format' in request.query_params and request.query_params['format'] == 'csv'):
             self.pagination_class = None
-
             if self.serializer_class.__name__ == 'AcrisRealMasterSerializer':
                 self.serializer_class = serial.AcrisRealMasterCsvSerializer
             if self.serializer_class.__name__ == 'HPDRegistrationSerializer':
