@@ -124,7 +124,6 @@ def async_update_from_file(self, file_id, previous_file_id):
         dataset = file.dataset
         logger.info("Starting async update for dataset: {}".format(dataset.name))
         update = c.Update.objects.create(dataset=dataset, file=file, previous_file=previous_file)
-        dataset.delete_old_files()
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
         if update:

@@ -13,29 +13,6 @@ import re
 import logging
 
 logger = logging.getLogger('app')
-# Testing
-
-# 1) query buildings with > 5 HPD violations total
-
-# OR
-
-# https://docs.djangoproject.com/en/dev/topics/db/queries/#complex-lookups-with-q-objects
-# https://stackoverflow.com/questions/739776/django-filters-or
-
-# Custom managers (Model.objects)
-# https://docs.djangoproject.com/en/dev/topics/db/managers/#custom-managers
-
-# foreign key that can reference different tables
-
-# Creating a new foreign key with default value from the record
-
-# https://stackoverflow.com/questions/29787853/django-migrations-add-field-with-default-as-function-of-model
-# - create migration with nullable foreign key
-# - migrate then create migration with default + reverse function and alter to make non-nullable. migrate
-
-# TODO
-
-# 1) Cutoff year?
 
 
 class BaseDatasetModel():
@@ -101,4 +78,4 @@ class BaseDatasetModel():
         if (previous_file and os.path.isfile(previous_file.file.path)):
             seed_from_csv_diff(previous_file.file.path, new_file_path, self, **kwargs)
         else:
-            return self.bulk_seed(**kwargs)
+            self.bulk_seed(**kwargs)
