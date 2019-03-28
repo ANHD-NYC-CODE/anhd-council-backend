@@ -31,7 +31,7 @@ def add_headers(headers, **kwargs):
 
 class ApplicationViewSet():
     def dispatch(self, *args, **kwargs):
-        if ('format' in self.request.GET and self.request.GET['format'] == 'csv') or ('format' in self.request.GET and self.request.GET['format'] == 'csv'):
+        if ('format' in self.request.GET and self.request.GET['format'] == 'csv') and 'filename' in self.request.GET:
 
             response = super(viewsets.ReadOnlyModelViewSet, self).dispatch(*args, **kwargs)
 
@@ -44,6 +44,7 @@ class ApplicationViewSet():
 
     def list(self, request, *args, **kwargs):
         self.pagination_class = StandardResultsSetPagination
+        # no pagination for csv
         if ('format' in request.query_params and request.query_params['format'] == 'csv'):
             self.pagination_class = None
 
@@ -54,12 +55,14 @@ class ApplicationViewSet():
             if self.serializer_class.__name__ == 'HPDComplaintSerializer':
                 self.serializer_class = serial.HPDComplaintCsvSerializer
 
+        # no pagination for JSON unless 'page' is included in params
         if ('page' not in request.query_params and 'format' in request.query_params and request.query_params['format'] == 'json'):
             self.pagination_class = None
 
         return super().list(request, *args, **kwargs)
 
     def retrieve(self, request, *args, **kwargs):
+        # no pagination for csv
         if ('format' in request.query_params and request.query_params['format'] == 'csv'):
             self.pagination_class = None
             if self.serializer_class.__name__ == 'AcrisRealMasterSerializer':
@@ -69,6 +72,7 @@ class ApplicationViewSet():
             if self.serializer_class.__name__ == 'HPDComplaintSerializer':
                 self.serializer_class = serial.HPDComplaintCsvSerializer
 
+        # no pagination for JSON unless 'page' is included in params
         if ('page' not in request.query_params and 'format' in request.query_params and request.query_params['format'] == 'json'):
             self.pagination_class = None
 
