@@ -91,7 +91,6 @@ def cache_me(relative_key_path=True, get_queryset=False):
     def cache_decorator(function):
         @wraps(function)
         def cached_view(*original_args, **original_kwargs):
-
             params = deepcopy(original_args[1].query_params)
             params.pop('format', None)
             params.pop('filename', None)
@@ -108,8 +107,11 @@ def cache_me(relative_key_path=True, get_queryset=False):
                 return original_args[0].finalize_response(original_args[1], Response(cache.get(cache_key)))
             else:
                 response = function(*original_args, **original_kwargs)
-                logger.debug('Caching: {}'.format(cache_key))
-                cache.set(cache_key, response.data, timeout=settings.CACHE_TTL)
+
+                # cache only if response is 200
+                if (response.status_code == 200):
+                    logger.debug('Caching: {}'.format(cache_key))
+                    cache.set(cache_key, response.data, timeout=settings.CACHE_TTL)
                 return response
 
         return cached_view

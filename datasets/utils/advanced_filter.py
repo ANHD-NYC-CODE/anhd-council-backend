@@ -13,15 +13,11 @@ def annotate_dataset(queryset, c_filter, bbl_values):
     model_name = list(filter(lambda x: c_filter['model'].lower() == x.lower(), settings.ACTIVE_MODELS))
     model = getattr(ds, model_name[0])
 
-    # queryset = queryset.prefetch_related(Prefetch(
-    #     c_filter['prefetch_key'], queryset=model.objects.all().only(*model.slim_query_fields)))
-
     queryset = queryset.annotate(
         **{c_filter['prefetch_key']: FilteredRelation(c_filter['model'], condition=Q(construct_and_q(c_filter['query1_filters']), Q(**{c_filter['model'] + '__bbl__in': bbl_values})))})
 
     if c_filter['annotation_key']:
-        # queryset = queryset.annotate(
-        #     **{c_filter['annotation_key']: Count(c_filter['model'], filter=construct_and_q(c_filter['query1_filters']), distinct=True)})
+
         queryset = queryset.annotate(**{c_filter['annotation_key']: Count(c_filter['prefetch_key'], distinct=True)})
 
     return queryset
