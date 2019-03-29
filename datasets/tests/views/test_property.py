@@ -293,6 +293,7 @@ class PropertyViewTests(BaseTest, TestCase):
         registration = self.hpdregistration_factory(property=property, building=building1)
 
         self.coredata_factory(property=property)
+        self.taxbill_factory(property=property, uc2007=10)
 
         response = self.client.get('/properties/1/summary/', format="json")
         content = response.data
@@ -307,4 +308,31 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(len(content['buildings']), 2)
         self.assertEqual(content['nycha'], True)
         self.assertEqual(len(content['hpdregistrations']), 1)
-        self.assertEqual(len(content['coresubsidyrecords']), 1)
+        self.assertEqual(len(content['subsidyrecords']), 1)
+        self.assertEqual(content['rentstabilizationrecord']['uc2007'], 10)
+
+    def test_property_housing_summary(self):
+        property = self.property_factory(bbl="1", address="123 fake st", yearbuilt="1900",
+                                         unitstotal="12", unitsres="11", unitsrentstabilized="10")
+        property2 = self.property_factory(bbl="2", address="125 fake st", yearbuilt="1900",
+                                          unitstotal="12", unitsres="11", unitsrentstabilized="10")
+        self.taxlien_factory(property=property, year=2018)
+        building1 = self.building_factory(bin="1", property=property, stname="fake st", lhnd="1")
+        building2 = self.building_factory(bin="2", property=property, stname="fake st", lhnd="2")
+        self.publichousingrecord_factory(property=property)
+        registration = self.hpdregistration_factory(property=property, building=building1)
+
+        self.coredata_factory(property=property)
+        self.taxbill_factory(property=property, uc2007=10)
+
+        response = self.client.get('/properties/?summary=true', format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+        self.assertEqual(content[0]['nycha'], True)
+        self.assertEqual(len(content[0]['subsidyrecords']), 1)
+        self.assertEqual(content[0]['rentstabilizationrecord']['ucbbl'], '1')
+        self.assertEqual(content[1]['nycha'], False)
+        self.assertEqual(len(content[1]['subsidyrecords']), 0)
+        self.assertEqual(content[1]['rentstabilizationrecord'], None)

@@ -149,22 +149,57 @@ class CoreSubsidyRecordSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class RentStabilizationRecordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.RentStabilizationRecord
+        fields = '__all__'
+
+
 class PropertySerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Property
         fields = '__all__'
 
 
+class PropertyHousingTypeSummary(serializers.ModelSerializer):
+
+    class Meta:
+        model = ds.Property
+        fields = '__all__'
+        extra_fields = ['nycha', ]
+
+    nycha = serializers.SerializerMethodField()
+    subsidyrecords = CoreSubsidyRecordSerializer(source='coresubsidyrecord_set', many=True, read_only=True)
+    rentstabilizationrecord = RentStabilizationRecordSerializer(
+        many=False, read_only=True)
+
+    def get_nycha(self, obj):
+        return bool(obj.publichousingrecord_set.count())
+
+    def get_rentstabilized(self, obj):
+        return bool(obj.rentstabilizationrecord and obj.unitsres <= 6 and obj.unitsres >= 1 and obj.yearbuilt <= 1974 and obj.yearbuilt > 1)
+
+    def get_field_names(self, declared_fields, info):
+        expanded_fields = super(PropertyHousingTypeSummary, self).get_field_names(declared_fields, info)
+
+        if getattr(self.Meta, 'extra_fields', None):
+            return expanded_fields + self.Meta.extra_fields
+        else:
+            return expanded_fields
+
+
 class PropertySummarySerializer(serializers.ModelSerializer):
     hpdregistrations = HPDRegistrationSerializer(source='hpdregistration_set', many=True, read_only=True)
-    coresubsidyrecords = CoreSubsidyRecordSerializer(source='coresubsidyrecord_set', many=True, read_only=True)
+    subsidyrecords = CoreSubsidyRecordSerializer(source='coresubsidyrecord_set', many=True, read_only=True)
+    rentstabilizationrecord = RentStabilizationRecordSerializer(
+        many=False, read_only=True)
 
     class Meta:
         model = ds.Property
         fields = (
             'bbl', 'zipcode', 'council', 'cd', 'borough', 'yearbuilt', 'unitsres', 'unitsrentstabilized', 'unitstotal',
             'bldgclass', 'zonedist1', 'numbldgs', 'numfloors', 'address', 'lat', 'lng', 'ownertype',
-            'ownername', 'taxliens', 'buildings', 'nycha', 'hpdregistrations', 'coresubsidyrecords'
+            'ownername', 'taxliens', 'buildings', 'nycha', 'hpdregistrations', 'subsidyrecords', 'rentstabilizationrecord'
         )
 
     taxliens = serializers.SerializerMethodField()
@@ -317,12 +352,6 @@ class HousingLitigationSerializer(serializers.ModelSerializer):
 class TaxLienSerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.TaxLien
-        fields = '__all__'
-
-
-class RentStabilizationRecordSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ds.RentStabilizationRecord
         fields = '__all__'
 
 

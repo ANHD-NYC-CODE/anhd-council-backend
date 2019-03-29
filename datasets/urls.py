@@ -6,14 +6,6 @@ from rest_framework import renderers
 
 from datasets import views as v
 
-council_housing = v.council_views.CouncilViewSet.as_view({
-    'get': 'council_housing',
-})
-
-community_housing = v.community_views.CommunityViewSet.as_view({
-    'get': 'community_housing',
-})
-
 council_summary = v.council_views.CouncilViewSet.as_view({
     'get': 'council_summary',
 })
@@ -28,6 +20,10 @@ property_summary = v.property_views.PropertyViewSet.as_view({
 
 property_buildings_summary = v.property_views.PropertyViewSet.as_view({
     'get': 'buildings_summary',
+})
+
+property_housing_type_summary = v.property_views.PropertyViewSet.as_view({
+    'get': 'housing_type_summary',
 })
 
 building_search = v.search_views.SearchViewSet.as_view({
@@ -382,14 +378,12 @@ router.register(r'lispendens', v.lispenden_views.LisPendenViewSet)
 
 custom_routes = format_suffix_patterns([
     path('councils/<int:pk>/summary/', council_summary, name='council-summary'),
-    path('councils/<int:pk>/housing/', council_housing, name='council-housingtype-summary'),
     path('communities/<int:pk>/summary/', community_summary, name='community-summary'),
-    path('communities/<int:pk>/housing/', community_housing, name='community-housingtype-summary'),
     path('properties/<str:pk>/summary/', property_summary, name='property-summary'),
     path('search/buildings/', building_search, name='buildings-search'),
 ])
 
 urlpatterns = [
+    *custom_routes,
     path('', include(router.urls)),
-    *custom_routes
 ]
