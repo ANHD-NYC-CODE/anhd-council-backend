@@ -330,9 +330,9 @@ class PropertyViewTests(BaseTest, TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
-        self.assertEqual(content[0]['nycha'], True)
+        self.assertEqual(bool(content[0]['nycha']), True)
         self.assertEqual(len(content[0]['subsidyrecords']), 1)
         self.assertEqual(content[0]['rentstabilizationrecord']['ucbbl'], '1')
-        self.assertEqual(content[1]['nycha'], False)
+        self.assertEqual(bool(content[1]['nycha']), False)
         self.assertEqual(len(content[1]['subsidyrecords']), 0)
         self.assertEqual(content[1]['rentstabilizationrecord'], None)

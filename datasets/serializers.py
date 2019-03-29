@@ -17,53 +17,6 @@ class CouncilSummarySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class CouncilHousingTypeSummarySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ds.Council
-        fields = ('pk', 'housing_types')
-
-    housing_types = serializers.SerializerMethodField()
-
-    def get_housing_types(self, obj):
-        council_properties = ds.Property.objects.council(obj.pk)
-        program = self.context['request'].query_params['program'] if 'program' in self.context['request'].query_params else None
-        unitsres = self.context['request'].query_params['unitsres'] if 'unitsres' in self.context['request'].query_params else '6'
-
-        residential_properties = council_properties.residential()
-        rent_stabilized = council_properties.rentstab()
-        rent_regulated = council_properties.rentreg(program=program)
-        small_homes = council_properties.smallhome(units=unitsres)
-        market_rate = council_properties.marketrate()
-        public_housing = council_properties.publichousing()
-
-        return {
-            "residential_properties": {
-                'count': residential_properties.count(),
-                'units': residential_properties.aggregate(Sum('unitsres'))['unitsres__sum']
-            },
-            "rent_stabilized": {
-                'count': rent_stabilized.count(),
-                'units': rent_stabilized.aggregate(Sum('unitsrentstabilized'))['unitsrentstabilized__sum']
-            },
-            "rent_regulated": {
-                'count': rent_regulated.count(),
-                'units': rent_regulated.aggregate(Sum('unitsres'))['unitsres__sum']
-            },
-            "small_homes":  {
-                'count': small_homes.count(),
-                'units': small_homes.aggregate(Sum('unitsres'))['unitsres__sum']
-            },
-            "market_rate": {
-                'count': market_rate.count(),
-                'units': market_rate.aggregate(Sum('unitsres'))['unitsres__sum']
-            },
-            "public_housing": {
-                'count':  public_housing.count(),
-                'units': public_housing.aggregate(Sum('unitsres'))['unitsres__sum']
-            }
-        }
-
-
 class CommunitySerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Community
@@ -74,53 +27,6 @@ class CouncilSummarySerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Community
         fields = '__all__'
-
-
-class CommunityHousingTypeSummarySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ds.Community
-        fields = ('pk', 'housing_types')
-
-    housing_types = serializers.SerializerMethodField()
-
-    def get_housing_types(self, obj):
-        community_properties = ds.Property.objects.community(obj.pk)
-        program = self.context['request'].query_params['program'] if 'program' in self.context['request'].query_params else None
-        unitsres = self.context['request'].query_params['unitsres'] if 'unitsres' in self.context['request'].query_params else '6'
-
-        residential_properties = community_properties.residential()
-        rent_stabilized = community_properties.rentstab()
-        rent_regulated = community_properties.rentreg(program=program)
-        small_homes = community_properties.smallhome(units=unitsres)
-        market_rate = community_properties.marketrate()
-        public_housing = community_properties.publichousing()
-
-        return {
-            "residential_properties": {
-                'count': residential_properties.count(),
-                'units': residential_properties.aggregate(Sum('unitsres'))['unitsres__sum']
-            },
-            "rent_stabilized": {
-                'count': rent_stabilized.count(),
-                'units': rent_stabilized.aggregate(Sum('unitsrentstabilized'))['unitsrentstabilized__sum']
-            },
-            "rent_regulated": {
-                'count': rent_regulated.count(),
-                'units': rent_regulated.aggregate(Sum('unitsres'))['unitsres__sum']
-            },
-            "small_homes":  {
-                'count': small_homes.count(),
-                'units': small_homes.aggregate(Sum('unitsres'))['unitsres__sum']
-            },
-            "market_rate": {
-                'count': market_rate.count(),
-                'units': market_rate.aggregate(Sum('unitsres'))['unitsres__sum']
-            },
-            "public_housing": {
-                'count':  public_housing.count(),
-                'units': public_housing.aggregate(Sum('unitsres'))['unitsres__sum']
-            }
-        }
 
 
 class HPDContactSerializer(serializers.ModelSerializer):
@@ -155,6 +61,24 @@ class RentStabilizationRecordSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class PublicHousingRecordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.PublicHousingRecord
+        fields = '__all__'
+
+
+class SubsidyJ51Serializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.SubsidyJ51
+        fields = '__all__'
+
+
+class Subsidy421aSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.Subsidy421a
+        fields = '__all__'
+
+
 class PropertySerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Property
@@ -166,18 +90,14 @@ class PropertyHousingTypeSummary(serializers.ModelSerializer):
     class Meta:
         model = ds.Property
         fields = '__all__'
-        extra_fields = ['nycha', ]
+        extra_fields = []
 
-    nycha = serializers.SerializerMethodField()
+    nycha = PublicHousingRecordSerializer(source='publichousingrecord_set', many=True, read_only=True)
     subsidyrecords = CoreSubsidyRecordSerializer(source='coresubsidyrecord_set', many=True, read_only=True)
+    subsidyj51records = SubsidyJ51Serializer(source='subsidyj51_set', many=True, read_only=True)
+    subsidy421arecords = Subsidy421aSerializer(source='subsidy421a_set', many=True, read_only=True)
     rentstabilizationrecord = RentStabilizationRecordSerializer(
         many=False, read_only=True)
-
-    def get_nycha(self, obj):
-        return bool(obj.publichousingrecord_set.count())
-
-    def get_rentstabilized(self, obj):
-        return bool(obj.rentstabilizationrecord and obj.unitsres <= 6 and obj.unitsres >= 1 and obj.yearbuilt <= 1974 and obj.yearbuilt > 1)
 
     def get_field_names(self, declared_fields, info):
         expanded_fields = super(PropertyHousingTypeSummary, self).get_field_names(declared_fields, info)
@@ -355,18 +275,6 @@ class TaxLienSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class SubsidyJ51Serializer(serializers.ModelSerializer):
-    class Meta:
-        model = ds.SubsidyJ51
-        fields = '__all__'
-
-
-class Subsidy421aSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ds.Subsidy421a
-        fields = '__all__'
-
-
 class DOBPermitIssuedLegacySerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.DOBPermitIssuedLegacy
@@ -388,12 +296,6 @@ class DOBIssuedPermitSerializer(serializers.ModelSerializer):
 class DOBLegacyFiledPermitSerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.DOBLegacyFiledPermit
-        fields = '__all__'
-
-
-class PublicHousingRecordSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ds.PublicHousingRecord
         fields = '__all__'
 
 
