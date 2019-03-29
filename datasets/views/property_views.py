@@ -42,7 +42,7 @@ class PropertyViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyM
 
         if 'summary' in request.query_params and request.query_params['summary'] == 'true':
             self.queryset = self.queryset.prefetch_related(
-                'publichousingrecord_set').prefetch_related('rentstabilizationrecord').prefetch_related('coresubsidyrecord_set')
+                'publichousingrecord_set').prefetch_related('rentstabilizationrecord').prefetch_related('coresubsidyrecord_set').prefetch_related('subsidyj51_set').prefetch_related('subsidy421a_set')
             self.serializer_class = serial.PropertyHousingTypeSummary
 
         return super().list(request, *args, **kwargs)
