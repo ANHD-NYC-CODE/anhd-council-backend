@@ -35,16 +35,28 @@ class LisPendenComment(BaseDatasetModel, models.Model):
 
     @classmethod
     def mark_lispenden_foreclosures(self):
-        keys = []
-        for comment in self.objects.all():
-            if 'foreclosure' in comment.datecomments.lower() and 'mortgage' in comment.datecomments.lower():
-                keys.append(comment.key)
+        keys = set()
+        for comment in self.objects.prefetch_related('key').all():
+            # search for word foreclosure
+            if comment.key_id in keys:
+                continue
+            if 'foreclosure' in comment.datecomments.lower():
+                related_comments = self.objects.prefetch_related('key').filter(key=comment.key_id)
+                # search for word 'mortgage' in all comments related to the lispenden
+                for related_comment in related_comments:
+                    if 'mortgage' in related_comment.datecomments.lower():
+                        try:
+                            keys.add(comment.key_id)
+                        except Exception as e:
+                            logger.debug("Foreclosure Key not found {}".format(comment.key_id))
 
         ds.LisPenden.objects.filter(key__in=keys).update(type='foreclosure')
+        logger.debug("Marked {} foreclosures".format(len(keys)))
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
         logger.debug("Seeding/Updating {}", self.__name__)
+
         self.seed_or_update_from_set_diff(**kwargs)
         self.mark_lispenden_foreclosures()
 
