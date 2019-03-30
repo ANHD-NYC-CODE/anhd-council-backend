@@ -4,6 +4,7 @@ import shutil
 from core.tasks import async_send_update_error_mail
 from rest_framework_simplejwt.token_blacklist.management.commands import flushexpiredtokens
 from django.core import cache
+from core.utils.cache import create_async_cache_workers
 import celery
 
 
@@ -32,9 +33,10 @@ def clean_temp_directory():
 
 
 @app.task(bind=True, queue='celery', default_retry_delay=60, max_retries=1)
-def clear_cache():
+def reset_cache():
     try:
         cache.clear()
+        create_async_cache_workers()
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
         async_send_general_task_error_mail.delay(str(e))
