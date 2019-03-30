@@ -146,22 +146,18 @@ class BuildingSummarySerializer(serializers.ModelSerializer):
 
 
 class PropertyShortSummarySerializer(serializers.ModelSerializer):
-    buildings = BuildingSummarySerializer(source='building_set', many=True, read_only=True)
-    hpdregistrations = HPDRegistrationIdSerializer(source='hpdregistration_set', many=True, read_only=True)
     subsidyrecords = CoreSubsidyRecordIdSerializer(source='coresubsidyrecord_set', many=True, read_only=True)
     subsidyj51records = SubsidyJ51IdSerializer(source='subsidyj51_set', many=True, read_only=True)
     subsidy421arecords = Subsidy421aIdSerializer(source='subsidy421a_set', many=True, read_only=True)
 
     nycha = PublicHousingRecordIdSerializer(source='publichousingrecord_set', many=True, read_only=True)
-    taxliens = TaxLienIdSerializer(source='taxlien_set', many=True, read_only=True)
     rentstabilizationrecord = RentStabilizationIdSerializer(many=False, read_only=True)
 
     class Meta:
         model = ds.Property
         fields = (
-            'bbl', 'zipcode', 'council', 'cd', 'borough', 'yearbuilt', 'unitsres', 'unitsrentstabilized', 'unitstotal',
-            'bldgclass', 'zonedist1', 'numbldgs', 'numfloors', 'address', 'lat', 'lng', 'ownertype',
-            'ownername', 'taxliens', 'buildings', 'nycha', 'hpdregistrations', 'subsidyrecords', 'rentstabilizationrecord', 'subsidyj51records', 'subsidy421arecords'
+            'bbl', 'council', 'cd', 'yearbuilt', 'unitsres', 'unitsrentstabilized', 'unitstotal',
+            'bldgclass', 'zonedist1', 'numbldgs', 'numfloors', 'address', 'lat', 'lng', 'nycha', 'subsidyrecords', 'rentstabilizationrecord', 'subsidyj51records', 'subsidy421arecords'
         )
 
 
