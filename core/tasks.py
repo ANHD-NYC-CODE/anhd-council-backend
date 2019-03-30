@@ -13,12 +13,12 @@ logger = logging.getLogger('app')
 
 
 @app.task(bind=True, queue='celery', default_retry_delay=30, max_retries=3)
-def async_cache_council_property_summaries(self, error):
+def async_cache_council_property_summaries(self):
     return utils.cache_council_property_summaries(error)
 
 
 @app.task(bind=True, queue='celery', default_retry_delay=30, max_retries=3)
-def async_cache_community_property_summaries(self, error):
+def async_cache_community_property_summaries(self):
     return utils.cache_community_property_summaries(error)
 
 
