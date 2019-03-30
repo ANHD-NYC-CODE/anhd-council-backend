@@ -11,7 +11,7 @@ from core.tasks import async_cache_council_property_summaries, async_cache_counc
 def create_async_cache_workers():
     async_cache_council_property_summaries.delay()
     async_cache_council_property_summaries.delay()
-    logger.debug('Async caching complete!')
+    logger.debug('Async caching started')
 
 
 def cache_council_property_summaries():

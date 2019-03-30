@@ -4,7 +4,7 @@ from core import models as c
 from django_celery_results.models import TaskResult
 from django.conf import settings
 from app.mailer import send_update_error_mail, send_update_success_mail, send_general_task_error_mail
-from core import utils
+from core.utils import cache
 import os
 
 import logging
@@ -14,12 +14,12 @@ logger = logging.getLogger('app')
 
 @app.task(bind=True, queue='celery', default_retry_delay=30, max_retries=3)
 def async_cache_council_property_summaries(self):
-    return utils.cache_council_property_summaries(error)
+    return cache.cache_council_property_summaries()
 
 
 @app.task(bind=True, queue='celery', default_retry_delay=30, max_retries=3)
 def async_cache_community_property_summaries(self):
-    return utils.cache_community_property_summaries(error)
+    return cache.cache_community_property_summaries()
 
 
 @app.task(bind=True, queue='celery', default_retry_delay=30, max_retries=3)
