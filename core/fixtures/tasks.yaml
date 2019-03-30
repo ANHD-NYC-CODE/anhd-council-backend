@@ -65,9 +65,9 @@
 - model: django_celery_beat.crontabschedule
   pk: 9
   fields:
-    # 8am every morning
+    # 4am every morning
     minute: "0"
-    hour: "8"
+    hour: "4"
     timezone: "America/New_York"
 - model: django_celery_beat.crontabschedule
   pk: 10

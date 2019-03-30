@@ -1,21 +1,21 @@
 import requests
-from datasets import models as ds
+# from datasets.models import Council, Community
 import logging
 
 logger = logging.getLogger('app')
 
 
-from core.tasks import async_cache_council_property_summaries, async_cache_council_property_summaries
-
-
 def create_async_cache_workers():
+    from core.tasks import async_cache_council_property_summaries, async_cache_council_property_summaries
     async_cache_council_property_summaries.delay()
     async_cache_council_property_summaries.delay()
     logger.debug('Async caching started')
 
 
 def cache_council_property_summaries():
-    for record in ds.Council.objects.all():
+    from datasets.models import Council
+
+    for record in Council.objects.all():
         print("Caching Council: {}".format(record.pk))
         logger.debug("Caching Council: {}".format(record.pk))
         requests.get(
@@ -25,8 +25,9 @@ def cache_council_property_summaries():
 
 
 def cache_community_property_summaries():
+    from datasets.models import Community
 
-    for record in ds.Community.objects.all():
+    for record in Community.objects.all():
         print("Caching Community: {}".format(record.pk))
         logger.debug("Caching Community: {}".format(record.pk))
         requests.get(
