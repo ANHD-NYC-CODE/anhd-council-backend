@@ -50,8 +50,6 @@ class HPDRegistrationSerializer(serializers.ModelSerializer):
 
 
 class HPDRegistrationIdSerializer(serializers.ModelSerializer):
-    contacts = HPDContactSerializer(source='hpdcontact_set', many=True, read_only=True)
-
     class Meta:
         model = ds.HPDRegistration
         fields = ('pk',)
