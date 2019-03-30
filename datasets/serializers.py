@@ -49,10 +49,24 @@ class HPDRegistrationSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class HPDRegistrationIdSerializer(serializers.ModelSerializer):
+    contacts = HPDContactSerializer(source='hpdcontact_set', many=True, read_only=True)
+
+    class Meta:
+        model = ds.HPDRegistration
+        fields = ('pk',)
+
+
 class CoreSubsidyRecordSerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.CoreSubsidyRecord
         fields = '__all__'
+
+
+class CoreSubsidyRecordIdSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.CoreSubsidyRecord
+        fields = ('pk',)
 
 
 class RentStabilizationRecordSerializer(serializers.ModelSerializer):
@@ -61,10 +75,22 @@ class RentStabilizationRecordSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class RentStabilizationIdSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.RentStabilizationRecord
+        fields = ('pk',)
+
+
 class PublicHousingRecordSerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.PublicHousingRecord
         fields = '__all__'
+
+
+class PublicHousingRecordIdSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.PublicHousingRecord
+        fields = ('pk',)
 
 
 class SubsidyJ51Serializer(serializers.ModelSerializer):
@@ -73,16 +99,34 @@ class SubsidyJ51Serializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class SubsidyJ51IdSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.SubsidyJ51
+        fields = ('pk',)
+
+
 class Subsidy421aSerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Subsidy421a
         fields = '__all__'
 
 
+class Subsidy421aIdSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.Subsidy421a
+        fields = ('pk',)
+
+
 class TaxLienSerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.TaxLien
         fields = '__all__'
+
+
+class TaxLienIdSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.TaxLien
+        fields = ('pk',)
 
 
 class PropertySerializer(serializers.ModelSerializer):
@@ -103,16 +147,36 @@ class BuildingSummarySerializer(serializers.ModelSerializer):
         return obj.get_house_number()
 
 
+class PropertyShortSummarySerializer(serializers.ModelSerializer):
+    buildings = BuildingSummarySerializer(source='building_set', many=True, read_only=True)
+    hpdregistrations = HPDRegistrationIdSerializer(source='hpdregistration_set', many=True, read_only=True)
+    subsidyrecords = CoreSubsidyRecordIdSerializer(source='coresubsidyrecord_set', many=True, read_only=True)
+    subsidyj51records = SubsidyJ51IdSerializer(source='subsidyj51_set', many=True, read_only=True)
+    subsidy421arecords = Subsidy421aIdSerializer(source='subsidy421a_set', many=True, read_only=True)
+
+    nycha = PublicHousingRecordIdSerializer(source='publichousingrecord_set', many=True, read_only=True)
+    taxliens = TaxLienIdSerializer(source='taxlien_set', many=True, read_only=True)
+    rentstabilizationrecord = RentStabilizationIdSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = ds.Property
+        fields = (
+            'bbl', 'zipcode', 'council', 'cd', 'borough', 'yearbuilt', 'unitsres', 'unitsrentstabilized', 'unitstotal',
+            'bldgclass', 'zonedist1', 'numbldgs', 'numfloors', 'address', 'lat', 'lng', 'ownertype',
+            'ownername', 'taxliens', 'buildings', 'nycha', 'hpdregistrations', 'subsidyrecords', 'rentstabilizationrecord', 'subsidyj51records', 'subsidy421arecords'
+        )
+
+
 class PropertySummarySerializer(serializers.ModelSerializer):
     hpdregistrations = HPDRegistrationSerializer(source='hpdregistration_set', many=True, read_only=True)
     subsidyrecords = CoreSubsidyRecordSerializer(source='coresubsidyrecord_set', many=True, read_only=True)
     subsidyj51records = SubsidyJ51Serializer(source='subsidyj51_set', many=True, read_only=True)
     subsidy421arecords = Subsidy421aSerializer(source='subsidy421a_set', many=True, read_only=True)
-    rentstabilizationrecord = RentStabilizationRecordSerializer(
-        many=False, read_only=True)
+
     nycha = PublicHousingRecordSerializer(source='publichousingrecord_set', many=True, read_only=True)
     buildings = BuildingSummarySerializer(source='building_set', many=True, read_only=True)
     taxliens = TaxLienSerializer(source='taxlien_set', many=True, read_only=True)
+    rentstabilizationrecord = RentStabilizationRecordSerializer(many=False, read_only=True)
 
     class Meta:
         model = ds.Property
@@ -173,14 +237,6 @@ class HPDComplaintSerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.HPDComplaint
         fields = ('complaintid', 'hpdproblems', 'status', 'statusid', 'statusdate', 'apartment', 'receiveddate')
-
-    # def get_problems(self, obj):
-    #     import pdb
-    #     pdb.set_trace()
-    #     try:
-    #         return HPDProblemSerializer.serialize(obj.hpd_problem_set)
-    #     except Exception as e:
-    #         return None
 
 
 class DOBViolationSerializer(serializers.ModelSerializer):
