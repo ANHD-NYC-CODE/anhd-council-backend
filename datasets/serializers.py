@@ -155,10 +155,8 @@ class PropertyShortSummarySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ds.Property
-        fields = (
-            'bbl', 'council', 'cd', 'yearbuilt', 'unitsres', 'unitsrentstabilized', 'unitstotal',
-            'bldgclass', 'zonedist1', 'numbldgs', 'numfloors', 'address', 'lat', 'lng', 'nycha', 'subsidyrecords', 'rentstabilizationrecord', 'subsidyj51records', 'subsidy421arecords'
-        )
+        fields = (ds.Property.SHORT_SUMMARY_FIELDS +
+                  ('nycha', 'subsidyrecords', 'rentstabilizationrecord', 'subsidyj51records', 'subsidy421arecords'))
 
 
 class PropertySummarySerializer(serializers.ModelSerializer):

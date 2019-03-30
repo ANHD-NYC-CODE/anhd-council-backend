@@ -111,6 +111,7 @@ def cache_me(relative_key_path=True, get_queryset=False):
                 # cache only if response is 200
                 if (response.status_code == 200):
                     logger.debug('Caching: {}'.format(cache_key))
+
                     cache.set(cache_key, response.data, timeout=settings.CACHE_TTL)
                 return response
 
