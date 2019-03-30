@@ -79,69 +79,48 @@ class Subsidy421aSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class TaxLienSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.TaxLien
+        fields = '__all__'
+
+
 class PropertySerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Property
         fields = '__all__'
 
 
-class PropertyHousingTypeSummary(serializers.ModelSerializer):
-
+class BuildingSummarySerializer(serializers.ModelSerializer):
     class Meta:
-        model = ds.Property
-        fields = '__all__'
-        extra_fields = []
+        model = ds.Building
+        fields = (
+            'bin', 'stname', 'house_number'
+        )
+    house_number = serializers.SerializerMethodField()
 
-    nycha = PublicHousingRecordSerializer(source='publichousingrecord_set', many=True, read_only=True)
-    subsidyrecords = CoreSubsidyRecordSerializer(source='coresubsidyrecord_set', many=True, read_only=True)
-    subsidyj51records = SubsidyJ51Serializer(source='subsidyj51_set', many=True, read_only=True)
-    subsidy421arecords = Subsidy421aSerializer(source='subsidy421a_set', many=True, read_only=True)
-    rentstabilizationrecord = RentStabilizationRecordSerializer(
-        many=False, read_only=True)
-
-    def get_field_names(self, declared_fields, info):
-        expanded_fields = super(PropertyHousingTypeSummary, self).get_field_names(declared_fields, info)
-
-        if getattr(self.Meta, 'extra_fields', None):
-            return expanded_fields + self.Meta.extra_fields
-        else:
-            return expanded_fields
+    def get_house_number(self, obj):
+        return obj.get_house_number()
 
 
 class PropertySummarySerializer(serializers.ModelSerializer):
     hpdregistrations = HPDRegistrationSerializer(source='hpdregistration_set', many=True, read_only=True)
     subsidyrecords = CoreSubsidyRecordSerializer(source='coresubsidyrecord_set', many=True, read_only=True)
+    subsidyj51records = SubsidyJ51Serializer(source='subsidyj51_set', many=True, read_only=True)
+    subsidy421arecords = Subsidy421aSerializer(source='subsidy421a_set', many=True, read_only=True)
     rentstabilizationrecord = RentStabilizationRecordSerializer(
         many=False, read_only=True)
+    nycha = PublicHousingRecordSerializer(source='publichousingrecord_set', many=True, read_only=True)
+    buildings = BuildingSummarySerializer(source='building_set', many=True, read_only=True)
+    taxliens = TaxLienSerializer(source='taxlien_set', many=True, read_only=True)
 
     class Meta:
         model = ds.Property
         fields = (
             'bbl', 'zipcode', 'council', 'cd', 'borough', 'yearbuilt', 'unitsres', 'unitsrentstabilized', 'unitstotal',
             'bldgclass', 'zonedist1', 'numbldgs', 'numfloors', 'address', 'lat', 'lng', 'ownertype',
-            'ownername', 'taxliens', 'buildings', 'nycha', 'hpdregistrations', 'subsidyrecords', 'rentstabilizationrecord'
+            'ownername', 'taxliens', 'buildings', 'nycha', 'hpdregistrations', 'subsidyrecords', 'rentstabilizationrecord', 'subsidyj51records', 'subsidy421arecords'
         )
-
-    taxliens = serializers.SerializerMethodField()
-    buildings = serializers.SerializerMethodField()
-    nycha = serializers.SerializerMethodField()
-
-    def get_taxliens(self, obj):
-        latest_tax_lien = ds.TaxLien.objects.filter(bbl=obj).order_by('-year').first()
-
-        return latest_tax_lien.year if latest_tax_lien else None
-
-    def get_buildings(self, obj):
-        property_buildings = ds.Building.objects.filter(bbl=obj.pk)
-
-        return list({
-            "bin": building.bin,
-            "house_number": building.get_house_number(),
-            "stname": building.stname
-        } for building in property_buildings)
-
-    def get_nycha(self, obj):
-        return bool(len(ds.PublicHousingRecord.objects.filter(bbl=obj.bbl)))
 
 
 class BuildingSerializer(serializers.ModelSerializer):
@@ -266,12 +245,6 @@ class EvictionSerializer(serializers.ModelSerializer):
 class HousingLitigationSerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.HousingLitigation
-        fields = '__all__'
-
-
-class TaxLienSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ds.TaxLien
         fields = '__all__'
 
 

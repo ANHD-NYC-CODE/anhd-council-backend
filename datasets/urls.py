@@ -14,9 +14,6 @@ community_summary = v.community_views.CommunityViewSet.as_view({
     'get': 'community_summary',
 })
 
-property_summary = v.property_views.PropertyViewSet.as_view({
-    'get': 'property_summary',
-})
 
 property_buildings_summary = v.property_views.PropertyViewSet.as_view({
     'get': 'buildings_summary',
@@ -379,7 +376,6 @@ router.register(r'lispendens', v.lispenden_views.LisPendenViewSet)
 custom_routes = format_suffix_patterns([
     path('councils/<int:pk>/summary/', council_summary, name='council-summary'),
     path('communities/<int:pk>/summary/', community_summary, name='community-summary'),
-    path('properties/<str:pk>/summary/', property_summary, name='property-summary'),
     path('search/buildings/', building_search, name='buildings-search'),
 ])
 
