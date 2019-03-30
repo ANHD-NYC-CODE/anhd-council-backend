@@ -1,14 +1,13 @@
 import requests
-# from datasets.models import Council, Community
 import logging
 
 logger = logging.getLogger('app')
 
 
 def create_async_cache_workers():
-    from core.tasks import async_cache_council_property_summaries, async_cache_council_property_summaries
+    from core.tasks import async_cache_council_property_summaries, async_cache_community_property_summaries
     async_cache_council_property_summaries.delay()
-    async_cache_council_property_summaries.delay()
+    async_cache_community_property_summaries.delay()
     logger.debug('Async caching started')
 
 
