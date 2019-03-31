@@ -116,6 +116,7 @@ class AdvancedPropertyFilter(django_filters.rest_framework.FilterSet):
                     queryset = af.annotate_rentstabilized(queryset, c_filter)
                 elif c_filter['model'].lower() == 'acrisreallegal':
                     queryset = af.annotate_acrislegals(queryset, c_filter, bbl_queryset.values('bbl'))
+
                 else:
                     queryset = af.annotate_dataset(queryset, c_filter, bbl_queryset.values('bbl'))
 

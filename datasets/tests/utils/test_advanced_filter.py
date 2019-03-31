@@ -25,10 +25,10 @@ class PropertyFilterTests(BaseTest, TestCase):
                          {'condition': '1'},
                          {
                              'model': 'hpdviolation',
-                             'prefetch_key': 'hpdviolation_set',
-                             'annotation_key': 'hpdviolations__count',
+                             'related_annotation_key': 'filter_0_hpdviolation_set',
+                             'count_annotation_key': 'filter_0_hpdviolations__count',
                              'query1_filters': [{'hpdviolation__approveddate__gte': '2018-01-01'}, {'hpdviolation__approveddate__lte': '2019-01-01'}],
-                             'query2_filters': [{'hpdviolations__count__gte': '10'}]
+                             'query2_filters': [{'filter_0_hpdviolations__count__gte': '10'}]
                          }
                      ]
                      },
@@ -37,17 +37,17 @@ class PropertyFilterTests(BaseTest, TestCase):
                         'filters': [
                             {
                                 'model': 'dobviolation',
-                                'prefetch_key': 'dobviolation_set',
-                                'annotation_key': 'dobviolations__count',
+                                'related_annotation_key': 'filter_0_dobviolation_set',
+                                'count_annotation_key': 'filter_0_dobviolations__count',
                                 'query1_filters': [{'dobviolation__issueddate__gte': '2018-01-01'}],
-                                'query2_filters': [{'dobviolations__count__gte': '10'}]
+                                'query2_filters': [{'filter_0_dobviolations__count__gte': '10'}]
                             },
                             {
                                 'model': 'ecbviolation',
-                                'prefetch_key': 'ecbviolation_set',
-                                'annotation_key': 'ecbviolations__count',
+                                'related_annotation_key': 'filter_1_ecbviolation_set',
+                                'count_annotation_key': 'filter_1_ecbviolations__count',
                                 'query1_filters': [{'ecbviolation__issueddate__gte': '2018-01-01'}],
-                                'query2_filters': [{'ecbviolations__count__gte': '10'}]
+                                'query2_filters': [{'filter_1_ecbviolations__count__gte': '10'}]
                             }
                         ]
                      }
@@ -56,8 +56,10 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.assertEqual(result['1']['type'], expected['1']['type'])
         self.assertEqual(result['0']['filters'][0], expected['0']['filters'][0])
         self.assertEqual(result['1']['filters'][1]['model'], expected['1']['filters'][1]['model'])
-        self.assertEqual(result['1']['filters'][1]['prefetch_key'], expected['1']['filters'][1]['prefetch_key'])
-        self.assertEqual(result['1']['filters'][1]['annotation_key'], expected['1']['filters'][1]['annotation_key'])
+        self.assertEqual(result['1']['filters'][1]['related_annotation_key'],
+                         expected['1']['filters'][1]['related_annotation_key'])
+        self.assertEqual(result['1']['filters'][1]['count_annotation_key'],
+                         expected['1']['filters'][1]['count_annotation_key'])
         self.assertEqual(result['1']['filters'][1]['query1_filters'], expected['1']['filters'][1]['query1_filters'])
         self.assertEqual(result['1']['filters'][1]['query2_filters'], expected['1']['filters'][1]['query2_filters'])
 
@@ -75,7 +77,7 @@ class PropertyFilterTests(BaseTest, TestCase):
         # With query2_filters
 
         result2 = af.convert_condition_to_q(next(iter(mapping)), mapping, 'query2_filters')
-        expected2 = Q((Q(('dobviolations__count__gte', '10')) |
-                       Q(('ecbviolations__count__gte', '10'))), ('hpdviolations__count__gte', '10'))
+        expected2 = Q((Q(('filter_0_dobviolations__count__gte', '10')) |
+                       Q(('filter_1_ecbviolations__count__gte', '10'))), ('filter_1_hpdviolations__count__gte', '10'))
 
         self.assertEqual(result2, expected2)

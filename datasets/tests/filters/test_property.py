@@ -1297,3 +1297,34 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
 
         self.assertEqual(response.status_code, 500)
         self.assertEqual('Field "badfield" is not valid for dataset "HPDViolation"' in response.data['detail'], True)
+
+    def test_duplicate_dataset_1_OR(self):
+        # 5 HPD Violations in range 1
+        property1 = self.property_factory(bbl=1)
+        # 5 HPD violations in range 2
+        property2 = self.property_factory(bbl=2)
+
+        # 1 HPD violation in range 1
+        property3 = self.property_factory(bbl=3)
+
+        # 5 HPD Violations not in range
+        property4 = self.property_factory(bbl=4)
+
+        for i in range(5):
+            self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
+            self.hpdviolation_factory(property=property2, approveddate="2008-01-01")
+            self.hpdviolation_factory(property=property4, approveddate="2015-01-01")
+
+        for i in range(1):
+            self.hpdviolation_factory(property=property3, approveddate="2018-01-01")
+
+        # 5 HPD Violations after 2018 OR 5 HPD Violations before 2010
+        query = '/properties/?q=*condition_0=OR+filter_0=hpdviolations__count__gte=5,hpdviolations__approveddate__gte=2018-01-01+filter_1=hpdviolations__count__gte=5,hpdviolations__approveddate__lte=2010-01-01'
+
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+        self.assertEqual(any(d['bbl'] == '1' for d in content), True)
+        self.assertEqual(any(d['bbl'] == '2' for d in content), True)

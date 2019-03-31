@@ -14,11 +14,10 @@ def annotate_dataset(queryset, c_filter, bbl_values):
     model = getattr(ds, model_name[0])
 
     queryset = queryset.annotate(
-        **{c_filter['prefetch_key']: FilteredRelation(c_filter['model'], condition=Q(construct_and_q(c_filter['query1_filters']), Q(**{c_filter['model'] + '__bbl__in': bbl_values})))})
+        **{c_filter['related_annotation_key']: FilteredRelation(c_filter['model'], condition=Q(construct_and_q(c_filter['query1_filters']), Q(**{c_filter['model'] + '__bbl__in': bbl_values})))})
 
-    if c_filter['annotation_key']:
-
-        queryset = queryset.annotate(**{c_filter['annotation_key']: Count(c_filter['prefetch_key'], distinct=True)})
+    if c_filter['count_annotation_key']:
+        queryset = queryset.annotate(**{c_filter['count_annotation_key']                                        : Count(c_filter['related_annotation_key'], distinct=True)})
 
     return queryset
 
@@ -37,16 +36,19 @@ def annotate_acrislegals(queryset, c_filter, bbl_values):
 
     # filteredRelation for acrislegals where master conditions and bbl conditions match
     queryset = queryset.annotate(
-        **{c_filter['prefetch_key']: FilteredRelation(c_filter['model'], condition=Q(Q(**{c_filter['model'] + '__documentid__in': masterdocid_values}), Q(**{c_filter['model'] + '__bbl__in': bbl_values})))})
+        **{c_filter['related_annotation_key']: FilteredRelation(c_filter['model'], condition=Q(Q(**{c_filter['model'] + '__documentid__in': masterdocid_values}), Q(**{c_filter['model'] + '__bbl__in': bbl_values})))})
 
-    if c_filter['annotation_key']:
-        if 'acrisreallegals__documentid__docamount' in c_filter['annotation_key']:
+    if c_filter['count_annotation_key']:
+
+        if '{}_acrisreallegals__documentid__docamount'.format(c_filter['filter_id']) in c_filter['count_annotation_key']:
             # annotate on value of docamount column from acrisreallegal_set* filtered relation
             queryset = queryset.annotate(
-                **{c_filter['annotation_key']: F('acrisreallegal_set__documentid__docamount')})
+                **{c_filter['count_annotation_key']: F('acrisreallegal_set__{}__documentid__docamount'.format(c_filter['filter_id']))})
+
         else:
             # annotate on count of acris records
-            queryset = queryset.annotate(**{c_filter['annotation_key']: Count(c_filter['prefetch_key'], distinct=True)})
+
+            queryset = queryset.annotate(**{c_filter['count_annotation_key']: Count(c_filter['related_annotation_key'], distinct=True)})
     return queryset
 
 
@@ -56,14 +58,18 @@ def annotate_rentstabilized(queryset, c_filter):
     start_year = [*rsvalues[0].keys()][0].split('__', 2)[1].split('uc', 1)[1]
     end_year = [*rsvalues[1].keys()][0].split('__', 2)[1].split('uc', 1)[1]
 
-    queryset = queryset.annotate(**{'rentstabilizationrecord' + start_year: F('rentstabilizationrecord__uc' + start_year)}).annotate(**{
-        'rentstabilizationrecord' + end_year: F('rentstabilizationrecord__uc' + end_year)})
+    start_annotation = '{}_rentstabilizationrecord{}'.format(c_filter['filter_id'], start_year)
+    end_annotation = '{}_rentstabilizationrecord{}'.format(c_filter['filter_id'], end_year)
+
+    queryset = queryset.annotate(**{start_annotation: F('rentstabilizationrecord__uc' + start_year)}).annotate(**{
+        '{}_rentstabilizationrecord{}'.format(c_filter['filter_id'], end_year): F('rentstabilizationrecord__uc' + end_year)})
     queryset = queryset.annotate(
-        rentstabilizationrecords__percent=ExpressionWrapper(
-            1 - Cast(F('rentstabilizationrecord' + end_year), FloatField()) /
-            Cast(F('rentstabilizationrecord' + start_year), FloatField()), output_field=FloatField()
-        )
+        **{'{}_rentstabilizationrecords__percent'.format(c_filter['filter_id']): ExpressionWrapper(
+            1 - Cast(F(end_annotation), FloatField()) /
+            Cast(F(start_annotation), FloatField()), output_field=FloatField()
+        )}
     )
+
     return queryset
 
 
@@ -71,20 +77,30 @@ def clean_model_name(string):
     return string[:-1] if string.endswith('s') else string
 
 
-def get_annotation_key(string):
-    string = re.sub(r"(?=filter)(.*?)(?=\=)", '', string)
+def get_count_annotation_key(string, filter_id):
+    new_string = re.sub(r"(?=filter)(.*?)(?=\=)", '', string)
     # returns entire ,.*__count filter string minus the comparison
-    for filter in string.split(','):
-        if bool(re.search(r"(count|percent|docamount)", filter.lower())):
+    for filter in new_string.split(','):
+        if bool(re.search(r"(count|percent)", filter.lower())):
             filter = re.sub(r"(__gte\b|__gt\b|__exact\b|__lt\b|__lte\b|)", '', filter.split('=')[0])
-            return filter
+            return "{}_{}".format(filter_id, filter)
 
 
-def get_filters(string, annotation=False):
+def get_filters(string, filter_id, annotation=False):
     filter_strings = list(
-        filter(lambda x: bool(re.search(r"(count|percent|docamount)", x.lower())) == annotation, string.split(',')))
+        filter(lambda x: bool(re.search(r"(count|percent)", x.lower())) == annotation, string.split(',')))
 
-    if not annotation:
+    if annotation:
+        dup = []
+        for str in filter_strings:
+
+            str = str.split('_')
+            str.insert(0, filter_id)
+            str = '_'.join(str)
+            dup.append(str)
+
+        filter_strings = dup
+    else:
         # convert the date fields to singular model names
         filter_strings = list(map(lambda x: "__".join(
             [clean_model_name(x.split('__', 1)[0]), x.split('__', 1)[1]]), filter_strings))
@@ -111,19 +127,28 @@ def parse_filter_string(string):
 
         return {'condition': tokens[1].split('_')[1]}
 
+    filter_id = tokens[0]
     filter_value = tokens[1]
     if not filter_value:
         return None
 
     model = clean_model_name(tokens[1].split('__')[0])
 
-    return {
+    mapping = {
         'model': model,
-        'prefetch_key': model + '_set',
-        'annotation_key': get_annotation_key(string.split('=', 1)[1]),
-        'query1_filters': get_filters(string.split('=', 1)[1], annotation=False),
-        'query2_filters': get_filters(string.split('=', 1)[1], annotation=True)
+        'related_annotation_key': filter_id + '_' + model + '_set',
+        'filter_id': filter_id,
+        'count_annotation_key': get_count_annotation_key(string.split('=', 1)[1], filter_id),
+        'query1_filters': get_filters(string.split('=', 1)[1], filter_id, annotation=False),
+        'query2_filters': get_filters(string.split('=', 1)[1], filter_id, annotation=True)
     }
+
+    # if no count, add a default gte=1 count
+    if not mapping['count_annotation_key']:
+        mapping['count_annotation_key'] = '{}__count'.format(filter_id)
+        mapping['query2_filters'] = [{'{}__count__gte'.format(filter_id): 1}]
+
+    return mapping
 
 
 def validate_mapping(request, mapping):
@@ -170,8 +195,8 @@ def convert_query_string_to_mapping(string):
     #       {condition: 1}, (if condition)
     #       {
     #         'model': 'hpdviolation',
-    #         'prefetch_key': 'hpdviolation_set',
-    #         'annotation_key': 'hpdviolations__count',
+    #         'related_annotation_key': 'hpdviolation_set',
+    #         'count_annotation_key': 'hpdviolations__count',
     #         'query1_filters': ['hpdviolation__approveddate__gte': '2018-01-01']
     #         'query2_filters': ['hpdviolations__count__gte': '10']
     #       }
@@ -192,8 +217,8 @@ def convert_query_string_to_mapping(string):
             'type': type,
             'filters': list(filter(None, list(map(lambda x: parse_filter_string(x),  list(filter(None, con.split(' ')))))))
         }
-
         conditions[element['id']] = element
+
     return conditions
 
 
@@ -212,6 +237,7 @@ def construct_or_q(query_list):
 
 
 def construct_and_q(query_list):
+
     ql = query_list[:]
     if (len(ql)):
         query = Q(**ql.pop())
@@ -232,9 +258,10 @@ def convert_condition_to_q(condition_key, mapping, filter_pass='query1_filters')
     if mapping[condition_key]['type'].upper() == 'AND':
         for c_filter in mapping[condition_key]['filters']:
             if 'condition' in c_filter:
+
                 q &= convert_condition_to_q(c_filter['condition'], mapping, filter_pass)
             else:
-                if filter_pass == 'query2_filters' and c_filter['annotation_key']:
+                if filter_pass == 'query2_filters' and c_filter['count_annotation_key']:
                     q &= construct_and_q(c_filter[filter_pass])
                 elif filter_pass == 'query1_filters':
                     q &= construct_and_q(c_filter[filter_pass])
@@ -243,7 +270,7 @@ def convert_condition_to_q(condition_key, mapping, filter_pass='query1_filters')
             if 'condition' in c_filter:
                 q |= convert_condition_to_q(c_filter['condition'], mapping, filter_pass)
             else:
-                if filter_pass == 'query2_filters' and c_filter['annotation_key']:
+                if filter_pass == 'query2_filters' and c_filter['count_annotation_key']:
                     q |= construct_and_q(c_filter[filter_pass])
                 elif filter_pass == 'query1_filters':
                     q |= construct_and_q(c_filter[filter_pass])
