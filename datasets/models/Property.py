@@ -33,7 +33,7 @@ class ObsoletePropertyManager(models.Manager):
 class PropertyQuerySet(models.QuerySet):
     def rentstab_filter(self):
         rentstab_records = ds.RentStabilizationRecord.objects.only('ucbbl').filter(ucbbl=OuterRef('bbl'))
-        return self.filter(yearbuilt__lte=1974, yearbuilt__gte=1, unitsres__gte=1, unitsres__lte=6).annotate(has_rentstab=Exists(rentstab_records)).filter(has_rentstab=True)
+        return self.filter(unitsrentstabilized__gte=1).annotate(has_rentstab=Exists(rentstab_records)).filter(has_rentstab=True)
 
     def alternate_rentstab_filter(self):
         return self.filter(yearbuilt__lte=1974, yearbuilt__gte=1).annotate(rs_units=Sum('unitsrentstabilized')).filter(rs_units__gte=1)
@@ -53,7 +53,7 @@ class PropertyQuerySet(models.QuerySet):
         else:
             return queryset
 
-    def smallhome_filter(self, units=6):
+    def smallhome_filter(self, units=4):
         return self.filter(unitsres__gt=0, unitsres__lte=units)
 
     def marketrate_filter(self):
