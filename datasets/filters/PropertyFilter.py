@@ -101,7 +101,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     rsunitslost = RSLostPercentWithDateFilter(method="filter_stabilizedunitslost_percent_and_dates")
 
     acrisrealmasteramounts = TotalWithDateFilter(method="filter_acrisrealmasteramounts_total_and_dates")
-    acrisrealmastersales = TotalWithDateFilter(method="filter_acrisrealmastersales_total_and_dates")
+    acrisrealmasters = TotalWithDateFilter(method="filter_acrisrealmasters_total_and_dates")
 
     doblegacyfiledpermits = TotalWithDateFilter(method="filter_doblegacyfiledpermits_total_and_dates")
     dobissuedpermits = TotalWithDateFilter(method="filter_dobissuedpermits_total_and_dates")
@@ -173,7 +173,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
         return queryset
 
-    def filter_acrisrealmastersales_total_and_dates(self, queryset, name, values):
+    def filter_acrisrealmasters_total_and_dates(self, queryset, name, values):
 
         date_filters, total_filters = self.parse_totaldate_field_values('documentid__docdate', 'documentid', values)
         docid_values = ds.AcrisRealMaster.construct_sales_query('acrisreallegal__documentid').only('documentid')
