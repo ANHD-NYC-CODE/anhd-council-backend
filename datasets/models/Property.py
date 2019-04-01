@@ -54,7 +54,7 @@ class PropertyQuerySet(models.QuerySet):
             return queryset
 
     def smallhome_filter(self, units=4):
-        return self.filter(unitsres__gt=0, unitsres__lte=units)
+        return self.filter(unitsres__gte=1, unitsres__lte=units)
 
     def marketrate_filter(self):
         rentstab_records = ds.RentStabilizationRecord.objects.only('ucbbl').filter(ucbbl=OuterRef('bbl'))
@@ -90,7 +90,7 @@ class PropertyQuerySet(models.QuerySet):
     def rentreg(self, program=None):
         return self.rentreg_filter(program)
 
-    def smallhome(self, units=6):
+    def smallhome(self, units=4):
         return self.smallhome_filter(units=units)
 
     def marketrate(self):

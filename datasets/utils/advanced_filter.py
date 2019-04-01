@@ -17,7 +17,7 @@ def annotate_dataset(queryset, c_filter, bbl_values):
         **{c_filter['related_annotation_key']: FilteredRelation(c_filter['model'], condition=Q(construct_and_q(c_filter['query1_filters']), Q(**{c_filter['model'] + '__bbl__in': bbl_values})))})
 
     if c_filter['count_annotation_key']:
-        queryset = queryset.annotate(**{c_filter['count_annotation_key']                                        : Count(c_filter['related_annotation_key'], distinct=True)})
+        queryset = queryset.annotate(**{c_filter['count_annotation_key']: Count(c_filter['related_annotation_key'], distinct=True)})
 
     return queryset
 
@@ -48,7 +48,8 @@ def annotate_acrislegals(queryset, c_filter, bbl_values):
         else:
             # annotate on count of acris records
 
-            queryset = queryset.annotate(**{c_filter['count_annotation_key']: Count(c_filter['related_annotation_key'], distinct=True)})
+            queryset = queryset.annotate(**{c_filter['count_annotation_key']
+                                         : Count(c_filter['related_annotation_key'], distinct=True)})
     return queryset
 
 
