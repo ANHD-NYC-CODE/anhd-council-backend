@@ -169,7 +169,12 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
 
     def get_percent_lost(self):
         try:
-            return 1 - (self.get_latest_count() / self.get_earliest_count())
+            difference = self.get_earliest_count() - self.get_latest_count()
+            if (difference >= 0):
+                return -(difference / self.get_earliest_count())
+            else:
+                return (-difference / self.get_earliest_count())
+
         except Exception as e:
             return 0
 

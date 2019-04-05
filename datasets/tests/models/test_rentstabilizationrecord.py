@@ -39,4 +39,7 @@ class RentStabilizationRecordTests(BaseTest, TestCase):
 
     def test_get_percent_lost(self):
         record = self.taxbill_factory(uc2007=100, uc2017=10)
-        self.assertEqual(record.get_percent_lost(), 0.9)
+        self.assertEqual(record.get_percent_lost(), -0.9)
+
+        record2 = self.taxbill_factory(uc2007=10, uc2017=11)
+        self.assertEqual(record2.get_percent_lost(), 0.1)
