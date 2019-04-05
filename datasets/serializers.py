@@ -175,8 +175,16 @@ class PropertySummarySerializer(serializers.ModelSerializer):
         fields = (
             'bbl', 'zipcode', 'council', 'cd', 'borough', 'yearbuilt', 'unitsres', 'unitsrentstabilized', 'unitstotal',
             'bldgclass', 'zonedist1', 'numbldgs', 'numfloors', 'address', 'lat', 'lng', 'ownertype',
-            'ownername', 'taxliens', 'buildings', 'nycha', 'hpdregistrations', 'subsidyrecords', 'rentstabilizationrecord', 'subsidyj51records', 'subsidy421arecords'
+            'ownername', 'taxliens', 'buildings', 'rsunits_percent_lost', 'nycha', 'hpdregistrations', 'subsidyrecords', 'rentstabilizationrecord', 'subsidyj51records', 'subsidy421arecords'
         )
+
+    rsunits_percent_lost = serializers.SerializerMethodField()
+
+    def get_rsunits_percent_lost(self, obj):
+        try:
+            return obj.rentstabilizationrecord.get_percent_lost()
+        except Exception as e:
+            return 0
 
 
 class BuildingSerializer(serializers.ModelSerializer):

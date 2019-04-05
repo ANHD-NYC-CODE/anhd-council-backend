@@ -295,7 +295,7 @@ class PropertyViewTests(BaseTest, TestCase):
         registration = self.hpdregistration_factory(property=property, building=building1)
 
         self.coredata_factory(property=property)
-        self.taxbill_factory(property=property, uc2007=10)
+        self.taxbill_factory(property=property, uc2008=50, uc2016=10)
 
         response = self.client.get('/properties/?summary=true', format="json")
         content = response.data['results']
@@ -305,6 +305,8 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(bool(content[0]['nycha']), True)
         self.assertEqual(len(content[0]['subsidyrecords']), 1)
         self.assertEqual(content[0]['rentstabilizationrecord']['ucbbl'], '1')
+        self.assertEqual(content[0]['rsunits_percent_lost'], 0.8)
         self.assertEqual(bool(content[1]['nycha']), False)
         self.assertEqual(len(content[1]['subsidyrecords']), 0)
         self.assertEqual(content[1]['rentstabilizationrecord'], None)
+        self.assertEqual(content[1]['rsunits_percent_lost'], 0)

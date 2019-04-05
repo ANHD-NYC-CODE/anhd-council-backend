@@ -158,6 +158,21 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
             year -= 1
         return latest_count
 
+    def get_earliest_count(self):
+        year = 2007
+        earliest = None
+
+        while not earliest and int(year) < 2017:
+            earliest = getattr(self, 'uc' + str(year))
+            year += 1
+        return earliest
+
+    def get_percent_lost(self):
+        try:
+            return 1 - (self.get_latest_count() / self.get_earliest_count())
+        except Exception as e:
+            return 0
+
     @classmethod
     def download(self):
         return self.download_file(self.download_endpoint)
