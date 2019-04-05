@@ -168,6 +168,8 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
         return earliest
 
     def get_percent_lost(self):
+        # returns negative number for loss
+        # positive number for gain
         try:
             difference = self.get_earliest_count() - self.get_latest_count()
             if (difference >= 0):
