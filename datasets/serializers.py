@@ -127,6 +127,18 @@ class TaxLienIdSerializer(serializers.ModelSerializer):
         fields = ('pk',)
 
 
+class CONHRecordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.CONHRecord
+        fields = '__all__'
+
+
+class CONHRecordIdSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.CONHRecord
+        fields = ('pk',)
+
+
 class PropertySerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Property

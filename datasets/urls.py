@@ -137,6 +137,13 @@ properties_router.register(
 )
 
 properties_router.register(
+    'conhrecords',
+    v.taxlien_views.TaxLienViewSet,
+    base_name='property-conhrecords',
+    parents_query_lookups=['bbl']
+)
+
+properties_router.register(
     'taxbills',
     v.rentstabilizationrecord_views.RentStabilizationRecordViewSet,
     base_name='property-taxbills',
@@ -289,6 +296,14 @@ buildings_router.register(
 )
 
 
+buildings_router.register(
+    'conhrecords',
+    v.taxlien_views.TaxLienViewSet,
+    base_name='building-conhrecords',
+    parents_query_lookups=['bin']
+)
+
+
 hpdbuildings_router = router.register(r'hpdbuildings', v.hpdbuilding_views.HPDBuildingViewSet)
 
 hpdbuildings_router.register(
@@ -362,6 +377,7 @@ hpdregistrations_router.register(
 )
 router.register(r'hpdcontacts', v.hpdcontact_views.HPDContactViewSet)
 router.register(r'taxliens', v.taxlien_views.TaxLienViewSet)
+router.register(r'conhrecords', v.conhrecord_views.CONHRecordViewSet)
 router.register(r'taxbills', v.rentstabilizationrecord_views.RentStabilizationRecordViewSet)
 router.register(r'subsidyj51', v.subsidyj51_views.SubsidyJ51ViewSet)
 router.register(r'subsidy421a', v.subsidy421a_views.Subsidy421aViewSet)

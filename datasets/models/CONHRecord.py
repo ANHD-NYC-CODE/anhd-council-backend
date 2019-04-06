@@ -15,7 +15,7 @@ logger = logging.getLogger('app')
 # Download: https://data.cityofnewyork.us/api/views/bzxi-2tsw/rows.csv?accessType=DOWNLOAD
 
 
-class COHNRecord(BaseDatasetModel, models.Model):
+class CONHRecord(BaseDatasetModel, models.Model):
 
     download_endpoint = "https://data.cityofnewyork.us/api/views/bzxi-2tsw/rows.csv?accessType=DOWNLOAD"
 
@@ -27,7 +27,7 @@ class COHNRecord(BaseDatasetModel, models.Model):
     communityboard = models.TextField(blank=True, null=True)
     councildistrict = models.TextField(blank=True, null=True)
     censustract = models.TextField(blank=True, null=True)
-    nta = models.TextField(blank=True, null=True)
+    ntaneighborhoodtabulationarea = models.TextField(blank=True, null=True)
     housenumber = models.TextField(blank=True, null=True)
     streetname = models.TextField(blank=True, null=True)
     borough = models.TextField(blank=True, null=True)
@@ -43,7 +43,7 @@ class COHNRecord(BaseDatasetModel, models.Model):
 
     @classmethod
     def transform_self(self, file_path, update=None):
-        return self.pre_validation_filters(with_bbl(from_csv_file_to_gen(file_path, update)))
+        return self.pre_validation_filters(from_csv_file_to_gen(file_path, update))
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
