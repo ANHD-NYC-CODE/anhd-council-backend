@@ -8,14 +8,14 @@ import logging
 logging.disable(logging.CRITICAL)
 
 
-class CONHRecordTests(BaseTest, TestCase):
+class DOBNowFiledPermit(BaseTest, TestCase):
     def tearDown(self):
         self.clean_tests()
 
     def test_seed_record(self):
         property = self.property_factory(bbl='6050720025')
         update = self.update_factory(model_name="DOBNowFiledPermit",
-                                     file_name="mock_conhrecords.csv")
-        ds.CONHRecord.seed_or_update_self(file_path=update.file.file.path, update=update)
-        self.assertEqual(ds.CONHRecord.objects.count(), 9)
+                                     file_name="mock_dobnowfiledpermits.csv")
+        ds.DOBNowFiledPermit.seed_or_update_self(file_path=update.file.file.path, update=update)
+        self.assertEqual(ds.DOBNowFiledPermit.objects.count(), 9)
         self.assertEqual(update.rows_created, 9)
