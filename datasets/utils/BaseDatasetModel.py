@@ -67,6 +67,7 @@ class BaseDatasetModel():
         return batch_upsert_from_gen(self, self.transform_self_from_file(kwargs['file_path'], update=update), settings.BATCH_SIZE, update=update)
 
     @classmethod
+    # Good for overwrites
     def bulk_seed(self, **kwargs):
         bulk_insert_from_file(self, **kwargs)
 

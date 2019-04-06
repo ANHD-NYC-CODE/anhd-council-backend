@@ -205,3 +205,10 @@
     model_name: Community
     automated: false
     update_instructions: "1) Visit http://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/nycd/FeatureServer/0/query?where=1=1&outFields=*&outSR=4326&f=geojson 2) Copy all of the data on the screen into a .geojson file. 3) Upload the file to the app. 4) Create an update with the file."
+- model: core.dataset
+  pk: 33
+  fields:
+    name: Certificate of No Harassment Record
+    model_name: CONHRecord
+    automated: false
+    update_instructions: "1) Visit https://data.cityofnewyork.us/api/views/bzxi-2tsw/rows.csv?accessType=DOWNLOAD 2) Upload the file to the app w/ Version year. 3) Create an update with the file."
