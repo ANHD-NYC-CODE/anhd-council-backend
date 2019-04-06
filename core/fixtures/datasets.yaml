@@ -99,7 +99,6 @@
     model_name: HPDBuildingRecord
     automated: false
     update_instructions: "1) "https://data.cityofnewyork.us/api/views/kj4p-ruqc/rows.csv?accessType=DOWNLOAD" 2) Add File 3) update"
-
 - model: core.dataset
   pk: 17
   fields:

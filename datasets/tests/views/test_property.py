@@ -289,6 +289,7 @@ class PropertyViewTests(BaseTest, TestCase):
         property2 = self.property_factory(bbl="2", address="125 fake st", yearbuilt="1900",
                                           unitstotal="12", unitsres="11", unitsrentstabilized="10")
         self.taxlien_factory(property=property, year=2018)
+        self.conhrecord_factory(property=property)
         building1 = self.building_factory(bin="1", property=property, stname="fake st", lhnd="1")
         building2 = self.building_factory(bin="2", property=property, stname="fake st", lhnd="2")
         self.publichousingrecord_factory(property=property)
@@ -302,6 +303,7 @@ class PropertyViewTests(BaseTest, TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
+        self.assertEqual(bool(content[0]['conhrecords']), True)
         self.assertEqual(bool(content[0]['nycha']), True)
         self.assertEqual(len(content[0]['subsidyrecords']), 1)
         self.assertEqual(content[0]['rentstabilizationrecord']['ucbbl'], '1')

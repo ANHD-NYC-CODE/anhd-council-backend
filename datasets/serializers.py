@@ -158,6 +158,7 @@ class BuildingSummarySerializer(serializers.ModelSerializer):
 
 
 class PropertyShortSummarySerializer(serializers.ModelSerializer):
+    conhrecords = CONHRecordIdSerializer(source='conhrecord_set', many=True, read_only=True)
     subsidyrecords = CoreSubsidyRecordIdSerializer(source='coresubsidyrecord_set', many=True, read_only=True)
     subsidyj51records = SubsidyJ51IdSerializer(source='subsidyj51_set', many=True, read_only=True)
     subsidy421arecords = Subsidy421aIdSerializer(source='subsidy421a_set', many=True, read_only=True)
@@ -168,10 +169,11 @@ class PropertyShortSummarySerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Property
         fields = (ds.Property.SHORT_SUMMARY_FIELDS +
-                  ('nycha', 'subsidyrecords', 'rentstabilizationrecord', 'subsidyj51records', 'subsidy421arecords'))
+                  ('nycha', 'subsidyrecords', 'rentstabilizationrecord', 'subsidyj51records', 'subsidy421arecords', 'conhrecords'))
 
 
 class PropertySummarySerializer(serializers.ModelSerializer):
+    conhrecords = CONHRecordSerializer(source='conhrecord_set', many=True, read_only=True)
     hpdregistrations = HPDRegistrationSerializer(source='hpdregistration_set', many=True, read_only=True)
     subsidyrecords = CoreSubsidyRecordSerializer(source='coresubsidyrecord_set', many=True, read_only=True)
     subsidyj51records = SubsidyJ51Serializer(source='subsidyj51_set', many=True, read_only=True)
@@ -187,7 +189,7 @@ class PropertySummarySerializer(serializers.ModelSerializer):
         fields = (
             'bbl', 'zipcode', 'council', 'cd', 'borough', 'yearbuilt', 'unitsres', 'unitsrentstabilized', 'unitstotal',
             'bldgclass', 'zonedist1', 'numbldgs', 'numfloors', 'address', 'lat', 'lng', 'ownertype',
-            'ownername', 'taxliens', 'buildings', 'rsunits_percent_lost', 'nycha', 'hpdregistrations', 'subsidyrecords', 'rentstabilizationrecord', 'subsidyj51records', 'subsidy421arecords'
+            'ownername', 'taxliens', 'buildings', 'rsunits_percent_lost', 'nycha', 'hpdregistrations', 'subsidyrecords', 'rentstabilizationrecord', 'subsidyj51records', 'subsidy421arecords', 'conhrecords'
         )
 
     rsunits_percent_lost = serializers.SerializerMethodField()

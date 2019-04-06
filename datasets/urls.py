@@ -138,7 +138,7 @@ properties_router.register(
 
 properties_router.register(
     'conhrecords',
-    v.taxlien_views.TaxLienViewSet,
+    v.conhrecord_views.CONHRecordViewSet,
     base_name='property-conhrecords',
     parents_query_lookups=['bbl']
 )

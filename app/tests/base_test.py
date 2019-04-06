@@ -545,6 +545,18 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         )
         return factory
 
+    def conhrecord_factory(self, property=None, **kwargs):
+        name = 'CONHRecord'
+
+        if not property:
+            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+
+        factory = d_models.CONHRecord.objects.create(
+            bbl=property,
+            **kwargs
+        )
+        return factory
+
     def subsidyj51_factory(self, property=None, **kwargs):
         name = 'SubsidyJ51'
 
