@@ -234,7 +234,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
     @classmethod
     def build_table(self, **kwargs):
         file_path = kwargs['file_path']
-        batch_size = 100000
+        batch_size = settings.BATCH_SIZE
         building_gen = self.build_building_gen(file_path=file_path)
         batch_upsert_from_gen(self, building_gen, batch_size, no_conflict=False, **kwargs)
         property_gen = self.build_property_gen()
