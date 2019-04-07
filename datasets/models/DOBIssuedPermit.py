@@ -1,7 +1,5 @@
 from django.db import models
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
-from core.utils.transform import from_csv_file_to_gen, with_bbl
-from datasets.utils.validation_filters import is_null, does_not_contain_values
 from core.utils.database import execute
 from datasets import models as ds
 import logging
@@ -99,6 +97,7 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
         kwargs['update'].rows_created = kwargs['update'].rows_created + rows_created_now
         kwargs['update'].rows_updated = kwargs['update'].rows_updated + (now_count - rows_created_now)
         kwargs['update'].save()
+
         logger.debug("Completed seed into {} for {}", self.__name__, now_table._meta.db_table)
 
     def __str__(self):

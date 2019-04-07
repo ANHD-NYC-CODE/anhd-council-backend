@@ -22,7 +22,7 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
             # models.Index(fields=['prefilingdate', 'bbl']),
         ]
 
-    jobfilingnumber = models.TextField(primary_key=True, blank=False, null=False)
+    jobfilingnumber = models.TextField(blank=False, null=False)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
     bin = models.ForeignKey('Building', db_column='bin', db_constraint=False,

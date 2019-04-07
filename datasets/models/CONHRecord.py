@@ -22,8 +22,8 @@ class CONHRecord(BaseDatasetModel, models.Model):
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
     buildingid = models.TextField(blank=True, null=True)
-    bin = models.TextField(blank=True, null=True)
-
+    bin = models.ForeignKey('Building', db_column='bin', db_constraint=False,
+                            on_delete=models.SET_NULL, null=True, blank=True)
     communityboard = models.TextField(blank=True, null=True)
     councildistrict = models.TextField(blank=True, null=True)
     censustract = models.TextField(blank=True, null=True)
