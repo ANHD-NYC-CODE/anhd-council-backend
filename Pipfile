@@ -36,6 +36,7 @@ gunicorn = "*"
 django-polymorphic = "*"
 django-cors-headers = "*"
 markdown = "*"
+httpretty = "*"
 
 [requires]
 python_version = "3.5.6"

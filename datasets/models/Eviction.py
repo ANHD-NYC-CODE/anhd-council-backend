@@ -5,7 +5,8 @@ from datasets.utils.validation_filters import is_null
 from datasets import models as ds
 from core.utils.bbl import boro_to_abrv
 from core.utils.address import clean_number_and_streets
-
+import requests
+import json
 import re
 import logging
 
@@ -35,6 +36,8 @@ class Eviction(BaseDatasetModel, models.Model):
     marshallastname = models.TextField(blank=True, null=True)
     residentialcommercialind = models.TextField(db_index=True, blank=True, null=True)
     schedulestatus = models.TextField(db_index=True, blank=True, null=True)
+    cleaned_address = models.TextField(blank=True, null=True)
+    geosearch_address = models.TextField(blank=True, null=True)
 
     slim_query_fields = ["courtindexnumber", "bbl", "executeddate"]
 
@@ -64,31 +67,67 @@ class Eviction(BaseDatasetModel, models.Model):
             yield row.upper().strip()
 
     @classmethod
+    def save_eviction(self, eviction=None, bbl=None, cleaned_address=None, geosearch_address=None):
+        if bbl:
+            eviction.bbl = bbl
+        if cleaned_address:
+            eviction.cleaned_address = cleaned_address
+        if geosearch_address:
+            eviction.geosearch_address = geosearch_address
+        eviction.save()
+
+    @classmethod
     def link_eviction_to_pluto_by_address(self):
 
         evictions = self.objects.filter(bbl__isnull=True)
         for eviction in evictions:
-            pattern = r'[0-9].*?(LANE|EXPRESSWAY|PARKWAY|STREET|(AVENUE \w\b|AVENUE)|PLACE|BOULEVARD|DRIVE|ROAD|CONCOURSE|PLAZA|TERRACE|COURT|LOOP|CRESENT|BROADWAY|WAY|WALK|TURNPIKE|PROMENADE|RIDGE|OVAL|SLIP|CIRCLE)'
-            match = re.search(pattern, eviction.evictionaddress)
+            pattern = r'[0-9].*?(\bLANE|\bEXPRESSWAY|\bPARKWAY|\bSTREET|(\bAVENUE \w\b|\bAVENUE)|\bPLACE|\bBOULEVARD|\bDRIVE|\bROAD|\bCONCOURSE|\bPLAZA|\bTERRACE|\bCOURT|\bLOOP|\bCRESENT|\bBROADWAY|\bWAY|\bWALK|\bTURNPIKE|\bPROMENADE|\bRIDGE|\bOVAL|\bSLIP|\bCIRCLE)'
+            match = re.search(pattern, eviction.evictionaddress.upper())
             if match:
-                address = match.group(0)
-                address_match = ds.AddressRecord.objects.filter(address=address + ' {}'.format(eviction.borough))
+                cleaned_address = match.group(0)
+                self.save_eviction(eviction=eviction, cleaned_address=cleaned_address)
+                address_match = ds.AddressRecord.objects.filter(
+                    address=cleaned_address + ' {}'.format(eviction.borough))
                 if len(address_match) == 1:
-                    eviction.bbl = address_match[0].bbl
-                    eviction.save()
+                    self.save_eviction(eviction=eviction, bbl=address_match[0].bbl)
+
                 elif len(address_match) > 1:
                     # not a super generic query like 123 STREET or 45 AVENUE
-                    if not re.match(r"(\d+ (STREET|AVENUE))", address):
-                        eviction.bbl = address_match[0].bbl
-                        eviction.save()
+                    if not re.match(r"(\d+ (\bSTREET|\bAVENUE))", cleaned_address):
+                        self.save_eviction(eviction=eviction, bbl=address_match[0].bbl)
                     else:
                         logger.debug(
                             "no eviction match - multiple matches found on generic address: {}".format(eviction.evictionaddress))
                 else:
                     logger.debug("no eviction match - no address matches: {}".format(eviction.evictionaddress))
+                    self.get_geosearch_address("{}, {}".format(cleaned_address, eviction.borough), eviction)
 
             else:
                 logger.debug("no eviction match - no regex matches: {}".format(eviction.evictionaddress))
+
+    @classmethod
+    def get_geosearch_address(self, cleaned_address, eviction):
+        response = requests.get(
+            "https://geosearch.planninglabs.nyc/v1/search?text={}".format("{}, {}".format(cleaned_address, eviction.borough)))
+        try:
+            parsed = json.loads(response.text)
+        except Exception as e:
+            logger.debug('Unable to parse response from query: {}'.format(address_search_query))
+            return None
+
+        match = None
+        for feature in parsed['features']:
+            if feature['properties']['borough'].upper() == eviction.borough and feature['properties']['postalcode'] == eviction.evictionzip:
+                match = feature['properties']
+
+        if match:
+            try:
+                bbl = ds.Property.objects.get(bbl=match['pad_bbl'])
+
+                self.save_eviction(eviction=eviction, bbl=bbl, geosearch_address=match['label'])
+            except Exception as e:
+                logger.debug('unable to match response bbl {} to a db record'.format(match['pad_bbl']))
+                return None
 
     @classmethod
     def transform_self(self, file_path, update=None):

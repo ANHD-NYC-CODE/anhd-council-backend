@@ -215,11 +215,10 @@ def upsert_single_rows(model, rows, update=None):
     primary_key = model._meta.pk.name
     rows_created = 0
     rows_updated = 0
-    with connection.cursor() as curs:
-        for row in rows:
-            try:
+    for row in rows:
+        try:
+            with connection.cursor() as curs:
                 with transaction.atomic():
-
                     curs.execute(upsert_query(table_name, row, primary_key, no_conflict=False),
                                  build_row_values(row))
                     rows_updated = rows_updated + 1
@@ -228,9 +227,9 @@ def upsert_single_rows(model, rows, update=None):
                     if rows_created % settings.BATCH_SIZE == 0:
                         logger.debug("{} - seeded {}".format(table_name, rows_created))
 
-            except Exception as e:
-                logger.error("Database Error * - unable to upsert single record. Error: {}".format(e))
-                continue
+        except Exception as e:
+            logger.error("Database Error * - unable to upsert single record. Error: {}".format(e))
+            continue
 
     if update:
         update.rows_created = update.rows_created + rows_created

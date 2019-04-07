@@ -399,33 +399,6 @@ class HPDBuildingRecordTests(BaseTest, TestCase):
         self.assertEqual(changed_record.housenumber, '193-17a')
 
 
-class EvictionTest(BaseTest, TestCase):
-    def tearDown(self):
-        self.clean_tests()
-
-    def test_seed_record(self):
-        update = self.update_factory(model_name="Eviction",
-                                     file_name="mock_evictions.csv")
-        ds.Eviction.seed_or_update_self(file_path=update.file.file.path, update=update)
-        self.assertEqual(ds.Eviction.objects.count(), 7)
-        self.assertEqual(update.rows_created, 7)
-
-    def test_seed_record_after_update(self):
-        update = self.update_factory(model_name="Eviction",
-                                     file_name="mock_evictions.csv")
-        ds.Eviction.seed_or_update_self(file_path=update.file.file.path, update=update)
-
-        new_update = self.update_factory(dataset=update.dataset, model_name="Eviction",
-                                         file_name="mock_evictions_diff.csv", previous_file_name="mock_evictions.csv")
-        ds.Eviction.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
-        self.assertEqual(ds.Eviction.objects.count(), 8)
-        self.assertEqual(new_update.rows_created, 1)
-        self.assertEqual(new_update.rows_updated, 7)
-        self.assertEqual(ds.Eviction.objects.first().schedulestatus, 'SCHEDULED')
-        changed_record = ds.Eviction.objects.filter(courtindexnumber='76472/16')[0]
-        self.assertEqual(changed_record.schedulestatus, 'EXECUTED')
-
-
 class TaxLienTests(BaseTest, TestCase):
     def tearDown(self):
         self.clean_tests()
