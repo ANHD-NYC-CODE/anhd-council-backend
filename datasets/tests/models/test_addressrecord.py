@@ -23,7 +23,7 @@ class AddressRecordTests(BaseTest, TestCase):
 
         ds.AddressRecord.build_table(file_path=file.file.path, overwrite=True)
 
-        # self.assertEqual(ds.AddressRecord.objects.count(), 12)
+        self.assertEqual(ds.AddressRecord.objects.count(), 15)
         address1 = ds.AddressRecord.objects.get(
             number="1", street="Fake Street", borough="Manhattan", zipcode="99999")
         self.assertEqual(address1.buildingstreet, 'Fake Street')
@@ -74,6 +74,20 @@ class AddressRecordTests(BaseTest, TestCase):
         self.assertEqual(address12.buildingstreet, None)
         self.assertEqual(address12.buildingnumber, None)
         self.assertEqual(address12.propertyaddress, property3.address)
+
+        address13 = ds.AddressRecord.objects.get(
+            number="10-01", street="Fake Street", borough="Manhattan", zipcode="99999")
+        self.assertEqual(bool(address13), True)
+
+        import pdb
+        pdb.set_trace()
+        address14 = ds.AddressRecord.objects.get(
+            number="10-03", street="Fake Street", borough="Manhattan", zipcode="99999")
+        self.assertEqual(bool(address14), True)
+
+        address15 = ds.AddressRecord.objects.get(
+            number="10-05", street="Fake Street", borough="Manhattan", zipcode="99999")
+        self.assertEqual(bool(address15), True)
 
     def test_seed_addresssearch_update(self):
         dataset = c_models.Dataset.objects.create(name='Building', model_name='Building')

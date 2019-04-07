@@ -90,13 +90,18 @@ class AddressRecord(BaseDatasetModel, models.Model):
         rangelist = []
         cursor = int(low)
         step = 2
-        while(cursor < int(high)):
-            number = str(prefix) + str(cursor) if prefix else str(cursor)
+
+        while(cursor <= int(high)):
+            if len(str(low)) > 1 and str(low[0]) == '0':
+                num_string = '0' + str(cursor)
+            else:
+                num_string = str(cursor)
+
+            number = str(prefix) + num_string if prefix else num_string
+            # preserve z-padded numbers
             rangelist.append(number)
             cursor = cursor + step
 
-        number = str(prefix) + str(cursor) if prefix else str(cursor)
-        rangelist.append(number)
         return rangelist
 
     @classmethod
@@ -160,6 +165,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
                 if low_numbers[1][0].strip() != high_numbers[1][0].strip():
                     house_numbers = self.generate_rangelist(
                         low_numbers[1][0], high_numbers[1][0], prefix=low_numbers[0][0] + '-')
+
                     for number in house_numbers:
                         number = number.strip().replace(' ', '')
                         address_row = self.address_row_from_building(number=number,
