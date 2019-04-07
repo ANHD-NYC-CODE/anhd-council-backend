@@ -138,6 +138,7 @@ class Eviction(BaseDatasetModel, models.Model):
         else:
             if match:
                 logger.debug('Match invalid - geosearch: {} vs. cleaned: {}'.format(match['label'], cleaned_address))
+                self.save_eviction(eviction=eviction, geosearch_address=match['label'])
             else:
                 logger.debug('No Match found for cleaned_address: {}', cleaned_address)
 
