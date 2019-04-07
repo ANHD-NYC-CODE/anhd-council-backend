@@ -4,7 +4,6 @@ from core import models as c
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from datasets.utils.validation_filters import is_null, exceeds_char_length
 from core.utils.transform import from_csv_file_to_gen, with_bbl
-from core.utils.address import normalize_street
 from django.contrib.postgres.search import SearchVector, SearchVectorField
 from core.tasks import async_create_update
 from core.utils.address import clean_number_and_streets

@@ -79,8 +79,6 @@ class AddressRecordTests(BaseTest, TestCase):
             number="10-01", street="Fake Street", borough="Manhattan", zipcode="99999")
         self.assertEqual(bool(address13), True)
 
-        import pdb
-        pdb.set_trace()
         address14 = ds.AddressRecord.objects.get(
             number="10-03", street="Fake Street", borough="Manhattan", zipcode="99999")
         self.assertEqual(bool(address14), True)

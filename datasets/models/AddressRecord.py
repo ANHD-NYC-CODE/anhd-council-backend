@@ -2,7 +2,6 @@ from django.db import models
 from django.db.models import Q
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.database import copy_insert_from_csv, batch_upsert_from_gen
-from core.utils.address import normalize_street
 from django.contrib.postgres.search import SearchVector, SearchVectorField
 from datasets import models as ds
 from core.utils.bbl import code_to_boro, abrv_to_borough

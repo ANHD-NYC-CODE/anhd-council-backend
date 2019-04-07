@@ -127,7 +127,7 @@ class Eviction(BaseDatasetModel, models.Model):
             if feature['properties']['borough'].upper() == eviction.borough and feature['properties']['postalcode'] == eviction.evictionzip:
                 match = feature['properties']
 
-        if match:
+        if match and self.validate_geosearch_match(match, cleaned_address):
             try:
                 bbl = ds.Property.objects.get(bbl=match['pad_bbl'])
 
@@ -135,6 +135,17 @@ class Eviction(BaseDatasetModel, models.Model):
             except Exception as e:
                 logger.debug('unable to match response bbl {} to a db record'.format(match['pad_bbl']))
                 return None
+        else:
+            if match:
+                logger.debug('Match invalid: {}'.format(match['label']))
+            else:
+                logger.debug('No Match found for cleaned_address: {}', cleaned_address)
+
+            return None
+
+    @classmethod
+    def validate_geosearch_match(self, geosearch_match, cleaned_address):
+        return True
 
     @classmethod
     def transform_self(self, file_path, update=None):
