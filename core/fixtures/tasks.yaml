@@ -132,6 +132,14 @@
     minute: "0"
     hour: "2"
     timezone: "America/New_York"
+- model: django_celery_beat.crontabschedule
+  pk: 19
+  fields:
+    # 1am on 3rd of the month
+    minute: "0"
+    hour: "1"
+    day_of_month: "3"
+    timezone: "America/New_York"
 - model: django_celery_beat.periodictask
   pk: 1
   fields:
@@ -400,5 +408,15 @@
     task: "core.tasks.async_create_update"
     crontab: 18
     args: "[35]"
+    kwargs: "{}"
+    date_changed: "2019-01-01"
+- model: django_celery_beat.periodictask
+  pk: 28
+  fields:
+    name: "Update CONHRecord"
+    description: "Updates joined CONH list every 3rd of the month at 1am"
+    task: "core.tasks.async_create_update"
+    crontab: 19
+    args: "[33]"
     kwargs: "{}"
     date_changed: "2019-01-01"
