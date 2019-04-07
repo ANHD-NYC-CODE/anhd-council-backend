@@ -137,7 +137,7 @@ class Eviction(BaseDatasetModel, models.Model):
                 return None
         else:
             if match:
-                logger.debug('Match invalid: {}'.format(match['label']))
+                logger.debug('Match invalid - geosearch: {} vs. cleaned: {}'.format(match['label'], cleaned_address))
             else:
                 logger.debug('No Match found for cleaned_address: {}', cleaned_address)
 
@@ -145,7 +145,12 @@ class Eviction(BaseDatasetModel, models.Model):
 
     @classmethod
     def validate_geosearch_match(self, geosearch_match, cleaned_address):
-        return True
+        # without borough, New York, NY, USA tokens
+        geosearch_house_street = geosearch_match['label'].split(', ')[0].upper()
+        geosearch_borough = geosearch_match['label'].split(', ')[1].upper()
+
+        geosearch = ', '.join([clean_number_and_streets(geosearch_house_street, True), geosearch_borough]).upper()
+        return geosearch == cleaned_address
 
     @classmethod
     def transform_self(self, file_path, update=None):
