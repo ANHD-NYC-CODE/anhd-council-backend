@@ -1,5 +1,5 @@
 from core import models as c_models
-from core.utils.database import batch_upsert_from_gen, bulk_insert_from_file, seed_from_csv_diff
+from core.utils.database import upsert_single_rows, batch_upsert_from_gen, bulk_insert_from_file, seed_from_csv_diff
 from core.utils.typecast import Typecast
 from django.core import files
 from core.utils.transform import foreign_key_formatting
@@ -60,6 +60,11 @@ class BaseDatasetModel():
     @classmethod
     def transform_self_from_file(self, file_path, update=None):
         return Typecast(self).cast_rows(foreign_key_formatting(self.transform_self(file_path, update)))
+
+    @classmethod
+    def seed_with_single(self, **kwargs):
+        update = kwargs['update'] if 'update' in kwargs else None
+        return upsert_single_rows(self, self.transform_self_from_file(kwargs['file_path'], update=update), settings.BATCH_SIZE, update=update)
 
     @classmethod
     def seed_with_upsert(self, **kwargs):

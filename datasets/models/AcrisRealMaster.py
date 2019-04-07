@@ -76,7 +76,7 @@ class AcrisRealMaster(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        return self.seed_with_upsert(**kwargs)
+        return self.seed_with_single(**kwargs)
 
     def __str__(self):
         return self.documentid

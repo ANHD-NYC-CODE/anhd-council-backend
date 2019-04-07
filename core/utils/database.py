@@ -220,6 +220,8 @@ def upsert_single_rows(model, rows, update=None):
                 with transaction.atomic():
                     curs.execute(insert_query(table_name, row), build_row_values(row))
                     rows_created = rows_created + 1
+                    if rows_created % settings.BATCH_SIZE == 0:
+                        logger.debug("{} - seeded {}".format(table_name, rows_created))
             except utils.IntegrityError as e:
                 message = e.args[0]
                 pkey = message[message.find("(") + 1: message.find(")")]
