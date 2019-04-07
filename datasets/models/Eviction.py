@@ -20,6 +20,8 @@ class Eviction(BaseDatasetModel, models.Model):
             models.Index(fields=['executeddate', 'bbl']),
 
         ]
+        unique_together = ('evictionaddress', 'evictionaptnum', 'executeddate', 'marshallastname')
+
     download_endpoint = "https://data.cityofnewyork.us/api/views/6z8x-wfk4/rows.csv?accessType=DOWNLOAD"
 
     courtindexnumber = models.TextField(primary_key=True, blank=False, null=False)
@@ -98,6 +100,7 @@ class Eviction(BaseDatasetModel, models.Model):
                     else:
                         logger.debug(
                             "no eviction match - multiple matches found on generic address: {}".format(eviction.evictionaddress))
+                        self.get_geosearch_address("{}, {}".format(cleaned_address, eviction.borough), eviction)
                 else:
                     logger.debug("no eviction match - no address matches: {}".format(eviction.evictionaddress))
                     self.get_geosearch_address("{}, {}".format(cleaned_address, eviction.borough), eviction)
@@ -117,6 +120,10 @@ class Eviction(BaseDatasetModel, models.Model):
 
         match = None
         for feature in parsed['features']:
+            if 'borough' not in feature['properties'] or 'postalcode' not in feature['properties']:
+                logger.debug('Geosearch result not usable without borough or postalcode: {}'.format(
+                    feature['properties']))
+                return None
             if feature['properties']['borough'].upper() == eviction.borough and feature['properties']['postalcode'] == eviction.evictionzip:
                 match = feature['properties']
 
