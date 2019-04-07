@@ -217,3 +217,9 @@
     name: DOB NOW Filed Permits
     model_name: DOBNowFiledPermit
     automated: true
+- model: core.dataset
+  pk: 35
+  fields:
+    name: DOB Filed Permits
+    model_name: DOBFiledPermit
+    automated: true

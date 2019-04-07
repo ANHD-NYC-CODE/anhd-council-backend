@@ -125,6 +125,13 @@
     minute: "0"
     hour: "1"
     timezone: "America/New_York"
+- model: django_celery_beat.crontabschedule
+  pk: 18
+  fields:
+    # 2am every night
+    minute: "0"
+    hour: "2"
+    timezone: "America/New_York"
 - model: django_celery_beat.periodictask
   pk: 1
   fields:
@@ -373,5 +380,25 @@
     task: "core.tasks.async_download_and_update"
     crontab: 4
     args: "[15]"
+    kwargs: "{}"
+    date_changed: "2019-01-01"
+- model: django_celery_beat.periodictask
+  pk: 26
+  fields:
+    name: "Update DOBPermitFiledNow"
+    description: "Updates DOB (NOW) Construction Permit Filed data every day 11pm"
+    task: "core.tasks.async_download_and_update"
+    crontab: 7
+    args: "[34]"
+    kwargs: "{}"
+    date_changed: "2019-01-01"
+- model: django_celery_beat.periodictask
+  pk: 27
+  fields:
+    name: "Update DOBPermitFiled"
+    description: "Updates joined DOB Construction Permit Filed data every 2am"
+    task: "core.tasks.async_create_update"
+    crontab: 18
+    args: "[35]"
     kwargs: "{}"
     date_changed: "2019-01-01"
