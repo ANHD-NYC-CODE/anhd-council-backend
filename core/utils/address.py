@@ -8,12 +8,6 @@ def number_to_text(number):
         suffix = 'ND'
     elif number == '3':
         suffix = 'RD'
-    elif number == '11':
-        suffix = 'TH'
-    elif number == '12':
-        suffix = 'TH'
-    elif number == '13':
-        suffix = 'TH'
     elif len(number) == 1:
         suffix = 'TH'
     elif len(number) >= 2 and number[-2:] == '01':
@@ -21,6 +15,24 @@ def number_to_text(number):
     elif len(number) >= 2 and number[-2:] == '02':
         suffix = 'ND'
     elif len(number) >= 2 and number[-2:] == '03':
+        suffix = 'RD'
+    elif len(number) >= 2 and number[-2:] == '11':
+        suffix = 'TH'
+    elif len(number) >= 2 and number[-2:] == '12':
+        suffix = 'TH'
+    elif len(number) >= 2 and number[-2:] == '13':
+        suffix = 'TH'
+    elif len(number) >= 2 and number[-2:] == '11':
+        suffix = 'TH'
+    elif len(number) >= 2 and number[-2:] == '12':
+        suffix = 'TH'
+    elif len(number) >= 2 and number[-2:] == '13':
+        suffix = 'TH'
+    elif len(number) >= 2 and number[-1:] == '1':
+        suffix = 'ST'
+    elif len(number) >= 2 and number[-1:] == '2':
+        suffix = 'ND'
+    elif len(number) >= 2 and number[-1:] == '3':
         suffix = 'RD'
     else:
         suffix = 'TH'
