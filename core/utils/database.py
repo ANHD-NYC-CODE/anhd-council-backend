@@ -168,15 +168,15 @@ def batch_upsert_from_gen(model, rows, batch_size, **kwargs):
 
     with connection.cursor() as curs:
         try:
-            with transaction.atomic():
-                while True:
-                    batch = list(itertools.islice(rows, 0, batch_size))
-                    if len(batch) == 0:
-                        logger.info("Database - Batch upserts completed for {}.".format(model.__name__))
-                        if 'callback' in kwargs and kwargs['callback']:
-                            kwargs['callback']()
+            while True:
+                batch = list(itertools.islice(rows, 0, batch_size))
+                if len(batch) == 0:
+                    logger.info("Database - Batch upserts completed for {}.".format(model.__name__))
+                    if 'callback' in kwargs and kwargs['callback']:
+                        kwargs['callback']()
                         break
-                    else:
+                else:
+                    with transaction.atomic():
                         logger.debug("Seeding next batch for {}.".format(model.__name__))
                         update = kwargs['update'] if 'update' in kwargs else None
                         no_conflict = kwargs['no_conflict'] if 'no_conflict' in kwargs else None
