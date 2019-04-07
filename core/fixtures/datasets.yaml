@@ -211,3 +211,9 @@
     model_name: CONHRecord
     automated: false
     update_instructions: "1) Visit https://data.cityofnewyork.us/api/views/bzxi-2tsw/rows.csv?accessType=DOWNLOAD 2) Upload the file to the app w/ Version year. 3) Create an update with the file."
+- model: core.dataset
+  pk: 34
+  fields:
+    name: DOB NOW Filed Permits
+    model_name: DOBNowFiledPermit
+    automated: true

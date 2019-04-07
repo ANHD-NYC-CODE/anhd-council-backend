@@ -419,6 +419,21 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         )
         return factory
 
+    def dobnowfiledpermit_factory(self, jobfilingnumber=None, property=None, **kwargs):
+        name = 'DOBNowFiledPermit'
+        if not jobfilingnumber:
+            jobfilingnumber = random.randint(1, 1000000)
+
+        if not property:
+            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+
+        factory = d_models.DOBNowFiledPermit.objects.create(
+            jobfilingnumber=jobfilingnumber,
+            bbl=property,
+            **kwargs
+        )
+        return factory
+
     def permitissuednow_factory(self, jobfilingnumber=None, workpermit=None, issueddate=None, property=None, building=None, **kwargs):
         name = 'DOBPermitIssuedNow'
 

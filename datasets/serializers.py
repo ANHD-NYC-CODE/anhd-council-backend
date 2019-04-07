@@ -342,6 +342,12 @@ class DOBLegacyFiledPermitSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class DOBNowFiledPermitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.DOBNowFiledPermit
+        fields = '__all__'
+
+
 class LisPendenSerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.LisPenden
