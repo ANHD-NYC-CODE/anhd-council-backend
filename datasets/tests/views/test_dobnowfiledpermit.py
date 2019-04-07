@@ -26,7 +26,7 @@ class DOBNowFiledPermitTests(BaseTest, TestCase):
     def test_retrieve(self):
         dobnowfiledpermit = self.dobnowfiledpermit_factory()
 
-        response = self.client.get('/dobnowfiledpermits/{}/'.format(dobnowfiledpermit.jobfilingnumber))
+        response = self.client.get('/dobnowfiledpermits/{}/'.format(dobnowfiledpermit.id))
         content = response.data
 
         self.assertEqual(response.status_code, 200)

@@ -64,7 +64,7 @@ class BaseDatasetModel():
     @classmethod
     def seed_with_single(self, **kwargs):
         update = kwargs['update'] if 'update' in kwargs else None
-        return upsert_single_rows(self, self.transform_self_from_file(kwargs['file_path'], update=update), settings.BATCH_SIZE, update=update)
+        return upsert_single_rows(self, self.transform_self_from_file(kwargs['file_path'], update=update), update=update)
 
     @classmethod
     def seed_with_upsert(self, **kwargs):

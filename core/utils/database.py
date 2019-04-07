@@ -174,7 +174,7 @@ def batch_upsert_from_gen(model, rows, batch_size, **kwargs):
                     logger.info("Database - Batch upserts completed for {}.".format(model.__name__))
                     if 'callback' in kwargs and kwargs['callback']:
                         kwargs['callback']()
-                        break
+                    break
                 else:
                     with transaction.atomic():
                         logger.debug("Seeding next batch for {}.".format(model.__name__))
@@ -212,23 +212,22 @@ def batch_upsert_rows(model, rows, batch_size, update=None, no_conflict=False):
 
 def upsert_single_rows(model, rows, update=None):
     table_name = model._meta.db_table
+    primary_key = model._meta.pk.name
     rows_created = 0
     rows_updated = 0
     with connection.cursor() as curs:
         for row in rows:
             try:
                 with transaction.atomic():
-                    curs.execute(insert_query(table_name, row), build_row_values(row))
+
+                    curs.execute(upsert_query(table_name, row, primary_key, no_conflict=False),
+                                 build_row_values(row))
+                    rows_updated = rows_updated + 1
                     rows_created = rows_created + 1
+
                     if rows_created % settings.BATCH_SIZE == 0:
                         logger.debug("{} - seeded {}".format(table_name, rows_created))
-            except utils.IntegrityError as e:
-                message = e.args[0]
-                pkey = message[message.find("(") + 1: message.find(")")]
-                with transaction.atomic():
-                    curs.execute(update_query(table_name, row, pkey),
-                                 build_row_values(row) + build_pkey_tuple(row, pkey))
-                    rows_updated = rows_updated + 1
+
             except Exception as e:
                 logger.error("Database Error * - unable to upsert single record. Error: {}".format(e))
                 continue
