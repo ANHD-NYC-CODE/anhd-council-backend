@@ -242,6 +242,17 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
+    def test_property_dobfiledpermit(self):
+        property = self.property_factory(bbl="1")
+        self.dobfiledpermit_factory(property=property)
+        self.dobfiledpermit_factory(property=property)
+
+        response = self.client.get('/properties/1/dobfiledpermits/')
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
     def test_property_doblegacypermitfiled(self):
         property = self.property_factory(bbl="1")
         self.doblegacyfiledpermit_factory(property=property)

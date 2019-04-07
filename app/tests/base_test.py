@@ -484,6 +484,28 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         )
         return factory
 
+    def dobfiledpermit_factory(self, jobfilingnumber=None, property=None, building=None, **kwargs):
+        name = 'DOBIssuedPermit'
+
+        if not jobfilingnumber:
+            jobfilingnumber = random.randint(1, 1000000)
+
+        key = "{}{}".format(random.randint(1, 1000000), jobfilingnumber)
+
+        if not property:
+            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+        if not building:
+            building = self.building_factory(bin=random.randint(1, 1000000), property=property, boro=property.borough,
+                                             block=property.block, lot=property.lot)
+        factory = d_models.DOBFiledPermit.objects.create(
+            key=key,
+            jobfilingnumber=jobfilingnumber,
+            bbl=property,
+            bin=building,
+            **kwargs
+        )
+        return factory
+
     def permitissuedlegacy_factory(self, job=None, permitsino=None, property=None, building=None, **kwargs):
         name = 'DOBPermitIssuedLegacy'
         if not job:

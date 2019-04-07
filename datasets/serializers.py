@@ -336,6 +336,12 @@ class DOBIssuedPermitSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class DOBFiledPermitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.DOBFiledPermit
+        fields = '__all__'
+
+
 class DOBLegacyFiledPermitSerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.DOBLegacyFiledPermit

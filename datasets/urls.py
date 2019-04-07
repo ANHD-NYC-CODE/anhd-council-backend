@@ -194,6 +194,13 @@ properties_router.register(
 )
 
 properties_router.register(
+    'dobfiledpermits',
+    v.dobfiledpermit_view.DOBFiledPermitViewSet,
+    base_name='property-dobfiledpermits',
+    parents_query_lookups=['bbl']
+)
+
+properties_router.register(
     'doblegacyfiledpermits',
     v.doblegacyfiledpermit_views.DOBLegacyFiledPermitViewSet,
     base_name='property-doblegacyfiledpermit',
@@ -292,6 +299,13 @@ buildings_router.register(
     'dobissuedpermits',
     v.dobissuedpermit_view.DOBIssuedPermitViewSet,
     base_name='building-dobissuedpermits',
+    parents_query_lookups=['bin']
+)
+
+buildings_router.register(
+    'dobfiledpermits',
+    v.dobfiledpermit_view.DOBFiledPermitViewSet,
+    base_name='building-dobfiledpermits',
     parents_query_lookups=['bin']
 )
 
@@ -399,6 +413,7 @@ router.register(r'coredata', v.coresubsidyrecord_views.CoreSubsidyRecordViewSet)
 router.register(r'dobpermitissuedlegacy', v.dobpermitissuedlegacy_views.DOBPermitIssuedLegacyViewSet)
 router.register(r'dobpermitissuednow', v.dobpermitissuednow_views.DOBPermitIssuedNowViewSet)
 router.register(r'dobissuedpermits', v.dobissuedpermit_view.DOBIssuedPermitViewSet)
+router.register(r'dobfiledpermits', v.dobfiledpermit_view.DOBFiledPermitViewSet)
 router.register(r'doblegacyfiledpermits', v.doblegacyfiledpermit_views.DOBLegacyFiledPermitViewSet)
 router.register(r'dobnowfiledpermits', v.dobnowfiledpermit_views.DOBNowFiledPermitViewSet)
 router.register(r'publichousingrecords', v.publichousingrecord_views.PublicHousingRecordViewSet)
