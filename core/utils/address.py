@@ -64,13 +64,26 @@ def number_to_text(number):
     return number + suffix
 
 
+def remove_building_terms(string):
+    string = re.sub(
+        r"(\bGAR\b|\bGARAGE\b|\bFRONT\b|\bREAR\b|\bBEACH\b|\bAIR\b|\bAIRRGTS\b|\bAIR RGTS\b|\bWBLDG\b|\bEBLDG\b)", '', string)
+    return string
+
+
 def clean_number_and_streets(string, include_house_number):
-    # Beach
     string = string.upper()
+
+    # apostrophe
+    string = re.sub(r"'S\b", 'S', string)
+
+    # Beach
     string = re.sub(r"\bBEAC H\b", 'BEACH', string)
     string = re.sub(r"\bBEA CH\b", 'BEACH', string)
     string = re.sub(r"\bBE ACH\b", 'BEACH', string)
     string = re.sub(r"\bB EACH\b", 'BEACH', string)
+
+    # Island
+    string = re.sub(r"\bISLA ND\b", 'ISLAND', string)
 
     # Street
     string = re.sub(r"\bSTREE T\b", 'STREET', string)
@@ -161,6 +174,9 @@ def clean_number_and_streets(string, include_house_number):
     string = re.sub(r'\bCONC OURSE\b', 'CONCOURSE', string)
     string = re.sub(r'\bCONCOURS\b', 'CONCOURSE', string)
 
+    # COURT
+    string = re.sub(r'\bCOUR T\b', 'COURT', string)
+
     # remove double space
     string = string.upper().replace("  ", " ")
     string = string.upper().replace("   ", " ")
@@ -178,6 +194,12 @@ def clean_number_and_streets(string, include_house_number):
 
     # FOUND TYPOS
 
+    string = re.sub(r"\bPAR\b", "PARK", string)
+    string = re.sub(r"\bSTEEE T\b", "STREET", string)
+    string = re.sub(r"\bSTREEET\b", "STREET", string)
+    string = re.sub(r"\bSTRET\b", "STREET", string)
+    string = re.sub(r"\bMOGEHAN\b", "MOHEGAN", string)
+    string = re.sub(r"\bAVEU\b", "AVENUE", string)
     string = re.sub(r"\bMOGEHAN\b", "MOHEGAN", string)
     string = re.sub(r"\bSTJAMES\b", "SAINT JAMES", string)
     string = re.sub(r"\bWMSBDG\b", "WILLIAMSBRIDGE", string)
@@ -236,6 +258,7 @@ def clean_number_and_streets(string, include_house_number):
         string = re.sub(r"(?=.*ST {})(\bST {}\b)".format(saint, saint), "SAINT {}".format(saint), string)
 
     # Abbreviations
+    string = re.sub(r"\bIS\b", "ISLAND", string)
     string = re.sub(r"\bFT\b", "FORT", string)
     string = re.sub(r"\bMT\b", "MOUNT", string)
     string = re.sub(r"\bRV\b", "RIVER", string)

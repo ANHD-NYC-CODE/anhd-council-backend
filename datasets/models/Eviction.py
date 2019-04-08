@@ -4,7 +4,7 @@ from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.utils.validation_filters import is_null
 from datasets import models as ds
 from core.utils.bbl import boro_to_abrv
-from core.utils.address import clean_number_and_streets, get_house_number, get_street, get_borough
+from core.utils.address import clean_number_and_streets, get_house_number, get_street, get_borough, remove_building_terms
 import requests
 import json
 import re
@@ -79,12 +79,21 @@ class Eviction(BaseDatasetModel, models.Model):
         eviction.save()
 
     @classmethod
+    def view_address_results(self, evictions):
+        for eviction in evictions:
+            print("Original: ", eviction.evictionaddress)
+            print("Cleaned: ", eviction.cleaned_address)
+            print("Geosearch: ", eviction.geosearch_address)
+            print("************************************")
+
+    @classmethod
     def link_eviction_to_pluto_by_address(self):
 
         evictions = self.objects.filter(bbl__isnull=True)
         for eviction in evictions:
             # Ugh, is there a way to optionally include a WEST|EAST|NORTH|SOUTH match after a street match?
-            pattern = r'[0-9].*?((\bLANE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bLANE)|(\bEXPRESSWAY (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bEXPRESSWAY)|(\bPARKWAY (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bPARKWAY)|(\bSTREET (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bSTREET)|((\bAVENUE \w\b (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bAVENUE \w\b)|(\bAVENUE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bAVENUE))|(\bPLACE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bPLACE)|(\bBOULEVARD (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bBOULEVARD)|(\bDRIVE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bDRIVE)|(\bROAD (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bROAD)|(\bCONCOURSE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bCONCOURSE)|(\bPLAZA (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bPLAZA)|(\bTERRACE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bTERRACE)|(\bCOURT (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bCOURT)|(\bLOOP (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bLOOP)|(\bCRESCENT (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bCRESCENT)|(\bBROADWAY (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bBROADWAY)|(\bWAY (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bWAY)|(\bWALK (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bWALK)|(\bTURNPIKE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bTURNPIKE)|(\bPROMENADE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bPROMENADE)|(\bRIDGE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bRIDGE)|(\bOVAL (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bOVAL)|(\bSLIP (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bSLIP)|(\bCIRCLE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bCIRCLE))'
+            pattern = r'[0-9].*?((\bLANE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bLANE)|(\bHIGHWAY (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bHIGHWAY)|(\bSQUARE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bSQUARE)|(\bEXPRESSWAY (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bEXPRESSWAY)|(\bPARKWAY (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bPARKWAY)|(\bPARK (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bPARK)|(\bSTREET (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bSTREET)|((\bAVENUE \w\b (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bAVENUE \w\b)|(\bAVENUE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bAVENUE))|(\bPLACE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bPLACE)|(\bBOULEVARD (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bBOULEVARD)|(\bDRIVE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bDRIVE)|(\bROAD (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bROAD)|(\bCONCOURSE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bCONCOURSE)|(\bPLAZA (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bPLAZA)|(\bTERRACE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bTERRACE)|(\bCOURT (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bCOURT)|(\bLOOP (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bLOOP)|(\bCRESCENT (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bCRESCENT)|(\bBROADWAY (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bBROADWAY)|(\bWAY (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bWAY)|(\bWALK (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bWALK)|(\bTURNPIKE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bTURNPIKE)|(\bPROMENADE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bPROMENADE)|(\bRIDGE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bRIDGE)|(\bOVAL (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bOVAL)|(\bSLIP (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bSLIP)|(\bCIRCLE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bCIRCLE))'
+
             # pattern = r'[0-9].*?(\bLANE|\bEXPRESSWAY|\bPARKWAY|\bSTREET|(\bAVENUE \w\b|\bAVENUE)|\bPLACE|\bBOULEVARD|\bDRIVE|\bROAD|\bCONCOURSE|\bPLAZA|\bTERRACE|\bCOURT|\bLOOP|\bCRESENT|\bBROADWAY|\bWAY|\bWALK|\bTURNPIKE|\bPROMENADE|\bRIDGE|\bOVAL|\bSLIP|\bCIRCLE)'
             match = re.search(pattern, eviction.evictionaddress.upper())
             if match:
@@ -135,6 +144,7 @@ class Eviction(BaseDatasetModel, models.Model):
 
                 self.save_eviction(eviction=eviction, bbl=bbl, geosearch_address=match['label'])
             except Exception as e:
+                self.save_eviction(eviction=eviction, geosearch_address=match['label'])
                 logger.debug('unable to match response bbl {} to a db record'.format(match['pad_bbl']))
                 return None
         else:
@@ -149,7 +159,7 @@ class Eviction(BaseDatasetModel, models.Model):
     @classmethod
     def validate_geosearch_match(self, geosearch_match, cleaned_address):
         # without borough, New York, NY, USA tokens
-        geosearch_house_street = geosearch_match['label'].split(', ')[0].upper()
+        geosearch_house_street = remove_building_terms(geosearch_match['label'].split(', ')[0].upper())
         geosearch_borough = geosearch_match['label'].split(', ')[1].upper()
 
         geosearch = ', '.join([clean_number_and_streets(geosearch_house_street, True), geosearch_borough]).upper()
