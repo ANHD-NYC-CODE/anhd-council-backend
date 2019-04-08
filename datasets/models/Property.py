@@ -295,7 +295,7 @@ class Property(BaseDatasetModel, models.Model):
             if is_null(row['bbl']) or exceeds_char_length(row['bbl'], 10):
                 continue
             row['address'] = clean_number_and_streets(row['address'], True)
-            count += 1
+            count = count + 1
             if count % settings.BATCH_SIZE == 0:
                 logger.debug("cleaned {} properties".format(count))
 
