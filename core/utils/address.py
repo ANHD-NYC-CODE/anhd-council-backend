@@ -115,10 +115,14 @@ def clean_number_and_streets(string, include_house_number):
 
     # EXPRESSWAY
     string = re.sub(r'\bEXP RESSWAY\b', 'EXPRESSWAY', string)
+    string = re.sub(r"\bEXPR ESSWAY\b", "EXPRESSWAY", string)
 
     # HIGHWAY
     string = re.sub(r"\bHWY\b", 'HIGHWAY', string)
     string = re.sub(r"\bHIGH WAY\b", 'HIGHWAY', string)
+
+    # TURNPIKE
+    string = re.sub(r"\bTURNPI KE\b", "TURNPIKE", string)
 
     # NORTH
     string = re.sub(r"\bN ORTH\b", 'NORTH', string)
@@ -151,6 +155,7 @@ def clean_number_and_streets(string, include_house_number):
     string = re.sub(r"\bTER RACE\b", 'TERRACE', string)
     string = re.sub(r"\bTE RRACE\b", 'TERRACE', string)
     string = re.sub(r"\bT ERRACE\b", 'TERRACE', string)
+    string = re.sub(r"\bTERR\b", 'TERRACE', string)
 
     # CONCOURSE
     string = re.sub(r'\bCONC OURSE\b', 'CONCOURSE', string)
@@ -249,8 +254,9 @@ def clean_number_and_streets(string, include_house_number):
     string = re.sub(r"\bPKWAY\b", "PARKWAY", string)
     string = re.sub(r"\bEXPWY\b", "EXPRESSWAY", string)
     string = re.sub(r"\bEXP WY\b", "EXPRESSWAY", string)
-    string = re.sub(r"\bEXPR ESSWAY\b", "EXPRESSWAY", string)
+
     string = re.sub(r"\bTPKE\b", "TURNPIKE", string)
+
     string = re.sub(r"\bNY\b", "NEW YORK", string)
     string = re.sub(r"\bADAM C POWELL\b", "ADAM CLAYTON POWELL", string)
 

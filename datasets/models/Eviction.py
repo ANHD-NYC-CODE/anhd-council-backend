@@ -83,7 +83,7 @@ class Eviction(BaseDatasetModel, models.Model):
 
         evictions = self.objects.filter(bbl__isnull=True)
         for eviction in evictions:
-            pattern = r'[0-9].*?(\bLANE|\bEXPRESSWAY|\bPARKWAY|\bSTREET|(\bAVENUE \w\b|\bAVENUE)|\bPLACE|\bBOULEVARD|\bDRIVE|\bROAD|\bCONCOURSE|\bPLAZA|\bTERRACE|\bCOURT|\bLOOP|\bCRESENT|\bBROADWAY|\bWAY|\bWALK|\bTURNPIKE|\bPROMENADE|\bRIDGE|\bOVAL|\bSLIP|\bCIRCLE)'
+            pattern = r'[0-9].*?((\bLANE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bLANE)|(\bEXPRESSWAY (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bEXPRESSWAY)|(\bPARKWAY (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bPARKWAY)|(\bSTREET (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bSTREET)|((\bAVENUE \w\b (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bAVENUE \w\b)|(\bAVENUE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bAVENUE))|(\bPLACE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bPLACE)|(\bBOULEVARD (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bBOULEVARD)|(\bDRIVE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bDRIVE)|(\bROAD (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bROAD)|(\bCONCOURSE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bCONCOURSE)|(\bPLAZA (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bPLAZA)|(\bTERRACE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bTERRACE)|(\bCOURT (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bCOURT)|(\bLOOP (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bLOOP)|(\bCRESCENT (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bCRESCENT)|(\bBROADWAY (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bBROADWAY)|(\bWAY (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bWAY)|(\bWALK (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bWALK)|(\bTURNPIKE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bTURNPIKE)|(\bPROMENADE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bPROMENADE)|(\bRIDGE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bRIDGE)|(\bOVAL (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bOVAL)|(\bSLIP (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bSLIP)|(\bCIRCLE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bCIRCLE))'
             match = re.search(pattern, eviction.evictionaddress.upper())
             if match:
                 cleaned_address = match.group(0)
@@ -98,11 +98,11 @@ class Eviction(BaseDatasetModel, models.Model):
                     if not re.match(r"(\d+ (\bSTREET|\bAVENUE))", cleaned_address):
                         self.save_eviction(eviction=eviction, bbl=address_match[0].bbl)
                     else:
-                        logger.debug(
-                            "no eviction match - multiple matches found on generic address: {}".format(eviction.evictionaddress))
+                        # logger.debug(
+                        #     "no eviction match - multiple matches found on generic address: {}".format(eviction.evictionaddress))
                         self.get_geosearch_address("{}, {}".format(cleaned_address, eviction.borough), eviction)
                 else:
-                    logger.debug("no eviction match - no address matches: {}".format(eviction.evictionaddress))
+                    # logger.debug("no eviction match - no address matches: {}".format(eviction.evictionaddress))
                     self.get_geosearch_address("{}, {}".format(cleaned_address, eviction.borough), eviction)
 
             else:
