@@ -307,7 +307,7 @@ class Property(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        return self.bulk_seed(**kwargs)
+        return self.seed_with_upsert(**kwargs)
 
     def __str__(self):
         return self.bbl
