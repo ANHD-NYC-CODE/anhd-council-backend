@@ -78,7 +78,7 @@ def seed_from_csv_diff(original_file_path, new_file_path, model, **kwargs):
 
 def bulk_insert_from_file(model, file_path, **kwargs):
     table_name = model._meta.db_table
-
+    logger.debug('creating temp csv with cleaned rows and seeding...')
     # create new csv with cleaned rows
     temp_file_path = os.path.join(settings.MEDIA_TEMP_ROOT, str(
         'clean_csv_' + uuid.uuid4().hex) + '.mock' if settings.TESTING else '.csv')

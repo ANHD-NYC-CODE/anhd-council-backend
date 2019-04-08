@@ -99,9 +99,6 @@ class Building(BaseDatasetModel, models.Model):
     def seed_or_update_self(self, **kwargs):
         logger.debug("Seeding/Updating {}", self.__name__)
         self.bulk_seed(**kwargs, overwrite=True)
-        dataset = c.Dataset.objects.filter(model_name='AddressRecord').first()
-        if dataset:
-            async_create_update.delay(dataset.id, file_id=kwargs['file'].id)
 
     def __str__(self):
         return str(self.bin)

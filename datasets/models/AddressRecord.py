@@ -91,7 +91,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
         step = 2
 
         while(cursor <= int(high)):
-            if len(str(low)) > 1 and str(low[0]) == '0':
+            if len(str(low)) > 1 and str(low)[0] == '0':
                 num_string = '0' + str(cursor)
             else:
                 num_string = str(cursor)
