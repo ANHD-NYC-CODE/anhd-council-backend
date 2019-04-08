@@ -9,7 +9,7 @@ from core.utils.address import clean_number_and_streets
 from datasets import models as ds
 
 import logging
-
+from django.conf import settings
 logger = logging.getLogger('app')
 
 # Update process: Manual
@@ -289,10 +289,16 @@ class Property(BaseDatasetModel, models.Model):
 
     @classmethod
     def pre_validation_filters(self, gen_rows):
+        logger.debug("prevalidating properties")
+        count = 0
         for row in gen_rows:
             if is_null(row['bbl']) or exceeds_char_length(row['bbl'], 10):
                 continue
             row['address'] = clean_number_and_streets(row['address'], True)
+            count += 1
+            if count % settings.BATCH_SIZE == 0:
+                logger.debug("cleaned {} properties".format(count))
+
             yield row
 
     @classmethod

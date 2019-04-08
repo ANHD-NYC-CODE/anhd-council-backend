@@ -1,6 +1,5 @@
 from django.db import connection, transaction, utils
-from core.utils.transform import from_dict_list_to_gen
-from core.utils.transform import from_csv_file_to_gen
+from core.utils.transform import from_dict_list_to_gen, from_csv_file_to_gen
 from core.utils.csv_helpers import gen_to_csv
 from django.conf import settings
 from postgres_copy import CopyManager
@@ -84,8 +83,9 @@ def bulk_insert_from_file(model, file_path, **kwargs):
         'clean_csv_' + uuid.uuid4().hex) + '.mock' if settings.TESTING else '.csv')
     update = kwargs['update'] if 'update' in kwargs else None
     rows = model.transform_self_from_file(file_path, update=update)
+    logger.debug("writing temp file for {}".format(table_name))
     gen_to_csv(rows, temp_file_path)
-
+    logger.debug("temp file complete for {}".format(table_name))
     with open(temp_file_path, 'r') as temp_file:
         columns = temp_file.readline().replace('"', '').replace('\n', '')
         sql = copy_query(table_name, columns)
@@ -93,10 +93,11 @@ def bulk_insert_from_file(model, file_path, **kwargs):
         try:
             copy_insert_from_csv(table_name, temp_file_path, **kwargs)
         except Exception as e:
-            print(e)
             logger.warning("Database - Bulk Import Error - beginning Batch seeding. Error: {}".format(e))
-            rows = model.transform_self_from_file(file_path, kwargs['update'])
+            rows = from_csv_file_to_gen(temp_file_path, kwargs['update'])
             batch_upsert_from_gen(model, rows, settings.BATCH_SIZE, **kwargs)
+            if os.path.isfile(temp_file_path):
+                os.remove(temp_file_path)
 
     if 'callback' in kwargs and kwargs['callback']:
         kwargs['callback']()
