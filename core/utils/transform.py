@@ -177,8 +177,11 @@ def ny_state_coords_to_lat_lng(xcoord, ycoord):
 
 
 def get_geo(row):
-    coords = (float(row.xcoord), float(row.ycoord))
-    return ny_state_coords_to_lat_lng(*coords)
+    try:
+        coords = (float(row.xcoord), float(row.ycoord))
+        return ny_state_coords_to_lat_lng(*coords)
+    except:
+        return (None, None)
 
 
 def with_geo(table):
