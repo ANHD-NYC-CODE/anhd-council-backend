@@ -4,6 +4,34 @@ import logging
 logger = logging.getLogger('app')
 
 
+def get_house_number(string):
+    # Pass in complete address "123 Fake Street"
+    # Removes apartment letters
+    # Returns number (123)
+    first_token = string.split(' ', 1)
+    return ''.join(i for i in first_token if i.isdigit())
+
+
+def get_street(string):
+    # Pass in complete address "123 Fake Street" or "123 Fake Street, Manhattan"
+    # returns street (Fake Street)
+    if ',' in string:
+        string = string.split(',', 1)[0]
+
+    street = string.split(' ', 1)[1]
+    return street.upper()
+
+
+def get_borough(string):
+    # Pass in complete address "123 Fake Street, Manhattan"
+    # returns borough (Manhattan)
+    match = re.search(r"(MANHATTAN|BROOKLYN|QUEENS|STATEN ISLAND|BRONX)", string.upper())
+    if match:
+        return match.group().upper()
+    else:
+        return None
+
+
 def number_to_text(number):
     if len(number) <= 1:
         if number == '1':
@@ -80,6 +108,7 @@ def clean_number_and_streets(string, include_house_number):
     string = re.sub(r"\bPARKWA\b", 'PARKWAY', string)
     string = re.sub(r"\bPARKWAYY\b", 'PARKWAY', string)
     string = re.sub(r'\bPKW Y\b', 'PARKWAY', string)
+    string = re.sub(r'\bP KWY\b', 'PARKWAY', string)
 
     # EXPRESSWAY
     string = re.sub(r'\bEXP RESSWAY\b', 'EXPRESSWAY', string)
@@ -140,6 +169,16 @@ def clean_number_and_streets(string, include_house_number):
     string = string.upper().replace(' - ', ' ')
 
     # FOUND TYPOS
+
+    string = re.sub(r"\bMOGEHAN\b", "MOHEGAN", string)
+    string = re.sub(r"\bSTJAMES\b", "SAINT JAMES", string)
+    string = re.sub(r"\bWMSBDG\b", "WILLIAMSBRIDGE", string)
+    string = re.sub(r"\bWILLIAMSBRI DGE\b", "WILLIAMSBRIDGE", string)
+    string = re.sub(r"\bWMSBRIDGE\b", "WILLIAMSBRIDGE", string)
+    string = re.sub(r"\bWILLIAMSBRIDG E\b", "WILLIAMSBRIDGE", string)
+    string = re.sub(r"\bMETROPOLITA N\b", "METROPOLITAN", string)
+    string = re.sub(r"\bFTHAMILTON\b", "FORT HAMILTON", string)
+    string = re.sub(r"\bWINTHROOP\b", "WINTHROP", string)
     string = re.sub(r"\bPO WELL\b", "POWELL", string)
     string = re.sub(r"\bP OLITE\b", "POLITE", string)
     string = re.sub(r"\bPOLI TE\b", "POLITE", string)
@@ -182,7 +221,7 @@ def clean_number_and_streets(string, include_house_number):
 
     # Replace Street Appreviations
     HOLY_SAINTS = ['FELIX', 'ANDREWS', 'PAULS', 'JOSEPH', 'MARKS', 'LAWRENCE', 'JAMES',
-                   'NICHOLAS', 'HOLLIS', 'JOHNS', "JOHN'S", "EDWARDS", "GEORGES", "GEORGE", "OUEN", "MARYS", "THERESA", "LUKES", "JUDE", "ANN"]
+                   'NICHOLAS', 'HOLLIS', 'JOHNS', "JOHN'S", "EDWARDS", "GEORGES", "GEORGE", "OUEN", "MARYS", "THERESA", "LUKES", "JUDE", "ANN", "ANNS"]
 
     # replace ST MARKS etc with SAINT MARKS
     for saint in HOLY_SAINTS:

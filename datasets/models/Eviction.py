@@ -4,7 +4,7 @@ from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.utils.validation_filters import is_null
 from datasets import models as ds
 from core.utils.bbl import boro_to_abrv
-from core.utils.address import clean_number_and_streets
+from core.utils.address import clean_number_and_streets, get_house_number, get_street, get_borough
 import requests
 import json
 import re
@@ -151,7 +151,32 @@ class Eviction(BaseDatasetModel, models.Model):
         geosearch_borough = geosearch_match['label'].split(', ')[1].upper()
 
         geosearch = ', '.join([clean_number_and_streets(geosearch_house_street, True), geosearch_borough]).upper()
-        return geosearch == cleaned_address
+        if geosearch == cleaned_address:
+            # First naive match against house + street + borough
+            return True
+        elif get_street(geosearch_house_street) == get_street(cleaned_address) and geosearch_borough == get_borough(cleaned_address):
+            # if street and borough match, check for number range matches
+            geo_house = get_house_number(geosearch_house_street)
+            cleaned_house = get_house_number(cleaned_address)
+            if geo_house == cleaned_house:
+                # try explicit match against house without apartment number + street + borough
+                return True
+            elif '-' in cleaned_house and geo_house in cleaned_house:
+                # try explict match against segment in a "-" number
+                return True
+            elif "-" in cleaned_house:
+                # Step from low to high and see if geosearch number matches anything
+                low, high = cleaned_house.split('-', 1)
+                cursor = int(low)
+                step = 2
+                while(cursor <= int(high)):
+                    if int(geo_street) == cursor:
+                        return True
+                    cursor = cursor + step
+            else:
+                return False
+        else:
+            return False
 
     @classmethod
     def transform_self(self, file_path, update=None):
