@@ -1,5 +1,8 @@
 import re
 
+import logging
+logger = logging.getLogger('app')
+
 
 def number_to_text(number):
     if number == '1':
