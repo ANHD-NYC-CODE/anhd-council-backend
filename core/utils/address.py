@@ -18,8 +18,11 @@ def get_street(string):
     if ',' in string:
         string = string.split(',', 1)[0]
 
-    street = string.split(' ', 1)[1]
-    return street.upper()
+    street = string.split(' ', 1)
+    if len(street) > 1:
+        return street[1].upper()
+    else:
+        return street[0].upper()
 
 
 def get_borough(string):
