@@ -176,6 +176,11 @@ def ny_state_coords_to_lat_lng(xcoord, ycoord):
     return pyproj.transform(ny_state_plane, wgs84, xcoord, ycoord)
 
 
+def get_geo(row):
+    coords = (float(row.xcoord), float(row.ycoord))
+    return ny_state_coords_to_lat_lng(*coords)
+
+
 def with_geo(table):
     for row in table:
         try:

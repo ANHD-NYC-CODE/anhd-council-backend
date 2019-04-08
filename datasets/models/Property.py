@@ -2,7 +2,7 @@ from django.db import models
 from django.db.models import Q, F, Count, Sum, Exists, OuterRef, Prefetch, FilteredRelation
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from datasets.utils.validation_filters import is_null, exceeds_char_length
-from core.utils.transform import from_csv_file_to_gen, with_geo
+from core.utils.transform import from_csv_file_to_gen, with_geo, get_geo
 from core.utils.csv_helpers import extract_csvs_from_zip
 from core.utils.address import clean_number_and_streets
 
@@ -265,6 +265,7 @@ class Property(BaseDatasetModel, models.Model):
     lng = models.DecimalField(decimal_places=16, max_digits=32, blank=True, null=True)
     lat = models.DecimalField(decimal_places=16, max_digits=32, blank=True, null=True)
     unitsrentstabilized = models.IntegerField(blank=True, null=True)
+    original_address = models.TextField(blank=True, null=True)
 
     def get_rentstabilized_units(self):
         try:
@@ -292,8 +293,7 @@ class Property(BaseDatasetModel, models.Model):
         logger.debug("prevalidating properties")
         count = 0
         for row in gen_rows:
-            if is_null(row['bbl']) or exceeds_char_length(row['bbl'], 10):
-                continue
+            row['original_address'] = row['address']
             row['address'] = clean_number_and_streets(row['address'], True)
             count = count + 1
             if count % settings.BATCH_SIZE == 0:
@@ -303,11 +303,21 @@ class Property(BaseDatasetModel, models.Model):
 
     @classmethod
     def transform_self(self, file_path, update=None):
-        return self.pre_validation_filters(with_geo(from_csv_file_to_gen(extract_csvs_from_zip(file_path), update)))
+        return self.pre_validation_filters(from_csv_file_to_gen(extract_csvs_from_zip(file_path), update))
+
+    @classmethod
+    def add_geometry(self):
+        for record in self.objects.all():
+            lng, lat = get_geo(record)
+            record.lat = lat
+            record.lng = lng
+            record.save()
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        return self.seed_with_upsert(**kwargs)
+        self.seed_with_upsert(**kwargs)
+        logger.debug('adding geometry')
+        self.add_geometry()
 
     def __str__(self):
         return self.bbl

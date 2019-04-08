@@ -5,40 +5,30 @@ logger = logging.getLogger('app')
 
 
 def number_to_text(number):
-    if number == '1':
-        suffix = 'ST'
-    elif number == '2':
-        suffix = 'ND'
-    elif number == '3':
-        suffix = 'RD'
-    elif len(number) == 1:
-        suffix = 'TH'
-    elif len(number) >= 2 and number[-2:] == '01':
-        suffix = 'ST'
-    elif len(number) >= 2 and number[-2:] == '02':
-        suffix = 'ND'
-    elif len(number) >= 2 and number[-2:] == '03':
-        suffix = 'RD'
-    elif len(number) >= 2 and number[-2:] == '11':
-        suffix = 'TH'
-    elif len(number) >= 2 and number[-2:] == '12':
-        suffix = 'TH'
-    elif len(number) >= 2 and number[-2:] == '13':
-        suffix = 'TH'
-    elif len(number) >= 2 and number[-2:] == '11':
-        suffix = 'TH'
-    elif len(number) >= 2 and number[-2:] == '12':
-        suffix = 'TH'
-    elif len(number) >= 2 and number[-2:] == '13':
-        suffix = 'TH'
-    elif len(number) >= 2 and number[-1:] == '1':
-        suffix = 'ST'
-    elif len(number) >= 2 and number[-1:] == '2':
-        suffix = 'ND'
-    elif len(number) >= 2 and number[-1:] == '3':
-        suffix = 'RD'
-    else:
-        suffix = 'TH'
+    if len(number) <= 1:
+        if number == '1':
+            suffix = 'ST'
+        elif number == '2':
+            suffix = 'ND'
+        elif number == '3':
+            suffix = 'RD'
+        else:
+            suffix = 'TH'
+    elif len(number) >= 2:
+        if number[-2:] == '11':
+            suffix = 'TH'
+        elif number[-2:] == '12':
+            suffix = 'TH'
+        elif number[-2:] == '13':
+            suffix = 'TH'
+        elif number[-1:] == '1':
+            suffix = 'ST'
+        elif number[-1:] == '2':
+            suffix = 'ND'
+        elif number[-1:] == '3':
+            suffix = 'RD'
+        else:
+            suffix = 'TH'
 
     return number + suffix
 
