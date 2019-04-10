@@ -101,10 +101,10 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        kwargs['file_path'] = self.create_unique_csv(kwargs['file_path'])
-        return self.bulk_seed(raw=False, **kwargs)  # need to add the bbl, can't do raw
-        # logger.debug("Seeding/Updating {}", self.__name__)
-        # return self.seed_with_single(**kwargs)
+        logger.debug("Seeding/Updating {}", self.__name__)
+        # kwargs['file_path'] = self.create_unique_csv(kwargs['file_path'])
+        # return self.bulk_seed(raw=False, **kwargs)  # need to add the bbl, can't do raw
+        return self.seed_with_single(**kwargs)
 
     def __str__(self):
         return self.key

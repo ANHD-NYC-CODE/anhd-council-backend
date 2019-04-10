@@ -87,14 +87,14 @@ class AcrisRealParty(BaseDatasetModel, models.Model):
 
     @classmethod
     def transform_self(self, file_path, update=None):
-        return self.pre_validation_filters(from_csv_file_to_gen(file_path, update), allow_blank=True)
+        return self.pre_validation_filters(from_csv_file_to_gen(file_path, update))
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        # logger.debug("Seeding/Updating {}", self.__name__)
-        # return self.seed_with_single(**kwargs)
-        kwargs['file_path'] = self.create_unique_csv(kwargs['file_path'])
-        return self.bulk_seed(raw=False, **kwargs)  # raw false - need key
+        logger.debug("Seeding/Updating {}", self.__name__)
+        return self.seed_with_single(**kwargs)
+        # kwargs['file_path'] = self.create_unique_csv(kwargs['file_path'])
+        # return self.bulk_seed(raw=False, **kwargs)  # raw false - need key
 
     def __str__(self):
         return self.key
