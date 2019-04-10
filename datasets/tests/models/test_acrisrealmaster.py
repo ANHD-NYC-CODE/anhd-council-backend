@@ -30,6 +30,6 @@ class AcrisRealMasterTests(BaseTest, TestCase):
                                          file_name="mock_acris_real_property_master_diff.csv", previous_file_name="mock_acris_real_property_master.csv")
         ds.AcrisRealMaster.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds.AcrisRealMaster.objects.count(), 11)
-        self.assertEqual(new_update.rows_created, 1)
-        self.assertEqual(new_update.rows_updated, 10)  # has shuffled mock order
+        self.assertEqual(new_update.rows_created, 11)
+        self.assertEqual(new_update.rows_updated, 11)  # has shuffled mock order
         self.assertEqual(new_update.total_rows, 11)
