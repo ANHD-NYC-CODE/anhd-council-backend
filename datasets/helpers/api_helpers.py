@@ -2,16 +2,20 @@ from django.core.cache import cache
 from django.conf import settings
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
+
 from rest_framework import viewsets
 from collections import OrderedDict
 from datasets import serializers as serial
 from copy import deepcopy
 from datasets import models as ds
 from functools import wraps
+from django.db.models import Prefetch
+
 import logging
 import json
 import urllib
 import datetime
+
 logger = logging.getLogger('app')
 
 
@@ -24,6 +28,24 @@ class StandardResultsSetPagination(PageNumberPagination):
     #         ('previous', self.get_previous_link()),
     #         ('results', data)
     #     ]))
+
+
+def handle_property_summaries(self, request, *args, **kwargs):
+    if 'summary' in request.query_params and request.query_params['summary'] == 'true':
+
+        if 'summary-type' in request.query_params and request.query_params['summary-type'].lower() == 'short':
+            self.queryset = self.queryset.prefetch_related(Prefetch(
+                'publichousingrecord_set', queryset=ds.PublicHousingRecord.objects.only('pk', 'bbl'))).prefetch_related(Prefetch(
+                    'rentstabilizationrecord', queryset=ds.RentStabilizationRecord.objects.only('pk', 'ucbbl'))).prefetch_related(Prefetch(
+                        'coresubsidyrecord_set', queryset=ds.CoreSubsidyRecord.objects.only('pk', 'bbl'))).prefetch_related(Prefetch(
+                            'subsidyj51_set', queryset=ds.SubsidyJ51.objects.only('pk', 'bbl'))).prefetch_related(Prefetch(
+                                'subsidy421a_set', queryset=ds.Subsidy421a.objects.only('pk', 'bbl'))).only(*ds.Property.SHORT_SUMMARY_FIELDS)
+
+            self.serializer_class = serial.PropertyShortSummarySerializer
+        else:
+            self.queryset = self.queryset.prefetch_related('building_set').prefetch_related('hpdregistration_set').prefetch_related('taxlien_set').prefetch_related(
+                'publichousingrecord_set').prefetch_related('rentstabilizationrecord').prefetch_related('coresubsidyrecord_set').prefetch_related('subsidyj51_set').prefetch_related('subsidy421a_set')
+            self.serializer_class = serial.PropertySummarySerializer
 
 
 def add_headers(headers, **kwargs):

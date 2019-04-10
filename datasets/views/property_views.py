@@ -11,14 +11,14 @@ from rest_framework import viewsets
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from django.core.cache import cache
-from datasets.helpers.api_helpers import cache_me, properties_by_housingtype, ApplicationViewSet
+from datasets.helpers.api_helpers import handle_property_summaries, cache_me, properties_by_housingtype, ApplicationViewSet
 from datasets.serializers import property_query_serializer
 from datasets.filters import PropertyFilter, AdvancedPropertyFilter
 from datasets import serializers as serial
 from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework.permissions import IsAuthenticated
-
+import json
 
 from datasets import models as ds
 import logging
@@ -72,3 +72,11 @@ class PropertyViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyM
     def buildings_summary(self, request, *args, **kwargs):
         self.serializer_class = serial.PropertyBuildingsSummary
         return super().retrieve(request, *args, **kwargs)
+
+    def property_bbls(self, request, *args, **kwargs):
+        bbls = json.loads(request.body.decode('utf-8'))
+
+        handle_property_summaries(self, request, *args, **kwargs)
+
+        self.queryset = self.queryset.filter(bbl__in=bbls)
+        return super().list(request, *args, **kwargs)

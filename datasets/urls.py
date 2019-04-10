@@ -27,6 +27,10 @@ building_search = v.search_views.SearchViewSet.as_view({
     'get': 'building_search',
 })
 
+property_bbls = v.property_views.PropertyViewSet.as_view({
+    'post': 'property_bbls'
+})
+
 
 class NestedDefaultRouter(NestedRouterMixin, DefaultRouter):
     pass
@@ -423,6 +427,7 @@ custom_routes = format_suffix_patterns([
     path('councils/<int:pk>/summary/', council_summary, name='council-summary'),
     path('communities/<int:pk>/summary/', community_summary, name='community-summary'),
     path('search/buildings/', building_search, name='buildings-search'),
+    path('bbls', property_bbls, name='property-bbls')
 ])
 
 urlpatterns = [
