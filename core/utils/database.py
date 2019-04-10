@@ -301,17 +301,18 @@ def upsert_single_rows(model, rows, update=None):
     for row in rows:
         try:
             with connection.cursor() as curs:
-                curs.execute(upsert_query(table_name, row, primary_key, no_conflict=False),
-                             build_row_values(row))
-                rows_updated = rows_updated + 1
-                rows_created = rows_created + 1
+                with transaction.atomic():
+                    curs.execute(upsert_query(table_name, row, primary_key, no_conflict=False),
+                                 build_row_values(row))
+                    rows_updated = rows_updated + 1
+                    rows_created = rows_created + 1
 
-                if rows_created % settings.BATCH_SIZE == 0:
-                    logger.debug("{} - seeded {}".format(table_name, rows_created))
-                    if update:
-                        update.rows_created = update.rows_created + rows_created
-                        update.rows_updated = update.rows_updated + rows_created
-                        update.save()
+                    if rows_created % settings.BATCH_SIZE == 0:
+                        logger.debug("{} - seeded {}".format(table_name, rows_created))
+                        if update:
+                            update.rows_created = update.rows_created + rows_created
+                            update.rows_updated = update.rows_updated + rows_created
+                            update.save()
 
         except Exception as e:
             logger.error("Database Error * - unable to upsert single record. Error: {}".format(e))
