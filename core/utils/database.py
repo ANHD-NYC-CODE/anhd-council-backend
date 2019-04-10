@@ -31,6 +31,12 @@ def create_gen_from_csv_diff(original_file_path, new_file_path):
                             quoting=csv.QUOTE_ALL, skipinitialspace=True)
     logger.debug(" * Beginning CSV diff process.")
 
+    # *** if you want to speed this up, open the file and put the original_reader into a List
+    # I'm not doing so because I don't have confidence that the server can handle 10+ million rows in Memory
+
+    # original_reader = list(csv.reader(open(original_file_path, 'r'))
+
+    cursor = 0
     count = -1  # offset for headers
     # iterate through each csv row
     for new_row in new_reader:
@@ -48,6 +54,10 @@ def create_gen_from_csv_diff(original_file_path, new_file_path):
             if new_row == original_row:
                 found = True
                 break
+
+        cursor = cursor + 1
+        if cursor % settings.BATCH_SIZE == 0:
+            logger.debug("Diff cursor at: {}".format(cursor))
 
         if not found:
             count = count + 1
