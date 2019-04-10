@@ -32,8 +32,7 @@ def create_gen_from_csv_diff(original_file_path, new_file_path):
     new_reader = csv.reader(new_file, delimiter=',', quotechar='"', doublequote=True,
                             quoting=csv.QUOTE_ALL, skipinitialspace=True)
     logger.debug(" * Beginning CSV diff process.")
-    original_reader = csv.reader(original_file, delimiter=',', quotechar='"',
-                                 doublequote=True, quoting=csv.QUOTE_ALL, skipinitialspace=True)
+
     count = -1  # offset for headers
     # iterate through each csv row
     for new_row in new_reader:
@@ -44,7 +43,8 @@ def create_gen_from_csv_diff(original_file_path, new_file_path):
 
         found = False
         # search for csv row in old file
-
+        original_reader = csv.reader(original_file, delimiter=',', quotechar='"',
+                                     doublequote=True, quoting=csv.QUOTE_ALL, skipinitialspace=True)
         for original_row in original_reader:
             if new_row == original_row:
                 found = True
