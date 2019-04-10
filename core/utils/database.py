@@ -3,6 +3,7 @@ from core.utils.transform import from_dict_list_to_gen, from_csv_file_to_gen
 from core.utils.csv_helpers import gen_to_csv
 from django.conf import settings
 from postgres_copy import CopyManager
+from io import StringIO
 
 
 import itertools
@@ -39,32 +40,44 @@ def create_gen_from_csv_diff(original_file_path, new_file_path):
     cursor = 0
     count = -1  # offset for headers
     # iterate through each csv row
-    for new_row in new_reader:
-        # pass headers first
-        if count == -1:
-            count = count + 1
-            yield new_row
-            continue
+    # for new_row in new_reader:
+    #     # pass headers first
 
-        found = False
-        # search for csv row in old file
-        original_reader = csv.reader(open(original_file_path, 'r'), delimiter=',', quotechar='"',
-                                     doublequote=True, quoting=csv.QUOTE_ALL, skipinitialspace=True)
-        for original_row in original_reader:
-            if new_row == original_row:
-                found = True
-                break
+    with open(new_file_path, 'r') as nf:
+        new_content = nf.readlines()
 
-        cursor = cursor + 1
-        if cursor % settings.BATCH_SIZE == 0:
+        for new_row in new_content:
+            if count == -1:
+                count = count + 1
+
+                yield list(csv.reader(StringIO(new_row), delimiter=',', quotechar='"',
+                                      doublequote=True, quoting=csv.QUOTE_ALL, skipinitialspace=True))[0]
+                continue
+
+            found = False
+            # search for csv row in old file
+            # original_reader = csv.reader(open(original_file_path, 'r'), delimiter=',', quotechar='"',
+            #                              doublequote=True, quoting=csv.QUOTE_ALL, skipinitialspace=True)
+            # for original_row in original_reader:
+            #
+            with open(original_file_path, 'r') as of:
+                original_content = of.readlines()
+                for original_row in original_content:
+                    if new_row == original_row:
+                        found = True
+                        break
+
+            cursor = cursor + 1
+            # if cursor % settings.BATCH_SIZE == 0:
             logger.debug("Diff cursor at: {}".format(cursor))
 
-        if not found:
-            count = count + 1
-            if count % settings.BATCH_SIZE == 0:
-                logger.debug('Performed csv diff on {} records'.format(count))
+            if not found:
+                count = count + 1
+                if count % settings.BATCH_SIZE == 0:
+                    logger.debug('Performed csv diff on {} records'.format(count))
 
-            yield new_row
+                yield list(csv.reader(StringIO(new_row), delimiter=',', quotechar='"',
+                                      doublequote=True, quoting=csv.QUOTE_ALL, skipinitialspace=True))[0]
 
 
 def write_gen_to_temp_file(gen_rows):
