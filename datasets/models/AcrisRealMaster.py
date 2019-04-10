@@ -58,10 +58,10 @@ class AcrisRealMaster(BaseDatasetModel, models.Model):
 
     @classmethod
     def pre_validation_filters(self, gen_rows):
-        # for row in gen_rows:
-        #     if is_null(row['documentid']):
-        #         continue
-        #     yield row
+        for row in gen_rows:
+            if is_null(row['documentid']):
+                continue
+            yield row
         return gen_rows
 
     # trims down new update files to preserve memory
@@ -79,7 +79,7 @@ class AcrisRealMaster(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        return self.seed_or_update_with_filter(**kwargs)
+        return self.seed_or_update_from_set_diff(**kwargs)
 
     def __str__(self):
         return self.documentid

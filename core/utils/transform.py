@@ -63,6 +63,7 @@ def clean_headers(headers):
     issues with column names
     """
     s = headers.lower()
+
     for char in invalid_header_chars:
         s = s.replace(char, '')
     for old, new in replace_header_chars:
@@ -131,7 +132,9 @@ def from_csv_file_to_gen(file_path_or_generator, update=None, cleaner=None):
     """
     c = None
     if isinstance(file_path_or_generator, types.GeneratorType):
-        f = io.StringIO(''.join(list(file_path_or_generator)))
+        gen_list = list(file_path_or_generator)
+
+        f = io.StringIO('\n'.join(gen_list))
     elif isinstance(file_path_or_generator, str):
         f = open(file_path_or_generator, mode='r', encoding='utf-8', errors='replace')
         if update:

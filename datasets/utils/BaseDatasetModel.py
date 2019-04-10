@@ -1,5 +1,6 @@
 from core import models as c_models
-from core.utils.database import upsert_single_rows, batch_upsert_from_gen, bulk_insert_from_file, seed_from_csv_diff
+from core.utils.database import write_gen_to_temp_file, create_gen_from_csv_diff, upsert_single_rows, batch_upsert_from_gen, bulk_insert_from_file, seed_from_csv_diff, from_csv_file_to_gen
+
 from core.utils.typecast import Typecast
 from django.core import files
 from core.utils.transform import foreign_key_formatting
@@ -86,10 +87,31 @@ class BaseDatasetModel():
 
     @classmethod
     def seed_or_update_from_set_diff(self, **kwargs):
+
         new_file_path = kwargs['update'].file.file.path
         previous_file = kwargs['update'].previous_file
+        update = kwargs['update'] if 'update' in kwargs else None
+
+        if update:
+            # count rows
+            logger.debug('Counting csv rows...')
+            count = -1  # offset for header
+            for row in csv.reader(open(new_file_path, 'r')):
+                count = count + 1
+            update.total_rows = count
+            update.save()
 
         if (previous_file and os.path.isfile(previous_file.file.path)):
-            seed_from_csv_diff(previous_file.file.path, new_file_path, self, **kwargs)
+            temp_file_path = write_gen_to_temp_file(create_gen_from_csv_diff(
+                previous_file.file.path, new_file_path))
+
+            cleaned_diff_gen = self.transform_self(temp_file_path)
+            logger.debug('Seeding diffed csv gen...')
+            batch_upsert_from_gen(self, cleaned_diff_gen, settings.BATCH_SIZE, update=update)
+            if os.path.isfile(temp_file_path):
+                os.remove(temp_file_path)
         else:
-            self.bulk_seed(**kwargs)
+            if 'single' in kwargs and kwargs['single']:
+                self.seed_with_single(**kwargs)
+            else:
+                self.bulk_seed(**kwargs)

@@ -25,6 +25,52 @@ def execute(sql):
             logger.error("Database - Execute error: {}".format(e))
 
 
+def create_gen_from_csv_diff(original_file_path, new_file_path):
+    original_file = open(original_file_path, 'r')
+
+    new_file = open(new_file_path, 'r')
+    new_reader = csv.reader(new_file, delimiter=',', quotechar='"', doublequote=True,
+                            quoting=csv.QUOTE_ALL, skipinitialspace=True)
+    logger.debug(" * Beginning CSV diff process.")
+
+    count = -1  # offset for headers
+    # iterate through each csv row
+    for new_row in new_reader:
+        # pass headers first
+        if count == -1:
+            count = count + 1
+            yield new_row
+
+        found = False
+        # search for csv row in old file
+        original_reader = csv.reader(original_file, delimiter=',', quotechar='"',
+                                     doublequote=True, quoting=csv.QUOTE_ALL, skipinitialspace=True)
+        for original_row in original_reader:
+            if new_row == original_row:
+                found = True
+                break
+
+        if not found:
+            count = count + 1
+            if count % settings.BATCH_SIZE == 0:
+                logger.debug('Performed csv diff on {} records'.format(count))
+            yield new_row
+
+
+def write_gen_to_temp_file(gen_rows):
+
+    temp_file_path = os.path.join(settings.MEDIA_TEMP_ROOT, str(
+        'set_diff' + uuid.uuid4().hex) + '.mock' if settings.TESTING else '.csv')
+    headers = iter(next(gen_rows))
+    with open(temp_file_path, 'w') as temp_file:
+        writer = csv.writer(temp_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL, skipinitialspace=True)
+        writer.writerow(headers)
+        for row in gen_rows:
+
+            writer.writerow(row)
+    return temp_file_path
+
+
 def seed_from_csv_diff(original_file_path, new_file_path, model, **kwargs):
     """
     takes new file, filters it down in size, adds to Set()
