@@ -18,7 +18,7 @@ import sys
 
 TESTING = sys.argv[1:2] == ['test']
 
-BATCH_SIZE = 50000
+BATCH_SIZE = 100000
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY', '')
