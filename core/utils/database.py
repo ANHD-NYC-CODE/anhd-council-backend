@@ -313,6 +313,8 @@ def upsert_single_rows(model, rows, update=None):
                             update.rows_created = update.rows_created + rows_created
                             update.rows_updated = update.rows_updated + rows_created
                             update.save()
+                            rows_updated = 0
+                            rows_updated = 0
 
         except Exception as e:
             logger.error("Database Error * - unable to upsert single record. Error: {}".format(e))

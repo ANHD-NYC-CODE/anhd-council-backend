@@ -121,12 +121,20 @@ class AcrisRealMaster(BaseDatasetModel, models.Model):
         return self.pre_validation_filters(from_csv_file_to_gen(file_path, update))
 
     @classmethod
+    def split_seed_or_update_self(self, **kwargs):
+        logger.debug("Seeding/Updating {}", self.__name__)
+        return self.seed_with_single(**kwargs)
+
+    @classmethod
     def seed_or_update_self(self, **kwargs):
         logger.debug("Seeding/Updating {}", self.__name__)
         #
         # kwargs['file_path'] = self.create_unique_csv(kwargs['file_path'])
         # return self.bulk_seed(raw=True, **kwargs)
-        return self.seed_with_single(**kwargs)
+        if settings.TESTING:
+            return self.seed_with_single(**kwargs)
+        else:
+            return self.async_concurrent_seed(**kwargs)
 
     def __str__(self):
         return self.documentid

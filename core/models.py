@@ -38,6 +38,9 @@ class Dataset(models.Model):
         getattr(ds, self.model_name).seed_or_update_self(**kwargs)
         self.delete_old_files()
 
+    def split_seed_dataset(self, **kwargs):
+        getattr(ds, self.model_name).split_seed_or_update_self(**kwargs)
+
     def latest_update(self):
         # Make sure to prefetch_related('update_set')
         try:

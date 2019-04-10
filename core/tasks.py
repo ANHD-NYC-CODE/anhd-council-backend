@@ -57,6 +57,24 @@ def async_create_update(self, dataset_id, file_id=None):
 
 
 @app.task(bind=True, queue='update', acks_late=True, max_retries=1)
+def async_seed_split_file(self, file_path, update_id, dataset_id=None):
+    try:
+        # manually set file and previous file in admin ui
+        update = c.Update.objects.get(id=update_id)
+        file_path = os.path.join(settings.MEDIA_ROOT, os.path.basename(file_path))
+        dataset = c.Dataset.objects.get(id=dataset_id) if dataset_id else update.file.dataset
+        logger.info("Beginning async seeding - {} - c.Update: {}".format(update.file.dataset.name, update.id))
+        dataset.split_seed_dataset(file_path=file_path, update=update)
+    except Exception as e:
+        logger.error('Error during task: {}'.format(e))
+        if update:
+            async_send_update_error_mail.delay(update.id, str(e))
+        else:
+            async_send_general_task_error_mail.delay(str(e))
+        raise e
+
+
+@app.task(bind=True, queue='update', acks_late=True, max_retries=1)
 def async_seed_file(self, file_path, update_id, dataset_id=None):
     try:
         # manually set file and previous file in admin ui

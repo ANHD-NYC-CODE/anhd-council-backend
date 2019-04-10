@@ -143,7 +143,7 @@ def from_csv_file_to_gen(file_path_or_generator, update=None, cleaner=None):
         raise ValueError("from_csv_file_to_gen accepts Strings or Generators")
 
     if update and c:
-        update.total_rows = count_csv_rows(c)
+        update.total_rows = count_csv_rows(file_path_or_generator)
         update.save()
 
     with f:

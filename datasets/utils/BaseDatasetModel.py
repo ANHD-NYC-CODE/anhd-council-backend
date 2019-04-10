@@ -5,13 +5,16 @@ from core.utils.typecast import Typecast
 from django.core import files
 from core.utils.transform import foreign_key_formatting
 from django.conf import settings
-
+from core.utils.csv_helpers import count_csv_rows, split_csv
 import os
 import csv
 import requests
 import tempfile
 import re
 import logging
+import math
+
+from core.tasks import async_seed_split_file
 
 logger = logging.getLogger('app')
 
@@ -61,6 +64,15 @@ class BaseDatasetModel():
     @classmethod
     def transform_self_from_file(self, file_path, update=None):
         return Typecast(self).cast_rows(foreign_key_formatting(self.transform_self(file_path, update)))
+
+    @classmethod
+    def async_concurrent_seed(self, file_path, update=None):
+        csv_length = count_csv_rows(file_path)
+        lines_per_csv = math.ceil(csv_length / 8)
+
+        split_csvs = split_csv(file_path, settings.MEDIA_TEMP_ROOT, self._meta.db_table, lines_per_csv)
+        for csv_path in split_csvs:
+            async_seed_split_file.delay(csv_path, update.id)
 
     @classmethod
     def seed_with_single(self, **kwargs):

@@ -1,10 +1,65 @@
 import csv
 from zipfile import ZipFile
 # String (filepath) -> String
+import os
 
 
-def count_csv_rows(file_reader):
-    reader = csv.reader(file_reader)
+def split_csv(source_filepath, dest_folder, split_file_prefix,
+              records_per_file):
+    """
+    Split a source csv into multiple csvs of equal numbers of records,
+    except the last file.
+
+    Includes the initial header row in each split file.
+
+    Split files follow a zero-index sequential naming convention like so:
+
+        `{split_file_prefix}_0.csv`
+    """
+    if records_per_file <= 0:
+        raise Exception('records_per_file must be > 0')
+
+    with open(source_filepath, 'r') as source:
+        reader = csv.reader(source, delimiter=',', quotechar='"', doublequote=True,
+                            quoting=csv.QUOTE_ALL, skipinitialspace=True)
+        headers = next(reader)
+
+        file_idx = 0
+        records_exist = True
+        file_paths = []
+        while records_exist:
+
+            i = 0
+            target_filename = '{}_{}.csv'.format(split_file_prefix, file_idx)
+            target_filepath = os.path.join(dest_folder, target_filename)
+            file_paths.append(target_filepath)
+            with open(target_filepath, 'w') as target:
+                writer = csv.writer(target, delimiter=',', quotechar='"', doublequote=True,
+                                    quoting=csv.QUOTE_ALL, skipinitialspace=True)
+
+                while i < records_per_file:
+                    if i == 0:
+                        writer.writerow(headers)
+
+                    try:
+                        writer.writerow(next(reader))
+                        i += 1
+                    except:
+                        records_exist = False
+                        break
+
+            if i == 0:
+                # we only wrote the header, so delete that file
+                os.remove(target_filepath)
+
+            file_idx += 1
+
+        return file_paths
+
+
+def count_csv_rows(file_path):
+    reader = csv.reader(open(file_path, 'r'), delimiter=',', quotechar='"', doublequote=True,
+                        quoting=csv.QUOTE_ALL, skipinitialspace=True)
     return (sum(1 for row in reader) - 1)  # subtract headers
 
 
