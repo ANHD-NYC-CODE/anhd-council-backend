@@ -67,8 +67,11 @@ class AcrisRealMaster(BaseDatasetModel, models.Model):
     # trims down new update files to preserve memory
     # uses original header values
     @classmethod
-    def update_set_filter(self, csv_reader, headers):
-        return csv_reader
+    def update_filters(self, gen_rows):
+        for row in gen_rows:
+            if row['docdate'] and is_older_than(row['docdate'], 1):
+                continue
+            yield row
 
     @classmethod
     def transform_self(self, file_path, update=None):
@@ -76,7 +79,7 @@ class AcrisRealMaster(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        return self.seed_with_single(**kwargs)
+        return self.seed_or_update_with_filter(**kwargs)
 
     def __str__(self):
         return self.documentid

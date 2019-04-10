@@ -30,4 +30,4 @@ class AcrisRealLegalTests(BaseTest, TestCase):
                                          file_name="mock_acris_real_property_legals_diff.csv")
         ds.AcrisRealLegal.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(new_update.rows_created, 12)
-        self.assertEqual(new_update.rows_updated, 0)
+        self.assertEqual(new_update.rows_updated, 12)

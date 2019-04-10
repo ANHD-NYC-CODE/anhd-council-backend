@@ -67,6 +67,14 @@ class BaseDatasetModel():
         return upsert_single_rows(self, self.transform_self_from_file(kwargs['file_path'], update=update), update=update)
 
     @classmethod
+    def seed_or_update_with_filter(self, **kwargs):
+        update = kwargs['update'] if 'update' in kwargs else None
+        if self.objects.count() > 0:
+            return upsert_single_rows(self, self.transform_self_from_file(kwargs['file_path'], update=update), update=update)
+        else:
+            return upsert_single_rows(self, self.transform_self_from_file(kwargs['file_path'], update=update), update=update)
+
+    @classmethod
     def seed_with_upsert(self, **kwargs):
         update = kwargs['update'] if 'update' in kwargs else None
         return batch_upsert_from_gen(self, self.transform_self_from_file(kwargs['file_path'], update=update), settings.BATCH_SIZE, update=update)

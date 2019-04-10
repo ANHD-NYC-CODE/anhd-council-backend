@@ -31,5 +31,5 @@ class AcrisRealPartyTests(BaseTest, TestCase):
 
         ds.AcrisRealParty.seed_or_update_self(
             file_path=party_update_diff.file.file.path, update=party_update_diff)
-        self.assertEqual(party_update_diff.rows_created, 2)
-        self.assertEqual(party_update_diff.rows_updated, 0)
+        self.assertEqual(party_update_diff.rows_created, 11)
+        self.assertEqual(party_update_diff.rows_updated, 11)

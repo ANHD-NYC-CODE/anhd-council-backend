@@ -43,7 +43,7 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
         for row in gen_rows:
             if is_null(row['documentid']):
                 continue
-            if 'bbl' in row:
+            if 'bbl' in row:  # why?
                 row['bbl'] = str(row['bbl'])
             yield row
 

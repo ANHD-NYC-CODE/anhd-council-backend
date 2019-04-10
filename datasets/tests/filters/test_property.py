@@ -203,21 +203,21 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['bbl'], '1')
 
-    def test_doblegacyfiledpermitsdates_field(self):
+    def test_dobfiledpermitsdates_field(self):
         council = self.council_factory(id=1)
         property1 = self.property_factory(bbl=1, council=council)
         property2 = self.property_factory(bbl=2, council=council)
 
         for i in range(5):
-            self.doblegacyfiledpermit_factory(property=property1, prefilingdate="2018-01-01")
+            self.dobfiledpermit_factory(property=property1, datefiled="2018-01-01")
 
         for i in range(5):
-            self.doblegacyfiledpermit_factory(property=property1, prefilingdate="2017-01-01")
+            self.dobfiledpermit_factory(property=property1, datefiled="2017-01-01")
 
         for i in range(1):
-            self.doblegacyfiledpermit_factory(property=property2, prefilingdate="2018-01-01")
+            self.dobfiledpermit_factory(property=property2, datefiled="2018-01-01")
 
-        query = '/properties/?doblegacyfiledpermits__start=2018-01-01&doblegacyfiledpermits__end=2019-01-01&doblegacyfiledpermits__gte=5'
+        query = '/properties/?dobfiledpermits__start=2018-01-01&dobfiledpermits__end=2019-01-01&dobfiledpermits__gte=5'
         response = self.client.get(query, format="json")
         content = response.data['results']
 
@@ -949,7 +949,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['bbl'], '1')
 
-    def test_legacyfiledpermit_rules(self):
+    def test_filedpermit_rules(self):
         council = self.council_factory(id=1)
         # 10 in range
         property1 = self.property_factory(bbl=1, council=council)
@@ -959,16 +959,16 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         property3 = self.property_factory(bbl=3, council=council)
 
         for i in range(10):
-            self.doblegacyfiledpermit_factory(property=property1, prefilingdate="2018-01-01")
+            self.dobfiledpermit_factory(property=property1, datefiled="2018-01-01")
 
         for i in range(10):
-            self.doblegacyfiledpermit_factory(property=property2, prefilingdate="2010-01-01")
+            self.dobfiledpermit_factory(property=property2, datefiled="2010-01-01")
 
         for i in range(5):
-            self.doblegacyfiledpermit_factory(property=property3, prefilingdate="2018-01-01")
+            self.dobfiledpermit_factory(property=property3, datefiled="2018-01-01")
 
         # 10 permits between 2017-2018
-        query = '/properties/?q=*condition_0=AND+filter_0=doblegacyfiledpermits__prefilingdate__gte=2017-01-01,doblegacyfiledpermits__prefilingdate__lte=2018-01-01,doblegacyfiledpermits__count__gte=10'
+        query = '/properties/?q=*condition_0=AND+filter_0=dobfiledpermits__datefiled__gte=2017-01-01,dobfiledpermits__datefiled__lte=2018-01-01,dobfiledpermits__count__gte=10'
 
         response = self.client.get(query, format="json")
 

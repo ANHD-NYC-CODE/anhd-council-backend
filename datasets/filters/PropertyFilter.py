@@ -103,7 +103,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     acrisrealmasteramounts = TotalWithDateFilter(method="filter_acrisrealmasteramounts_total_and_dates")
     acrisrealmasters = TotalWithDateFilter(method="filter_acrisrealmasters_total_and_dates")
 
-    doblegacyfiledpermits = TotalWithDateFilter(method="filter_doblegacyfiledpermits_total_and_dates")
+    dobfiledpermits = TotalWithDateFilter(method="filter_dobfiledpermits_total_and_dates")
     dobissuedpermits = TotalWithDateFilter(method="filter_dobissuedpermits_total_and_dates")
     evictions = TotalWithDateFilter(method="filter_eviction_total_and_dates")
 
@@ -200,13 +200,13 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         queryset = queryset.annotate(dobissuedpermits=Count('dobissuedpermit_set', distinct=True))
         return queryset.filter(**total_filters)
 
-    def filter_doblegacyfiledpermits_total_and_dates(self, queryset, name, values):
+    def filter_dobfiledpermits_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(
-            'doblegacyfiledpermit__prefilingdate', 'doblegacyfiledpermits', values)
+            'dobfiledpermit__datefiled', 'dobfiledpermits', values)
 
-        queryset = queryset.annotate(doblegacyfiledpermit_set=FilteredRelation('doblegacyfiledpermit', condition=Q(
-            af.construct_and_q([date_filters]), Q(doblegacyfiledpermit__bbl__in=queryset.values('bbl')))))
-        queryset = queryset.annotate(doblegacyfiledpermits=Count('doblegacyfiledpermit_set', distinct=True))
+        queryset = queryset.annotate(dobfiledpermit_set=FilteredRelation('dobfiledpermit', condition=Q(
+            af.construct_and_q([date_filters]), Q(dobfiledpermit__bbl__in=queryset.values('bbl')))))
+        queryset = queryset.annotate(dobfiledpermits=Count('dobfiledpermit_set', distinct=True))
         return queryset.filter(**total_filters)
 
     def filter_eviction_total_and_dates(self, queryset, name, values):
