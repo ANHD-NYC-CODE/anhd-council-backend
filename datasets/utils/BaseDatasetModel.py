@@ -63,21 +63,26 @@ class BaseDatasetModel():
 
     @classmethod
     def transform_self_from_file(self, file_path, update=None):
-        return Typecast(self).cast_rows(foreign_key_formatting(self.transform_self(file_path, update)))
+        return Typecast(self).cast_rows(self.transform_self(file_path, update))
 
     @classmethod
     def async_concurrent_seed(self, file_path, update=None):
+        MAX_CONCURRENT_JOBS = 8
         csv_length = count_csv_rows(file_path)
-        lines_per_csv = math.ceil(csv_length / 8)
+        lines_per_csv = math.ceil(csv_length / MAX_CONCURRENT_JOBS)
+        logger.debug("Splitting CSV into {}".format(MAX_CONCURRENT_JOBS))
 
-        split_csvs = split_csv(file_path, settings.MEDIA_TEMP_ROOT, self._meta.db_table, lines_per_csv)
+        split_csvs = split_csv(file_path, settings.MEDIA_ROOT, self._meta.db_table, lines_per_csv)
         for csv_path in split_csvs:
+            logger.debug('Creating job for split file {}'.format(csv_path))
             async_seed_split_file.delay(csv_path, update.id)
 
     @classmethod
     def seed_with_single(self, **kwargs):
         update = kwargs['update'] if 'update' in kwargs else None
-        return upsert_single_rows(self, self.transform_self_from_file(kwargs['file_path'], update=update), update=update)
+        upsert_single_rows(self, self.transform_self_from_file(kwargs['file_path'], update=update), update=update)
+        if 'delete_file' in kwargs and kwargs['delete_file']:
+            os.remove(kwargs['file_path'])
 
     @classmethod
     def seed_or_update_with_filter(self, **kwargs):

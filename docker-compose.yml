@@ -50,7 +50,7 @@ services:
       - ./celery:/app/celery
     env_file:
       - .env
-    entrypoint: "celery -A app worker -Q celery -l debug -n celery_worker --concurrency=2 --logfile=./celery/logs/default.log"
+    entrypoint: "celery -A app worker -Q celery -l debug -n celery_worker --concurrency=4 --logfile=./celery/logs/default.log"
   celery_update:
     restart: always
     build: .
@@ -72,7 +72,7 @@ services:
       - redis
     env_file:
       - .env
-    entrypoint: "celery -A app worker -Q update -l debug -n update_worker --concurrency=2 --logfile=./celery/logs/update.log"
+    entrypoint: "celery -A app worker -Q update -l debug -n update_worker --concurrency=8 --logfile=./celery/logs/update.log"
   celerybeat:
     restart: always
     build: .

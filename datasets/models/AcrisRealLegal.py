@@ -63,48 +63,21 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
         return csv_reader
 
     @classmethod
-    def create_unique_csv(self, file_path):
-        cursor = 0
-        count = 0
-
-        # headers: ['header1', 'header2',...]
-        temp_file_path = os.path.join(settings.MEDIA_TEMP_ROOT, str(
-            'set_diff' + uuid.uuid4().hex) + '.mock' if settings.TESTING else '.csv')
-
-        new_file = open(file_path, 'r')
-        headers = new_file.readline().replace('\n', '').split(',')
-        """Read csv file, delete duplicates and write it."""
-        with open(file_path, 'r', newline='') as inputfile:
-            with open(temp_file_path, 'w', newline='') as outputfile:
-                duplicatereader = csv.DictReader(inputfile, delimiter=',', quotechar='"', doublequote=True,
-                                                 quoting=csv.QUOTE_ALL, skipinitialspace=True)
-                uniquewrite = csv.DictWriter(outputfile, fieldnames=headers, delimiter=',', quotechar='"', doublequote=True,
-                                             quoting=csv.QUOTE_ALL, skipinitialspace=True)
-                uniquewrite.writeheader()
-                keysread = []
-                for row in duplicatereader:
-                    cursor = cursor + 1
-                    key = (row['DOCUMENT ID'], row['BOROUGH'], row['BLOCK'], row['LOT'])
-                    if key not in keysread:
-                        count = count + 1
-                        keysread.append(key)
-                        uniquewrite.writerow(row)
-                    else:
-                        print("Dup: {}", key)
-                    if cursor % settings.BATCH_SIZE == 0:
-                        logger.debug('Cursor: {}, count: {}'.format(cursor, count))
-        return temp_file_path
-
-    @classmethod
     def transform_self(self, file_path, update=None):
         return self.pre_validation_filters(with_bbl(from_csv_file_to_gen(file_path, update), allow_blank=True))
 
     @classmethod
+    def split_seed_or_update_self(self, **kwargs):
+        logger.debug("Seeding/Updating {}", self.__name__)
+        return self.seed_with_single(delete_file=True, **kwargs)
+
+    @classmethod
     def seed_or_update_self(self, **kwargs):
         logger.debug("Seeding/Updating {}", self.__name__)
-        # kwargs['file_path'] = self.create_unique_csv(kwargs['file_path'])
-        # return self.bulk_seed(raw=False, **kwargs)  # need to add the bbl, can't do raw
-        return self.seed_with_single(**kwargs)
+        if settings.TESTING:
+            return self.seed_with_single(**kwargs)
+        else:
+            return self.async_concurrent_seed(**kwargs)
 
     def __str__(self):
         return self.key
