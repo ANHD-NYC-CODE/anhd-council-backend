@@ -26,8 +26,6 @@ def execute(sql):
 
 
 def create_gen_from_csv_diff(original_file_path, new_file_path):
-    original_file = open(original_file_path, 'r')
-
     new_file = open(new_file_path, 'r')
     new_reader = csv.reader(new_file, delimiter=',', quotechar='"', doublequote=True,
                             quoting=csv.QUOTE_ALL, skipinitialspace=True)
@@ -40,10 +38,11 @@ def create_gen_from_csv_diff(original_file_path, new_file_path):
         if count == -1:
             count = count + 1
             yield new_row
+            continue
 
         found = False
         # search for csv row in old file
-        original_reader = csv.reader(original_file, delimiter=',', quotechar='"',
+        original_reader = csv.reader(open(original_file_path, 'r'), delimiter=',', quotechar='"',
                                      doublequote=True, quoting=csv.QUOTE_ALL, skipinitialspace=True)
         for original_row in original_reader:
             if new_row == original_row:
@@ -54,6 +53,7 @@ def create_gen_from_csv_diff(original_file_path, new_file_path):
             count = count + 1
             if count % settings.BATCH_SIZE == 0:
                 logger.debug('Performed csv diff on {} records'.format(count))
+
             yield new_row
 
 
@@ -239,6 +239,7 @@ def batch_upsert_rows(model, rows, batch_size, update=None, no_conflict=False):
     primary_key = model._meta.pk.name
     """ Inserts many row, all in the same transaction"""
     rows_length = len(rows)
+
     with connection.cursor() as curs:
         try:
             starting_count = model.objects.count()
@@ -262,6 +263,7 @@ def upsert_single_rows(model, rows, update=None):
     primary_key = model._meta.pk.name
     rows_created = 0
     rows_updated = 0
+
     for row in rows:
         try:
             with connection.cursor() as curs:

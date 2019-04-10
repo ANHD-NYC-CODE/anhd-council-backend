@@ -31,5 +31,5 @@ class AcrisRealMasterTests(BaseTest, TestCase):
         ds.AcrisRealMaster.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds.AcrisRealMaster.objects.count(), 11)
         self.assertEqual(new_update.rows_created, 1)
-        self.assertEqual(new_update.rows_updated, 0)
+        self.assertEqual(new_update.rows_updated, 0)  # has shuffled mock order
         self.assertEqual(new_update.total_rows, 11)

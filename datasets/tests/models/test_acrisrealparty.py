@@ -34,4 +34,4 @@ class AcrisRealPartyTests(BaseTest, TestCase):
         self.assertEqual(ds.AcrisRealParty.objects.count(), 11)
 
         self.assertEqual(party_update_diff.rows_created, 1)
-        self.assertEqual(party_update_diff.rows_updated, 8)
+        self.assertEqual(party_update_diff.rows_updated, 1)

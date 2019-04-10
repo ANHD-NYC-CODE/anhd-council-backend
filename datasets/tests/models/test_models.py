@@ -183,7 +183,7 @@ class HPDProblem(BaseTest, TestCase):
         ds.HPDProblem.seed_or_update_self(
             file_path=update_diff.file.file.path, update=update_diff)
         self.assertEqual(update_diff.rows_created, 2)
-        self.assertEqual(update_diff.rows_updated, 2)
+        self.assertEqual(update_diff.rows_updated, 1)
         self.assertEqual(ds.HPDProblem.objects.filter(complaintid=6961276)[0].unittypeid, 91)
         self.assertEqual(len(ds.HPDProblem.objects.filter(complaintid=6961276)), 3)
 
