@@ -102,14 +102,16 @@ class BaseDatasetModel():
             update.save()
 
         if (previous_file and os.path.isfile(previous_file.file.path)):
-            temp_file_path = write_gen_to_temp_file(create_gen_from_csv_diff(
-                previous_file.file.path, new_file_path))
-
-            cleaned_diff_gen = self.transform_self(temp_file_path)
-            logger.debug('Seeding diffed csv gen...')
-            batch_upsert_from_gen(self, cleaned_diff_gen, settings.BATCH_SIZE, update=update)
-            if os.path.isfile(temp_file_path):
-                os.remove(temp_file_path)
+            seed_from_csv_diff(previous_file.file.path, new_file_path, self, **kwargs)
+        # if (previous_file and os.path.isfile(previous_file.file.path)):
+        #     temp_file_path = write_gen_to_temp_file(create_gen_from_csv_diff(
+        #         previous_file.file.path, new_file_path))
+        #
+        #     cleaned_diff_gen = self.transform_self(temp_file_path)
+        #     logger.debug('Seeding diffed csv gen...')
+        #     batch_upsert_from_gen(self, cleaned_diff_gen, settings.BATCH_SIZE, update=update)
+        #     if os.path.isfile(temp_file_path):
+        #         os.remove(temp_file_path)
         else:
             if 'single' in kwargs and kwargs['single']:
                 self.seed_with_single(**kwargs)

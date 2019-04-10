@@ -5,6 +5,10 @@ from datasets.utils.validation_filters import is_null
 from datasets.utils import advanced_filter as af
 from django.db.models import Q
 
+import logging
+
+logger = logging.getLogger('app')
+
 
 class AcrisRealMaster(BaseDatasetModel, models.Model):
     download_endpoint = 'https://data.cityofnewyork.us/api/views/bnx9-e6tj/rows.csv?accessType=DOWNLOAD'
@@ -79,7 +83,8 @@ class AcrisRealMaster(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        return self.seed_or_update_from_set_diff(single=True, **kwargs)
+        logger.debug("Seeding/Updating {}", self.__name__)
+        return self.seed_with_upsert(**kwargs)
 
     def __str__(self):
         return self.documentid

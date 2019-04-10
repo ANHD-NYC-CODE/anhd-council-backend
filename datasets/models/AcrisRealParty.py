@@ -6,6 +6,9 @@ from datasets.utils.validation_filters import is_null
 # ACRIS Real Party
 # Links multiple party informations
 # To single MasterLegal document by documentid
+import logging
+
+logger = logging.getLogger('app')
 
 
 class AcrisRealParty(BaseDatasetModel, models.Model):
@@ -49,7 +52,8 @@ class AcrisRealParty(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        return self.seed_or_update_from_set_diff(single=True, **kwargs)
+        logger.debug("Seeding/Updating {}", self.__name__)
+        return self.seed_with_upsert(**kwargs)
 
     def __str__(self):
         return self.key
