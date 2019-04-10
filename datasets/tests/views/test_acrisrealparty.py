@@ -28,7 +28,7 @@ class AcrisRealPartyViewTests(BaseTest, TestCase):
         master = self.acrismaster_factory(documentid="1")
         party = self.acrisparty_factory(master=master)
 
-        response = self.client.get('/acrisrealparties/{}/'.format(party.id))
+        response = self.client.get('/acrisrealparties/{}/'.format(party.key))
         content = response.data
 
         self.assertEqual(response.status_code, 200)

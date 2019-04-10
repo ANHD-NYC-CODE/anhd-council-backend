@@ -378,6 +378,7 @@ class BaseTest(APITestCase, URLPatternsTestCase):
             master = self.acrismaster_factory(documentid=random.randint(1, 1000000))
 
         factory = d_models.AcrisRealParty.objects.create(
+            key=random.randint(1000000000, 5999999999),
             documentid=master,
             **kwargs
         )
@@ -392,6 +393,7 @@ class BaseTest(APITestCase, URLPatternsTestCase):
             property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
 
         factory = d_models.AcrisRealLegal.objects.create(
+            key=random.randint(1000000000, 5999999999),
             documentid=master,
             bbl=property,
             **kwargs

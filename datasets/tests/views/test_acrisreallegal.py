@@ -28,7 +28,7 @@ class AcrisRealLegalViewTests(BaseTest, TestCase):
         master = self.acrismaster_factory(documentid="1")
         legal = self.acrislegal_factory(master=master)
 
-        response = self.client.get('/acrisreallegals/{}/'.format(legal.id))
+        response = self.client.get('/acrisreallegals/{}/'.format(legal.key))
         content = response.data
 
         self.assertEqual(response.status_code, 200)

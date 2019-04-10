@@ -11,6 +11,7 @@ from datasets.utils.validation_filters import is_null
 class AcrisRealParty(BaseDatasetModel, models.Model):
     download_endpoint = 'https://data.cityofnewyork.us/api/views/636b-3b5g/rows.csv?accessType=DOWNLOAD'
 
+    key = models.TextField(primary_key=True, blank=False, null=False)
     documentid = models.ForeignKey('AcrisRealMaster', db_column='documentid', db_constraint=False,
                                    on_delete=models.SET_NULL, null=True, blank=False)
     recordtype = models.TextField(blank=True, null=True)
@@ -33,6 +34,7 @@ class AcrisRealParty(BaseDatasetModel, models.Model):
         for row in gen_rows:
             if is_null(row['documentid']):
                 continue
+            row['key'] = "{}-{}".format(row['documentid'], ''.join(e for e in row['name'] if e.isalnum()))
             yield row
 
     # trims down new update files to preserve memory
@@ -50,4 +52,4 @@ class AcrisRealParty(BaseDatasetModel, models.Model):
         return self.seed_or_update_from_set_diff(**kwargs)
 
     def __str__(self):
-        return self.documentid
+        return self.key

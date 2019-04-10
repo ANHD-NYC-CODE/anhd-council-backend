@@ -14,6 +14,7 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
 
         ]
 
+    key = models.TextField(primary_key=True, blank=False, null=False)
     documentid = models.ForeignKey('AcrisRealMaster', db_column='documentid', db_constraint=False,
                                    on_delete=models.SET_NULL, null=True, blank=True)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
@@ -45,6 +46,7 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
                 continue
             if 'bbl' in row:  # why?
                 row['bbl'] = str(row['bbl'])
+            row['key'] = "{}-{}".format(row['documentid'], row['bbl'])  # add primary key
             yield row
 
     # trims down new update files to preserve memory
@@ -62,4 +64,4 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
         return self.seed_or_update_from_set_diff(**kwargs)
 
     def __str__(self):
-        return str('bbl: {}, documentid: {}'.format(self.bbl, self.documentid))
+        return self.key
