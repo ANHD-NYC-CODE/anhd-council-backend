@@ -155,21 +155,29 @@ def bulk_insert_from_file(model, file_path, **kwargs):
     logger.debug("writing temp file for {}".format(table_name))
     gen_to_csv(rows, temp_file_path)
     logger.debug("temp file complete for {}".format(table_name))
-    with open(temp_file_path, 'r') as temp_file:
-        columns = temp_file.readline().replace('"', '').replace('\n', '')
-        sql = copy_query(table_name, columns)
 
-        try:
-            copy_insert_from_csv(table_name, temp_file_path, **kwargs)
-        except Exception as e:
-            logger.warning("Database - Bulk Import Error - beginning Batch seeding. Error: {}".format(e))
-            rows = from_csv_file_to_gen(temp_file_path, kwargs['update'])
-            batch_upsert_from_gen(model, rows, settings.BATCH_SIZE, **kwargs)
-            if os.path.isfile(temp_file_path):
-                os.remove(temp_file_path)
+    kwargs['file_path'] = temp_file_path
+    copy_file(model, **kwargs)
+
+    if os.path.isfile(temp_file_path):
+        os.remove(temp_file_path)
 
     if 'callback' in kwargs and kwargs['callback']:
         kwargs['callback']()
+
+
+def copy_file(model, **kwargs):
+    table_name = model._meta.db_table
+    with open(kwargs['file_path'], 'r') as file:
+        columns = file.readline().replace('"', '').replace('\n', '')
+        sql = copy_query(table_name, columns)
+
+        try:
+            copy_insert_from_csv(table_name, kwargs['file_path'], **kwargs)
+        except Exception as e:
+            logger.warning("Database - Bulk Import Error - beginning Batch seeding. Error: {}".format(e))
+            rows = from_csv_file_to_gen(kwargs['file_path'], kwargs['update'])
+            batch_upsert_from_gen(model, rows, settings.BATCH_SIZE, **kwargs)
 
 
 def copy_insert_from_csv(table_name, temp_file_path, **kwargs):

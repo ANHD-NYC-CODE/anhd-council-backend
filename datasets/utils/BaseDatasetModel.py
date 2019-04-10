@@ -1,5 +1,5 @@
 from core import models as c_models
-from core.utils.database import write_gen_to_temp_file, create_gen_from_csv_diff, upsert_single_rows, batch_upsert_from_gen, bulk_insert_from_file, seed_from_csv_diff, from_csv_file_to_gen
+from core.utils.database import copy_file, write_gen_to_temp_file, create_gen_from_csv_diff, upsert_single_rows, batch_upsert_from_gen, bulk_insert_from_file, seed_from_csv_diff, from_csv_file_to_gen
 
 from core.utils.typecast import Typecast
 from django.core import files
@@ -83,7 +83,10 @@ class BaseDatasetModel():
     @classmethod
     # Good for overwrites
     def bulk_seed(self, **kwargs):
-        bulk_insert_from_file(self, **kwargs)
+        if 'raw' in kwargs and kwargs['raw'] == True:
+            copy_file(self, **kwargs)
+        else:
+            bulk_insert_from_file(self, **kwargs)
 
     @classmethod
     def seed_or_update_from_set_diff(self, **kwargs):
