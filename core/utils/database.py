@@ -235,9 +235,12 @@ def build_pkey_tuple(row, pkey):
 
 def batch_upsert_from_gen(model, rows, batch_size, **kwargs):
     table_name = model._meta.db_table
+    update = kwargs['update'] if 'update' in kwargs else None
+    no_conflict = kwargs['no_conflict'] if 'no_conflict' in kwargs else None
 
     with connection.cursor() as curs:
         try:
+            count = 0
             while True:
                 batch = list(itertools.islice(rows, 0, batch_size))
                 if len(batch) == 0:
@@ -248,9 +251,9 @@ def batch_upsert_from_gen(model, rows, batch_size, **kwargs):
                 else:
                     with transaction.atomic():
                         logger.debug("Seeding next batch for {}.".format(model.__name__))
-                        update = kwargs['update'] if 'update' in kwargs else None
-                        no_conflict = kwargs['no_conflict'] if 'no_conflict' in kwargs else None
                         batch_upsert_rows(model, batch, batch_size, update=update, no_conflict=no_conflict)
+                        count = count + batch_size
+                        logger.debug("Rows touched: {}".format(count))
 
         except Exception as e:
             logger.warning("Unable to batch upsert: {}".format(e))
