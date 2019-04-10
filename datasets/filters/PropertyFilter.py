@@ -62,7 +62,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     cd = django_filters.NumberFilter(method='filter_community_exact')
 
     housingtype = filters.CharFilter(method='filter_housingtype')
-
+    bbls = CommaSeparatedConditionFilter(method="filter_bbls")
     hpdcomplaints__exact = django_filters.NumberFilter(method='filter_hpdcomplaints_exact')
     hpdcomplaints__gt = django_filters.NumberFilter(method='filter_hpdcomplaints_gt')
     hpdcomplaints__gte = django_filters.NumberFilter(method='filter_hpdcomplaints_gte')
@@ -148,6 +148,10 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
     def filter_housingtype(self, queryset, name, value):
         return housingtype_filter(self, queryset, name, value)
+
+    def filter_bbls(self, queryset, name, value):
+        bbls = value['exact'].split(',')
+        return queryset.filter(bbl__in=bbls)
 
     # Rent stabilized units lost
 
