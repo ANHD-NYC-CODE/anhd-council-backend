@@ -67,7 +67,7 @@ class BaseDatasetModel():
 
     @classmethod
     def async_concurrent_seed(self, file_path, update=None):
-        MAX_CONCURRENT_JOBS = 8
+        MAX_CONCURRENT_JOBS = 4
         csv_length = count_csv_rows(file_path)
         lines_per_csv = math.ceil(csv_length / MAX_CONCURRENT_JOBS)
         logger.debug("Splitting CSV into {}".format(MAX_CONCURRENT_JOBS))
