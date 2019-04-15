@@ -517,7 +517,6 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
             self.hpdviolation_factory(property=property2, approveddate="2018-01-01")
 
         # properties with 5 HPD violations b/t 2018- 2019
-        # query = '/properties/?q=condition_0=AND+group_0A=hpdviolation__approveddate__gte=2018-01-01,hpdviolation__approveddate__lte=2019-01-01,hpdviolation__count__gte=5'
         query = '/properties/?q=*condition_0=AND+filter_0=hpdviolations__count__gte=5,hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01'
 
         response = self.client.get(query, format="json")
@@ -1065,6 +1064,42 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         response = self.client.get(query, format="json")
 
         self.assertEqual(response.status_code, 401)
+
+    def test_taxlien_rules(self):
+        # has tax lien
+        property1 = self.property_factory(bbl=1)
+        # does not have tax lien
+        property2 = self.property_factory(bbl=2)
+
+        self.taxlien_factory(property=property1)
+
+        # 10 permits between 2017-2018
+        query = '/properties/?q=*condition_0=AND+filter_0=taxlien__count__gte=1'
+
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+        self.assertEqual(content[0]['bbl'], '1')
+
+    def test_conh_rules(self):
+        # has tax lien
+        property1 = self.property_factory(bbl=1)
+        # does not have tax lien
+        property2 = self.property_factory(bbl=2)
+
+        self.conhrecord_factory(property=property1)
+
+        # 10 permits between 2017-2018
+        query = '/properties/?q=*condition_0=AND+filter_0=conhrecord__count__gte=1'
+
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+        self.assertEqual(content[0]['bbl'], '1')
 
     def test_council_with_housingtype_with_q_1(self):
         council = self.council_factory(id=1)
