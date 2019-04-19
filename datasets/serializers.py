@@ -3,6 +3,7 @@ from datasets import models as ds
 from django.forms.models import model_to_dict
 from core.utils.bbl import code_to_boro, abrv_to_borough
 from django.db.models import Sum
+from django.conf import settings
 
 
 class CouncilSerializer(serializers.ModelSerializer):
@@ -146,7 +147,6 @@ class PropertySerializer(serializers.ModelSerializer):
 
 
 class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
-    conhrecords = CONHRecordIdSerializer(source='conhrecord_set', many=True, read_only=True)
     subsidyrecords = CoreSubsidyRecordIdSerializer(source='coresubsidyrecord_set', many=True, read_only=True)
     subsidyj51records = SubsidyJ51IdSerializer(source='subsidyj51_set', many=True, read_only=True)
     subsidy421arecords = Subsidy421aIdSerializer(source='subsidy421a_set', many=True, read_only=True)
@@ -160,21 +160,21 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
     dobcomplaints = serializers.SerializerMethodField()
     ecbviolations = serializers.SerializerMethodField()
     dobfiledpermits = serializers.SerializerMethodField()
-    dobissuedpermits = serializers.SerializerMethodField()
-    evictions = serializers.SerializerMethodField()
-    latest_sale_price = serializers.SerializerMethodField()
+    # dobissuedpermits = serializers.SerializerMethodField()
+    # evictions = serializers.SerializerMethodField()
+    # latest_sale_price = serializers.SerializerMethodField()
 
     class Meta:
         model = ds.Property
         fields = (ds.Property.SHORT_SUMMARY_FIELDS +
                   ('hpdviolations', 'hpdcomplaints', 'dobviolations',
-                   'dobcomplaints', 'ecbviolations', 'dobfiledpermits', 'dobissuedpermits', 'evictions', 'latest_sale_price', 'nycha', 'subsidyrecords', 'rentstabilizationrecord', 'subsidyj51records', 'subsidy421arecords', 'conhrecords'))
+                   'dobcomplaints', 'ecbviolations', 'dobfiledpermits', 'nycha', 'subsidyrecords', 'rentstabilizationrecord', 'subsidyj51records', 'subsidy421arecords'))
 
     def get_hpdviolations(self, obj):
         if hasattr(obj, 'hpdviolations'):
             params = self.context['request'].query_params
             return {
-                'date_range': '-'.join(filter(None, [params.get('hpdviolations__start', params.get('annotation__start', None)), params.get('hpdviolations__end', params.get('annotation__end', None))])),
+                'date_range': '-'.join(filter(None, [params.get('hpdviolations__start', params.get('annotation__start', settings.DEFAULT_ANNOTATION_DATE)), params.get('hpdviolations__end', params.get('annotation__end', None))])),
                 'count': obj.hpdviolations
             }
         else:
@@ -271,7 +271,6 @@ class BuildingSummarySerializer(serializers.ModelSerializer):
 
 
 class PropertyShortSummarySerializer(serializers.ModelSerializer):
-    conhrecords = CONHRecordIdSerializer(source='conhrecord_set', many=True, read_only=True)
     subsidyrecords = CoreSubsidyRecordIdSerializer(source='coresubsidyrecord_set', many=True, read_only=True)
     subsidyj51records = SubsidyJ51IdSerializer(source='subsidyj51_set', many=True, read_only=True)
     subsidy421arecords = Subsidy421aIdSerializer(source='subsidy421a_set', many=True, read_only=True)
