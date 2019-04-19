@@ -2,6 +2,32 @@ import django_filters
 import rest_framework_filters as filters
 from django import forms
 from datasets import models as ds
+from django.db.models import Count, FilteredRelation, Q
+from datasets.utils import advanced_filter as af
+
+
+def value_dict_to_date_filter_dict(date_prefix, values):
+    ####
+    # Converts {dates: ({'__gte': 2018-01-01})}
+    # to
+    # {'hpdviolation__approveddate__gte': datetime.date(2018, 1, 1)}
+    date_filters = {}
+    for item in values['dates']:
+        for k, v in item.items():
+            if v is not None:
+                date_filters[date_prefix + k] = v
+    return date_filters
+
+
+def filtered_dataset_annotation(dataset_prefix, date_filters, queryset):
+    filtered_key = dataset_prefix + '_filtered'
+    bbl_key = dataset_prefix + '__bbl__in'
+    dataset_plural_key = dataset_prefix + 's'
+
+    queryset = queryset.annotate(**{filtered_key: FilteredRelation(dataset_prefix, condition=Q(
+        af.construct_and_q([date_filters]), Q(**{bbl_key: queryset.values('bbl')})))})
+    queryset = queryset.annotate(**{dataset_plural_key: Count(filtered_key, distinct=True)})
+    return queryset
 
 
 class TotalWithDateWidget(django_filters.widgets.SuffixedMultiWidget):

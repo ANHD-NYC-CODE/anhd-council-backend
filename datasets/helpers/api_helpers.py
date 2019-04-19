@@ -3,6 +3,7 @@ from django.conf import settings
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 
+from datasets import filter_helpers
 from rest_framework import viewsets
 from collections import OrderedDict
 from datasets import serializers as serial
@@ -30,26 +31,51 @@ class StandardResultsSetPagination(PageNumberPagination):
     #     ]))
 
 
+def annotated_fields_to_dict(start=None, end=None):
+    #####
+    # convert annotation fields to date dict
+    # start = '2018-01-01'
+    # {'dates': ({'__gte': 2018-01-01}, {'__lte': 2018-01-01})}
+    if start:
+        start = {'__gte': datetime.datetime.strptime(start, '%Y-%m-%d')}
+    if end:
+        end = {'__lte': datetime.datetime.strptime(end, '%Y-%m-%d')}
+    return {'dates': tuple(filter(None, [start, end]))}
+
+
+def prefetch_annotated_datasets(queryset, request):
+    DATASETS = [ds.HPDViolation, ds.HPDComplaint, ds.DOBViolation, ds.DOBComplaint,
+                ds.ECBViolation, ds.Eviction, ds.DOBIssuedPermit, ds.DOBFiledPermit]
+    annotation_dict = annotated_fields_to_dict(start=request.query_params.get(
+        'annotation__start', None), end=request.query_params.get('annotation__end', None))
+    for dataset in DATASETS:
+        print(dataset.__name__.lower())
+        date_filters = filter_helpers.value_dict_to_date_filter_dict(dataset.QUERY_DATE_KEY, annotation_dict)
+        # annotations get overwritten if dataset annotation is present... presumably.
+        queryset = filter_helpers.filtered_dataset_annotation(dataset.__name__.lower(), date_filters, queryset)
+
+    return queryset
+
+
+def prefetch_housingtype_sets(queryset):
+    return queryset.prefetch_related(Prefetch(
+        'publichousingrecord_set', queryset=ds.PublicHousingRecord.objects.only('pk', 'bbl'))).prefetch_related(Prefetch(
+            'rentstabilizationrecord', queryset=ds.RentStabilizationRecord.objects.only('pk', 'ucbbl'))).prefetch_related(Prefetch(
+                'coresubsidyrecord_set', queryset=ds.CoreSubsidyRecord.objects.only('pk', 'bbl'))).prefetch_related(Prefetch(
+                    'subsidyj51_set', queryset=ds.SubsidyJ51.objects.only('pk', 'bbl'))).prefetch_related(Prefetch(
+                        'subsidy421a_set', queryset=ds.Subsidy421a.objects.only('pk', 'bbl'))).only(*ds.Property.SHORT_SUMMARY_FIELDS)
+
+
 def handle_property_summaries(self, request, *args, **kwargs):
     if 'summary' in request.query_params and request.query_params['summary'] == 'true':
 
         if 'summary-type' in request.query_params and request.query_params['summary-type'].lower() == 'short':
-            self.queryset = self.queryset.prefetch_related(Prefetch(
-                'publichousingrecord_set', queryset=ds.PublicHousingRecord.objects.only('pk', 'bbl'))).prefetch_related(Prefetch(
-                    'rentstabilizationrecord', queryset=ds.RentStabilizationRecord.objects.only('pk', 'ucbbl'))).prefetch_related(Prefetch(
-                        'coresubsidyrecord_set', queryset=ds.CoreSubsidyRecord.objects.only('pk', 'bbl'))).prefetch_related(Prefetch(
-                            'subsidyj51_set', queryset=ds.SubsidyJ51.objects.only('pk', 'bbl'))).prefetch_related(Prefetch(
-                                'subsidy421a_set', queryset=ds.Subsidy421a.objects.only('pk', 'bbl'))).only(*ds.Property.SHORT_SUMMARY_FIELDS)
+            self.queryset = prefetch_housingtype_sets(self.queryset)
 
             self.serializer_class = serial.PropertyShortSummarySerializer
         elif 'summary-type' in request.query_params and request.query_params['summary-type'].lower() == 'short-annotated':
-            self.queryset = self.queryset.prefetch_related(Prefetch(
-                'publichousingrecord_set', queryset=ds.PublicHousingRecord.objects.only('pk', 'bbl'))).prefetch_related(Prefetch(
-                    'rentstabilizationrecord', queryset=ds.RentStabilizationRecord.objects.only('pk', 'ucbbl'))).prefetch_related(Prefetch(
-                        'coresubsidyrecord_set', queryset=ds.CoreSubsidyRecord.objects.only('pk', 'bbl'))).prefetch_related(Prefetch(
-                            'subsidyj51_set', queryset=ds.SubsidyJ51.objects.only('pk', 'bbl'))).prefetch_related(Prefetch(
-                                'subsidy421a_set', queryset=ds.Subsidy421a.objects.only('pk', 'bbl'))).only(*ds.Property.SHORT_SUMMARY_FIELDS)
-
+            self.queryset = prefetch_housingtype_sets(self.queryset)
+            self.queryset = prefetch_annotated_datasets(self.queryset, request)
             self.serializer_class = serial.PropertyShortAnnotatedSerializer
         else:
             self.queryset = self.queryset.prefetch_related('building_set').prefetch_related('hpdregistration_set').prefetch_related('taxlien_set').prefetch_related(

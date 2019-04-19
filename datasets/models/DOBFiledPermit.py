@@ -25,6 +25,8 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
 
         ]
 
+    QUERY_DATE_KEY = 'dobfiledpermit__datefiled'
+
     key = models.TextField(primary_key=True, blank=False, null=False)
     jobfilingnumber = models.TextField(blank=True, null=True)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,

@@ -23,6 +23,8 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
 
         ]
 
+    QUERY_DATE_KEY = 'dobissuedpermit__issuedate'
+
     key = models.TextField(primary_key=True, blank=False, null=False)
     jobfilingnumber = models.TextField(blank=True, null=True)
     workpermit = models.TextField(blank=True, null=True)

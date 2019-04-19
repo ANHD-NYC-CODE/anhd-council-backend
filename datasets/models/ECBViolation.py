@@ -14,6 +14,7 @@ class ECBViolation(BaseDatasetModel, models.Model):
             models.Index(fields=['issuedate', 'bbl']),
         ]
     download_endpoint = "https://data.cityofnewyork.us/api/views/6bgk-3dad/rows.csv?accessType=DOWNLOAD"
+    QUERY_DATE_KEY = 'ecbviolation__issuedate'
 
     ecbviolationnumber = models.TextField(primary_key=True, blank=False, null=False)
     isndobbisextract = models.ForeignKey('DOBViolation', db_column='isndobbisextract', db_constraint=False,

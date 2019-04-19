@@ -171,8 +171,9 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
 
     def get_hpdviolations(self, obj):
         if hasattr(obj, 'hpdviolations'):
+            params = self.context['request'].query_params
             return {
-                'date_range': '-'.join(filter(None, [self.context['request'].query_params.get('hpdviolations__start', None), self.context['request'].query_params.get('hpdviolations__end', None)])),
+                'date_range': '-'.join(filter(None, [params.get('hpdviolations__start', params.get('annotation__start', None)), params.get('hpdviolations__end', params.get('annotation__end', None))])),
                 'count': obj.hpdviolations
             }
         else:
@@ -180,9 +181,9 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
 
     def get_hpdcomplaints(self, obj):
         if hasattr(obj, 'hpdcomplaints'):
-
+            params = self.context['request'].query_params
             return {
-                'date_range': '-'.join(filter(None, [self.context['request'].query_params.get('hpdcomplaints__start', None), self.context['request'].query_params.get('hpdcomplaints__end', None)])),
+                'date_range': '-'.join(filter(None, [params.get('hpdcomplaints__start', params.get('annotation__start', None)), params.get('hpdcomplaints__end', params.get('annotation__end', None))])),
                 'count': obj.hpdcomplaints
             }
         else:
@@ -190,9 +191,9 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
 
     def get_dobviolations(self, obj):
         if hasattr(obj, 'dobviolations'):
-
+            params = self.context['request'].query_params
             return {
-                'date_range': '-'.join(filter(None, [self.context['request'].query_params.get('dobviolations__start', None), self.context['request'].query_params.get('dobviolations__end', None)])),
+                'date_range': '-'.join(filter(None, [params.get('dobviolations__start', params.get('annotation__start', None)), params.get('dobviolations__end', params.get('annotation__end', None))])),
                 'count': obj.dobviolations
             }
         else:
@@ -200,9 +201,9 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
 
     def get_dobcomplaints(self, obj):
         if hasattr(obj, 'dobcomplaints'):
-
+            params = self.context['request'].query_params
             return {
-                'date_range': '-'.join(filter(None, [self.context['request'].query_params.get('dobcomplaints__start', None), self.context['request'].query_params.get('dobcomplaints__end', None)])),
+                'date_range': '-'.join(filter(None, [params.get('dobcomplaints__start', params.get('annotation__start', None)), params.get('dobcomplaints__end', params.get('annotation__end', None))])),
                 'count': obj.dobcomplaints
             }
         else:
@@ -210,9 +211,9 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
 
     def get_ecbviolations(self, obj):
         if hasattr(obj, 'ecbviolations'):
-
+            params = self.context['request'].query_params
             return {
-                'date_range': '-'.join(filter(None, [self.context['request'].query_params.get('ecbviolations__start', None), self.context['request'].query_params.get('ecbviolations__end', None)])),
+                'date_range': '-'.join(filter(None, [params.get('ecbviolations__start', params.get('annotation__start', None)), params.get('ecbviolations__end', params.get('annotation__end', None))])),
                 'count': obj.ecbviolations
             }
         else:
@@ -220,9 +221,9 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
 
     def get_dobfiledpermits(self, obj):
         if hasattr(obj, 'dobfiledpermits'):
-
+            params = self.context['request'].query_params
             return {
-                'date_range': '-'.join(filter(None, [self.context['request'].query_params.get('dobfiledpermits__start', None), self.context['request'].query_params.get('dobfiledpermits__end', None)])),
+                'date_range': '-'.join(filter(None, [params.get('dobfiledpermits__start', params.get('annotation__start', None)), params.get('dobfiledpermits__end', params.get('annotation__end', None))])),
                 'count': obj.dobfiledpermits
             }
         else:
@@ -230,9 +231,9 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
 
     def get_dobissuedpermits(self, obj):
         if hasattr(obj, 'dobissuedpermits'):
-
+            params = self.context['request'].query_params
             return {
-                'date_range': '-'.join(filter(None, [self.context['request'].query_params.get('dobissuedpermits__start', None), self.context['request'].query_params.get('dobissuedpermits__end', None)])),
+                'date_range': '-'.join(filter(None, [params.get('dobissuedpermits__start', params.get('annotation__start', None)), params.get('dobissuedpermits__end', params.get('annotation__end', None))])),
                 'count': obj.dobissuedpermits
             }
         else:
@@ -240,9 +241,9 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
 
     def get_evictions(self, obj):
         if hasattr(obj, 'evictions'):
-
+            params = self.context['request'].query_params
             return {
-                'date_range': '-'.join(filter(None, [self.context['request'].query_params.get('evictions__start', None), self.context['request'].query_params.get('evictions__end', None)])),
+                'date_range': '-'.join(filter(None, [params.get('evictions__start', params.get('annotation__start', None)), params.get('evictions__end', params.get('annotation__end', None))])),
                 'count': obj.evictions
             }
         else:
