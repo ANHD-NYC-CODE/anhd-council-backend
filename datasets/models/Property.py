@@ -320,4 +320,4 @@ class Property(BaseDatasetModel, models.Model):
         self.add_geometry()
 
     def __str__(self):
-        return self.bbl
+        return str(self.bbl)

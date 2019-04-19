@@ -497,6 +497,58 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.assertEqual(content[0]['bbl'], '1')
         self.assertEqual(content[1]['bbl'], '2')
 
+    def test_results_with_annotate_datasets_1(self):
+        council = self.council_factory(id=1)
+        property1 = self.property_factory(bbl='1', council=council)
+        property2 = self.property_factory(bbl='2', council=council)
+
+        for i in range(5):
+            self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
+
+        for i in range(5):
+            self.hpdviolation_factory(property=property1, approveddate="2017-01-01")
+
+        for i in range(1):
+            self.hpdviolation_factory(property=property2, approveddate="2018-01-01")
+
+        query = '/properties/?summary=true&summary-type=short-annotated&annotation__start=2018-01-01&annotation__end=2019-01-01&hpdviolations__start=2018-01-01&hpdviolations__end=2019-01-01&hpdviolations__gte=5'
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+        self.assertEqual(content[0]['bbl'], '1')
+        self.assertEqual(content[0]['hpdviolations']['count'], 5)
+        self.assertEqual(content[0]['hpdviolations']['date_range'], '2018-01-01-2019-01-01')
+        self.assertEqual(property1.hpdviolation_set.count(), 10)  # sanity check
+        self.assertEqual(content[0]['hpdcomplaints']['count'], 0)
+    #
+    # def test_results_with_annotate_datasets_2(self):
+    #     council = self.council_factory(id=1)
+    #     property1 = self.property_factory(bbl='1', council=council)
+    #     property2 = self.property_factory(bbl='2', council=council)
+    #
+    #     for i in range(5):
+    #         self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
+    #
+    #     for i in range(5):
+    #         self.hpdviolation_factory(property=property1, approveddate="2017-01-01")
+    #
+    #     for i in range(1):
+    #         self.hpdviolation_factory(property=property2, approveddate="2018-01-01")
+    #
+    #     query = '/properties/?summary=true&summary-type=short-annotated&hpdviolations__start=2018-01-01&hpdviolations__end=2019-01-01&hpdviolations__gte=5'
+    #     response = self.client.get(query, format="json")
+    #     content = response.data['results']
+    #
+    #     self.assertEqual(response.status_code, 200)
+    #     self.assertEqual(len(content), 1)
+    #     self.assertEqual(content[0]['bbl'], '1')
+    #     self.assertEqual(content[0]['hpdviolations']['count'], 5)
+    #     self.assertEqual(content[0]['hpdviolations']['date_range'], '2018-01-01-2019-01-01')
+    #     self.assertEqual(property1.hpdviolation_set.count(), 10)  # sanity check
+    #
+
 
 class PropertyAdvancedFilterTests(BaseTest, TestCase):
     def tearDown(self):
@@ -1074,7 +1126,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.taxlien_factory(property=property1)
 
         # 10 permits between 2017-2018
-        query = '/properties/?q=*condition_0=AND+filter_0=taxlien__count__gte=1'
+        query = '/properties/?q=*condition_0=AND+filter_0=taxliens__count__gte=1'
 
         response = self.client.get(query, format="json")
         content = response.data['results']
@@ -1092,7 +1144,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.conhrecord_factory(property=property1)
 
         # 10 permits between 2017-2018
-        query = '/properties/?q=*condition_0=AND+filter_0=conhrecord__count__gte=1'
+        query = '/properties/?q=*condition_0=AND+filter_0=conhrecords__count__gte=1'
 
         response = self.client.get(query, format="json")
         content = response.data['results']

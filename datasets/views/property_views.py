@@ -42,6 +42,7 @@ class PropertyViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyM
             self.filterset_class = AdvancedPropertyFilter
 
         handle_property_summaries(self, request, *args, **kwargs)
+
         return super().list(request, *args, **kwargs)
 
     @cache_me()

@@ -145,6 +145,110 @@ class PropertySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
+    conhrecords = CONHRecordIdSerializer(source='conhrecord_set', many=True, read_only=True)
+    subsidyrecords = CoreSubsidyRecordIdSerializer(source='coresubsidyrecord_set', many=True, read_only=True)
+    subsidyj51records = SubsidyJ51IdSerializer(source='subsidyj51_set', many=True, read_only=True)
+    subsidy421arecords = Subsidy421aIdSerializer(source='subsidy421a_set', many=True, read_only=True)
+
+    nycha = PublicHousingRecordIdSerializer(source='publichousingrecord_set', many=True, read_only=True)
+    rentstabilizationrecord = RentStabilizationIdSerializer(many=False, read_only=True)
+
+    hpdviolations = serializers.SerializerMethodField()
+    hpdcomplaints = serializers.SerializerMethodField()
+    dobviolations = serializers.SerializerMethodField()
+    dobcomplaints = serializers.SerializerMethodField()
+    ecbviolations = serializers.SerializerMethodField()
+    dobfiledpermits = serializers.SerializerMethodField()
+    dobissuedpermits = serializers.SerializerMethodField()
+    evictions = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ds.Property
+        fields = (ds.Property.SHORT_SUMMARY_FIELDS +
+                  ('hpdviolations', 'hpdcomplaints', 'dobviolations',
+                   'dobcomplaints', 'ecbviolations', 'dobfiledpermits', 'dobissuedpermits', 'evictions', 'nycha', 'subsidyrecords', 'rentstabilizationrecord', 'subsidyj51records', 'subsidy421arecords', 'conhrecords'))
+
+    def get_hpdviolations(self, obj):
+        if hasattr(obj, 'hpdviolations'):
+            return {
+                'date_range': '-'.join(filter(None, [self.context['request'].query_params.get('hpdviolations__start', None), self.context['request'].query_params.get('hpdviolations__end', None)])),
+                'count': obj.hpdviolations
+            }
+        else:
+            return None
+
+    def get_hpdcomplaints(self, obj):
+        if hasattr(obj, 'hpdcomplaints'):
+
+            return {
+                'date_range': '-'.join(filter(None, [self.context['request'].query_params.get('hpdcomplaints__start', None), self.context['request'].query_params.get('hpdcomplaints__end', None)])),
+                'count': obj.hpdcomplaints
+            }
+        else:
+            return None
+
+    def get_dobviolations(self, obj):
+        if hasattr(obj, 'dobviolations'):
+
+            return {
+                'date_range': '-'.join(filter(None, [self.context['request'].query_params.get('dobviolations__start', None), self.context['request'].query_params.get('dobviolations__end', None)])),
+                'count': obj.dobviolations
+            }
+        else:
+            return None
+
+    def get_dobcomplaints(self, obj):
+        if hasattr(obj, 'dobcomplaints'):
+
+            return {
+                'date_range': '-'.join(filter(None, [self.context['request'].query_params.get('dobcomplaints__start', None), self.context['request'].query_params.get('dobcomplaints__end', None)])),
+                'count': obj.dobcomplaints
+            }
+        else:
+            return None
+
+    def get_ecbviolations(self, obj):
+        if hasattr(obj, 'ecbviolations'):
+
+            return {
+                'date_range': '-'.join(filter(None, [self.context['request'].query_params.get('ecbviolations__start', None), self.context['request'].query_params.get('ecbviolations__end', None)])),
+                'count': obj.ecbviolations
+            }
+        else:
+            return None
+
+    def get_dobfiledpermits(self, obj):
+        if hasattr(obj, 'dobfiledpermits'):
+
+            return {
+                'date_range': '-'.join(filter(None, [self.context['request'].query_params.get('dobfiledpermits__start', None), self.context['request'].query_params.get('dobfiledpermits__end', None)])),
+                'count': obj.dobfiledpermits
+            }
+        else:
+            return None
+
+    def get_dobissuedpermits(self, obj):
+        if hasattr(obj, 'dobissuedpermits'):
+
+            return {
+                'date_range': '-'.join(filter(None, [self.context['request'].query_params.get('dobissuedpermits__start', None), self.context['request'].query_params.get('dobissuedpermits__end', None)])),
+                'count': obj.dobissuedpermits
+            }
+        else:
+            return None
+
+    def get_evictions(self, obj):
+        if hasattr(obj, 'evictions'):
+
+            return {
+                'date_range': '-'.join(filter(None, [self.context['request'].query_params.get('evictions__start', None), self.context['request'].query_params.get('evictions__end', None)])),
+                'count': obj.evictions
+            }
+        else:
+            return None
+
+
 class BuildingSummarySerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Building
