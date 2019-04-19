@@ -281,7 +281,7 @@ class PropertyShortSummarySerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Property
         fields = (ds.Property.SHORT_SUMMARY_FIELDS +
-                  ('nycha', 'subsidyrecords', 'rentstabilizationrecord', 'subsidyj51records', 'subsidy421arecords', 'conhrecords'))
+                  ('nycha', 'subsidyrecords', 'rentstabilizationrecord', 'subsidyj51records', 'subsidy421arecords'))
 
 
 class PropertySummarySerializer(serializers.ModelSerializer):
