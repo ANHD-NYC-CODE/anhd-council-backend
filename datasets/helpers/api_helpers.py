@@ -10,7 +10,7 @@ from datasets import serializers as serial
 from copy import deepcopy
 from datasets import models as ds
 from functools import wraps
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Q, Count
 
 import logging
 import json
@@ -46,14 +46,18 @@ def annotated_fields_to_dict(start=None, end=None):
 def prefetch_annotated_datasets(queryset, request):
     DATASETS = [ds.HPDViolation, ds.HPDComplaint, ds.DOBViolation, ds.DOBComplaint,
                 ds.ECBViolation, ds.Eviction, ds.DOBIssuedPermit, ds.DOBFiledPermit]
+    DEFAULT_ANNOTATION_DATE = datetime.datetime(  # jan 1st, last year
+        year=datetime.datetime.now().year - 1, month=1, day=1).strftime('%Y-%m-%d')
     annotation_dict = annotated_fields_to_dict(start=request.query_params.get(
-        'annotation__start', None), end=request.query_params.get('annotation__end', None))
+        'annotation__start', DEFAULT_ANNOTATION_DATE), end=request.query_params.get('annotation__end', DEFAULT_ANNOTATION_DATE))
     for dataset in DATASETS:
-        print(dataset.__name__.lower())
         date_filters = filter_helpers.value_dict_to_date_filter_dict(dataset.QUERY_DATE_KEY, annotation_dict)
-        # annotations get overwritten if dataset annotation is present... presumably.
+        # annotations get overwritten by drf filters if dataset annotation is present.
+
         queryset = filter_helpers.filtered_dataset_annotation(dataset.__name__.lower(), date_filters, queryset)
 
+    queryset = queryset.prefetch_related(
+        Prefetch('acrisreallegal_set', queryset=ds.AcrisRealLegal.objects.filter(bbl__in=queryset.values('bbl')).select_related('documentid')))
     return queryset
 
 
@@ -76,6 +80,7 @@ def handle_property_summaries(self, request, *args, **kwargs):
         elif 'summary-type' in request.query_params and request.query_params['summary-type'].lower() == 'short-annotated':
             self.queryset = prefetch_housingtype_sets(self.queryset)
             self.queryset = prefetch_annotated_datasets(self.queryset, request)
+
             self.serializer_class = serial.PropertyShortAnnotatedSerializer
         else:
             self.queryset = self.queryset.prefetch_related('building_set').prefetch_related('hpdregistration_set').prefetch_related('taxlien_set').prefetch_related(

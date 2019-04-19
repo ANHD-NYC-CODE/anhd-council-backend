@@ -180,23 +180,34 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
         return queryset
 
+        date_filters, total_filters = self.parse_totaldate_field_values(
+            ds.AcrisRealLegal.QUERY_DATE_KEY, 'acrisrealmasters', values)
+        queryset = queryset.annotate(acrisrealmasters=Count(
+            'acrisreallegal__documentid', distinct=True))
+
+        return queryset.filter(acrisreallegal__bbl__in=queryset.values('bbl'), **date_filters, **total_filters).distinct()
+
     def filter_acrisrealmasters_total_and_dates(self, queryset, name, values):
 
-        date_filters, total_filters = self.parse_totaldate_field_values('documentid__docdate', 'documentid', values)
-        docid_values = ds.AcrisRealMaster.construct_sales_query('acrisreallegal__documentid').only('documentid')
-        documenttype_queryset = ds.AcrisRealLegal.objects.filter(bbl__in=queryset.values('bbl'),
-                                                                 documentid__in=docid_values).only('bbl', 'documentid')
+        # queryset = filtered_dataset_annotation('acrisreallegal__documentid', date_filters, queryset)
 
-        # clean filters, since the advanced search typically tacks on the property field
-        # but we need the acrisreallegal field since we're going to be doing a subquery on it
+        # date_filters, total_filters = self.parse_totaldate_field_values('documentid__docdate', 'documentid', values)
+        # docid_values = ds.AcrisRealMaster.construct_sales_query('acrisreallegal__documentid').only('documentid')
+        # documenttype_queryset = ds.AcrisRealLegal.objects.filter(bbl__in=queryset.values('bbl'),
+        #                                                          documentid__in=docid_values).only('bbl', 'documentid')
+        #
+        #
+        # filtered_acris = documenttype_queryset.filter(
+        #     **date_filters).filter(**total_filters).only('bbl').filter(bbl=OuterRef('bbl'))
+        #
+        # queryset = queryset.annotate(has_filtered_acris=Exists(filtered_acris))
+        # return queryset.filter(has_filtered_acris=True)
+        date_filters, total_filters = self.parse_totaldate_field_values(
+            ds.AcrisRealLegal.QUERY_DATE_KEY, 'acrisrealmasters', values)
+        queryset = queryset.annotate(acrisrealmasters=Count('acrisreallegal__documentid', filter=Q(ds.AcrisRealMaster.sales_q(
+            relation_path='acrisreallegal__documentid'), **date_filters), distinct=True))
 
-        # subquery for acris real legals using the documenttype subquery
-        filtered_acris = documenttype_queryset.filter(
-            **date_filters).filter(**total_filters).only('bbl').filter(bbl=OuterRef('bbl'))
-
-        queryset = queryset.annotate(has_filtered_acris=Exists(filtered_acris)).filter(has_filtered_acris=True)
-
-        return queryset
+        return queryset.filter(**date_filters, **total_filters).distinct()
 
     def filter_dobissuedpermits_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(

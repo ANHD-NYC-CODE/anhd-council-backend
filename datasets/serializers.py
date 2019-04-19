@@ -162,12 +162,13 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
     dobfiledpermits = serializers.SerializerMethodField()
     dobissuedpermits = serializers.SerializerMethodField()
     evictions = serializers.SerializerMethodField()
+    latest_sale_price = serializers.SerializerMethodField()
 
     class Meta:
         model = ds.Property
         fields = (ds.Property.SHORT_SUMMARY_FIELDS +
                   ('hpdviolations', 'hpdcomplaints', 'dobviolations',
-                   'dobcomplaints', 'ecbviolations', 'dobfiledpermits', 'dobissuedpermits', 'evictions', 'nycha', 'subsidyrecords', 'rentstabilizationrecord', 'subsidyj51records', 'subsidy421arecords', 'conhrecords'))
+                   'dobcomplaints', 'ecbviolations', 'dobfiledpermits', 'dobissuedpermits', 'evictions', 'latest_sale_price', 'nycha', 'subsidyrecords', 'rentstabilizationrecord', 'subsidyj51records', 'subsidy421arecords', 'conhrecords'))
 
     def get_hpdviolations(self, obj):
         if hasattr(obj, 'hpdviolations'):
@@ -247,6 +248,13 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
                 'count': obj.evictions
             }
         else:
+            return None
+
+    def get_latest_sale_price(self, obj):
+
+        try:
+            return obj.acrisreallegal_set.latest('documentid__docdate').documentid.docamount
+        except Exception as e:
             return None
 
 

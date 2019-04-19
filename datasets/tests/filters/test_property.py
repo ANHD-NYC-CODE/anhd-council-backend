@@ -356,6 +356,9 @@ class PropertyFilterTests(BaseTest, TestCase):
         acrismaster2 = self.acrismaster_factory(docamount=1, docdate="2018-01-01")
         self.acrislegal_factory(master=acrismaster2, property=property2)
 
+        # wrong doctype but all in range
+        property4 = self.property_factory(bbl=4, council=council)
+
         for i in range(5):
             am = self.acrismaster_factory(doctype="MTGE", docdate="2018-01-01")
             self.acrislegal_factory(master=am, property=property1)
@@ -363,6 +366,10 @@ class PropertyFilterTests(BaseTest, TestCase):
         for i in range(5):
             am = self.acrismaster_factory(doctype="MTGE", docdate="2010-01-01")
             self.acrislegal_factory(master=am, property=property3)
+
+        for i in range(5):
+            am = self.acrismaster_factory(doctype="hello", docdate="2018-01-01")
+            self.acrislegal_factory(master=am, property=property4)
 
         # 5 sales between 2017-2018
         query = '/properties/?acrisrealmasters__start=2017-01-01&acrisrealmasters__end=2018-01-01&acrisrealmasters__gte=5'
@@ -572,6 +579,11 @@ class PropertyFilterTests(BaseTest, TestCase):
         for i in range(1):
             self.hpdviolation_factory(property=property2, approveddate="2010-01-01")
 
+        self.acrislegal_factory(property=property1, master=self.acrismaster_factory(
+            documentid=i, docdate="2017-01-01", doctype="MTGE", docamount=1))
+        self.acrislegal_factory(property=property1, master=self.acrismaster_factory(
+            documentid=i, docdate="2018-01-01", doctype="MTGE", docamount=1000))
+
         query = '/properties/?summary=true&summary-type=short-annotated&annotation__start=2018-01-01&hpdviolations__start=2015-01-01'
         response = self.client.get(query, format="json")
         content = response.data['results']
@@ -589,6 +601,7 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.assertEqual(content[0]['dobfiledpermits']['count'], 5)
         self.assertEqual(content[0]['dobissuedpermits']['count'], 5)
         self.assertEqual(content[0]['evictions']['count'], 5)
+        self.assertEqual(content[0]['latest_sale_price'], 1000)
 
 
 class PropertyAdvancedFilterTests(BaseTest, TestCase):

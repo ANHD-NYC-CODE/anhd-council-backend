@@ -13,6 +13,7 @@ logger = logging.getLogger('app')
 
 class AcrisRealLegal(BaseDatasetModel, models.Model):
     download_endpoint = 'https://data.cityofnewyork.us/api/views/8h5j-fqxa/rows.csv?accessType=DOWNLOAD'
+    QUERY_DATE_KEY = 'acrisreallegal__documentid__docdate'
 
     class Meta:
         indexes = [

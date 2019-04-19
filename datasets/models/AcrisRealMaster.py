@@ -15,6 +15,8 @@ logger = logging.getLogger('app')
 
 class AcrisRealMaster(BaseDatasetModel, models.Model):
     download_endpoint = 'https://data.cityofnewyork.us/api/views/bnx9-e6tj/rows.csv?accessType=DOWNLOAD'
+    QUERY_DATE_KEY = 'acrisrealmasters__docdate'
+    QUERY_PROPERTY_KEY = 'acrisreallegal__documentid'
 
     class Meta:
         indexes = [
@@ -55,9 +57,21 @@ class AcrisRealMaster(BaseDatasetModel, models.Model):
         for type in self.SALE_DOC_TYPES:
             q_list.append({'doctype': type})
 
-        sales_filter = af.construct_or_q(q_list)
+        sales_filter = self.sales_q()
 
         return self.objects.filter(sales_filter).only('documentid')
+
+    @classmethod
+    def sales_q(self, relation_path=None):
+        if relation_path:
+            relation_path = relation_path + '__'
+        else:
+            relation_path = ''
+        q_list = []
+        for type in self.SALE_DOC_TYPES:
+            q_list.append({relation_path + 'doctype': type})
+        sales_filter = af.construct_or_q(q_list)
+        return sales_filter
 
     @classmethod
     def download(self):
