@@ -29,3 +29,11 @@ class UserRequestSerializer(serializers.ModelSerializer):
 
     def post(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
+
+    def validate(self, data):
+        """
+        Check that the start is before the stop.
+        """
+        if len(u.CustomUser.objects.filter(username=data['username'])) > 0:
+            raise serializers.ValidationError({"errors": "This username already exists. Please choose another."})
+        return data
