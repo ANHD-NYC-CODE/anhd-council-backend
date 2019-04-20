@@ -34,6 +34,13 @@ class UserRequestSerializer(serializers.ModelSerializer):
         """
         Check that the start is before the stop.
         """
-        if len(u.CustomUser.objects.filter(username=data['username'])) > 0:
-            raise serializers.ValidationError({"errors": "This username already exists. Please choose another."})
+        errors = []
+        if len(u.CustomUser.objects.filter(email=data['email'])) > 0:
+            errors.append("This email is already taken. Please choose another.")
+
+        if len(u.CustomUser.objects.filter(username=data['username'])) > 0 or len(u.UserRequest.objects.filter(username=data['username'])) > 0:
+            errors.append("This username is already taken. Please choose another.")
+
+        if len(errors) > 0:
+            raise serializers.ValidationError({"errors": errors})
         return data
