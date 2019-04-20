@@ -37,6 +37,7 @@ django-polymorphic = "*"
 django-cors-headers = "*"
 markdown = "*"
 httpretty = "*"
+django-sendgrid-v5 = "*"
 
 [requires]
 python_version = "3.5.6"
