@@ -40,8 +40,11 @@ class UserRequest(models.Model):
     approved = models.BooleanField(blank=True, null=True, default=False)
 
     def approve(self):
-        CustomUser.objects.create(email=self.email, username=self.username,
-                                  first_name=self.first_name, last_name=self.last_name)
+        user = CustomUser.objects.create(email=self.email, username=self.username,
+                                         first_name=self.first_name, last_name=self.last_name)
+
+        user.user_request = self
+        user.save()
         self.approved = True
         self.save()
 

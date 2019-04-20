@@ -4,6 +4,9 @@ from rest_framework import routers
 from users import views as v
 
 router = routers.DefaultRouter()
+router.register(r'user-requests', v.UserRequestViewSet)
+
+
 current_user = v.UserViewSet.as_view({
     'get': 'get_current_user',
 })
@@ -13,5 +16,6 @@ custom_routes = format_suffix_patterns([
 ])
 
 urlpatterns = [
-    *custom_routes
+    *custom_routes,
+    path('', include(router.urls)),
 ]

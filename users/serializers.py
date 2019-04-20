@@ -20,3 +20,12 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = u.UserProfile
         fields = ('council',)
+
+
+class UserRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = u.UserRequest
+        fields = ('email', 'username', 'first_name', 'last_name', 'organization', 'description')
+
+    def post(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)

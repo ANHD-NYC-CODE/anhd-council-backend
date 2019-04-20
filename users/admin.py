@@ -5,6 +5,8 @@ from django.contrib import admin
 from django.contrib.auth import admin as auth_admin
 from users.models import CustomUser, UserRequest
 from users.forms import CustomUserChangeForm, CustomUserCreationForm
+from django.contrib import messages
+from django.http import HttpResponseRedirect
 
 from django.contrib.admin import AdminSite
 from django.urls import path
@@ -17,8 +19,8 @@ class UserRequestAdmin(admin.ModelAdmin):
     def response_change(self, request, obj):
         if "_approve-request" in request.POST:
             obj.approve()
-            messages.info(
-                "This request has been approved and a registration email has been sent including a generated password.")
+            messages.info(request,
+                          "This request has been approved and a registration email has been sent including a generated password.")
 
             return HttpResponseRedirect(".")
         return super().response_change(request, obj)
@@ -30,7 +32,7 @@ class UserRequestAdmin(admin.ModelAdmin):
     search_fields = ('approved', 'organization', 'email', 'description')
 
     ordering = ('approved',)
-    readonly_fields = ('email', 'username', 'first_name', 'last_name')
+    readonly_fields = ('email', 'username', 'first_name', 'last_name', 'organization', 'description', 'approved')
     actions = []
 
 

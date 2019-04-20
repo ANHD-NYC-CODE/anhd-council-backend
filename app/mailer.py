@@ -37,7 +37,7 @@ def send_new_user_email(user=None):
     user.set_password(new_password)
     user.save()
     subject = "Welcome to DAP Portal!"
-    content = "<h3>Your new account has been created!</h3><p><b>Username:</b> {}</p><p><b>Password:</b> {}</p><p>Please reset your password at your earliest convenience at <a href='https://api.displacementalert.org/password_reset' target='_blank'>here</a></p><p>Thank you for signing up and please reach out to anhd.tech@gmail.com if you have any questions or feedback.</p><p>- ANHD</p>".format(
+    content = "<h3>Your new account has been created!</h3><p>Please reset your password at your earliest convenience at <a href='https://api.displacementalert.org/password_reset' target='_blank'>here</a></p><p><b>Username:</b> {}</p><p><b>Password:</b> {}</p><p>Thank you for signing up and please reach out to anhd.tech@gmail.com if you have any questions or feedback.</p><p>- ANHD</p>".format(
         user.username, new_password)
     send_mail(to, subject, content)
 
