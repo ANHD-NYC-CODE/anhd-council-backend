@@ -42,6 +42,16 @@ def send_new_user_email(user=None):
     send_mail(to, subject, content)
 
 
+def send_new_user_request_email(user_request):
+    subject = "New user request received."
+    content = "<p>Hello!</p><p>We've received a request for a user account from {}</p><p>Please <a href='https://api.displacementalert.org/admin/users/userrequest/{}/change' target='_blank'>visit this link</a> and approve the request to send them a registration email.</p><p>Have a nice day!</p><p>- DAP Portal Admin</p><hr><p><b>Details</b></p><p><b>Email:</b> {}</p><p><b>Username:</b> {}</p><p><b>Organization:</b> {}</p><p><b>Description:</b> {}</p><p><b>First name:</b> {}</p><p><b>Last name:</b> {}</p>".format(
+        user_request.email, user_request.id, user_request.email, user_request.username, user_request.organization, user_request.description, user_request.first_name, user_request.last_name)
+
+    for user in us.CustomUser.objects.filter(is_staff=True):
+        to = user.email
+        send_mail(to, subject, content)
+
+
 def send_general_task_error_mail(error):
     subject = "* Error * During Council Portal Update"
     content = "A task error occurred: \n\n{} \n\n Please visit the task manager to investigate.".format(error)

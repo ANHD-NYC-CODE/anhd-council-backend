@@ -3,7 +3,7 @@ from django.contrib import admin
 # Register your models here.
 from django.contrib import admin
 from django.contrib.auth import admin as auth_admin
-from users.models import CustomUser
+from users.models import CustomUser, UserRequest
 from users.forms import CustomUserChangeForm, CustomUserCreationForm
 
 from django.contrib.admin import AdminSite
@@ -11,6 +11,27 @@ from django.urls import path
 
 # JWT
 # https://simpleisbetterthancomplex.com/tutorial/2018/12/19/how-to-use-jwt-authentication-with-django-rest-framework.html
+
+
+class UserRequestAdmin(admin.ModelAdmin):
+    def response_change(self, request, obj):
+        if "_approve-request" in request.POST:
+            obj.approve()
+            messages.info(
+                "This request has been approved and a registration email has been sent including a generated password.")
+
+            return HttpResponseRedirect(".")
+        return super().response_change(request, obj)
+
+    list_display = ('email', 'username', 'first_name', 'last_name', 'organization', 'description', 'approved')
+
+    list_filter = ('approved', 'email', 'organization', 'description')
+
+    search_fields = ('approved', 'organization', 'email', 'description')
+
+    ordering = ('approved',)
+    readonly_fields = ('email', 'username', 'first_name', 'last_name')
+    actions = []
 
 
 class CustomUserAdmin(auth_admin.UserAdmin):
@@ -51,3 +72,4 @@ class CustomUserAdmin(auth_admin.UserAdmin):
 
 
 admin.site.register(CustomUser, CustomUserAdmin)
+admin.site.register(UserRequest, UserRequestAdmin)

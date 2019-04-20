@@ -12,6 +12,8 @@ class CustomUserManager(UserManager):
 
 class CustomUser(AbstractUser):
     # add additional fields in here
+    user_request = models.OneToOneField('UserRequest', db_column='user_request', db_constraint=False,
+                                        on_delete=models.SET_NULL, null=True, blank=True)
     objects = CustomUserManager()
 
     def __str__(self):
@@ -26,6 +28,22 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return str(self.id)
+
+
+class UserRequest(models.Model):
+    email = models.TextField(unique=True, blank=True, null=True)
+    username = models.TextField(blank=True, null=True)
+    first_name = models.TextField(blank=True, null=True)
+    last_name = models.TextField(blank=True, null=True)
+    organization = models.TextField(blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    approved = models.BooleanField(blank=True, null=True, default=False)
+
+    def approve(self):
+        CustomUser.objects.create(email=self.email, username=self.username,
+                                  first_name=self.first_name, last_name=self.last_name)
+        self.approved = True
+        self.save()
 
 
 @receiver(models.signals.post_save, sender=CustomUser)
@@ -45,5 +63,16 @@ def send_email_on_save(sender, instance, created, **kwargs):
     def on_commit():
         if created == True:
             async_send_new_user_email.delay(instance.id)
+
+    transaction.on_commit(lambda: on_commit())
+
+
+@receiver(models.signals.post_save, sender=UserRequest)
+def send_new_user_request_email_on_save(sender, instance, created, **kwargs):
+    from app.tasks import async_send_new_user_request_email
+
+    def on_commit():
+        if created == True:
+            async_send_new_user_request_email.delay(instance.id)
 
     transaction.on_commit(lambda: on_commit())
