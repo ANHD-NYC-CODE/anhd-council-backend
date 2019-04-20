@@ -8,7 +8,7 @@ logger = logging.getLogger('app')
 
 
 def send_mail(to_email, subject, content_string):
-    sg = sendgrid.SendGridAPIClient(apikey=os.environ.get('SENDGRID_API_KEY', ''))
+    sg = sendgrid.SendGridAPIClient(os.environ.get('SENDGRID_API_KEY', ''))
     from_email = Email(os.environ.get('EMAIL_USER', ''))
     to_email = Email(to_email)
     content = Content("text/plain", content_string)
