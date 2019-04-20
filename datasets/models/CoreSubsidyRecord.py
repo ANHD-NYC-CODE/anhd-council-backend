@@ -93,7 +93,8 @@ class CoreSubsidyRecord(BaseDatasetModel, models.Model):
         # Section 223(f)
         # Section 8 - RAD
         # TPT
-        row['programname'] = re.sub(r"\b421a\b", "421-a", row['programname'])
+
+        # row['programname'] = re.sub(r"\b421a\b", "421-a", row['programname'])
         return row
 
     @classmethod
