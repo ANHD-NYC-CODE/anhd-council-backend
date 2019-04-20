@@ -107,7 +107,7 @@ class UpdateAdmin(admin.ModelAdmin):
 class BugReportAdmin(admin.ModelAdmin):
 
     list_display = ['from_email', 'description', 'status', 'date_created']
-    read_only_fields = ('from_email', 'description', 'created_date')
+    readonly_fields = ('from_email', 'description', 'created_date')
     ordering = ['-date_created']
     actions = []
 

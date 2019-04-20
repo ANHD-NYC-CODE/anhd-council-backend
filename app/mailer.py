@@ -44,7 +44,7 @@ def send_new_user_email(user=None):
 
 def send_bug_report_email(bug_report=None):
     subject = "DAP Portal - * New bug report received."
-    content = "<p>Hello!</p><p>We've received a bug report from {}</p><p>Please <a href='https://api.displacementalert.org/admin/users/bugreport/{}/change' target='_blank'>visit this link</a> and update its status.</p><p>Have a nice day!</p><p>- DAP Portal Admin</p><hr><p><b>Details</b></p><p><b>From:</b> {}</p><p><b>Description:</b> {}</p><p><b>Status:</b> {}</p><p><b>Date created:</b> {}</p>".format(
+    content = "<p>Hello!</p><p>We've received a bug report from {}</p><p>Please <a href='https://api.displacementalert.org/admin/core/bugreport/{}/change' target='_blank'>visit this link</a> and update its status.</p><p>Have a nice day!</p><p>- DAP Portal Admin</p><hr><p><b>Details</b></p><p><b>From:</b> {}</p><p><b>Description:</b> {}</p><p><b>Status:</b> {}</p><p><b>Date created:</b> {}</p>".format(
         bug_report.from_email, bug_report.id, bug_report.from_email, bug_report.description, bug_report.status, bug_report.date_created)
 
     for user in us.CustomUser.objects.filter(is_staff=True):
