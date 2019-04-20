@@ -2,7 +2,7 @@ import sendgrid
 from django.conf import settings
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail, Email
-
+from users.models import CustomUser
 import os
 import logging
 from users import models as us
@@ -31,13 +31,14 @@ def send_hello_world_email():
         send_mail(to, subject, content)
 
 
-def send_new_user_email(email=None, username=None, password=None):
-    if not email or not username or not password:
-        raise Exception("Missing email, username or password when sending email! {}-{}".format(email, username))
-    to = email
+def send_new_user_email(user=None):
+    to = user.email
+    new_password = CustomUser.objects.make_random_password()
+    user.set_password(new_password)
+    user.save()
     subject = "Welcome to DAP Portal!"
     content = "<h3>Your new account has been created!</h3><p><b>Username:</b> {}</p><p><b>Password:</b> {}</p><p>Please reset your password at your earliest convenience at <a href='https://api.displacementalert.org/password_reset' target='_blank'>here</a></p><p>Thank you for signing up and please reach out to anhd.tech@gmail.com if you have any questions or feedback.</p><p>- ANHD</p>".format(
-        username, password)
+        user.username, new_password)
     send_mail(to, subject, content)
 
 

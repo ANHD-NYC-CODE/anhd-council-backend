@@ -7,6 +7,7 @@ from django.core import cache
 from core.utils.cache import create_async_cache_workers
 import celery
 from app.mailer import send_new_user_email
+from users.models import CustomUser
 
 
 @app.task(queue='celery')
@@ -45,5 +46,6 @@ def reset_cache():
 
 
 @app.task(bind=True, queue='celery', default_retry_delay=30, max_retries=3)
-def async_send_new_user_email(self, email, username, password):
-    return send_new_user_email(email=email, username=username, password=password)
+def async_send_new_user_email(self, user_id):
+    user = CustomUser.objects.get(id=user_id)
+    return send_new_user_email(user=user)

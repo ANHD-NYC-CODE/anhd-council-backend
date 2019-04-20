@@ -44,10 +44,6 @@ def send_email_on_save(sender, instance, created, **kwargs):
 
     def on_commit():
         if created == True:
-            new_password = CustomUser.objects.make_random_password()
-            instance.set_password(new_password)
-            instance.save()
-            async_send_new_user_email.delay(str(instance.email), str(
-                instance.username), new_password)
+            async_send_new_user_email.delay(instance.id)
 
     transaction.on_commit(lambda: on_commit())
