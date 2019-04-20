@@ -6,6 +6,7 @@ from rest_framework_simplejwt.token_blacklist.management.commands import flushex
 from django.core import cache
 from core.utils.cache import create_async_cache_workers
 import celery
+from app.mailer import send_new_user_email
 
 
 @app.task(queue='celery')
@@ -41,3 +42,8 @@ def reset_cache():
         logger.error('Error during task: {}'.format(e))
         async_send_general_task_error_mail.delay(str(e))
         raise e
+
+
+@app.task(bind=True, queue='celery', default_retry_delay=30, max_retries=3)
+def async_send_new_user_email(self, email, username, password):
+    return send_new_user_email(email=email, username=username, password=password)

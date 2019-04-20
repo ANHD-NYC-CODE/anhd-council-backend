@@ -37,7 +37,7 @@ class CustomUserAdmin(auth_admin.UserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'password1', 'password2')}
+            'fields': ('email', 'username')}
          ),
     )
     form = CustomUserChangeForm

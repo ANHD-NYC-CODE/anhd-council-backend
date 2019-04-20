@@ -1,7 +1,6 @@
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models, transaction
 from django.dispatch import receiver
-
 # https://gist.github.com/haxoza/7921eaf966a16ffb95a0
 
 
@@ -35,5 +34,20 @@ def create_profile_on_save(sender, instance, created, **kwargs):
     def on_commit():
         if created == True:
             UserProfile.objects.create(user=instance)
+
+    transaction.on_commit(lambda: on_commit())
+
+
+@receiver(models.signals.post_save, sender=CustomUser)
+def send_email_on_save(sender, instance, created, **kwargs):
+    from app.tasks import async_send_new_user_email
+
+    def on_commit():
+        if created == True:
+            new_password = CustomUser.objects.make_random_password()
+            instance.set_password(new_password)
+            instance.save()
+            async_send_new_user_email.delay(str(instance.email), str(
+                instance.username), new_password)
 
     transaction.on_commit(lambda: on_commit())

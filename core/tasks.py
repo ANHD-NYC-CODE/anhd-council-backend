@@ -1,7 +1,7 @@
 from __future__ import absolute_import, unicode_literals
+
 from app.celery import app
 from core import models as c
-from django_celery_results.models import TaskResult
 from django.conf import settings
 from app.mailer import send_update_error_mail, send_update_success_mail, send_general_task_error_mail
 from core.utils.cache import cache_council_property_summaries, cache_community_property_summaries

@@ -1,6 +1,8 @@
 import sendgrid
 from django.conf import settings
-from sendgrid.helpers.mail import *
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail, Email
+
 import os
 import logging
 from users import models as us
@@ -8,14 +10,15 @@ logger = logging.getLogger('app')
 
 
 def send_mail(to_email, subject, content_string):
-    sg = sendgrid.SendGridAPIClient(os.environ.get('SENDGRID_API_KEY', ''))
-    from_email = Email(os.environ.get('EMAIL_USER', ''))
-    to_email = Email(to_email)
-    content = Content("text/plain", content_string)
+    sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY', ''))
+    from_email = os.environ.get('EMAIL_USER', '')
     if settings.DEBUG:
         subject = "(DEVELOPMENT) " + subject
-    mail = Mail(from_email, subject, to_email, content)
-    response = sg.client.mail.send.post(request_body=mail.get())
+    message = Mail(from_email=from_email,
+                   to_emails=to_email,
+                   subject=subject,
+                   html_content=content_string)
+    response = sg.send(message)
     logger.info('Mail sent from {} to {} subject {}'.format(from_email, to_email, subject))
     return response
 
@@ -26,6 +29,16 @@ def send_hello_world_email():
     for admin in settings.ADMINS:
         to = admin[1]
         send_mail(to, subject, content)
+
+
+def send_new_user_email(email=None, username=None, password=None):
+    if not email or not username or not password:
+        raise Exception("Missing email, username or password when sending email! {}-{}".format(email, username))
+    to = email
+    subject = "Welcome to DAP Portal!"
+    content = "<h3>Your new account has been created!</h3><p><b>Username:</b> {}</p><p><b>Password:</b> {}</p><p>Please reset your password at your earliest convenience at <a href='https://api.displacementalert.org/password_reset' target='_blank'>here</a></p><p>Thank you for signing up and please reach out to anhd.tech@gmail.com if you have any questions or feedback.</p><p>- ANHD</p>".format(
+        username, password)
+    send_mail(to, subject, content)
 
 
 def send_general_task_error_mail(error):
