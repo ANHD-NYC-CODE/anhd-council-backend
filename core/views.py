@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from core import models as c
 from core import serializers as serial
 from rest_framework.response import Response
+from rest_framework import mixins
 
 
 class DatasetViewSet(ApplicationViewSet, viewsets.ReadOnlyModelViewSet):
@@ -19,3 +20,9 @@ class DatasetViewSet(ApplicationViewSet, viewsets.ReadOnlyModelViewSet):
     @cache_me()
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
+
+
+class BugReportViewSet(ApplicationViewSet, mixins.CreateModelMixin,
+                       viewsets.GenericViewSet):
+    queryset = c.BugReport.objects.all()
+    serializer_class = serial.BugReportSerializer

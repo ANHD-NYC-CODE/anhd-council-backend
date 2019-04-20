@@ -171,3 +171,29 @@ def add_task_result_to_update(sender, instance, created, **kwargs):
             logger.warning("TaskResult {} not synced to Update".format(instance.id))
 
     transaction.on_commit(lambda: on_commit())
+
+
+class BugReport(models.Model):
+    STATUS_CHOICES = (
+        ('reported', 'Reported'),
+        ('duplicate', 'Duplicate'),
+        ('investigating', 'Investigating'),
+        ('resolved', 'Resolved'),
+        ('unable', 'Unable to reproduce'),
+    )
+
+    from_email = models.TextField(blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    status = models.TextField(blank=True, null=True, choices=STATUS_CHOICES, default=STATUS_CHOICES[0][0])
+    date_created = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+
+
+@receiver(models.signals.post_save, sender=BugReport)
+def send_bug_email_on_save(sender, instance, created, **kwargs):
+    from app.tasks import async_send_bug_report_email
+
+    def on_commit():
+        if created == True:
+            async_send_bug_report_email.delay(instance.id)
+
+    transaction.on_commit(lambda: on_commit())

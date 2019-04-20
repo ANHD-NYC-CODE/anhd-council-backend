@@ -6,8 +6,9 @@ from rest_framework_simplejwt.token_blacklist.management.commands import flushex
 from django.core import cache
 from core.utils.cache import create_async_cache_workers
 import celery
-from app.mailer import send_new_user_email, send_new_user_request_email
+from app.mailer import send_new_user_email, send_new_user_request_email, send_bug_report_email
 from users.models import CustomUser, UserRequest
+from core.models import BugReport
 
 
 @app.task(queue='celery')
@@ -55,3 +56,9 @@ def async_send_new_user_email(self, user_id):
 def async_send_new_user_request_email(self, user_request_id):
     user_request = UserRequest.objects.get(id=user_request_id)
     return send_new_user_request_email(user_request=user_request)
+
+
+@app.task(bind=True, queue='celery', default_retry_delay=30, max_retries=3)
+def async_send_bug_report_email(self, bug_report_id):
+    bug_report = BugReport.objects.get(id=bug_report_id)
+    return send_bug_report_email(bug_report=bug_report)

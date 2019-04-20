@@ -42,8 +42,18 @@ def send_new_user_email(user=None):
     send_mail(to, subject, content)
 
 
+def send_bug_report_email(bug_report=None):
+    subject = "DAP Portal - * New bug report received."
+    content = "<p>Hello!</p><p>We've received a bug report from {}</p><p>Please <a href='https://api.displacementalert.org/admin/users/bugreport/{}/change' target='_blank'>visit this link</a> and update its status.</p><p>Have a nice day!</p><p>- DAP Portal Admin</p><hr><p><b>Details</b></p><p><b>From:</b> {}</p><p><b>Description:</b> {}</p><p><b>Status:</b> {}</p><p><b>Date created:</b> {}</p>".format(
+        bug_report.from_email, bug_report.id, bug_report.from_email, bug_report.description, bug_report.status, bug_report.date_created)
+
+    for user in us.CustomUser.objects.filter(is_staff=True):
+        to = user.email
+        send_mail(to, subject, content)
+
+
 def send_new_user_request_email(user_request):
-    subject = "New user request received."
+    subject = "DAP Portal - New user request received."
     content = "<p>Hello!</p><p>We've received a request for a user account from {}</p><p>Please <a href='https://api.displacementalert.org/admin/users/userrequest/{}/change' target='_blank'>visit this link</a> and approve the request to send them a registration email.</p><p>Have a nice day!</p><p>- DAP Portal Admin</p><hr><p><b>Details</b></p><p><b>Email:</b> {}</p><p><b>Username:</b> {}</p><p><b>Organization:</b> {}</p><p><b>Description:</b> {}</p><p><b>First name:</b> {}</p><p><b>Last name:</b> {}</p>".format(
         user_request.email, user_request.id, user_request.email, user_request.username, user_request.organization, user_request.description, user_request.first_name, user_request.last_name)
 
@@ -53,7 +63,7 @@ def send_new_user_request_email(user_request):
 
 
 def send_general_task_error_mail(error):
-    subject = "* Error * During Council Portal Update"
+    subject = "DAP Portal - * Error * During Council Portal Update"
     content = "A task error occurred: \n\n{} \n\n Please visit the task manager to investigate.".format(error)
 
     for user in us.CustomUser.objects.filter(is_staff=True):
@@ -62,7 +72,7 @@ def send_general_task_error_mail(error):
 
 
 def send_update_error_mail(update, error):
-    subject = "* Error * During Council Portal Update"
+    subject = "DAP Portal - * Error * During Council Portal Update"
     content = "Update {} for {} failed with error: \n\n{}".format(update.id, update.dataset, error)
 
     for user in us.CustomUser.objects.filter(is_staff=True):

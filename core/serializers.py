@@ -20,3 +20,9 @@ class DatasetSerializer(serializers.ModelSerializer):
 
     def get_version(self, obj):
         return obj.latest_version()
+
+
+class BugReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = c.BugReport
+        fields = ('from_email', 'description')

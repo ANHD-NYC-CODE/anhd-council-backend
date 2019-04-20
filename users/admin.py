@@ -25,14 +25,16 @@ class UserRequestAdmin(admin.ModelAdmin):
             return HttpResponseRedirect(".")
         return super().response_change(request, obj)
 
-    list_display = ('email', 'username', 'first_name', 'last_name', 'organization', 'description', 'approved')
+    list_display = ('email', 'username', 'first_name', 'last_name',
+                    'organization', 'description', 'approved', 'date_created')
 
-    list_filter = ('approved', 'email', 'organization', 'description')
+    list_filter = ('approved', 'email', 'organization', 'description', 'date_created')
 
     search_fields = ('approved', 'organization', 'email', 'description')
 
-    ordering = ('approved',)
-    readonly_fields = ('email', 'username', 'first_name', 'last_name', 'organization', 'description', 'approved')
+    ordering = ['-date_created']
+    readonly_fields = ('email', 'username', 'first_name', 'last_name',
+                       'organization', 'description', 'approved', 'date_created')
     actions = []
 
 

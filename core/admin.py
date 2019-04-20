@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.conf import settings
 from django.db.models import Count
 from django.http import HttpResponseRedirect
-from core.models import Dataset, DataFile, Update
+from core.models import Dataset, DataFile, Update, BugReport
 from app.admin.mixins import admin_changelist_link, admin_link
 from core.tasks import async_download_start
 from django.contrib import messages
@@ -104,6 +104,15 @@ class UpdateAdmin(admin.ModelAdmin):
     actions = []
 
 
+class BugReportAdmin(admin.ModelAdmin):
+
+    list_display = ['from_email', 'description', 'status', 'date_created']
+    read_only_fields = ('from_email', 'description', 'created_date')
+    ordering = ['-date_created']
+    actions = []
+
+
 admin.site.register(Dataset, DatasetAdmin)
 admin.site.register(DataFile, DataFileAdmin)
 admin.site.register(Update, UpdateAdmin)
+admin.site.register(BugReport, BugReportAdmin)

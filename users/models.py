@@ -37,6 +37,7 @@ class UserRequest(models.Model):
     last_name = models.TextField(blank=True, null=True)
     organization = models.TextField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
+    date_created = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     approved = models.BooleanField(blank=True, null=True, default=False)
 
     def approve(self):
