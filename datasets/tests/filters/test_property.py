@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.urls import include, path
 from rest_framework.test import APITestCase, URLPatternsTestCase
 from app.tests.base_test import BaseTest
-
+import datetime
 from datasets import models as ds
 
 import logging
@@ -517,8 +517,8 @@ class PropertyFilterTests(BaseTest, TestCase):
             self.dobcomplaint_factory(property=property1, dateentered="2018-01-01")
             self.ecbviolation_factory(property=property1, issuedate="2018-01-01")
             self.dobfiledpermit_factory(property=property1, datefiled="2018-01-01")
+            self.eviction_factory(property=property1, executeddate="2018-01-01")
             # self.dobissuedpermit_factory(property=property1, issuedate="2018-01-01")
-            # self.eviction_factory(property=property1, executeddate="2018-01-01")
 
         for i in range(5):
             self.hpdviolation_factory(property=property1, approveddate="2017-01-01")
@@ -531,23 +531,23 @@ class PropertyFilterTests(BaseTest, TestCase):
         # self.acrislegal_factory(property=property1, master=self.acrismaster_factory(
         #     documentid=i, docdate="2018-01-01", doctype="MTGE", docamount=1000))
 
-        query = '/properties/?summary=true&summary-type=short-annotated&annotation__start=2018-01-01&hpdviolations__start=2015-01-01&hpdviolations__gte=5'
+        query = '/properties/?summary=true&summary-type=short-annotated&annotation__start=2018-01-01&hpdviolations__start=2015-01-01&hpdviolations__end=2019-01-01&hpdviolations__gte=5'
         response = self.client.get(query, format="json")
         content = response.data['results']
+
+        now_date = datetime.datetime.now().strftime("%m/%d/%Y")
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['bbl'], '1')
-        self.assertEqual(content[0]['hpdviolations']['count'], 10)
-        self.assertEqual(content[0]['hpdviolations']['date_range'], '2015-01-01')
-        self.assertEqual(content[0]['hpdcomplaints']['count'], 5)
-        self.assertEqual(content[0]['hpdcomplaints']['date_range'], '2018-01-01')
-        self.assertEqual(content[0]['dobviolations']['count'], 5)
-        self.assertEqual(content[0]['dobcomplaints']['count'], 5)
-        self.assertEqual(content[0]['ecbviolations']['count'], 5)
-        self.assertEqual(content[0]['dobfiledpermits']['count'], 5)
-        # self.assertEqual(content[0]['dobissuedpermits']['count'], 5)
-        # self.assertEqual(content[0]['evictions']['count'], 5)
+        self.assertEqual(content[0]['hpdviolations__01/01/2015-01/01/2019'], 10)
+        self.assertEqual(content[0]['hpdcomplaints__01/01/2018-{}'.format(now_date)], 5)
+        self.assertEqual(content[0]['dobviolations__01/01/2018-{}'.format(now_date)], 5)
+        self.assertEqual(content[0]['dobcomplaints__01/01/2018-{}'.format(now_date)], 5)
+        self.assertEqual(content[0]['ecbviolations__01/01/2018-{}'.format(now_date)], 5)
+        self.assertEqual(content[0]['dobfiledpermits__01/01/2018-{}'.format(now_date)], 5)
+        self.assertEqual(content[0]['evictions__01/01/2018-{}'.format(now_date)], 5)
+        # self.assertEqual(content[0]['dobissuedpermits'], 5)
         # self.assertEqual(content[0]['latest_sale_price'], 1000)
 
 

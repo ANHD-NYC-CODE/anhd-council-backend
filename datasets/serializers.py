@@ -2,8 +2,9 @@ from rest_framework import serializers
 from datasets import models as ds
 from django.forms.models import model_to_dict
 from core.utils.bbl import code_to_boro, abrv_to_borough
-from django.db.models import Sum
 from django.conf import settings
+from django.db import models
+import datetime
 
 
 class CouncilSerializer(serializers.ModelSerializer):
@@ -154,12 +155,12 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
     nycha = PublicHousingRecordIdSerializer(source='publichousingrecord_set', many=True, read_only=True)
     rentstabilizationrecord = RentStabilizationIdSerializer(many=False, read_only=True)
 
-    hpdviolations = serializers.SerializerMethodField()
-    hpdcomplaints = serializers.SerializerMethodField()
-    dobviolations = serializers.SerializerMethodField()
-    dobcomplaints = serializers.SerializerMethodField()
-    ecbviolations = serializers.SerializerMethodField()
-    dobfiledpermits = serializers.SerializerMethodField()
+    # hpdviolations = serializers.SerializerMethodField()
+    # hpdcomplaints = serializers.SerializerMethodField()
+    # dobviolations = serializers.SerializerMethodField()
+    # dobcomplaints = serializers.SerializerMethodField()
+    # ecbviolations = serializers.SerializerMethodField()
+    # dobfiledpermits = serializers.SerializerMethodField()
     # dobissuedpermits = serializers.SerializerMethodField()
     # evictions = serializers.SerializerMethodField()
     # latest_sale_price = serializers.SerializerMethodField()
@@ -167,8 +168,26 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Property
         fields = (ds.Property.SHORT_SUMMARY_FIELDS +
-                  ('hpdviolations', 'hpdcomplaints', 'dobviolations',
-                   'dobcomplaints', 'ecbviolations', 'dobfiledpermits', 'nycha', 'subsidyrecords', 'rentstabilizationrecord', 'subsidyj51records', 'subsidy421arecords'))
+                  ('nycha', 'subsidyrecords', 'rentstabilizationrecord', 'subsidyj51records', 'subsidy421arecords'))
+
+    def generate_date_key(self, params, dataset_prefix):
+
+        start_date = datetime.datetime.strptime(params.get(dataset_prefix + '__start',
+                                                           params.get('annotation__start', settings.DEFAULT_ANNOTATION_DATE)), '%Y-%m-%d').strftime("%m/%d/%Y")
+        end_date = datetime.datetime.strptime(params.get(dataset_prefix + '__end', params.get('annotation__end',
+                                                                                              datetime.datetime.now().strftime("%Y-%m-%d"))), '%Y-%m-%d').strftime("%m/%d/%Y")
+        return dataset_prefix + '__' + '-'.join(filter(None, [start_date, end_date]))
+
+    def to_representation(self, obj):
+        rep = super(serializers.ModelSerializer, self).to_representation(obj)
+        params = self.context['request'].query_params
+        extra_fields = ('hpdviolations', 'hpdcomplaints', 'dobviolations',
+                        'dobcomplaints', 'ecbviolations', 'dobfiledpermits', 'evictions')
+        for field in extra_fields:
+            if hasattr(obj, field):
+                rep[self.generate_date_key(params, field)] = getattr(obj, field)
+
+        return rep
 
     def get_hpdviolations(self, obj):
         if hasattr(obj, 'hpdviolations'):

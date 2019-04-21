@@ -178,7 +178,7 @@ class BugReport(models.Model):
         ('reported', 'Reported'),
         ('duplicate', 'Duplicate'),
         ('investigating', 'Investigating'),
-        ('resolved', 'Resolved'),
+        ('fixed', 'Fixed'),
         ('unable', 'Unable to reproduce'),
     )
 
