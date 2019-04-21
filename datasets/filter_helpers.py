@@ -31,16 +31,16 @@ def filtered_dataset_annotation(dataset_prefix, date_filters, queryset):
     #     af.construct_and_q([date_filters]), Q(**{bbl_key: queryset.values('bbl')})))})
     # queryset = queryset.annotate(**{dataset_plural_key: Count(filtered_key, distinct=True)})
 
-    # queryset = queryset.annotate(**{filtered_key: FilteredRelation(dataset_prefix, condition=Q(
-    #     af.construct_and_q([date_filters])))})
+    queryset = queryset.annotate(**{filtered_key: FilteredRelation(dataset_prefix, condition=Q(
+        af.construct_and_q([date_filters])))})
 
     # Slower due to:
     # Join table GROUP BY with many large datasets
-    # queryset = queryset.annotate(**{dataset_plural_key: Count(filtered_key)})
-    # import pdb
-    # pdb.set_trace()
-    queryset = queryset.annotate(**{dataset_plural_key: Count(dataset_prefix,
-                                                              filter=af.construct_and_q([date_filters]), distinct=True)})
+    queryset = queryset.annotate(**{dataset_plural_key: Count(filtered_key)})
+
+    # queryset = queryset.annotate(**{dataset_plural_key: Count(dataset_prefix,
+    #                                                           filter=af.construct_and_q([date_filters]), distinct=True)})
+
     return queryset
 
 

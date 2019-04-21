@@ -186,13 +186,20 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
     def to_representation(self, obj):
         rep = super(serializers.ModelSerializer, self).to_representation(obj)
         params = self.context['request'].query_params
-        extra_fields = ('hpdviolations', 'hpdcomplaints', 'dobviolations',
-                        'dobcomplaints', 'ecbviolations', 'dobfiledpermits', 'evictions')
+        # extra_fields = ('hpdviolations', 'hpdcomplaints', 'dobviolations',
+        #                 'dobcomplaints', 'ecbviolations', 'dobfiledpermits', 'evictions')
 
-        for field in extra_fields:
-            if hasattr(obj, field):
-                rep[self.generate_date_key(params, field)] = getattr(obj, field)
+        # for field in extra_fields:
+        #     if hasattr(obj, field):
+        #         rep[self.generate_date_key(params, field)] = getattr(obj, field)
 
+        dataset_annotations = (ds.HPDViolation, ds.HPDComplaint, ds.DOBViolation,
+                               ds.DOBComplaint, ds.ECBViolation, ds.DOBFiledPermit, ds.Eviction)
+        for dataset in dataset_annotations:
+            dataset_prefix = dataset.__name__.lower()
+
+            rep[self.generate_date_key(params, dataset_prefix + 's')] = getattr(obj, dataset_prefix + '_set').filter(**{dataset.QUERY_DATE_KEY + '__gte': get_annotation_start(
+                params, dataset_prefix + 's'), dataset.QUERY_DATE_KEY + '__lte': get_annotation_end(params, dataset_prefix + 's')}).count()
         return rep
 
     def get_hpdviolations(self, obj):
