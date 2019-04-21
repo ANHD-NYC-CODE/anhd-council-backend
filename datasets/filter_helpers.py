@@ -24,8 +24,13 @@ def filtered_dataset_annotation(dataset_prefix, date_filters, queryset):
     bbl_key = dataset_prefix + '__bbl__in'
     dataset_plural_key = dataset_prefix + 's'
 
+    # with bbl__in
+    # queryset = queryset.annotate(**{filtered_key: FilteredRelation(dataset_prefix, condition=Q(
+    #     af.construct_and_q([date_filters]), Q(**{bbl_key: queryset.values('bbl')})))})
+    # queryset = queryset.annotate(**{dataset_plural_key: Count(filtered_key, distinct=True)})
+
     queryset = queryset.annotate(**{filtered_key: FilteredRelation(dataset_prefix, condition=Q(
-        af.construct_and_q([date_filters]), Q(**{bbl_key: queryset.values('bbl')})))})
+        af.construct_and_q([date_filters])))})
     queryset = queryset.annotate(**{dataset_plural_key: Count(filtered_key, distinct=True)})
     return queryset
 

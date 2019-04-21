@@ -37,5 +37,4 @@ class EvictionTest(BaseTest, TestCase):
         self.assertEqual(ds.Eviction.objects.count(), 3)
         self.assertEqual(update.rows_created, 3)
         for eviction in ds.Eviction.objects.all():
-            print(eviction.bbl)
             self.assertEqual(bool(eviction.bbl), True)
