@@ -52,8 +52,7 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
         for row in gen_rows:
             if is_null(row['documentid']):
                 continue
-            if 'bbl' in row:  # why?
-                row['bbl'] = str(row['bbl'])
+
             row['key'] = "{}-{}".format(row['documentid'], row['bbl'])  # add primary key
             yield row
 

@@ -9,6 +9,7 @@ import celery
 from app.mailer import send_new_user_email, send_new_user_request_email, send_bug_report_email
 from users.models import CustomUser, UserRequest
 from core.models import BugReport
+from django.db import connection
 
 
 @app.task(queue='celery')
@@ -40,6 +41,22 @@ def reset_cache():
     try:
         cache.clear()
         create_async_cache_workers()
+    except Exception as e:
+        logger.error('Error during task: {}'.format(e))
+        async_send_general_task_error_mail.delay(str(e))
+        raise e
+
+
+@app.task(bind=True, queue='celery', default_retry_delay=60, max_retries=1)
+def clean_database():
+    try:
+        force_proxy = connection.cursor()
+        realconn = connection.connection
+        old_isolation_level = realconn.isolation_level
+        realconn.set_isolation_level(0)
+        cursor = realconn.cursor()
+        cursor.execute('VACUUM ANALYZE')
+        realconn.set_isolation_level(old_isolation_level)
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
         async_send_general_task_error_mail.delay(str(e))

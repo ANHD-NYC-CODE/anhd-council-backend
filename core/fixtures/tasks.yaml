@@ -140,6 +140,29 @@
     hour: "1"
     day_of_month: "3"
     timezone: "America/New_York"
+- model: django_celery_beat.crontabschedule
+  pk: 20
+  fields:
+    # 3am monday
+    minute: "0"
+    hour: "3"
+    day_of_week: "1"
+- model: django_celery_beat.crontabschedule
+  pk: 21
+  fields:
+    # 3am wednesday
+    minute: "0"
+    hour: "3"
+    day_of_week: "3"
+    timezone: "America/New_York"
+- model: django_celery_beat.crontabschedule
+  pk: 22
+  fields:
+    # 3am wednesday
+    minute: "0"
+    hour: "3"
+    day_of_week: "5"
+    timezone: "America/New_York"
 - model: django_celery_beat.periodictask
   pk: 1
   fields:
@@ -418,5 +441,35 @@
     task: "core.tasks.async_create_update"
     crontab: 19
     args: "[33]"
+    kwargs: "{}"
+    date_changed: "2019-01-01"
+- model: django_celery_beat.periodictask
+  pk: 29
+  fields:
+    name: "Vacuum DB Monday"
+    description: "Maintainence task. 3am every MWF morning"
+    task: "app.tasks.clean_database"
+    crontab: 20
+    args: "[]"
+    kwargs: "{}"
+    date_changed: "2019-01-01"
+- model: django_celery_beat.periodictask
+  pk: 29
+  fields:
+    name: "Vacuum DB Wednesday"
+    description: "Maintainence task. 3am every MWF morning"
+    task: "app.tasks.clean_database"
+    crontab: 21
+    args: "[]"
+    kwargs: "{}"
+    date_changed: "2019-01-01"
+- model: django_celery_beat.periodictask
+  pk: 29
+  fields:
+    name: "Vacuum DB Friday"
+    description: "Maintainence task. 3am every MWF morning"
+    task: "app.tasks.clean_database"
+    crontab: 22
+    args: "[]"
     kwargs: "{}"
     date_changed: "2019-01-01"
