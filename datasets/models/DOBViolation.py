@@ -15,7 +15,7 @@ class DOBViolation(BaseDatasetModel, models.Model):
 
         ]
     download_endpoint = "https://data.cityofnewyork.us/api/views/3h2n-5cm9/rows.csv?accessType=DOWNLOAD"
-    QUERY_DATE_KEY = 'dobviolation__issuedate'
+    QUERY_DATE_KEY = 'issuedate'
 
     isndobbisviol = models.TextField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,

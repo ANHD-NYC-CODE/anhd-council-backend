@@ -181,7 +181,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         return queryset
 
         date_filters, total_filters = self.parse_totaldate_field_values(
-            ds.AcrisRealLegal.QUERY_DATE_KEY, 'acrisrealmasters', values)
+            'acrisreallegal__' + ds.AcrisRealLegal.QUERY_DATE_KEY, 'acrisrealmasters', values)
         queryset = queryset.annotate(acrisrealmasters=Count(
             'acrisreallegal__documentid', distinct=True))
 
@@ -203,7 +203,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         # queryset = queryset.annotate(has_filtered_acris=Exists(filtered_acris))
         # return queryset.filter(has_filtered_acris=True)
         date_filters, total_filters = self.parse_totaldate_field_values(
-            ds.AcrisRealLegal.QUERY_DATE_KEY, 'acrisrealmasters', values)
+            'acrisreallegal__' + ds.AcrisRealLegal.QUERY_DATE_KEY, 'acrisrealmasters', values)
         queryset = queryset.annotate(acrisrealmasters=Count('acrisreallegal__documentid', filter=Q(ds.AcrisRealMaster.sales_q(
             relation_path='acrisreallegal__documentid'), **date_filters), distinct=True))
 
@@ -211,7 +211,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
     def filter_dobissuedpermits_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(
-            ds.DOBIssuedPermit.QUERY_DATE_KEY, 'dobissuedpermits', values)
+            'dobissuedpermit__' + ds.DOBIssuedPermit.QUERY_DATE_KEY, 'dobissuedpermits', values)
 
         queryset = filtered_dataset_annotation('dobissuedpermit', date_filters, queryset)
 
@@ -219,7 +219,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
     def filter_dobfiledpermits_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(
-            ds.DOBFiledPermit.QUERY_DATE_KEY, 'dobfiledpermits', values)
+            'dobfiledpermit__' + ds.DOBFiledPermit.QUERY_DATE_KEY, 'dobfiledpermits', values)
 
         queryset = filtered_dataset_annotation('dobfiledpermit', date_filters, queryset)
 
@@ -227,7 +227,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
     def filter_eviction_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(
-            ds.Eviction.QUERY_DATE_KEY, 'evictions', values)
+            'eviction__' + ds.Eviction.QUERY_DATE_KEY, 'evictions', values)
         queryset = filtered_dataset_annotation('eviction', date_filters, queryset)
 
         return queryset.filter(**total_filters)
@@ -236,7 +236,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
     def filter_hpdcomplaints_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(
-            ds.HPDComplaint.QUERY_DATE_KEY, 'hpdcomplaints', values)
+            'hpdcomplaint__' + ds.HPDComplaint.QUERY_DATE_KEY, 'hpdcomplaints', values)
         queryset = filtered_dataset_annotation('hpdcomplaint', date_filters, queryset)
 
         return queryset.filter(**total_filters)
@@ -269,7 +269,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     # HPD Violations
     def filter_hpdviolations_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(
-            ds.HPDViolation.QUERY_DATE_KEY, 'hpdviolations', values)
+            'hpdviolation__' + ds.HPDViolation.QUERY_DATE_KEY, 'hpdviolations', values)
 
         queryset = filtered_dataset_annotation('hpdviolation', date_filters, queryset)
 
@@ -304,7 +304,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     # DOB Complaints
     def filter_dobcomplaints_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(
-            ds.DOBComplaint.QUERY_DATE_KEY, 'dobcomplaints', values)
+            'dobcomplaint__' + ds.DOBComplaint.QUERY_DATE_KEY, 'dobcomplaints', values)
         queryset = filtered_dataset_annotation('dobcomplaint', date_filters, queryset)
 
         return queryset.filter(**total_filters)
@@ -337,7 +337,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     # DOBViolations
     def filter_dobviolations_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(
-            ds.DOBViolation.QUERY_DATE_KEY, 'dobviolations', values)
+            'dobviolation__' + ds.DOBViolation.QUERY_DATE_KEY, 'dobviolations', values)
         queryset = filtered_dataset_annotation('dobviolation', date_filters, queryset)
 
         return queryset.filter(**total_filters)
@@ -370,7 +370,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     # ECBViolations
     def filter_ecbviolations_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(
-            ds.ECBViolation.QUERY_DATE_KEY, 'ecbviolations', values)
+            'ecbviolation__' + ds.ECBViolation.QUERY_DATE_KEY, 'ecbviolations', values)
         queryset = filtered_dataset_annotation('ecbviolation', date_filters, queryset)
 
         return queryset.filter(**total_filters)

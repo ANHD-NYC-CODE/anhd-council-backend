@@ -13,7 +13,7 @@ class HPDViolation(BaseDatasetModel, models.Model):
             models.Index(fields=['bbl', 'approveddate']),
             models.Index(fields=['approveddate', 'bbl']),
         ]
-    QUERY_DATE_KEY = 'hpdviolation__approveddate'
+    QUERY_DATE_KEY = 'approveddate'
 
     download_endpoint = "https://data.cityofnewyork.us/api/views/wvxf-dwi5/rows.csv?accessType=DOWNLOAD"
 

@@ -77,7 +77,8 @@ def prefetch_annotated_datasets(queryset, request):
 
     annotation_dict = annotated_fields_to_dict(start=get_annotation_start(params), end=get_annotation_end(params))
     for dataset in DATASETS:
-        date_filters = filter_helpers.value_dict_to_date_filter_dict(dataset.QUERY_DATE_KEY, annotation_dict)
+        field_path = dataset.__name__.lower() + '__' + dataset.QUERY_DATE_KEY
+        date_filters = filter_helpers.value_dict_to_date_filter_dict(field_path, annotation_dict)
         # annotations get overwritten by drf filters if dataset annotation is present.
 
         queryset = filter_helpers.filtered_dataset_annotation(dataset.__name__.lower(), date_filters, queryset)

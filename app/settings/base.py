@@ -313,7 +313,7 @@ LOGGING = {
         'django': {
             'handlers': ['console'],
             'level': 'DEBUG',
-            'propagate': True,
+            'propagate': False,
         },
         'django.db.backends': {
             'handlers': ['sql'],
@@ -323,7 +323,7 @@ LOGGING = {
         'django.template': {
             'handlers': ['logfile'],
             'level': 'INFO',
-            'propagate': True,
+            'propagate': False,
         },
         'app': {
             'handlers': ['console', 'sql', 'logfile', 'errorfile'],
