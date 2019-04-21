@@ -33,6 +33,8 @@ class AdvancedPropertyFilter(django_filters.rest_framework.FilterSet):
 
         # converts the param values into an array for some reason...
         del params['q']
+        params.pop('summary', None)
+        params.pop('summary-type', None)
         if 'format' in params:
             del params['format']
         if 'council' in params:

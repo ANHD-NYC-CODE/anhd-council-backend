@@ -12,6 +12,7 @@ import os
 import zipfile
 from django.utils import timezone
 import random
+from django.core.cache import cache
 
 
 class BaseTest(APITestCase, URLPatternsTestCase):
@@ -27,6 +28,7 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         from django_redis import get_redis_connection
         get_redis_connection("default").flushall()
         c_models.DataFile.objects.all().delete()
+        cache.clear()
         self.clean_mock_files()
 
     def clean_mock_files(self):

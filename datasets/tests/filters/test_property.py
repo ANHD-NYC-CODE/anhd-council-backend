@@ -504,52 +504,6 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.assertEqual(content[0]['bbl'], '1')
         self.assertEqual(content[1]['bbl'], '2')
 
-    def test_results_with_annotate_datasets_1(self):
-        # kitchen sink
-        council = self.council_factory(id=1)
-        property1 = self.property_factory(bbl='1', council=council)
-        property2 = self.property_factory(bbl='2', council=council)
-
-        for i in range(5):
-            self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
-            self.hpdcomplaint_factory(property=property1, receiveddate="2018-01-01")
-            self.dobviolation_factory(property=property1, issuedate="2018-01-01")
-            self.dobcomplaint_factory(property=property1, dateentered="2018-01-01")
-            self.ecbviolation_factory(property=property1, issuedate="2018-01-01")
-            self.dobfiledpermit_factory(property=property1, datefiled="2018-01-01")
-            self.eviction_factory(property=property1, executeddate="2018-01-01")
-            # self.dobissuedpermit_factory(property=property1, issuedate="2018-01-01")
-
-        for i in range(5):
-            self.hpdviolation_factory(property=property1, approveddate="2017-01-01")
-
-        for i in range(1):
-            self.hpdviolation_factory(property=property2, approveddate="2010-01-01")
-
-        # self.acrislegal_factory(property=property1, master=self.acrismaster_factory(
-        #     documentid=i, docdate="2017-01-01", doctype="MTGE", docamount=1))
-        # self.acrislegal_factory(property=property1, master=self.acrismaster_factory(
-        #     documentid=i, docdate="2018-01-01", doctype="MTGE", docamount=1000))
-
-        query = '/properties/?summary=true&summary-type=short-annotated&annotation__start=2018-01-01&hpdviolations__start=2015-01-01&hpdviolations__end=2019-01-01&hpdviolations__gte=5'
-        response = self.client.get(query, format="json")
-        content = response.data['results']
-
-        now_date = datetime.datetime.now().strftime("%m/%d/%Y")
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(content), 1)
-        self.assertEqual(content[0]['bbl'], '1')
-        self.assertEqual(content[0]['hpdviolations__01/01/2015-01/01/2019'], 10)
-        self.assertEqual(content[0]['hpdcomplaints__01/01/2018-{}'.format(now_date)], 5)
-        self.assertEqual(content[0]['dobviolations__01/01/2018-{}'.format(now_date)], 5)
-        self.assertEqual(content[0]['dobcomplaints__01/01/2018-{}'.format(now_date)], 5)
-        self.assertEqual(content[0]['ecbviolations__01/01/2018-{}'.format(now_date)], 5)
-        self.assertEqual(content[0]['dobfiledpermits__01/01/2018-{}'.format(now_date)], 5)
-        self.assertEqual(content[0]['evictions__01/01/2018-{}'.format(now_date)], 5)
-        # self.assertEqual(content[0]['dobissuedpermits'], 5)
-        # self.assertEqual(content[0]['latest_sale_price'], 1000)
-
 
 class PropertyAdvancedFilterTests(BaseTest, TestCase):
     def tearDown(self):

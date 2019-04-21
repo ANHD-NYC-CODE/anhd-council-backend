@@ -5,6 +5,7 @@ from core.utils.bbl import code_to_boro, abrv_to_borough
 from django.conf import settings
 from django.db import models
 import datetime
+import re
 
 
 class CouncilSerializer(serializers.ModelSerializer):
@@ -171,11 +172,31 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
                   ('nycha', 'subsidyrecords', 'rentstabilizationrecord', 'subsidyj51records', 'subsidy421arecords'))
 
     def generate_date_key(self, params, dataset_prefix):
+        def get_advanced_search_value(params, dataset_prefix, date_comparison):
+            if 'q' in params:
+                q = params['q']
+                reg = r'{}([^(,| )]*)'.format(dataset_prefix)
+                matches = re.findall(reg, q)
 
-        start_date = datetime.datetime.strptime(params.get(dataset_prefix + '__start',
-                                                           params.get('annotation__start', settings.DEFAULT_ANNOTATION_DATE)), '%Y-%m-%d').strftime("%m/%d/%Y")
-        end_date = datetime.datetime.strptime(params.get(dataset_prefix + '__end', params.get('annotation__end',
-                                                                                              datetime.datetime.now().strftime("%Y-%m-%d"))), '%Y-%m-%d').strftime("%m/%d/%Y")
+                if len(matches) > 0:
+                    date_match = next((x for x in matches if date_comparison in x), None)
+                    if date_match:
+                        return date_match.split('=')[1]
+
+            return None
+
+        def get_annotation_start(params, dataset_prefix):
+            return params.get(dataset_prefix + '__start', params.get('annotation__start', get_advanced_search_value(params, dataset_prefix, 'gte') or settings.DEFAULT_ANNOTATION_DATE))
+
+        def get_annotation_end(params, dataset_prefix):
+            return params.get(dataset_prefix + '__end', params.get('annotation__end', get_advanced_search_value(params, dataset_prefix, 'lte') or datetime.datetime.now().strftime("%Y-%m-%d")))
+
+        start_date = datetime.datetime.strptime(get_annotation_start(
+            params, dataset_prefix), '%Y-%m-%d').strftime("%m/%d/%Y")
+
+        end_date = datetime.datetime.strptime(get_annotation_end(
+            params, dataset_prefix), '%Y-%m-%d').strftime("%m/%d/%Y")
+
         return dataset_prefix + '__' + '-'.join(filter(None, [start_date, end_date]))
 
     def to_representation(self, obj):
@@ -183,6 +204,7 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
         params = self.context['request'].query_params
         extra_fields = ('hpdviolations', 'hpdcomplaints', 'dobviolations',
                         'dobcomplaints', 'ecbviolations', 'dobfiledpermits', 'evictions')
+
         for field in extra_fields:
             if hasattr(obj, field):
                 rep[self.generate_date_key(params, field)] = getattr(obj, field)

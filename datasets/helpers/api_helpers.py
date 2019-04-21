@@ -71,7 +71,6 @@ def prefetch_housingtype_sets(queryset):
 
 def handle_property_summaries(self, request, *args, **kwargs):
     if 'summary' in request.query_params and request.query_params['summary'] == 'true':
-
         if 'summary-type' in request.query_params and request.query_params['summary-type'].lower() == 'short':
             self.queryset = prefetch_housingtype_sets(self.queryset)
 
