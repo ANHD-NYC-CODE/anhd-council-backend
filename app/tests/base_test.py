@@ -25,9 +25,9 @@ class BaseTest(APITestCase, URLPatternsTestCase):
     ]
 
     def clean_tests(self):
-        from django_redis import get_redis_connection
-        get_redis_connection("default").flushall()
-        c_models.DataFile.objects.all().delete()
+        # from django_redis import get_redis_connection
+        # get_redis_connection("default").flushall()
+        # c_models.DataFile.objects.all().delete()
         cache.clear()
         self.clean_mock_files()
 

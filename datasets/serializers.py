@@ -193,6 +193,15 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
         #     if hasattr(obj, field):
         #         rep[self.generate_date_key(params, field)] = getattr(obj, field)
 
+        #####
+        # This method of annotation produces 1 query per dataset per object
+        # Summing 1000s of queries per request
+        # However it is faster than annotating a single query with join table aggregates
+        # because that method is extremely expensive, and utilizes disk merges of
+        # of over 7GB depending on the table sizes
+        # if you want to use that method, uncomment out the lines in
+        # this file and in datasets.helpers.api_helpers.py, labled "SINGLE-QUERY METHOD CHAIN"
+
         dataset_annotations = (ds.HPDViolation, ds.HPDComplaint, ds.DOBViolation,
                                ds.DOBComplaint, ds.ECBViolation, ds.DOBFiledPermit, ds.Eviction)
         for dataset in dataset_annotations:

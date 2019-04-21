@@ -38,6 +38,7 @@ def filtered_dataset_annotation(dataset_prefix, date_filters, queryset):
     # Join table GROUP BY with many large datasets
     queryset = queryset.annotate(**{dataset_plural_key: Count(filtered_key)})
 
+    # abandoned due to unexplained hang
     # queryset = queryset.annotate(**{dataset_plural_key: Count(dataset_prefix,
     #                                                           filter=af.construct_and_q([date_filters]), distinct=True)})
 

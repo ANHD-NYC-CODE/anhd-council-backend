@@ -107,6 +107,8 @@ def handle_property_summaries(self, request, *args, **kwargs):
             self.serializer_class = serial.PropertyShortSummarySerializer
         elif 'summary-type' in request.query_params and request.query_params['summary-type'].lower() == 'short-annotated':
             self.queryset = prefetch_housingtype_sets(self.queryset)
+
+            # SINGLE-QUERY METHOD CHAIN
             # self.queryset = prefetch_annotated_datasets(self.queryset, request)
 
             self.serializer_class = serial.PropertyShortAnnotatedSerializer
