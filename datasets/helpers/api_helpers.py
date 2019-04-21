@@ -6,7 +6,6 @@ from rest_framework.pagination import PageNumberPagination
 from datasets import filter_helpers
 from rest_framework import viewsets
 from collections import OrderedDict
-from datasets import serializers as serial
 from copy import deepcopy
 from datasets import models as ds
 from functools import wraps
@@ -16,8 +15,35 @@ import logging
 import json
 import urllib
 import datetime
-
+import re
+import datetime
 logger = logging.getLogger('app')
+
+
+def get_advanced_search_value(params, dataset_prefix=None, date_comparison=None):
+    if not dataset_prefix:
+        return None
+    if 'q' in params:
+        q = params['q']
+        reg = r'{}([^(,| )]*)'.format(dataset_prefix)
+        matches = re.findall(reg, q)
+
+        if len(matches) > 0:
+            date_match = next((x for x in matches if date_comparison in x), None)
+            if date_match:
+
+                return date_match.split('=')[1]
+
+    return None
+
+
+def get_annotation_start(params, dataset_prefix=''):
+
+    return params.get(dataset_prefix + '__start', params.get('annotation__start', get_advanced_search_value(params, dataset_prefix, 'gte') or settings.DEFAULT_ANNOTATION_DATE))
+
+
+def get_annotation_end(params, dataset_prefix=''):
+    return params.get(dataset_prefix + '__end', params.get('annotation__end', get_advanced_search_value(params, dataset_prefix, 'lte') or datetime.datetime.now().strftime("%Y-%m-%d")))
 
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -47,8 +73,9 @@ def prefetch_annotated_datasets(queryset, request):
     DATASETS = [ds.HPDViolation, ds.HPDComplaint, ds.DOBViolation, ds.DOBComplaint,
                 ds.ECBViolation, ds.Eviction, ds.DOBIssuedPermit, ds.DOBFiledPermit]
 
-    annotation_dict = annotated_fields_to_dict(start=request.query_params.get(
-        'annotation__start', settings.DEFAULT_ANNOTATION_DATE), end=request.query_params.get('annotation__end', None))
+    params = request.query_params
+
+    annotation_dict = annotated_fields_to_dict(start=get_annotation_start(params), end=get_annotation_end(params))
     for dataset in DATASETS:
         date_filters = filter_helpers.value_dict_to_date_filter_dict(dataset.QUERY_DATE_KEY, annotation_dict)
         # annotations get overwritten by drf filters if dataset annotation is present.
@@ -70,6 +97,8 @@ def prefetch_housingtype_sets(queryset):
 
 
 def handle_property_summaries(self, request, *args, **kwargs):
+    from datasets import serializers as serial
+
     if 'summary' in request.query_params and request.query_params['summary'] == 'true':
         if 'summary-type' in request.query_params and request.query_params['summary-type'].lower() == 'short':
             self.queryset = prefetch_housingtype_sets(self.queryset)
@@ -91,6 +120,8 @@ def add_headers(headers, **kwargs):
 
 
 class ApplicationViewSet():
+    from datasets import serializers as serial
+
     def dispatch(self, *args, **kwargs):
         # if filename and csv in params
         if self.request.GET:
@@ -114,6 +145,8 @@ class ApplicationViewSet():
             return super().dispatch(*args, **kwargs)
 
     def list(self, request, *args, **kwargs):
+        from datasets import serializers as serial
+
         self.pagination_class = StandardResultsSetPagination
         # no pagination for csv
         if ('format' in request.query_params and request.query_params['format'] == 'csv'):
@@ -133,6 +166,8 @@ class ApplicationViewSet():
         return super().list(request, *args, **kwargs)
 
     def retrieve(self, request, *args, **kwargs):
+        from datasets import serializers as serial
+
         # no pagination for csv
         if ('format' in request.query_params and request.query_params['format'] == 'csv'):
             self.pagination_class = None

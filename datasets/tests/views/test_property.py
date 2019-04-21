@@ -345,6 +345,7 @@ class PropertyViewTests(BaseTest, TestCase):
 
         for i in range(5):
             self.hpdviolation_factory(property=property1, approveddate="2017-01-01")
+            self.dobviolation_factory(property=property1, issuedate="2010-01-01")
 
         for i in range(1):
             self.hpdviolation_factory(property=property2, approveddate="2010-01-01")

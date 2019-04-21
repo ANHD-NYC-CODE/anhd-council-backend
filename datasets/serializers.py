@@ -6,6 +6,7 @@ from django.conf import settings
 from django.db import models
 import datetime
 import re
+from datasets.helpers.api_helpers import get_annotation_start, get_annotation_end
 
 
 class CouncilSerializer(serializers.ModelSerializer):
@@ -149,6 +150,7 @@ class PropertySerializer(serializers.ModelSerializer):
 
 
 class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
+
     subsidyrecords = CoreSubsidyRecordIdSerializer(source='coresubsidyrecord_set', many=True, read_only=True)
     subsidyj51records = SubsidyJ51IdSerializer(source='subsidyj51_set', many=True, read_only=True)
     subsidy421arecords = Subsidy421aIdSerializer(source='subsidy421a_set', many=True, read_only=True)
@@ -172,24 +174,6 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
                   ('nycha', 'subsidyrecords', 'rentstabilizationrecord', 'subsidyj51records', 'subsidy421arecords'))
 
     def generate_date_key(self, params, dataset_prefix):
-        def get_advanced_search_value(params, dataset_prefix, date_comparison):
-            if 'q' in params:
-                q = params['q']
-                reg = r'{}([^(,| )]*)'.format(dataset_prefix)
-                matches = re.findall(reg, q)
-
-                if len(matches) > 0:
-                    date_match = next((x for x in matches if date_comparison in x), None)
-                    if date_match:
-                        return date_match.split('=')[1]
-
-            return None
-
-        def get_annotation_start(params, dataset_prefix):
-            return params.get(dataset_prefix + '__start', params.get('annotation__start', get_advanced_search_value(params, dataset_prefix, 'gte') or settings.DEFAULT_ANNOTATION_DATE))
-
-        def get_annotation_end(params, dataset_prefix):
-            return params.get(dataset_prefix + '__end', params.get('annotation__end', get_advanced_search_value(params, dataset_prefix, 'lte') or datetime.datetime.now().strftime("%Y-%m-%d")))
 
         start_date = datetime.datetime.strptime(get_annotation_start(
             params, dataset_prefix), '%Y-%m-%d').strftime("%m/%d/%Y")
