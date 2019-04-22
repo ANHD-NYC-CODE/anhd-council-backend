@@ -124,7 +124,9 @@ class PropertyQuerySet(models.QuerySet):
 
 class PropertyManager(models.Manager):
     def get_queryset(self):
-        return PropertyQuerySet(self.model, using=self._db)
+        queryset = PropertyQuerySet(self.model, using=self._db)
+        # queryset.annotate(acrisrealmaster_set=Prefetch('acrisreallegal', filter=))
+        return queryset
 
     def council(self, number):
         return self.get_queryset().council(number)

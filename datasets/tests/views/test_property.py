@@ -350,10 +350,10 @@ class PropertyViewTests(BaseTest, TestCase):
         for i in range(1):
             self.hpdviolation_factory(property=property2, approveddate="2010-01-01")
 
-        # self.acrislegal_factory(property=property1, master=self.acrismaster_factory(
-        #     documentid=i, docdate="2017-01-01", doctype="MTGE", docamount=1))
-        # self.acrislegal_factory(property=property1, master=self.acrismaster_factory(
-        #     documentid=i, docdate="2018-01-01", doctype="MTGE", docamount=1000))
+        self.acrislegal_factory(property=property1, master=self.acrismaster_factory(
+            documentid=i, docdate="2017-01-01", doctype="MTGE", docamount=1))
+        self.acrislegal_factory(property=property1, master=self.acrismaster_factory(
+            documentid=i, docdate="2018-01-01", doctype="MTGE", docamount=1000))
 
         query = '/properties/?summary=true&summary-type=short-annotated&annotation__start=2018-01-01&hpdviolations__start=2015-01-01&hpdviolations__end=2019-01-01&hpdviolations__gte=5'
         response = self.client.get(query, format="json")
@@ -372,7 +372,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(content[0]['dobfiledpermits__01/01/2018-{}'.format(now_date)], 5)
         self.assertEqual(content[0]['evictions__01/01/2018-{}'.format(now_date)], 5)
         # self.assertEqual(content[0]['dobissuedpermits'], 5)
-        # self.assertEqual(content[0]['latest_sale_price'], 1000)
+        self.assertEqual(content[0]['acrisrealmasters__01/01/2018-{}'.format(now_date)], 1)
 
     # summary-annotated serializer
     def test_results_with_annotate_datasets_2(self):
