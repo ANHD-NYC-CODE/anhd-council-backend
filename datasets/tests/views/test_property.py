@@ -354,6 +354,8 @@ class PropertyViewTests(BaseTest, TestCase):
             documentid=i, docdate="2017-01-01", doctype="MTGE", docamount=1))
         self.acrislegal_factory(property=property1, master=self.acrismaster_factory(
             documentid=i, docdate="2018-01-01", doctype="MTGE", docamount=1000))
+        self.acrislegal_factory(property=property1, master=self.acrismaster_factory(
+            documentid=i, docdate="2018-01-01", doctype="NOT_SALE", docamount=1000))
 
         query = '/properties/?summary=true&summary-type=short-annotated&annotation__start=2018-01-01&hpdviolations__start=2015-01-01&hpdviolations__end=2019-01-01&hpdviolations__gte=5'
         response = self.client.get(query, format="json")

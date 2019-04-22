@@ -209,7 +209,8 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
             if hasattr(obj, dataset_prefix + 's'):
                 rep[self.generate_date_key(params, dataset_prefix + 's')] = getattr(obj, dataset_prefix + 's')
             elif dataset == ds.AcrisRealMaster:
-                rep[self.generate_date_key(params, dataset_prefix + 's')] = getattr(obj, 'acrisreallegal_set').filter(**{'documentid__' + dataset.QUERY_DATE_KEY + '__gte': get_annotation_start(
+
+                rep[self.generate_date_key(params, dataset_prefix + 's')] = getattr(obj, 'acrisreallegal_set').filter(documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES).filter(**{'documentid__' + dataset.QUERY_DATE_KEY + '__gte': get_annotation_start(
                     params, dataset_prefix + 's'), 'documentid__' + dataset.QUERY_DATE_KEY + '__lte': get_annotation_end(params, dataset_prefix + 's')}).count()
             else:
                 rep[self.generate_date_key(params, dataset_prefix + 's')] = getattr(obj, dataset_prefix + '_set').filter(**{dataset.QUERY_DATE_KEY + '__gte': get_annotation_start(
