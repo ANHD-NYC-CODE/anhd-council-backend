@@ -20,7 +20,7 @@ import datetime
 logger = logging.getLogger('app')
 
 
-def get_advanced_search_value(params, dataset_prefix=None, date_comparison=None):
+def get_advanced_search_value(params, dataset_prefix=None, date_field='', date_comparison='gte'):
     if not dataset_prefix:
         return None
     if 'q' in params:
@@ -29,21 +29,19 @@ def get_advanced_search_value(params, dataset_prefix=None, date_comparison=None)
         matches = re.findall(reg, q)
 
         if len(matches) > 0:
-            date_match = next((x for x in matches if date_comparison in x), None)
+            date_match = next((x for x in matches if "{}__{}".format(date_field, date_comparison) in x), None)
             if date_match:
-
                 return date_match.split('=')[1]
 
     return None
 
 
-def get_annotation_start(params, dataset_prefix=''):
+def get_annotation_start(params, dataset_prefix='', date_field=''):
+    return params.get(dataset_prefix + '__start', params.get('annotation__start', get_advanced_search_value(params, dataset_prefix, date_field, 'gte') or settings.DEFAULT_ANNOTATION_DATE))
 
-    return params.get(dataset_prefix + '__start', params.get('annotation__start', get_advanced_search_value(params, dataset_prefix, 'gte') or settings.DEFAULT_ANNOTATION_DATE))
 
-
-def get_annotation_end(params, dataset_prefix=''):
-    return params.get(dataset_prefix + '__end', params.get('annotation__end', get_advanced_search_value(params, dataset_prefix, 'lte') or datetime.datetime.now().strftime("%Y-%m-%d")))
+def get_annotation_end(params, dataset_prefix='', date_field=''):
+    return params.get(dataset_prefix + '__end', params.get('annotation__end', get_advanced_search_value(params, dataset_prefix, date_field, 'lte') or datetime.datetime.now().strftime("%Y-%m-%d")))
 
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -75,8 +73,9 @@ def prefetch_annotated_datasets(queryset, request):
 
     params = request.query_params
 
-    annotation_dict = annotated_fields_to_dict(start=get_annotation_start(params), end=get_annotation_end(params))
     for dataset in DATASETS:
+        annotation_dict = annotated_fields_to_dict(start=get_annotation_start(
+            params, None, dataset.QUERY_DATE_KEY), end=get_annotation_end(params, None, dataset.QUERY_DATE_KEY))
         field_path = dataset.__name__.lower() + '__' + dataset.QUERY_DATE_KEY
         date_filters = filter_helpers.value_dict_to_date_filter_dict(field_path, annotation_dict)
         # annotations get overwritten by drf filters if dataset annotation is present.
@@ -85,6 +84,7 @@ def prefetch_annotated_datasets(queryset, request):
 
     queryset = queryset.prefetch_related(
         Prefetch('acrisreallegal_set', queryset=ds.AcrisRealLegal.objects.select_related('documentid')))
+
     return queryset
 
 

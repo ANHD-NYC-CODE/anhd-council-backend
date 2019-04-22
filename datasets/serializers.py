@@ -173,13 +173,13 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
         fields = (ds.Property.SHORT_SUMMARY_FIELDS +
                   ('nycha', 'subsidyrecords', 'rentstabilizationrecord', 'subsidyj51records', 'subsidy421arecords'))
 
-    def generate_date_key(self, params, dataset_prefix):
+    def generate_date_key(self, params, dataset_prefix='', date_field=''):
 
         start_date = datetime.datetime.strptime(get_annotation_start(
-            params, dataset_prefix), '%Y-%m-%d').strftime("%m/%d/%Y")
+            params, dataset_prefix, date_field), '%Y-%m-%d').strftime("%m/%d/%Y")
 
         end_date = datetime.datetime.strptime(get_annotation_end(
-            params, dataset_prefix), '%Y-%m-%d').strftime("%m/%d/%Y")
+            params, dataset_prefix, date_field), '%Y-%m-%d').strftime("%m/%d/%Y")
 
         return dataset_prefix + '__' + '-'.join(filter(None, [start_date, end_date]))
 
@@ -206,15 +206,17 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
                                ds.DOBComplaint, ds.ECBViolation, ds.DOBFiledPermit, ds.Eviction, ds.AcrisRealMaster)
         for dataset in dataset_annotations:
             dataset_prefix = dataset.__name__.lower()
-            if hasattr(obj, dataset_prefix + 's'):
-                rep[self.generate_date_key(params, dataset_prefix + 's')] = getattr(obj, dataset_prefix + 's')
-            elif dataset == ds.AcrisRealMaster:
 
-                rep[self.generate_date_key(params, dataset_prefix + 's')] = getattr(obj, 'acrisreallegal_set').filter(documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES).filter(**{'documentid__' + dataset.QUERY_DATE_KEY + '__gte': get_annotation_start(
-                    params, dataset_prefix + 's'), 'documentid__' + dataset.QUERY_DATE_KEY + '__lte': get_annotation_end(params, dataset_prefix + 's')}).count()
+            if hasattr(obj, dataset_prefix + 's'):
+                rep[self.generate_date_key(params, dataset_prefix + 's', dataset.QUERY_DATE_KEY)
+                    ] = getattr(obj, dataset_prefix + 's')
+            elif dataset == ds.AcrisRealMaster:
+                rep[self.generate_date_key(params, dataset_prefix + 's', dataset.QUERY_DATE_KEY)] = getattr(obj, 'acrisreallegal_set').filter(documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES).filter(**{'documentid__' + dataset.QUERY_DATE_KEY + '__gte': get_annotation_start(
+                    params, dataset_prefix + 's', dataset.QUERY_DATE_KEY), 'documentid__' + dataset.QUERY_DATE_KEY + '__lte': get_annotation_end(params, dataset_prefix + 's', dataset.QUERY_DATE_KEY)}).count()
             else:
-                rep[self.generate_date_key(params, dataset_prefix + 's')] = getattr(obj, dataset_prefix + '_set').filter(**{dataset.QUERY_DATE_KEY + '__gte': get_annotation_start(
-                    params, dataset_prefix + 's'), dataset.QUERY_DATE_KEY + '__lte': get_annotation_end(params, dataset_prefix + 's')}).count()
+                rep[self.generate_date_key(params, dataset_prefix + 's', dataset.QUERY_DATE_KEY)] = getattr(obj, dataset_prefix + '_set').filter(**{dataset.QUERY_DATE_KEY + '__gte': get_annotation_start(
+                    params, dataset_prefix + 's', dataset.QUERY_DATE_KEY), dataset.QUERY_DATE_KEY + '__lte': get_annotation_end(params, dataset_prefix + 's', dataset.QUERY_DATE_KEY)}).count()
+
         return rep
 
     def get_hpdviolations(self, obj):
