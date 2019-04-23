@@ -13,13 +13,33 @@ logger = logging.getLogger('app')
 
 
 @app.task(bind=True, queue='celery', default_retry_delay=30, max_retries=3)
-def async_cache_council_property_summaries(self):
-    return cache_council_property_summaries()
+def async_cache_council_property_summaries_month(self):
+    return cache_council_property_summaries_month()
 
 
 @app.task(bind=True, queue='celery', default_retry_delay=30, max_retries=3)
-def async_cache_community_property_summaries(self):
-    return cache_community_property_summaries()
+def async_cache_council_property_summaries_year(self):
+    return cache_council_property_summaries_year()
+
+
+@app.task(bind=True, queue='celery', default_retry_delay=30, max_retries=3)
+def async_cache_council_property_summaries_3_year(self):
+    return cache_council_property_summaries_3_year()
+
+
+@app.task(bind=True, queue='celery', default_retry_delay=30, max_retries=3)
+def async_cache_community_property_summaries_month(self):
+    return cache_community_property_summaries_month()
+
+
+@app.task(bind=True, queue='celery', default_retry_delay=30, max_retries=3)
+def async_cache_community_property_summaries_year(self):
+    return cache_community_property_summaries_year()
+
+
+@app.task(bind=True, queue='celery', default_retry_delay=30, max_retries=3)
+def async_cache_community_property_summaries_3_year(self):
+    return cache_community_property_summaries_3_year()
 
 
 @app.task(bind=True, queue='celery', default_retry_delay=30, max_retries=3)
