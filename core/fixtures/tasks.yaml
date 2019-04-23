@@ -454,7 +454,7 @@
     kwargs: "{}"
     date_changed: "2019-01-01"
 - model: django_celery_beat.periodictask
-  pk: 29
+  pk: 30
   fields:
     name: "Vacuum DB Wednesday"
     description: "Maintainence task. 3am every MWF morning"
@@ -464,7 +464,7 @@
     kwargs: "{}"
     date_changed: "2019-01-01"
 - model: django_celery_beat.periodictask
-  pk: 29
+  pk: 31
   fields:
     name: "Vacuum DB Friday"
     description: "Maintainence task. 3am every MWF morning"
