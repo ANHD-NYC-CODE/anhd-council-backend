@@ -4,7 +4,10 @@ from app.celery import app
 from core import models as c
 from django.conf import settings
 from app.mailer import send_update_error_mail, send_update_success_mail, send_general_task_error_mail
-from core.utils.cache import cache_council_property_summaries, cache_community_property_summaries
+from core.utils.cache import cache_council_property_summaries_month, cache_community_property_summaries_month
+from core.utils.cache import cache_council_property_summaries_year, cache_community_property_summaries_year
+from core.utils.cache import cache_council_property_summaries_3_year, cache_community_property_summaries_3_year
+
 import os
 
 import logging
