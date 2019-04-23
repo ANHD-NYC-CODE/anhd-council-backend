@@ -22,8 +22,6 @@ def cache_council_property_summaries_month():
     from datasets.models import Council
     today = datetime.datetime.today()
     one_month_ago = (today.replace(day=1) - relativedelta(months=1)).strftime('%Y-%m-%d')
-    one_year_ago = (today.replace(day=1) - relativedelta(years=1)).strftime('%Y-%m-%d')
-    three_years_ago = (today.replace(day=1) - relativedelta(years=1)).strftime('%Y-%m-%d')
 
     # cache 1 month
     for record in Council.objects.all():
@@ -46,7 +44,6 @@ def cache_council_property_summaries_year():
     from datasets.models import Council
     today = datetime.datetime.today()
     one_year_ago = (today.replace(day=1) - relativedelta(years=1)).strftime('%Y-%m-%d')
-    three_years_ago = (today.replace(day=1) - relativedelta(years=1)).strftime('%Y-%m-%d')
 
     # cache 1 year
     for record in Council.objects.all():
@@ -77,8 +74,6 @@ def cache_community_property_summaries_month():
     from datasets.models import Community
     today = datetime.datetime.today()
     one_month_ago = (today.replace(day=1) - relativedelta(months=1)).strftime('%Y-%m-%d')
-    one_year_ago = (today.replace(day=1) - relativedelta(years=1)).strftime('%Y-%m-%d')
-    three_years_ago = (today.replace(day=1) - relativedelta(years=1)).strftime('%Y-%m-%d')
 
     for record in Community.objects.all():
         print("Caching Community 1 month: {}".format(record.pk))
@@ -112,7 +107,7 @@ def cache_community_property_summaries_year():
 def cache_community_property_summaries_3_year():
     from datasets.models import Community
     today = datetime.datetime.today()
-    one_year_ago = (today.replace(day=1) - relativedelta(years=1)).strftime('%Y-%m-%d')
+    three_years_ago = (today.replace(day=1) - relativedelta(years=1)).strftime('%Y-%m-%d')
 
     # cache 3 year
     for record in Community.objects.all():
