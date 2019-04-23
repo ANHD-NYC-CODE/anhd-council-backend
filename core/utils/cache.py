@@ -7,7 +7,7 @@ from dateutil.relativedelta import relativedelta
 
 
 def create_async_cache_workers():
-    from core.tasks import async_cache_council_property_summaries, async_cache_community_property_summaries, async_cache_council_property_summaries_year, async_cache_community_property_summaries_year, async_cache_council_property_summaries_3_year, async_cache_community_property_summaries_3_year
+    from core.tasks import async_cache_council_property_summaries_month, async_cache_community_property_summaries_month, async_cache_council_property_summaries_year, async_cache_community_property_summaries_year, async_cache_council_property_summaries_3_year, async_cache_community_property_summaries_3_year
 
     async_cache_council_property_summaries_month.delay()
     async_cache_community_property_summaries_month.delay()
