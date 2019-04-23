@@ -24,14 +24,14 @@ def cache_council_property_summaries_month():
     one_month_ago = (today.replace(day=1) - relativedelta(months=1)).strftime('%Y-%m-%d')
 
     # cache 1 month
-    for record in Council.objects.all():
+    for record in Council.objects.all().order_by('pk'):
         print("Caching Council 1 month: {}".format(record.pk))
         logger.debug("Caching Council 1 month: {}".format(record.pk))
         requests.get(
             'https://api.displacementalert.org/councils/{}/properties/?format=json&summary=true&summary-type=short-annotated&annotation__start={}&unitsres__gte=1'.format(record.pk, one_month_ago))
 
     # cache 1 year
-    for record in Council.objects.all():
+    for record in Council.objects.all().order_by('pk'):
         print("Caching Council 1 year: {}".format(record.pk))
         logger.debug("Caching Council 1 year: {}".format(record.pk))
         requests.get(
@@ -46,7 +46,7 @@ def cache_council_property_summaries_year():
     one_year_ago = (today.replace(day=1) - relativedelta(years=1)).strftime('%Y-%m-%d')
 
     # cache 1 year
-    for record in Council.objects.all():
+    for record in Council.objects.all().order_by('pk'):
         print("Caching Council 1 year: {}".format(record.pk))
         logger.debug("Caching Council 1 year: {}".format(record.pk))
         requests.get(
@@ -61,7 +61,7 @@ def cache_council_property_summaries_3_year():
     three_years_ago = (today.replace(day=1) - relativedelta(years=1)).strftime('%Y-%m-%d')
 
     # cache 3 year
-    for record in Council.objects.all():
+    for record in Council.objects.all().order_by('pk'):
         print("Caching Council 3 years: {}".format(record.pk))
         logger.debug("Caching Council 3 years: {}".format(record.pk))
         requests.get(
@@ -75,14 +75,14 @@ def cache_community_property_summaries_month():
     today = datetime.datetime.today()
     one_month_ago = (today.replace(day=1) - relativedelta(months=1)).strftime('%Y-%m-%d')
 
-    for record in Community.objects.all():
+    for record in Community.objects.all().order_by('pk'):
         print("Caching Community 1 month: {}".format(record.pk))
         logger.debug("Caching Community 1 month: {}".format(record.pk))
         requests.get(
             'https://api.displacementalert.org/communities/{}/properties/?format=json&summary=true&summary-type=short-annotated&annotation__start={}&unitsres__gte=1'.format(record.pk, one_month_ago))
 
     # cache 1 year
-    for record in Community.objects.all():
+    for record in Community.objects.all().order_by('pk'):
         logger.debug("Caching Community 1 year: {}".format(record.pk))
         requests.get(
             'https://api.displacementalert.org/communities/{}/properties/?format=json&summary=true&summary-type=short-annotated&annotation__start={}&unitsres__gte=1'.format(record.pk, one_year_ago))
@@ -96,7 +96,7 @@ def cache_community_property_summaries_year():
     one_year_ago = (today.replace(day=1) - relativedelta(years=1)).strftime('%Y-%m-%d')
 
     # cache 1 year
-    for record in Community.objects.all():
+    for record in Community.objects.all().order_by('pk'):
         logger.debug("Caching Community 1 year: {}".format(record.pk))
         requests.get(
             'https://api.displacementalert.org/communities/{}/properties/?format=json&summary=true&summary-type=short-annotated&annotation__start={}&unitsres__gte=1'.format(record.pk, one_year_ago))
@@ -110,7 +110,7 @@ def cache_community_property_summaries_3_year():
     three_years_ago = (today.replace(day=1) - relativedelta(years=1)).strftime('%Y-%m-%d')
 
     # cache 3 year
-    for record in Community.objects.all():
+    for record in Community.objects.all().order_by('pk'):
         logger.debug("Caching Community 3 years: {}".format(record.pk))
         requests.get(
             'https://api.displacementalert.org/communities/{}/properties/?format=json&summary=true&summary-type=short-annotated&annotation__start={}&unitsres__gte=1'.format(record.pk, three_years_ago))
