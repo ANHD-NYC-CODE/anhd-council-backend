@@ -356,10 +356,10 @@
 - model: django_celery_beat.periodictask
   pk: 20
   fields:
-    name: "Reset cache once a day in the morning"
+    name: "Reset cache at midnight"
     description: "Maintainence task."
     task: "app.tasks.reset_cache"
-    crontab: 9
+    crontab: 12
     args: "[]"
     kwargs: "{}"
     date_changed: "2019-01-01"

@@ -56,7 +56,7 @@ def clean_database():
         realconn.set_isolation_level(0)
         cursor = realconn.cursor()
         cursor.execute('VACUUM ANALYZE')
-        cursor.execute('REINDEX SYSTEM anhd')
+        cursor.execute('REINDEX DATABASE anhd')
         realconn.set_isolation_level(old_isolation_level)
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
