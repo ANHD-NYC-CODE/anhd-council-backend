@@ -11,6 +11,8 @@ logger = logging.getLogger('app')
 
 
 class LisPenden(BaseDatasetModel, models.Model):
+    QUERY_DATE_KEY = 'fileddate'
+
     class Meta:
         indexes = [
             models.Index(fields=['bbl', 'fileddate']),

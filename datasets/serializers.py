@@ -203,7 +203,7 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
         # this file and in datasets.helpers.api_helpers.py, labled "SINGLE-QUERY METHOD CHAIN"
 
         dataset_annotations = (ds.HPDViolation, ds.HPDComplaint, ds.DOBViolation,
-                               ds.DOBComplaint, ds.ECBViolation, ds.DOBFiledPermit, ds.Eviction, ds.AcrisRealMaster)
+                               ds.DOBComplaint, ds.ECBViolation, ds.DOBFiledPermit, ds.Eviction, ds.AcrisRealMaster, ds.LisPenden)
         for dataset in dataset_annotations:
             dataset_prefix = dataset.__name__.lower()
 

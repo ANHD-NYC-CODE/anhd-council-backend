@@ -11,6 +11,8 @@ logging.disable(logging.CRITICAL)
 
 
 class PropertyViewTests(BaseTest, TestCase):
+    def tearDown(self):
+        self.clean_tests()
 
     def test_list(self):
         self.property_factory(bbl="1")
@@ -492,3 +494,72 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(content[1]['bbl'], '2')
         self.assertEqual(content[1]['hpdviolations__01/01/2017-{}'.format(now_date)], 5)
         self.assertEqual(content[1]['dobviolations__01/01/2018-{}'.format(now_date)], 1)
+
+    def test_results_with_annotate_datasets_5(self):
+        # Cached, unauthorized
+        council = self.council_factory(id=1)
+        property1 = self.property_factory(bbl='1', council=council)
+
+        for i in range(5):
+            self.lispenden_factory(property=property1, fileddate="2018-01-01")
+
+        pre_cache_query = '/properties/?summary=true&summary-type=short-annotated&annotation__start=2018-01-01'
+        pre_cache_response = self.client.get(pre_cache_query, format="json")
+
+        pre_cache_content = pre_cache_response.data['results']
+
+        now_date = datetime.datetime.now().strftime("%m/%d/%Y")
+
+        self.assertEqual(pre_cache_response.status_code, 200)
+        self.assertEqual(len(pre_cache_content), 1)
+        self.assertEqual(pre_cache_content[0]['bbl'], '1')
+
+        self.assertEqual(pre_cache_content[0]['lispendens__01/01/2018-{}'.format(now_date)], 5)
+
+        post_cache_query = '/properties/?summary=true&summary-type=short-annotated&annotation__start=2018-01-01'
+        post_cache_response = self.client.get(post_cache_query, format="json")
+
+        post_cache_content = post_cache_response.data
+
+        now_date = datetime.datetime.now().strftime("%m/%d/%Y")
+
+        self.assertEqual(post_cache_response.status_code, 200)
+        self.assertEqual(len(post_cache_content), 1)
+        self.assertEqual(post_cache_content[0]['bbl'], '1')
+        self.assertEqual('lispendens__01/01/2018-{}'.format(now_date) not in post_cache_content[0], True)
+
+    def test_results_with_annotate_datasets_6(self):
+        # Cached, authorized
+        council = self.council_factory(id=1)
+        property1 = self.property_factory(bbl='1', council=council)
+
+        for i in range(5):
+            self.lispenden_factory(property=property1, fileddate="2018-01-01")
+
+        token = self.get_access_token()
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
+
+        pre_cache_query = '/properties/?summary=true&summary-type=short-annotated&annotation__start=2018-01-01'
+        pre_cache_response = self.client.get(pre_cache_query, format="json")
+
+        pre_cache_content = pre_cache_response.data['results']
+
+        now_date = datetime.datetime.now().strftime("%m/%d/%Y")
+
+        self.assertEqual(pre_cache_response.status_code, 200)
+        self.assertEqual(len(pre_cache_content), 1)
+        self.assertEqual(pre_cache_content[0]['bbl'], '1')
+
+        self.assertEqual(pre_cache_content[0]['lispendens__01/01/2018-{}'.format(now_date)], 5)
+
+        post_cache_query = '/properties/?summary=true&summary-type=short-annotated&annotation__start=2018-01-01'
+        post_cache_response = self.client.get(post_cache_query, format="json")
+
+        post_cache_content = post_cache_response.data
+
+        now_date = datetime.datetime.now().strftime("%m/%d/%Y")
+
+        self.assertEqual(post_cache_response.status_code, 200)
+        self.assertEqual(len(post_cache_content), 1)
+        self.assertEqual(post_cache_content[0]['bbl'], '1')
+        self.assertEqual(post_cache_content[0]['lispendens__01/01/2018-{}'.format(now_date)], 5)

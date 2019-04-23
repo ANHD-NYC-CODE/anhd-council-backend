@@ -69,15 +69,20 @@ def annotated_fields_to_dict(start=None, end=None):
 
 def prefetch_annotated_datasets(queryset, request):
     DATASETS = [ds.HPDViolation, ds.HPDComplaint, ds.DOBViolation, ds.DOBComplaint,
-                ds.ECBViolation, ds.Eviction, ds.DOBIssuedPermit, ds.DOBFiledPermit]
+                ds.ECBViolation, ds.Eviction, ds.DOBIssuedPermit, ds.DOBFiledPermit, ds.AcrisRealMaster]
 
     params = request.query_params
 
     for dataset in DATASETS:
         annotation_dict = annotated_fields_to_dict(start=get_annotation_start(
-            params, None, dataset.QUERY_DATE_KEY), end=get_annotation_end(params, None, dataset.QUERY_DATE_KEY))
-        field_path = dataset.__name__.lower() + '__' + dataset.QUERY_DATE_KEY
-        date_filters = filter_helpers.value_dict_to_date_filter_dict(field_path, annotation_dict)
+            params, '', dataset.QUERY_DATE_KEY), end=get_annotation_end(params, '', dataset.QUERY_DATE_KEY))
+
+        if dataset == ds.AcrisRealMaster:
+            field_path = 'acrisreallegal__documentid__' + dataset.QUERY_DATE_KEY
+            date_filters = filter_helpers.value_dict_to_date_filter_dict(field_path, annotation_dict)
+        else:
+            field_path = dataset.__name__.lower() + '__' + dataset.QUERY_DATE_KEY
+            date_filters = filter_helpers.value_dict_to_date_filter_dict(field_path, annotation_dict)
         # annotations get overwritten by drf filters if dataset annotation is present.
 
         queryset = filter_helpers.filtered_dataset_annotation(dataset.__name__.lower(), date_filters, queryset)
@@ -205,7 +210,20 @@ def cache_me(relative_key_path=True, get_queryset=False):
                 # cached response will not display pagination buttons in browsable API view
                 # but otherwise preserves the pagination data
                 logger.debug('Serving cache: {}'.format(cache_key))
-                return original_args[0].finalize_response(original_args[1], Response(cache.get(cache_key)))
+                cached_value = cache.get(cache_key)
+
+                # don't serve paginated values with cache
+                if 'results' in cached_value:
+                    cached_value = cached_value['results']
+
+                if not original_args[1].user.is_authenticated:
+                    # filter out lispendens in annotated fields for unauthorized users
+                    lispendens_field = [key for key in cached_value[0].keys() if 'lispendens' in key]
+                    if len(lispendens_field):
+                        for value in cached_value:
+                            del value[lispendens_field[0]]
+
+                return original_args[0].finalize_response(original_args[1], Response(cached_value))
             else:
                 response = function(*original_args, **original_kwargs)
 
