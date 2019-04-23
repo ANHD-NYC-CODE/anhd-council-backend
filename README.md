@@ -34,7 +34,7 @@
 1) You can follow the same steps for production (using `sh build.dev.sh` for step 2), however you may want to have a non-dockerized version of the app running for debugging purposes.
 2) stop the docker app `docker-compose stop app`
 3) If ejected docker, stop the app, and celery workers with `docker-compose stop app celery_default celery_update`, but keep other containers running.
-4) start workers manually with `celery -A app worker -Q update -l debug -n update_worker --concurrency=8 --logfile=./celery/logs/update.log` and `celery -A app worker -Q celery -l debug -n celery_worker --concurrency=2 --logfile=./celery/logs/default.log`
+4) start workers manually with `celery -A app worker -Q update -l debug -n update_worker --concurrency=8 --logfile=./celery/logs/update.log` and `celery -A app worker -Q celery -l debug -n celery_worker --concurrency=8 --logfile=./celery/logs/default.log`
 5) start the app in terminal `python manage.py runserver`
 
 
