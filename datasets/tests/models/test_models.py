@@ -48,6 +48,7 @@ class PropertyTests(BaseTest, TestCase):
         ds.Property.seed_or_update_self(file_path=update.file.file.path, update=update)
 
         self.assertEqual(ds.Property.objects.count(), 2)
+        self.assertEqual(ds.PropertyAnnotation.objects.count(), 2)
         self.assertEqual(update.rows_created, 2)
 
     def test_seed_properties_update(self):
@@ -60,6 +61,7 @@ class PropertyTests(BaseTest, TestCase):
         ds.Property.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
 
         self.assertEqual(ds.Property.objects.count(), 3)
+        self.assertEqual(ds.PropertyAnnotation.objects.count(), 3)
         self.assertEqual(new_update.rows_created, 1)
         self.assertEqual(new_update.rows_updated, 1)
 

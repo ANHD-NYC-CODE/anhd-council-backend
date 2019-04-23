@@ -5,6 +5,7 @@ from datasets.utils.validation_filters import is_null, exceeds_char_length
 from core.utils.transform import from_csv_file_to_gen, with_geo, get_geo
 from core.utils.csv_helpers import extract_csvs_from_zip
 from core.utils.address import clean_number_and_streets
+from django.dispatch import receiver
 
 from datasets import models as ds
 
@@ -320,6 +321,20 @@ class Property(BaseDatasetModel, models.Model):
         self.seed_with_upsert(**kwargs)
         logger.debug('adding geometry')
         self.add_geometry()
+        logger.debug('adding property annotations')
+        self.create_property_annotations()
+
+    @classmethod
+    def create_property_annotations(self, **kwargs):
+        for property in self.objects.filter(propertyannotation__isnull=True):
+            ds.PropertyAnnotation.objects.create(bbl=property)
+
+
+@receiver(models.signals.post_save, sender=Property)
+def create_property_annotation_on_save(sender, instance, created, **kwargs):
+    if created == True:
+        annotation = ds.PropertyAnnotation.objects.create(bbl=instance)
+        annotation.save()
 
     def __str__(self):
         return str(self.bbl)

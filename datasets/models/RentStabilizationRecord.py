@@ -2,6 +2,7 @@ from django.db import models
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.utils.validation_filters import is_null
+from datasets import models as ds
 import logging
 import datetime
 
@@ -210,14 +211,21 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
 
     @classmethod
     def annotate_properties(self):
-        for record in self.objects.all():
+        for annotation in ds.PropertyAnnotation.objects.all():
             try:
-                property = record.ucbbl
-
-                property.unitsrentstabilized = property.get_rentstabilized_units()
-                property.save()
+                annotation.unitsrentstabilized = annotation.bbl.get_rentstabilized_units()
+                annotation.save()
             except Exception as e:
                 continue
+
+        # for record in self.objects.all():
+        #     try:
+        #         property = record.ucbbl
+        #
+        #         property.unitsrentstabilized = property.get_rentstabilized_units()
+        #         property.save()
+        #     except Exception as e:
+        #         continue
 
     def __str__(self):
         return str(self.id)
