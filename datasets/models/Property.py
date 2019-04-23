@@ -34,10 +34,10 @@ class ObsoletePropertyManager(models.Manager):
 class PropertyQuerySet(models.QuerySet):
     def rentstab_filter(self):
         rentstab_records = ds.RentStabilizationRecord.objects.only('ucbbl').filter(ucbbl=OuterRef('bbl'))
-        return self.filter(unitsrentstabilized__gte=1).annotate(has_rentstab=Exists(rentstab_records)).filter(has_rentstab=True)
+        return self.filter(propertyannotation__unitsrentstabilized__gte=1).annotate(has_rentstab=Exists(rentstab_records)).filter(has_rentstab=True)
 
     def alternate_rentstab_filter(self):
-        return self.filter(yearbuilt__lte=1974, yearbuilt__gte=1).annotate(rs_units=Sum('unitsrentstabilized')).filter(rs_units__gte=1)
+        return self.filter(yearbuilt__lte=1974, yearbuilt__gte=1).annotate(rs_units=Sum('propertyannotation__unitsrentstabilized')).filter(rs_units__gte=1)
 
     def rentreg_filter(self, program=None):
         corerecords = ds.CoreSubsidyRecord.objects.only('bbl').filter(bbl=OuterRef('bbl'))
@@ -126,7 +126,6 @@ class PropertyQuerySet(models.QuerySet):
 class PropertyManager(models.Manager):
     def get_queryset(self):
         queryset = PropertyQuerySet(self.model, using=self._db)
-        # queryset.annotate(acrisrealmaster_set=Prefetch('acrisreallegal', filter=))
         return queryset
 
     def council(self, number):
@@ -156,7 +155,7 @@ class PropertyManager(models.Manager):
 
 class Property(BaseDatasetModel, models.Model):
 
-    SHORT_SUMMARY_FIELDS = ('bbl', 'council', 'cd', 'yearbuilt', 'unitsres', 'unitsrentstabilized', 'unitstotal',
+    SHORT_SUMMARY_FIELDS = ('bbl', 'council', 'cd', 'yearbuilt', 'unitsres', 'unitstotal',
                             'bldgclass', 'zonedist1', 'numbldgs', 'numfloors', 'address', 'lat', 'lng',)
 
     current_version = '18V1'
@@ -267,7 +266,6 @@ class Property(BaseDatasetModel, models.Model):
     # Custom fields
     lng = models.DecimalField(decimal_places=16, max_digits=32, blank=True, null=True)
     lat = models.DecimalField(decimal_places=16, max_digits=32, blank=True, null=True)
-    unitsrentstabilized = models.IntegerField(blank=True, null=True)
     original_address = models.TextField(blank=True, null=True)
 
     def get_rentstabilized_units(self):

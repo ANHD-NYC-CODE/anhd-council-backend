@@ -300,9 +300,10 @@ class PropertyViewTests(BaseTest, TestCase):
 
     def test_property_housing_summary(self):
         property = self.property_factory(bbl="1", address="123 fake st", yearbuilt="1900",
-                                         unitstotal="12", unitsres="11", unitsrentstabilized="10")
+                                         unitstotal="12", unitsres="11")
         property2 = self.property_factory(bbl="2", address="125 fake st", yearbuilt="1900",
-                                          unitstotal="12", unitsres="11", unitsrentstabilized="10")
+                                          unitstotal="12", unitsres="11")
+
         self.taxlien_factory(property=property, year=2018)
         self.conhrecord_factory(property=property)
         building1 = self.building_factory(bin="1", property=property, stname="fake st", lhnd="1")

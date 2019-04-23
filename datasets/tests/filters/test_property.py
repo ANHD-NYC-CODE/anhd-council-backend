@@ -1204,19 +1204,19 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         council = self.council_factory(id=1)
         council2 = self.council_factory(id=2)
         # full match
-        property1 = self.property_factory(bbl=1, council=council, unitsrentstabilized=1, yearbuilt=1950)
+        property1 = self.property_factory(bbl=1, council=council, yearbuilt=1950)
         self.taxbill_factory(property=property1, uc2007=10, uc2017=1)
         # council match, no housing type match
-        property2 = self.property_factory(bbl=2, council=council, unitsrentstabilized=10, yearbuilt=1950)
+        property2 = self.property_factory(bbl=2, council=council, yearbuilt=1950)
         self.taxbill_factory(property=property2, uc2007=10, uc2017=10)
         # council match, housing type match, no record match
-        property3 = self.property_factory(bbl=3, council=council, unitsrentstabilized=1, yearbuilt=1950)
+        property3 = self.property_factory(bbl=3, council=council, yearbuilt=1950)
         self.taxbill_factory(property=property3, uc2007=10, uc2017=1)
         # council match, no housing type match
         property4 = self.property_factory(bbl=4, council=council)
 
         # no council match, housing type match, record match
-        property5 = self.property_factory(bbl=5, council=council2, unitsrentstabilized=1, yearbuilt=1950)
+        property5 = self.property_factory(bbl=5, council=council2, yearbuilt=1950)
         self.taxbill_factory(property=property5, uc2007=10, uc2017=1)
 
         for i in range(5):
@@ -1240,19 +1240,19 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         council2 = self.council_factory(id=2)
 
         # full match
-        property1 = self.property_factory(bbl=1, council=council, unitsrentstabilized=1, yearbuilt=1950)
+        property1 = self.property_factory(bbl=1, council=council, yearbuilt=1950)
         self.taxbill_factory(property=property1, uc2007=10, uc2017=1)
         # council match, no housing type match
-        property2 = self.property_factory(bbl=2, council=council, unitsrentstabilized=10, yearbuilt=1950)
+        property2 = self.property_factory(bbl=2, council=council, yearbuilt=1950)
         self.taxbill_factory(property=property2, uc2007=10, uc2017=10)
         # council match, housing type match, no record match
-        property3 = self.property_factory(bbl=3, council=council, unitsrentstabilized=1, yearbuilt=1950)
+        property3 = self.property_factory(bbl=3, council=council, yearbuilt=1950)
         self.taxbill_factory(property=property3, uc2007=10, uc2017=1)
         # council match, no housing type match
         property4 = self.property_factory(bbl=4, council=council)
 
         # no council match, housing type match, record match
-        property5 = self.property_factory(bbl=5, council=council2, unitsrentstabilized=1, yearbuilt=1950)
+        property5 = self.property_factory(bbl=5, council=council2, yearbuilt=1950)
         self.taxbill_factory(property=property5, uc2007=10, uc2017=1)
 
         # sold for $10 in date range
@@ -1290,19 +1290,19 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         council = self.council_factory(id=1)
         council2 = self.council_factory(id=2)
         # full match
-        property1 = self.property_factory(bbl=1, council=council, unitsrentstabilized=1, yearbuilt=1950)
+        property1 = self.property_factory(bbl=1, council=council, yearbuilt=1950)
         self.coredata_factory(property=property1, enddate="2018-01-01", programname="421a Affordable")
         # council match, no housing type match, record match
-        property2 = self.property_factory(bbl=2, council=council, unitsrentstabilized=10, yearbuilt=1950)
+        property2 = self.property_factory(bbl=2, council=council, yearbuilt=1950)
         # council match, no housing type match on program, record match
-        property3 = self.property_factory(bbl=3, council=council, unitsrentstabilized=1, yearbuilt=1950)
+        property3 = self.property_factory(bbl=3, council=council, yearbuilt=1950)
         self.coredata_factory(property=property3, enddate="2018-01-01", programname="LIHCT")
         # council match, housing type match, no record match
-        property4 = self.property_factory(bbl=4, council=council, unitsrentstabilized=1, yearbuilt=1950)
+        property4 = self.property_factory(bbl=4, council=council, yearbuilt=1950)
         self.coredata_factory(property=property4, enddate="2018-01-01", programname="421a Affordable")
 
         # no council match, housing type match, record match
-        property5 = self.property_factory(bbl=5, council=council2, unitsrentstabilized=1, yearbuilt=1950)
+        property5 = self.property_factory(bbl=5, council=council2, yearbuilt=1950)
         self.coredata_factory(property=property5, enddate="2018-01-01", programname="421a Affordable")
 
         for i in range(5):

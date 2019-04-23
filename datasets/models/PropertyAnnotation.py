@@ -54,3 +54,6 @@ class PropertyAnnotation(BaseDatasetModel, models.Model):
     subsidyj51 = models.BooleanField(blank=True, null=True)
     subsidy421a = models.BooleanField(blank=True, null=True)
     subsidyprograms = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return str(self.id)

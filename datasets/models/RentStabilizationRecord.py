@@ -5,6 +5,7 @@ from datasets.utils.validation_filters import is_null
 from datasets import models as ds
 import logging
 import datetime
+from django.dispatch import receiver
 
 logger = logging.getLogger('app')
 
@@ -229,3 +230,15 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
 
     def __str__(self):
         return str(self.id)
+
+
+@receiver(models.signals.post_save, sender=RentStabilizationRecord)
+def annotate_property_on_save(sender, instance, created, **kwargs):
+    if created == True:
+        try:
+            annotation = ds.PropertyAnnotation.objects.get(bbl=instance.ucbbl)
+            annotation.unitsrentstabilized = annotation.bbl.get_rentstabilized_units()
+            annotation.save()
+        except Exception as e:
+            print(e)
+            return
