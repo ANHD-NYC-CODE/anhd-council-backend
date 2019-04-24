@@ -151,27 +151,28 @@ class PropertySerializer(serializers.ModelSerializer):
 
 class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
 
-    subsidyrecords = CoreSubsidyRecordIdSerializer(source='coresubsidyrecord_set', many=True, read_only=True)
-    subsidyj51records = SubsidyJ51IdSerializer(source='subsidyj51_set', many=True, read_only=True)
-    subsidy421arecords = Subsidy421aIdSerializer(source='subsidy421a_set', many=True, read_only=True)
-
-    nycha = PublicHousingRecordIdSerializer(source='publichousingrecord_set', many=True, read_only=True)
+    subsidyprograms = serializers.SerializerMethodField()
+    subsidyj51 = serializers.SerializerMethodField()
+    subsidy421a = serializers.SerializerMethodField()
+    nycha = serializers.SerializerMethodField()
     rentstabilizationrecord = RentStabilizationIdSerializer(many=False, read_only=True)
 
-    # hpdviolations = serializers.SerializerMethodField()
-    # hpdcomplaints = serializers.SerializerMethodField()
-    # dobviolations = serializers.SerializerMethodField()
-    # dobcomplaints = serializers.SerializerMethodField()
-    # ecbviolations = serializers.SerializerMethodField()
-    # dobfiledpermits = serializers.SerializerMethodField()
-    # dobissuedpermits = serializers.SerializerMethodField()
-    # evictions = serializers.SerializerMethodField()
-    # latest_sale_price = serializers.SerializerMethodField()
+    def get_nycha(self, obj):
+        return obj.propertyannotation.nycha
+
+    def get_subsidy421a(self, obj):
+        return obj.propertyannotation.subsidy421a
+
+    def get_subsidyj51(self, obj):
+        return obj.propertyannotation.subsidyj51
+
+    def get_subsidyprograms(self, obj):
+        return obj.propertyannotation.subsidyprograms
 
     class Meta:
         model = ds.Property
         fields = (ds.Property.SHORT_SUMMARY_FIELDS +
-                  ('nycha', 'subsidyrecords', 'rentstabilizationrecord', 'subsidyj51records', 'subsidy421arecords'))
+                  ('nycha', 'subsidyprograms', 'rentstabilizationrecord', 'subsidyj51', 'subsidy421a'))
 
     def generate_date_key(self, params, dataset_prefix='', date_field=''):
 
@@ -219,93 +220,6 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
 
         return rep
 
-    def get_hpdviolations(self, obj):
-        if hasattr(obj, 'hpdviolations'):
-            params = self.context['request'].query_params
-            return {
-                'date_range': '-'.join(filter(None, [params.get('hpdviolations__start', params.get('annotation__start', settings.DEFAULT_ANNOTATION_DATE)), params.get('hpdviolations__end', params.get('annotation__end', None))])),
-                'count': obj.hpdviolations
-            }
-        else:
-            return None
-
-    def get_hpdcomplaints(self, obj):
-        if hasattr(obj, 'hpdcomplaints'):
-            params = self.context['request'].query_params
-            return {
-                'date_range': '-'.join(filter(None, [params.get('hpdcomplaints__start', params.get('annotation__start', None)), params.get('hpdcomplaints__end', params.get('annotation__end', None))])),
-                'count': obj.hpdcomplaints
-            }
-        else:
-            return None
-
-    def get_dobviolations(self, obj):
-        if hasattr(obj, 'dobviolations'):
-            params = self.context['request'].query_params
-            return {
-                'date_range': '-'.join(filter(None, [params.get('dobviolations__start', params.get('annotation__start', None)), params.get('dobviolations__end', params.get('annotation__end', None))])),
-                'count': obj.dobviolations
-            }
-        else:
-            return None
-
-    def get_dobcomplaints(self, obj):
-        if hasattr(obj, 'dobcomplaints'):
-            params = self.context['request'].query_params
-            return {
-                'date_range': '-'.join(filter(None, [params.get('dobcomplaints__start', params.get('annotation__start', None)), params.get('dobcomplaints__end', params.get('annotation__end', None))])),
-                'count': obj.dobcomplaints
-            }
-        else:
-            return None
-
-    def get_ecbviolations(self, obj):
-        if hasattr(obj, 'ecbviolations'):
-            params = self.context['request'].query_params
-            return {
-                'date_range': '-'.join(filter(None, [params.get('ecbviolations__start', params.get('annotation__start', None)), params.get('ecbviolations__end', params.get('annotation__end', None))])),
-                'count': obj.ecbviolations
-            }
-        else:
-            return None
-
-    def get_dobfiledpermits(self, obj):
-        if hasattr(obj, 'dobfiledpermits'):
-            params = self.context['request'].query_params
-            return {
-                'date_range': '-'.join(filter(None, [params.get('dobfiledpermits__start', params.get('annotation__start', None)), params.get('dobfiledpermits__end', params.get('annotation__end', None))])),
-                'count': obj.dobfiledpermits
-            }
-        else:
-            return None
-
-    def get_dobissuedpermits(self, obj):
-        if hasattr(obj, 'dobissuedpermits'):
-            params = self.context['request'].query_params
-            return {
-                'date_range': '-'.join(filter(None, [params.get('dobissuedpermits__start', params.get('annotation__start', None)), params.get('dobissuedpermits__end', params.get('annotation__end', None))])),
-                'count': obj.dobissuedpermits
-            }
-        else:
-            return None
-
-    def get_evictions(self, obj):
-        if hasattr(obj, 'evictions'):
-            params = self.context['request'].query_params
-            return {
-                'date_range': '-'.join(filter(None, [params.get('evictions__start', params.get('annotation__start', None)), params.get('evictions__end', params.get('annotation__end', None))])),
-                'count': obj.evictions
-            }
-        else:
-            return None
-
-    def get_latest_sale_price(self, obj):
-
-        try:
-            return obj.acrisreallegal_set.latest('documentid__docdate').documentid.docamount
-        except Exception as e:
-            return None
-
 
 class BuildingSummarySerializer(serializers.ModelSerializer):
     class Meta:
@@ -320,9 +234,9 @@ class BuildingSummarySerializer(serializers.ModelSerializer):
 
 
 class PropertyShortSummarySerializer(serializers.ModelSerializer):
-    subsidyrecords = CoreSubsidyRecordIdSerializer(source='coresubsidyrecord_set', many=True, read_only=True)
-    subsidyj51records = SubsidyJ51IdSerializer(source='subsidyj51_set', many=True, read_only=True)
-    subsidy421arecords = Subsidy421aIdSerializer(source='subsidy421a_set', many=True, read_only=True)
+    subsidyprograms = serializers.SerializerMethodField()
+    subsidyj51records = serializers.SerializerMethodField()
+    subsidy421arecords = serializers.SerializerMethodField()
 
     nycha = serializers.SerializerMethodField()
     rentstabilizationrecord = RentStabilizationIdSerializer(many=False, read_only=True)
@@ -330,10 +244,19 @@ class PropertyShortSummarySerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Property
         fields = (ds.Property.SHORT_SUMMARY_FIELDS +
-                  ('nycha', 'subsidyrecords', 'rentstabilizationrecord', 'subsidyj51records', 'subsidy421arecords'))
+                  ('nycha', 'subsidyprograms', 'rentstabilizationrecord', 'subsidyj51records', 'subsidy421arecords'))
 
     def get_nycha(self, obj):
         return obj.propertyannotation.nycha
+
+    def get_subsidy421a(self, obj):
+        return obj.propertyannotation.subsidy421a
+
+    def get_subsidyj51(self, obj):
+        return obj.propertyannotation.subsidyj51
+
+    def get_subsidyprograms(self, obj):
+        return obj.propertyannotation.subsidyprograms
 
 
 class PropertySummarySerializer(serializers.ModelSerializer):

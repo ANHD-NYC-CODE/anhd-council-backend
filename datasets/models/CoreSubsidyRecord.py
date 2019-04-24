@@ -122,7 +122,8 @@ class CoreSubsidyRecord(BaseDatasetModel, models.Model):
         for record in self.objects.all():
             try:
                 annotation = record.bbl.propertyannotation
-                annotation.subsidyprograms = record.programname
+
+                annotation.subsidyprograms = ', '.join(filter(None, [annotation.subsidyprograms, record.programname]))
 
                 annotation.save()
             except Exception as e:
@@ -137,7 +138,7 @@ def annotate_property_on_save(sender, instance, created, **kwargs):
     if created == True:
         try:
             annotation = ds.PropertyAnnotation.objects.get(bbl=instance.bbl)
-            annotation.subsidyprograms = instance.programname
+            annotation.subsidyprograms = ', '.join(filter(None, [annotation.subsidyprograms, instance.programname]))
             annotation.save()
         except Exception as e:
             print(e)

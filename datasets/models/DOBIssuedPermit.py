@@ -104,6 +104,10 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
         logger.debug("Completed seed into {} for {}", self.__name__, now_table._meta.db_table)
 
         logger.debug('annotating properties for {}', self.__name__)
+        self.annotate_properties()
+
+    @classmethod
+    def annotate_properties(self):
         self.annotate_all_properties_standard()
 
     def __str__(self):

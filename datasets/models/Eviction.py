@@ -201,8 +201,12 @@ class Eviction(BaseDatasetModel, models.Model):
         update = self.seed_with_upsert(**kwargs)
         self.link_eviction_to_pluto_by_address()
         logger.debug('annotating properties for {}', self.__name__)
-        self.annotate_all_properties_standard()
+        self.annotate_properties()
         return update
+
+    @classmethod
+    def annotate_properties(self):
+        self.annotate_all_properties_standard()
 
     def __str__(self):
         return str(self.courtindexnumber)

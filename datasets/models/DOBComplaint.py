@@ -82,6 +82,10 @@ class DOBComplaint(BaseDatasetModel, models.Model):
         logger.debug("Seeding/Updating {}", self.__name__)
         self.seed_or_update_from_set_diff(callback=self.add_bbls_from_bin, **kwargs)
         logger.debug('annotating properties for {}', self.__name__)
+        self.annotate_properties()
+
+    @classmethod
+    def annotate_properties(self):
         self.annotate_all_properties_standard()
 
     def __str__(self):
