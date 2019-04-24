@@ -217,11 +217,12 @@ def cache_me(relative_key_path=True, get_queryset=False):
                     cached_value = cached_value['results']
 
                 if not original_args[1].user.is_authenticated:
-                    # filter out lispendens in annotated fields for unauthorized users
-                    lispendens_field = [key for key in cached_value[0].keys() if 'lispendens' in key]
-                    if len(lispendens_field):
-                        for value in cached_value:
-                            del value[lispendens_field[0]]
+                    if (len(cached_value)):  # TEMP: only lists have the sensitive data for now.
+                        # filter out lispendens in annotated fields for unauthorized users
+                        lispendens_field = [key for key in cached_value[0].keys() if 'lispendens' in key]
+                        if len(lispendens_field):
+                            for value in cached_value:
+                                del value[lispendens_field[0]]
 
                 return original_args[0].finalize_response(original_args[1], Response(cached_value))
             else:
