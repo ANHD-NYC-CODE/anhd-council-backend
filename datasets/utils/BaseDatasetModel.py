@@ -144,27 +144,13 @@ class BaseDatasetModel():
 
     @classmethod
     def annotate_all_properties_standard(self):
-        # last30 = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(days=30)
-        # lastyear = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=1)
-        # last3years = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=3)
-        #
-        # last30_query = self.objects.filter(bbl=OuterRef(
-        #     'bbl'), **{self.QUERY_DATE_KEY + '__gte': last30}).annotate(cnt=Count('pk')).values('cnt')[:1]
-        # lastyear_query = self.objects.filter(bbl=OuterRef(
-        #     'bbl'), **{self.QUERY_DATE_KEY + '__gte': lastyear}).annotate(cnt=Count('pk')).values('cnt')[:1]
-        # last3years_query = self.objects.filter(bbl=OuterRef(
-        #     'bbl'), **{self.QUERY_DATE_KEY + '__gte': last3years}).annotate(cnt=Count('pk')).values('cnt')[:1]
-        #
-        # ds.PropertyAnnotation.objects.all().update(
-        #     **{self.__name__.lower() + 's_last30': Subquery(last30_query, output_field=IntegerField())}, **{self.__name__.lower() + 's_lastyear': Subquery(lastyear_query, output_field=IntegerField())}, **{self.__name__.lower() + 's_last3years': Subquery(last3years_query, output_field=IntegerField())})
 
-        count = 0
+        records = []
         for annotation in ds.PropertyAnnotation.objects.all():
-            annotation = self.annotate_property_standard(annotation)
-            annotation.save()
-            if count % 10000 == 0:
-                logger.debug('{} annotation: {}'.format(self.__name__, count))
-            count = count + 1
+            records.append(self.annotate_property_standard(annotation))
+
+        ds.PropertyAnnotation.objects.bulk_update(records, [self.__name__.lower(
+        ) + 's_last30', self.__name__.lower() + 's_lastyear', self.__name__.lower() + 's_last3years'], batch_size=settings.BATCH_SIZE)
 
     @classmethod
     def annotate_property_standard(self, annotation):
@@ -190,27 +176,13 @@ class BaseDatasetModel():
 
     @classmethod
     def annotate_all_properties_month_offset(self):
-        # last30 = datetime.today().replace(day=1, tzinfo=timezone.utc) - relativedelta(months=1)
-        # lastyear = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=1)
-        # last3years = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=3)
-        # last30_query = self.objects.filter(bbl=OuterRef(
-        #     'bbl'), **{self.QUERY_DATE_KEY + '__gte': last30}).annotate(cnt=Count('pk')).values('cnt')[:1]
-        # lastyear_query = self.objects.filter(bbl=OuterRef(
-        #     'bbl'), **{self.QUERY_DATE_KEY + '__gte': lastyear}).annotate(cnt=Count('pk')).values('cnt')[:1]
-        # last3years_query = self.objects.filter(bbl=OuterRef(
-        #     'bbl'), **{self.QUERY_DATE_KEY + '__gte': last3years}).annotate(cnt=Count('pk')).values('cnt')[:1]
-        #
-        # ds.PropertyAnnotation.objects.all().update(
-        #     **{self.__name__.lower() + 's_last30': Subquery(last30_query, output_field=IntegerField())}, **{self.__name__.lower() + 's_lastyear': Subquery(lastyear_query, output_field=IntegerField())}, **{self.__name__.lower() + 's_last3years': Subquery(last3years_query, output_field=IntegerField())})
 
-        count = 0
+        records = []
         for annotation in ds.PropertyAnnotation.objects.all():
 
-            annotation = self.annotate_property_month_offset(annotation)
-            annotation.save()
-            if count % 10000 == 0:
-                logger.debug('{} annotation: {}'.format(self.__name__, count))
-            count = count + 1
+            records.append(self.annotate_property_month_offset(annotation))
+            ds.PropertyAnnotation.objects.bulk_update(records, [self.__name__.lower(
+            ) + 's_last30', self.__name__.lower() + 's_lastyear', self.__name__.lower() + 's_last3years'], batch_size=settings.BATCH_SIZE)
 
     @classmethod
     def annotate_property_month_offset(self, annotation):
