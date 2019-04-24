@@ -324,13 +324,16 @@ class PropertyShortSummarySerializer(serializers.ModelSerializer):
     subsidyj51records = SubsidyJ51IdSerializer(source='subsidyj51_set', many=True, read_only=True)
     subsidy421arecords = Subsidy421aIdSerializer(source='subsidy421a_set', many=True, read_only=True)
 
-    nycha = PublicHousingRecordIdSerializer(source='publichousingrecord_set', many=True, read_only=True)
+    nycha = serializers.SerializerMethodField()
     rentstabilizationrecord = RentStabilizationIdSerializer(many=False, read_only=True)
 
     class Meta:
         model = ds.Property
         fields = (ds.Property.SHORT_SUMMARY_FIELDS +
                   ('nycha', 'subsidyrecords', 'rentstabilizationrecord', 'subsidyj51records', 'subsidy421arecords'))
+
+    def get_nycha(self, obj):
+        return obj.propertyannotation.nycha
 
 
 class PropertySummarySerializer(serializers.ModelSerializer):

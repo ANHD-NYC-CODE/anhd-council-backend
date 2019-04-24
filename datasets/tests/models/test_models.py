@@ -432,6 +432,7 @@ class TaxLienTests(BaseTest, TestCase):
         self.clean_tests()
 
     def test_seed_record(self):
+
         update = self.update_factory(model_name="TaxLien",
                                      file_name="mock_tax_liens.csv")
         ds.TaxLien.seed_or_update_self(file_path=update.file.file.path, update=update)
@@ -440,6 +441,7 @@ class TaxLienTests(BaseTest, TestCase):
         self.assertEqual(update.rows_created, 9)
 
     def test_seed_record_after_overwrite(self):
+        self.property_factory('1001351101')
         update = self.update_factory(model_name="TaxLien",
                                      file_name="mock_tax_liens.csv")
         ds.TaxLien.seed_or_update_self(file_path=update.file.file.path, update=update)
@@ -451,6 +453,7 @@ class TaxLienTests(BaseTest, TestCase):
         self.assertEqual(ds.TaxLien.objects.count(), 9)
         self.assertEqual(new_update.rows_created, 9)
         self.assertEqual(new_update.rows_updated, 0)
+        self.assertEqual(ds.Property.objects.get(bbl='1001351101').propertyannotation.taxlien, True)
 
 
 class CoreSubsidyRecordTests(BaseTest, TestCase):

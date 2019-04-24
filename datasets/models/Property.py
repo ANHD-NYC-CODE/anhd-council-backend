@@ -325,9 +325,13 @@ class Property(BaseDatasetModel, models.Model):
         self.create_property_annotations()
 
     @classmethod
-    def create_property_annotations(self, **kwargs):
+    def create_property_annotations(self):
+        count = 0
         for property in self.objects.filter(propertyannotation__isnull=True):
             ds.PropertyAnnotation.objects.create(bbl=property)
+            if count % 10000 == 0:
+                logger.debug('property annotations created: {}'.format(count))
+            count = count + 1
 
 
 @receiver(models.signals.post_save, sender=Property)

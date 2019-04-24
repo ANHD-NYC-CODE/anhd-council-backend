@@ -143,10 +143,13 @@ class BaseDatasetModel():
 
     @classmethod
     def annotate_all_properties_standard(self):
+        count = 0
         for annotation in ds.PropertyAnnotation.objects.all():
-
             annotation = self.annotate_property_standard(annotation)
             annotation.save()
+            if count % 10000 == 0:
+                logger.debug('{} annotation: {}'.format(self.__name__, count))
+            count = count + 1
 
     @classmethod
     def annotate_property_standard(self, annotation):
@@ -172,10 +175,14 @@ class BaseDatasetModel():
 
     @classmethod
     def annotate_all_properties_month_offset(self):
+        count = 0
         for annotation in ds.PropertyAnnotation.objects.all():
 
             annotation = self.annotate_property_month_offset(annotation)
             annotation.save()
+            if count % 10000 == 0:
+                logger.debug('{} annotation: {}'.format(self.__name__, count))
+            count = count + 1
 
     @classmethod
     def annotate_property_month_offset(self, annotation):
