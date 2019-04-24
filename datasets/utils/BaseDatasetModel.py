@@ -192,15 +192,15 @@ class BaseDatasetModel():
         lastyear = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=1)
         last3years = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=3)
 
-        last30_subquery = Subquery(self.objects.filter(bbl=OuterRef('bbl'), **{self.QUERY_DATE_KEY + '__gte': last30}).values('pk').annotate(
-            cnt=Count('pk')).values('cnt'))
+        last30_subquery = Subquery(self.objects.filter(bbl=OuterRef('bbl'), **{self.QUERY_DATE_KEY + '__gte': last30}).values('bbl').annotate(
+            cnt=Count('bbl')).values('cnt'))
 
         lastyear_subquery = Subquery(self.objects.filter(bbl=OuterRef(
-            'bbl'), **{self.QUERY_DATE_KEY + '__gte': lastyear}).values('pk').annotate(cnt=Count('pk')).values('cnt'))
+            'bbl'), **{self.QUERY_DATE_KEY + '__gte': lastyear}).values('bbl').annotate(cnt=Count('bbl')).values('cnt'))
 
         last3years_subquery = Subquery(self.objects
-                                       .filter(bbl=OuterRef('bbl'), **{self.QUERY_DATE_KEY + '__gte': last3years}).values('pk')
-                                       .annotate(cnt=Count('pk'))
+                                       .filter(bbl=OuterRef('bbl'), **{self.QUERY_DATE_KEY + '__gte': last3years}).values('bbl')
+                                       .annotate(cnt=Count('bbl'))
                                        .values('cnt')
                                        )
 

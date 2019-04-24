@@ -38,7 +38,7 @@ class EvictionTest(BaseTest, TestCase):
         ds.Eviction.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds.Eviction.objects.count(), 3)
         self.assertEqual(update.rows_created, 3)
-        self.assertEqual(ds.Property.objects.get(bbl='1').propertyannotation.evictions_last30, 0)
+        self.assertEqual(ds.Property.objects.get(bbl='1').propertyannotation.evictions_last30, None)
         self.assertEqual(ds.Property.objects.get(bbl='1').propertyannotation.evictions_lastyear, 1)
         self.assertEqual(ds.Property.objects.get(bbl='1').propertyannotation.evictions_last3years, 1)
 

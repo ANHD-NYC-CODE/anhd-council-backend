@@ -5,7 +5,7 @@ from datasets.utils.validation_filters import is_null
 from django.conf import settings
 from django.dispatch import receiver
 from datasets import models as ds
-from django.db.models import Count, OuterRef, Q
+from django.db.models import Count, OuterRef, Q, Subquery
 import os
 import csv
 import uuid
@@ -91,34 +91,27 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
         count = 0
         records = []
         logger.debug('annotating properties for: {}'.format(self.__name__))
-        for annotation in ds.PropertyAnnotation.objects.all():
-            try:
-                last30 = datetime.today().replace(day=1, tzinfo=timezone.utc) - relativedelta(months=1)
-                lastyear = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=1)
-                last3years = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=3)
 
-                annotation.acrisrealmasters_last30 = annotation.bbl.acrisreallegal_set.filter(
-                    documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES, documentid__docdate__gte=last30).count()
+        last30 = datetime.today().replace(day=1, tzinfo=timezone.utc) - relativedelta(months=1)
+        lastyear = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=1)
+        last3years = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=3)
 
-                annotation.acrisrealmasters_lastyear = annotation.bbl.acrisreallegal_set.filter(
-                    documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES, documentid__docdate__gte=lastyear).count()
+        last30_subquery = Subquery(self.objects.filter(bbl=OuterRef('bbl'), documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES, documentid__docdate__gte=last30).values(
+            'bbl').annotate(count=Count('bbl')).values('count'))
 
-                annotation.acrisrealmasters_last3years = annotation.bbl.acrisreallegal_set.filter(
-                    documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES, documentid__docdate__gte=last3years).count()
+        lastyear_subquery = Subquery(self.objects.filter(bbl=OuterRef(
+            'bbl'), documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES, documentid__docdate__gte=lastyear).values('bbl').annotate(count=Count('bbl')).values('count'))
 
-                annotation.latestsaleprice = ds.AcrisRealMaster.objects.filter(documentid__in=annotation.bbl.acrisreallegal_set.values(
-                    'documentid'), doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES).latest('docdate').docamount
-                records.append(annotation)
-                count = count + 1
-                if count % 10000 == 0:
-                    logger.debug('preloaded: {}'.format(count))
+        last3years_subquery = Subquery(self.objects
+                                       .filter(bbl=OuterRef('bbl'), documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES, documentid__docdate__gte=last3years).values('bbl')
+                                       .annotate(count=Count('bbl'))
+                                       .values('count')
+                                       )
+        latestprice = Subquery(self.objects.filter(bbl=OuterRef('bbl'), documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES).order_by(
+            '-documentid__docamount').values('documentid__docamount')[:1])
 
-            except Exception as e:
-                continue
-        logger.debug('beginning bulk_update for: {}'.format(self.__name__))
-        ds.PropertyAnnotation.objects.bulk_update(records, ['latestsaleprice', 'acrisrealmasters_last30',
-                                                            'acrisrealmasters_lastyear',
-                                                            'acrisrealmasters_last3years'], batch_size=settings.BATCH_SIZE)
+        ds.PropertyAnnotation.objects.update(acrisrealmasters_last30=last30_subquery, acrisrealmasters_lastyear=lastyear_subquery,
+                                             acrisrealmasters_last3years=last3years_subquery, latestsaleprice=latestprice)
 
     def __str__(self):
         return self.key
