@@ -145,17 +145,24 @@ class BaseDatasetModel():
     @classmethod
     def annotate_all_properties_standard(self):
         logger.debug('annotating properties for: {}'.format(self.__name__))
-        records = []
-        count = 0
-        for annotation in ds.PropertyAnnotation.objects.all():
-            records.append(self.annotate_property_standard(annotation))
-            count = count + 1
-            if count % 10000 == 0:
-                logger.debug('preloaded: {}'.format(count))
+        last30 = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(days=30)
+        lastyear = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=1)
+        last3years = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=3)
 
-        logger.debug('beginning bulk_update for: {}'.format(self.__name__))
-        ds.PropertyAnnotation.objects.bulk_update(records, [self.__name__.lower(
-        ) + 's_last30', self.__name__.lower() + 's_lastyear', self.__name__.lower() + 's_last3years'], batch_size=settings.BATCH_SIZE)
+        last30_subquery = Subquery(self.objects.filter(bbl=OuterRef('bbl'), **{self.QUERY_DATE_KEY + '__gte': last30}).values(
+            self._meta.pk.name).annotate(count=Count(self._meta.pk.name)).values('count'))[1]
+
+        lastyear_subquery = Subquery(self.objects.filter(bbl=OuterRef(
+            'bbl'), **{self.QUERY_DATE_KEY + '__gte': lastyear}).values(self._meta.pk.name).annotate(count=Count(self._meta.pk.name)).values('count'))
+
+        last3years_subquery = Subquery(self.objects
+                                       .filter(bbl=OuterRef('bbl'), **{self.QUERY_DATE_KEY + '__gte': last3years}).values(self._meta.pk.name)
+                                       .annotate(count=Count(self._meta.pk.name))
+                                       .values('count')
+                                       )
+
+        ds.PropertyAnnotation.objects.update(**{self.__name__.lower() + 's_last30': last30_subquery, self.__name__.lower(
+        ) + 's_lastyear': lastyear_subquery, self.__name__.lower() + 's_last3years': last3years_subquery})
 
     @classmethod
     def annotate_property_standard(self, annotation):
@@ -181,17 +188,24 @@ class BaseDatasetModel():
 
     @classmethod
     def annotate_all_properties_month_offset(self):
-        logger.debug('annotating properties for: {}'.format(self.__name__))
-        records = []
-        count = 0
-        for annotation in ds.PropertyAnnotation.objects.all():
-            records.append(self.annotate_property_month_offset(annotation))
-            count = count + 1
-            if count % 10000 == 0:
-                logger.debug('preloaded: {}'.format(count))
-        logger.debug('beginning bulk_update for: {}'.format(self.__name__))
-        ds.PropertyAnnotation.objects.bulk_update(records, [self.__name__.lower(
-        ) + 's_last30', self.__name__.lower() + 's_lastyear', self.__name__.lower() + 's_last3years'], batch_size=settings.BATCH_SIZE)
+        last30 = datetime.today().replace(day=1, tzinfo=timezone.utc) - relativedelta(months=1)
+        lastyear = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=1)
+        last3years = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=3)
+
+        last30_subquery = Subquery(self.objects.filter(bbl=OuterRef('bbl'), **{self.QUERY_DATE_KEY + '__gte': last30}).values('pk').annotate(
+            cnt=Count('pk')).values('cnt'))
+
+        lastyear_subquery = Subquery(self.objects.filter(bbl=OuterRef(
+            'bbl'), **{self.QUERY_DATE_KEY + '__gte': lastyear}).values('pk').annotate(cnt=Count('pk')).values('cnt'))
+
+        last3years_subquery = Subquery(self.objects
+                                       .filter(bbl=OuterRef('bbl'), **{self.QUERY_DATE_KEY + '__gte': last3years}).values('pk')
+                                       .annotate(cnt=Count('pk'))
+                                       .values('cnt')
+                                       )
+
+        ds.PropertyAnnotation.objects.update(**{self.__name__.lower() + 's_last30': last30_subquery}, **{self.__name__.lower(
+        ) + 's_lastyear': lastyear_subquery}, **{self.__name__.lower() + 's_last3years': last3years_subquery})
 
     @classmethod
     def annotate_property_month_offset(self, annotation):
