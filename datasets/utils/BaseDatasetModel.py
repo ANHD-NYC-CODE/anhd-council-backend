@@ -14,6 +14,7 @@ import re
 import logging
 import math
 from dateutil.relativedelta import relativedelta
+from django.db.models import Subquery, OuterRef
 
 from datetime import datetime, timezone
 
@@ -144,6 +145,15 @@ class BaseDatasetModel():
     @classmethod
     def annotate_all_properties_standard(self):
         count = 0
+        # last30 = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(days=30)
+        # lastyear = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=1)
+        # last3years = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=3)
+        #
+        # last30_query = self.objects.filter(bbl=OuterRef('bbl'), **{self.QUERY_DATE_KEY + '__gte': last30})
+        #
+        # import pdb
+        # pdb.set_trace()
+
         for annotation in ds.PropertyAnnotation.objects.all():
             annotation = self.annotate_property_standard(annotation)
             annotation.save()

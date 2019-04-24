@@ -80,10 +80,11 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
         logger.debug("Seeding/Updating {}", self.__name__)
         if settings.TESTING:
             self.seed_with_single(**kwargs)
+            self.annotate_properties()
         else:
             self.async_concurrent_seed(**kwargs)
 
-        self.annotate_properties()
+        # self.annotate_properties() # run this in an async scheduled task
 
     @classmethod
     def annotate_properties(self):

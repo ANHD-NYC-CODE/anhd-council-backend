@@ -62,6 +62,12 @@ def async_send_update_success_mail(self, update_id):
     return send_update_success_mail(update)
 
 
+@app.task(bind=True, queue='update', acks_late=True, max_retries=1)
+def async_annotate_properties(self, dataset_id):
+    dataset = c.Dataset.objects.get(id=dataset_id)
+    dataset.model.annotate_properties()
+
+
 @app.task(bind=True, queue='celery', acks_late=True, max_retries=1)
 def async_create_update(self, dataset_id, file_id=None):
     file = c.DataFile.objects.get(id=file_id) if file_id else None

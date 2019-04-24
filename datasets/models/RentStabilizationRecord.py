@@ -212,10 +212,14 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
 
     @classmethod
     def annotate_properties(self):
-        for annotation in ds.PropertyAnnotation.objects.all():
+        count = 0
+        for annotation in ds.PropertyAnnotation.objects.filter(bbl__rentstabilizationrecord__isnull=False):
             try:
                 annotation.unitsrentstabilized = annotation.bbl.get_rentstabilized_units()
                 annotation.save()
+                if count % 10000 == 0:
+                    logger.debug('{} annotation: {}'.format(self.__name__, count))
+                count = count + 1
             except Exception as e:
                 continue
 

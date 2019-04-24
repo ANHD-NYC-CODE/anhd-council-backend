@@ -97,10 +97,10 @@
 - model: django_celery_beat.crontabschedule
   pk: 14
   fields:
-    # 830pm Sundays
+    # 830pm Saturday
     minute: "30"
     hour: "20"
-    day_of_week: "7"
+    day_of_week: "6"
     timezone: "America/New_York"
 - model: django_celery_beat.crontabschedule
   pk: 15
@@ -113,10 +113,10 @@
 - model: django_celery_beat.crontabschedule
   pk: 16
   fields:
-    # 1130pm Saturdays
+    # 1130pm Friday
     minute: "30"
     hour: "23"
-    day_of_week: "6"
+    day_of_week: "5"
     timezone: "America/New_York"
 - model: django_celery_beat.crontabschedule
   pk: 17
@@ -158,16 +158,24 @@
 - model: django_celery_beat.crontabschedule
   pk: 22
   fields:
-    # 3am wednesday
+    # 3am friday
     minute: "0"
     hour: "3"
     day_of_week: "5"
+    timezone: "America/New_York"
+- model: django_celery_beat.crontabschedule
+  pk: 23
+  fields:
+    # 9am sunday
+    minute: "0"
+    hour: "9"
+    day_of_week: "7"
     timezone: "America/New_York"
 - model: django_celery_beat.periodictask
   pk: 1
   fields:
     name: "Update AcrisRealMaster"
-    description: "Updates Acris Real Property Masters data every Saturday 1130pm"
+    description: "Updates Acris Real Property Masters data every Friday 1130pm"
     task: "core.tasks.async_download_and_update"
     crontab: 16
     args: "[5]"
@@ -177,7 +185,7 @@
   pk: 2
   fields:
     name: "Update AcrisRealLegal"
-    description: "Updates Acris Real Property Legals data every Sunday 830pm"
+    description: "Updates Acris Real Property Legals data every Saturday 830pm"
     task: "core.tasks.async_download_and_update"
     crontab: 14
     args: "[4]"
@@ -470,6 +478,16 @@
     description: "Maintainence task. 3am every MWF morning"
     task: "app.tasks.clean_database"
     crontab: 22
+    args: "[]"
+    kwargs: "{}"
+    date_changed: "2019-01-01"
+- model: django_celery_beat.periodictask
+  pk: 32
+  fields:
+    name: "Annotate Acris properties"
+    description: "Annotate properties with acris"
+    task: "core.tasks.async_annotate_properties"
+    crontab: 23
     args: "[]"
     kwargs: "{}"
     date_changed: "2019-01-01"
