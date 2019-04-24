@@ -144,16 +144,16 @@ class BaseDatasetModel():
 
     @classmethod
     def annotate_all_properties_standard(self):
-        logger.debug('annotating properties for:'.format(self.__name__))
+        logger.debug('annotating properties for: {}'.format(self.__name__))
         records = []
         count = 0
         for annotation in ds.PropertyAnnotation.objects.all():
             records.append(self.annotate_property_standard(annotation))
             count = count + 1
-            if count % settings.BATCH_SIZE == 0:
-                logger.debug('preloaded: '.format(count))
+            if count % 10000 == 0:
+                logger.debug('preloaded: {}'.format(count))
 
-        logger.debug('beginning bulk_update for:'.format(self.__name__))
+        logger.debug('beginning bulk_update for: {}'.format(self.__name__))
         ds.PropertyAnnotation.objects.bulk_update(records, [self.__name__.lower(
         ) + 's_last30', self.__name__.lower() + 's_lastyear', self.__name__.lower() + 's_last3years'], batch_size=settings.BATCH_SIZE)
 
@@ -181,15 +181,15 @@ class BaseDatasetModel():
 
     @classmethod
     def annotate_all_properties_month_offset(self):
-        logger.debug('annotating properties for:'.format(self.__name__))
+        logger.debug('annotating properties for: {}'.format(self.__name__))
         records = []
         count = 0
         for annotation in ds.PropertyAnnotation.objects.all():
             records.append(self.annotate_property_month_offset(annotation))
             count = count + 1
-            if count % settings.BATCH_SIZE == 0:
-                logger.debug('preloaded: '.format(count))
-        logger.debug('beginning bulk_update for:'.format(self.__name__))
+            if count % 10000 == 0:
+                logger.debug('preloaded: {}'.format(count))
+        logger.debug('beginning bulk_update for: {}'.format(self.__name__))
         ds.PropertyAnnotation.objects.bulk_update(records, [self.__name__.lower(
         ) + 's_last30', self.__name__.lower() + 's_lastyear', self.__name__.lower() + 's_last3years'], batch_size=settings.BATCH_SIZE)
 

@@ -90,7 +90,7 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
     def annotate_properties(self):
         count = 0
         records = []
-        logger.debug('annotating properties for:'.format(self.__name__))
+        logger.debug('annotating properties for: {}'.format(self.__name__))
         for annotation in ds.PropertyAnnotation.objects.all():
             try:
                 last30 = datetime.today().replace(day=1, tzinfo=timezone.utc) - relativedelta(months=1)
@@ -110,12 +110,12 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
                     'documentid'), doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES).latest('docdate').docamount
                 records.append(annotation)
                 count = count + 1
-                if count % settings.BATCH_SIZE == 0:
-                    logger.debug('preloaded: '.format(count))
+                if count % 10000 == 0:
+                    logger.debug('preloaded: {}'.format(count))
 
             except Exception as e:
                 continue
-        logger.debug('beginning bulk_update for:'.format(self.__name__))
+        logger.debug('beginning bulk_update for: {}'.format(self.__name__))
         ds.PropertyAnnotation.objects.bulk_update(records, ['latestsaleprice', 'acrisrealmasters_last30',
                                                             'acrisrealmasters_lastyear',
                                                             'acrisrealmasters_last3years'], batch_size=settings.BATCH_SIZE)
