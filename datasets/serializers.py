@@ -158,16 +158,28 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
     rentstabilizationrecord = RentStabilizationIdSerializer(many=False, read_only=True)
 
     def get_nycha(self, obj):
-        return obj.propertyannotation.nycha
+        try:
+            return obj.propertyannotation.nycha
+        except Exception as e:
+            return None
 
     def get_subsidy421a(self, obj):
-        return obj.propertyannotation.subsidy421a
+        try:
+            return obj.propertyannotation.subsidy421a
+        except Exception as e:
+            return None
 
     def get_subsidyj51(self, obj):
-        return obj.propertyannotation.subsidyj51
+        try:
+            return obj.propertyannotation.subsidyj51
+        except Exception as e:
+            return None
 
     def get_subsidyprograms(self, obj):
-        return obj.propertyannotation.subsidyprograms
+        try:
+            return obj.propertyannotation.subsidyprograms
+        except Exception as e:
+            return None
 
     class Meta:
         model = ds.Property
@@ -247,16 +259,28 @@ class PropertyShortSummarySerializer(serializers.ModelSerializer):
                   ('nycha', 'subsidyprograms', 'rentstabilizationrecord', 'subsidyj51records', 'subsidy421arecords'))
 
     def get_nycha(self, obj):
-        return obj.propertyannotation.nycha
+        try:
+            return obj.propertyannotation.nycha
+        except Exception as e:
+            return None
 
     def get_subsidy421a(self, obj):
-        return obj.propertyannotation.subsidy421a
+        try:
+            return obj.propertyannotation.subsidy421a
+        except Exception as e:
+            return None
 
     def get_subsidyj51(self, obj):
-        return obj.propertyannotation.subsidyj51
+        try:
+            return obj.propertyannotation.subsidyj51
+        except Exception as e:
+            return None
 
     def get_subsidyprograms(self, obj):
-        return obj.propertyannotation.subsidyprograms
+        try:
+            return obj.propertyannotation.subsidyprograms
+        except Exception as e:
+            return None
 
 
 class PropertySummarySerializer(serializers.ModelSerializer):
