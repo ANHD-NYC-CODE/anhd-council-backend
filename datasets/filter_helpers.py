@@ -33,8 +33,6 @@ def filtered_dataset_annotation(dataset_prefix, date_filters, queryset):
 
     if dataset_prefix == 'acrisrealmaster':
         acrislegals = ds.AcrisRealLegal.objects.filter(bbl=OuterRef('bbl'))
-        # import pdb
-        # pdb.set_trace()
         queryset = queryset.annotate(**{dataset_plural_key: Count('acrisreallegal', filter=Q(
             Q(acrisreallegal__documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES), af.construct_and_q([date_filters])), distinct=True)})
     else:

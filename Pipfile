@@ -38,6 +38,7 @@ django-cors-headers = "*"
 markdown = "*"
 httpretty = "*"
 django-sendgrid-v5 = "*"
+freezegun = "*"
 
 [requires]
 python_version = "3.5.6"

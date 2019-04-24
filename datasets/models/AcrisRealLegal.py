@@ -3,11 +3,15 @@ from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.utils.validation_filters import is_null
 from django.conf import settings
-
+from django.dispatch import receiver
+from datasets import models as ds
+from django.db.models import Count, OuterRef, Q
 import os
 import csv
 import uuid
 import logging
+from dateutil.relativedelta import relativedelta
+from datetime import datetime, timezone
 logger = logging.getLogger('app')
 
 
@@ -75,9 +79,64 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
     def seed_or_update_self(self, **kwargs):
         logger.debug("Seeding/Updating {}", self.__name__)
         if settings.TESTING:
-            return self.seed_with_single(**kwargs)
+            self.seed_with_single(**kwargs)
         else:
-            return self.async_concurrent_seed(**kwargs)
+            self.async_concurrent_seed(**kwargs)
+
+        self.annotate_properties()
+
+    @classmethod
+    def annotate_properties(self):
+        for annotation in ds.PropertyAnnotation.objects.all():
+            try:
+                last30 = datetime.today().replace(day=1, tzinfo=timezone.utc) - relativedelta(months=1)
+                lastyear = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=1)
+                last3years = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=3)
+
+                annotation.acrisrealmasters_last30 = annotation.bbl.acrisreallegal_set.filter(
+                    documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES, documentid__docdate__gte=last30).count()
+
+                annotation.acrisrealmasters_lastyear = annotation.bbl.acrisreallegal_set.filter(
+                    documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES, documentid__docdate__gte=lastyear).count()
+
+                annotation.acrisrealmasters_last3years = annotation.bbl.acrisreallegal_set.filter(
+                    documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES, documentid__docdate__gte=last3years).count()
+
+                annotation.latestsaleprice = ds.AcrisRealMaster.objects.filter(documentid__in=annotation.bbl.acrisreallegal_set.values(
+                    'documentid'), doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES).latest('docdate').docamount
+                annotation.save()
+            except Exception as e:
+                continue
 
     def __str__(self):
         return self.key
+
+
+@receiver(models.signals.post_save, sender=AcrisRealLegal)
+def annotate_property_on_save(sender, instance, created, **kwargs):
+    if created == True:
+        try:
+            # last30 = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(days=30)
+            # lastyear = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=1)
+            # last3years = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=3)
+            last30 = datetime.today().replace(day=1, tzinfo=timezone.utc) - relativedelta(months=1)
+            lastyear = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=1)
+            last3years = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=3)
+
+            annotation = ds.PropertyAnnotation.objects.get(bbl=instance.bbl)
+            annotation.acrisrealmasters_last30 = annotation.bbl.acrisreallegal_set.filter(
+                documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES, documentid__docdate__gte=last30).count()
+
+            annotation.acrisrealmasters_lastyear = annotation.bbl.acrisreallegal_set.filter(
+                documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES, documentid__docdate__gte=lastyear).count()
+
+            annotation.acrisrealmasters_last3years = annotation.bbl.acrisreallegal_set.filter(
+                documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES, documentid__docdate__gte=last3years).count()
+
+            annotation.latestsaleprice = ds.AcrisRealMaster.objects.filter(documentid__in=annotation.bbl.acrisreallegal_set.values(
+                'documentid'), doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES).latest('docdate').docamount
+
+            annotation.save()
+        except Exception as e:
+            print(e)
+            return

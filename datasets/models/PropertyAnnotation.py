@@ -30,7 +30,7 @@ class PropertyAnnotation(BaseDatasetModel, models.Model):
     ecbviolations_last30 = models.IntegerField(blank=True, null=True)
     ecbviolations_lastyear = models.IntegerField(blank=True, null=True)
     ecbviolations_last3years = models.IntegerField(blank=True, null=True)
-    housinglitigations_last30 = models.IntegerField(blank=True, null=True)
+    housinglitigations_last30 = models.IntegerField(blank=True, null=True)  # pinned to 1st of last month
     housinglitigations_lastyear = models.IntegerField(blank=True, null=True)
     housinglitigations_last3years = models.IntegerField(blank=True, null=True)
     dobfiledpermits_last30 = models.IntegerField(blank=True, null=True)
@@ -42,7 +42,7 @@ class PropertyAnnotation(BaseDatasetModel, models.Model):
     evictions_last30 = models.IntegerField(blank=True, null=True)
     evictions_lastyear = models.IntegerField(blank=True, null=True)
     evictions_last3years = models.IntegerField(blank=True, null=True)
-    acrisrealmasters_last30 = models.IntegerField(blank=True, null=True)
+    acrisrealmasters_last30 = models.IntegerField(blank=True, null=True)  # pinned to 1st of last month
     acrisrealmasters_lastyear = models.IntegerField(blank=True, null=True)
     acrisrealmasters_last3years = models.IntegerField(blank=True, null=True)
     lispendens_last30 = models.IntegerField(blank=True, null=True)
