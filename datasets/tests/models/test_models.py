@@ -483,11 +483,13 @@ class SubsidyJ51Tests(BaseTest, TestCase):
         self.clean_tests()
 
     def test_seed_record(self):
+        property = self.property_factory(bbl='1003990039')
         update = self.update_factory(model_name="SubsidyJ51",
                                      file_name="mock_subsidyj51.csv")
         ds.SubsidyJ51.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds.SubsidyJ51.objects.count(), 19)
         self.assertEqual(update.rows_created, 19)
+        self.assertEqual(ds.Property.objects.get(bbl='1003990039').propertyannotation.subsidyj51, True)
 
     def test_seed_record_after_overwrite(self):
         update = self.update_factory(model_name="SubsidyJ51",
@@ -508,11 +510,14 @@ class Subsidy421aTests(BaseTest, TestCase):
         self.clean_tests()
 
     def test_seed_record(self):
+        property = self.property_factory(bbl='1003961008')
+
         update = self.update_factory(model_name="Subsidy421a",
                                      file_name="mock_subsidy421a.csv")
         ds.Subsidy421a.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds.Subsidy421a.objects.count(), 10)
         self.assertEqual(update.rows_created, 10)
+        self.assertEqual(ds.Property.objects.get(bbl='1003961008').propertyannotation.subsidy421a, True)
 
     def test_seed_record_after_overwrite(self):
         update = self.update_factory(model_name="Subsidy421a",
@@ -671,12 +676,15 @@ class PublicHousingRecordTests(BaseTest, TestCase):
         self.clean_tests()
 
     def test_seed_record(self):
+        property = self.property_factory(bbl='2022150116')
         update = self.update_factory(model_name="PublicHousingRecord",
                                      file_name="mock_public_housing_record.csv")
         ds.PublicHousingRecord.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(update.total_rows, 9)
         self.assertEqual(ds.PublicHousingRecord.objects.count(), 9)
         self.assertEqual(update.rows_created, 9)
+
+        self.assertEqual(ds.Property.objects.get(bbl='2022150116').propertyannotation.nycha, True)
 
     def test_seed_record_after_update(self):
         update = self.update_factory(model_name="PublicHousingRecord",

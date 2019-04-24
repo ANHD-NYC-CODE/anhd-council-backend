@@ -7,6 +7,9 @@ from datasets.utils.validation_filters import is_null
 import logging
 import datetime
 logger = logging.getLogger('app')
+from datasets import models as ds
+
+from django.dispatch import receiver
 
 
 # Update process: Manual
@@ -47,7 +50,29 @@ class CONHRecord(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        return self.bulk_seed(**kwargs, overwrite=True)
+        self.bulk_seed(**kwargs, overwrite=True)
+        self.annotate_properties()
+
+    @classmethod
+    def annotate_properties(self):
+        for record in self.objects.all():
+            try:
+                annotation = record.bbl.propertyannotation
+                annotation.conhrecord = True
+                annotation.save()
+            except Exception as e:
+                print(e)
 
     def __str__(self):
         return str(self.id)
+
+
+@receiver(models.signals.post_save, sender=CONHRecord)
+def annotate_property_on_save(sender, instance, created, **kwargs):
+    if created == True:
+        try:
+            annotation = ds.PropertyAnnotation.objects.get(bbl=instance.bbl)
+            annotation.conhrecord = True
+            annotation.save()
+        except Exception as e:
+            print(e)
