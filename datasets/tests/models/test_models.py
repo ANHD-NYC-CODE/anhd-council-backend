@@ -458,11 +458,14 @@ class CoreSubsidyRecordTests(BaseTest, TestCase):
         self.clean_tests()
 
     def test_seed_record(self):
+        property = self.property_factory(bbl='1000160015')
         update = self.update_factory(model_name="CoreSubsidyRecord",
                                      file_name="mock_coredatarecords.xlsx")
         ds.CoreSubsidyRecord.seed_or_update_self(file_path=update.file.file.path, update=update)
+
         self.assertEqual(ds.CoreSubsidyRecord.objects.count(), 10)
         self.assertEqual(update.rows_created, 10)
+        self.assertEqual(ds.Property.objects.get(bbl='1000160015').propertyannotation.subsidyprograms, 'LIHTC 4%')
 
     def test_seed_record_after_overwrite(self):
         update = self.update_factory(model_name="CoreSubsidyRecord",
