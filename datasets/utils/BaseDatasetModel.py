@@ -164,5 +164,6 @@ class BaseDatasetModel():
 
             annotation.save()
         except Exception as e:
+
             print(e)
             return

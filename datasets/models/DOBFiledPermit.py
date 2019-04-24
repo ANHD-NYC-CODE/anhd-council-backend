@@ -4,8 +4,6 @@ from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.utils.validation_filters import is_null, does_not_contain_values
 from core.utils.database import execute
 from django.dispatch import receiver
-from dateutil.relativedelta import relativedelta
-from datetime import datetime, timezone
 from datasets import models as ds
 import logging
 
@@ -99,10 +97,10 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
         kwargs['update'].rows_updated = kwargs['update'].rows_updated + (now_count - rows_created_now)
         kwargs['update'].save()
 
-        logger.debug('annotating properties')
-
-        self.annotate_all_properties_standard()
         logger.debug("Completed seed into {} for {}", self.__name__, now_table._meta.db_table)
+
+        logger.debug('annotating properties for {}', self.__name__)
+        self.annotate_all_properties_standard()
 
     def __str__(self):
         return str(self.key)
