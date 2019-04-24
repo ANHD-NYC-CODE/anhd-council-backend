@@ -1,6 +1,6 @@
 from core import models as c_models
 from core.utils.database import copy_file, write_gen_to_temp_file, create_gen_from_csv_diff, upsert_single_rows, batch_upsert_from_gen, bulk_insert_from_file, seed_from_csv_diff, from_csv_file_to_gen
-
+from datasets import models as ds
 from core.utils.typecast import Typecast
 from django.core import files
 from core.utils.transform import foreign_key_formatting
@@ -13,6 +13,9 @@ import tempfile
 import re
 import logging
 import math
+from dateutil.relativedelta import relativedelta
+
+from datetime import datetime, timezone
 
 from core.tasks import async_seed_split_file
 
@@ -137,3 +140,29 @@ class BaseDatasetModel():
                 self.seed_with_single(**kwargs)
             else:
                 self.bulk_seed(**kwargs)
+
+    @classmethod
+    def annotate_all_properties_standard(self):
+        for annotation in ds.PropertyAnnotation.objects.all():
+            self.annotate_property_standard(annotation)
+
+    @classmethod
+    def annotate_property_standard(self, annotation):
+        try:
+            last30 = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(days=30)
+            lastyear = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=1)
+            last3years = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=3)
+
+            setattr(annotation, self.__name__.lower() + 's_last30', getattr(annotation.bbl,
+                                                                            self.__name__.lower() + '_set').filter(**{self.QUERY_DATE_KEY + '__gte': last30}).count())
+
+            setattr(annotation, self.__name__.lower() + 's_lastyear', getattr(annotation.bbl,
+                                                                              self.__name__.lower() + '_set').filter(**{self.QUERY_DATE_KEY + '__gte': lastyear}).count())
+
+            setattr(annotation, self.__name__.lower() + 's_last3years', getattr(annotation.bbl,
+                                                                                self.__name__.lower() + '_set').filter(**{self.QUERY_DATE_KEY + '__gte': last3years}).count())
+
+            annotation.save()
+        except Exception as e:
+            print(e)
+            return

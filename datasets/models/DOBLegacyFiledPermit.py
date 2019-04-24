@@ -16,8 +16,8 @@ class DOBLegacyFiledPermit(BaseDatasetModel, models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=['bbl', 'dobrundate']),
-            models.Index(fields=['dobrundate', 'bbl']),
+            models.Index(fields=['bbl', 'dobrundate']),  # obsolete
+            models.Index(fields=['dobrundate', 'bbl']),  # obsolete
             models.Index(fields=['bbl', 'prefilingdate']),
             models.Index(fields=['prefilingdate', 'bbl']),
 
