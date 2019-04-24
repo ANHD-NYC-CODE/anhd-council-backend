@@ -65,7 +65,7 @@ def async_send_update_success_mail(self, update_id):
 @app.task(bind=True, queue='update', acks_late=True, max_retries=1)
 def async_annotate_properties(self, dataset_id):
     dataset = c.Dataset.objects.get(id=dataset_id)
-    dataset.model.annotate_properties()
+    dataset.model().annotate_properties()
 
 
 @app.task(bind=True, queue='celery', acks_late=True, max_retries=1)
