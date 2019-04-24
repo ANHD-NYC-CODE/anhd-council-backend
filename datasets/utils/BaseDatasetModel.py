@@ -144,8 +144,7 @@ class BaseDatasetModel():
     @classmethod
     def annotate_all_properties_standard(self):
         for annotation in ds.PropertyAnnotation.objects.all():
-            # import pdb
-            # pdb.set_trace()
+
             annotation = self.annotate_property_standard(annotation)
             annotation.save()
 
@@ -155,8 +154,7 @@ class BaseDatasetModel():
             last30 = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(days=30)
             lastyear = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=1)
             last3years = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=3)
-            # import pdb
-            # pdb.set_trace()
+
             setattr(annotation, self.__name__.lower() + 's_last30', getattr(annotation.bbl,
                                                                             self.__name__.lower() + '_set').filter(**{self.QUERY_DATE_KEY + '__gte': last30}).count())
 
@@ -165,8 +163,7 @@ class BaseDatasetModel():
 
             setattr(annotation, self.__name__.lower() + 's_last3years', getattr(annotation.bbl,
                                                                                 self.__name__.lower() + '_set').filter(**{self.QUERY_DATE_KEY + '__gte': last3years}).count())
-            # import pdb
-            # pdb.set_trace()
+
             return annotation
         except Exception as e:
 
