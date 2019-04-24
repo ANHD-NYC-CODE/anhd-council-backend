@@ -7,6 +7,7 @@ import httpretty
 
 import logging
 logging.disable(logging.CRITICAL)
+from freezegun import freeze_time
 
 
 class EvictionTest(BaseTest, TestCase):
@@ -14,6 +15,7 @@ class EvictionTest(BaseTest, TestCase):
         self.clean_tests()
 
     @httpretty.activate
+    @freeze_time("2018-05-01")
     def test_seed_record(self):
 
         httpretty.register_uri(
@@ -36,5 +38,9 @@ class EvictionTest(BaseTest, TestCase):
         ds.Eviction.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds.Eviction.objects.count(), 3)
         self.assertEqual(update.rows_created, 3)
+        self.assertEqual(ds.Property.objects.get(bbl='1').propertyannotation.evictions_last30, 0)
+        self.assertEqual(ds.Property.objects.get(bbl='1').propertyannotation.evictions_lastyear, 1)
+        self.assertEqual(ds.Property.objects.get(bbl='1').propertyannotation.evictions_last3years, 1)
+
         for eviction in ds.Eviction.objects.all():
             self.assertEqual(bool(eviction.bbl), True)

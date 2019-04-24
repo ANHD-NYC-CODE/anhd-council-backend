@@ -169,3 +169,32 @@ class BaseDatasetModel():
 
             print(e)
             return
+
+    @classmethod
+    def annotate_all_properties_month_offset(self):
+        for annotation in ds.PropertyAnnotation.objects.all():
+
+            annotation = self.annotate_property_month_offset(annotation)
+            annotation.save()
+
+    @classmethod
+    def annotate_property_month_offset(self, annotation):
+        try:
+            last30 = datetime.today().replace(day=1, tzinfo=timezone.utc) - relativedelta(months=1)
+            lastyear = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=1)
+            last3years = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=3)
+
+            setattr(annotation, self.__name__.lower() + 's_last30', getattr(annotation.bbl,
+                                                                            self.__name__.lower() + '_set').filter(**{self.QUERY_DATE_KEY + '__gte': last30}).count())
+
+            setattr(annotation, self.__name__.lower() + 's_lastyear', getattr(annotation.bbl,
+                                                                              self.__name__.lower() + '_set').filter(**{self.QUERY_DATE_KEY + '__gte': lastyear}).count())
+
+            setattr(annotation, self.__name__.lower() + 's_last3years', getattr(annotation.bbl,
+                                                                                self.__name__.lower() + '_set').filter(**{self.QUERY_DATE_KEY + '__gte': last3years}).count())
+
+            return annotation
+        except Exception as e:
+
+            print(e)
+            return

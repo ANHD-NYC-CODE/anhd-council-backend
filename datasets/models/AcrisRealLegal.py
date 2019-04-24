@@ -116,9 +116,7 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
 def annotate_property_on_save(sender, instance, created, **kwargs):
     if created == True:
         try:
-            # last30 = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(days=30)
-            # lastyear = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=1)
-            # last3years = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=3)
+
             last30 = datetime.today().replace(day=1, tzinfo=timezone.utc) - relativedelta(months=1)
             lastyear = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=1)
             last3years = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=3)

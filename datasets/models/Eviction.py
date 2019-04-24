@@ -9,7 +9,7 @@ import requests
 import json
 import re
 import logging
-
+from django.dispatch import receiver
 logger = logging.getLogger('app')
 
 
@@ -200,7 +200,20 @@ class Eviction(BaseDatasetModel, models.Model):
         logger.debug("Seeding/Updating {}", self.__name__)
         update = self.seed_with_upsert(**kwargs)
         self.link_eviction_to_pluto_by_address()
+        logger.debug('annotating properties for {}', self.__name__)
+        self.annotate_all_properties_standard()
         return update
 
     def __str__(self):
         return str(self.courtindexnumber)
+
+
+@receiver(models.signals.post_save, sender=Eviction)
+def annotate_property_on_save(sender, instance, created, **kwargs):
+    if created == True:
+        try:
+
+            annotation = sender.annotate_property_standard(ds.PropertyAnnotation.objects.get(bbl=instance.bbl))
+            annotation.save()
+        except Exception as e:
+            print(e)

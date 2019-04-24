@@ -2,6 +2,7 @@ from django.db import models
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.database import execute
 from datasets import models as ds
+from django.dispatch import receiver
 import logging
 
 logger = logging.getLogger('app')
@@ -102,5 +103,19 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
 
         logger.debug("Completed seed into {} for {}", self.__name__, now_table._meta.db_table)
 
+        logger.debug('annotating properties for {}', self.__name__)
+        self.annotate_all_properties_standard()
+
     def __str__(self):
         return str(self.key)
+
+
+@receiver(models.signals.post_save, sender=DOBIssuedPermit)
+def annotate_property_on_save(sender, instance, created, **kwargs):
+    if created == True:
+        try:
+
+            annotation = sender.annotate_property_standard(ds.PropertyAnnotation.objects.get(bbl=instance.bbl))
+            annotation.save()
+        except Exception as e:
+            print(e)

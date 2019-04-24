@@ -235,13 +235,19 @@ class ECBViolationTests(BaseTest, TestCase):
     def tearDown(self):
         self.clean_tests()
 
+    @freeze_time("2018-07-01")
     def test_seed_ecbviolation_first(self):
+        self.property_factory(bbl='1015177501')
         update = self.update_factory(model_name="ECBViolation",
                                      file_name="mock_ecb_violations.csv")
 
         ds.ECBViolation.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds.ECBViolation.objects.count(), 5)
         self.assertEqual(update.rows_created, 5)
+
+        self.assertEqual(ds.Property.objects.get(bbl='1015177501').propertyannotation.ecbviolations_last30, 1)
+        self.assertEqual(ds.Property.objects.get(bbl='1015177501').propertyannotation.ecbviolations_lastyear, 1)
+        self.assertEqual(ds.Property.objects.get(bbl='1015177501').propertyannotation.ecbviolations_last3years, 1)
 
     def test_seed_ecbviolation_after_update(self):
         update = self.update_factory(model_name="ECBViolation",
@@ -303,13 +309,18 @@ class HousingLitigationTests(BaseTest, TestCase):
     def tearDown(self):
         self.clean_tests()
 
+    @freeze_time("2015-12-05")
     def test_seed_litigation(self):
+        property = self.property_factory(bbl='4122580012')
         update = self.update_factory(model_name="HousingLitigation",
                                      file_name="mock_housing_litigations.csv")
 
         ds.HousingLitigation.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds.HousingLitigation.objects.count(), 10)
         self.assertEqual(update.rows_created, 10)
+        self.assertEqual(ds.Property.objects.get(bbl='4122580012').propertyannotation.housinglitigations_last30, 1)
+        self.assertEqual(ds.Property.objects.get(bbl='4122580012').propertyannotation.housinglitigations_lastyear, 1)
+        self.assertEqual(ds.Property.objects.get(bbl='4122580012').propertyannotation.housinglitigations_last3years, 1)
 
     def test_seed_litigation_after_update(self):
         update = self.update_factory(model_name="HousingLitigation",
@@ -578,18 +589,22 @@ class DOBPermitIssuedTests(BaseTest, TestCase):
     def tearDown(self):
         self.clean_tests()
 
+    @freeze_time("2018-01-01")
     def test_seed_joined_table(self):
-        update = self.update_factory(model_name="DOBIssuedPermit",
-                                     file_name="mock_dob_permit_issued_now.csv")
+        property = self.property_factory(bbl='1')
+        update = self.update_factory(model_name="DOBIssuedPermit")
         for i in range(5):
-            self.permitissuedlegacy_factory()
-            self.permitissuednow_factory()
+            self.permitissuedlegacy_factory(property=property, issuancedate='2018-01-01')
+            self.permitissuednow_factory(property=property, issueddate='2017-01-01')
 
         ds.DOBIssuedPermit.seed_or_update_self(update=update)
         self.assertEqual(ds.DOBIssuedPermit.objects.count(), 10)
         self.assertEqual(update.total_rows, 10)
         self.assertEqual(update.rows_created, 10)
         self.assertEqual(update.rows_updated, 0)
+        self.assertEqual(ds.Property.objects.get(bbl='1').propertyannotation.dobissuedpermits_last30, 5)
+        self.assertEqual(ds.Property.objects.get(bbl='1').propertyannotation.dobissuedpermits_lastyear, 10)
+        self.assertEqual(ds.Property.objects.get(bbl='1').propertyannotation.dobissuedpermits_last3years, 10)
 
     def test_seed_joined_table_with_update(self):
         update = self.update_factory(model_name="DOBIssuedPermit")

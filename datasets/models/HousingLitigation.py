@@ -3,7 +3,8 @@ from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.transform import from_csv_file_to_gen
 from datasets.utils.validation_filters import is_null
 import logging
-
+from django.dispatch import receiver
+from datasets import models as ds
 logger = logging.getLogger('app')
 
 
@@ -14,6 +15,8 @@ class HousingLitigation(BaseDatasetModel, models.Model):
             models.Index(fields=['caseopendate', 'bbl']),
 
         ]
+
+    QUERY_DATE_KEY = 'caseopendate'
     download_endpoint = "https://data.cityofnewyork.us/api/views/59kj-x8nc/rows.csv?accessType=DOWNLOAD"
 
     litigationid = models.IntegerField(primary_key=True, blank=False, null=False)
@@ -70,7 +73,20 @@ class HousingLitigation(BaseDatasetModel, models.Model):
     @classmethod
     def seed_or_update_self(self, **kwargs):
         logger.debug("Seeding/Updating {}", self.__name__)
-        return self.seed_or_update_from_set_diff(**kwargs)
+        self.seed_or_update_from_set_diff(**kwargs)
+        logger.debug('annotating properties for {}', self.__name__)
+        self.annotate_all_properties_month_offset()
 
     def __str__(self):
         return str(self.litigationid)
+
+
+@receiver(models.signals.post_save, sender=HousingLitigation)
+def annotate_property_on_save(sender, instance, created, **kwargs):
+    if created == True:
+        try:
+
+            annotation = sender.annotate_property_month_offset(ds.PropertyAnnotation.objects.get(bbl=instance.bbl))
+            annotation.save()
+        except Exception as e:
+            print(e)

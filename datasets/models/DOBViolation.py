@@ -70,12 +70,7 @@ class DOBViolation(BaseDatasetModel, models.Model):
     @classmethod
     def seed_or_update_self(self, **kwargs):
         logger.debug("Seeding/Updating {}", self.__name__)
-        return self.seed_or_update_from_set_diff(**kwargs)
-
-    @classmethod
-    def seed_or_update_self(self, **kwargs):
-        logger.debug("Seeding/Updating {}", self.__name__)
-        self.seed_with_upsert(**kwargs)
+        self.seed_or_update_from_set_diff(**kwargs)
         logger.debug('annotating properties for {}', self.__name__)
         self.annotate_all_properties_standard()
 
