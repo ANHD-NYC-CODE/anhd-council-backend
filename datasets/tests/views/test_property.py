@@ -311,7 +311,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.publichousingrecord_factory(property=property)
         registration = self.hpdregistration_factory(property=property, building=building1)
 
-        self.coredata_factory(property=property)
+        self.coredata_factory(property=property, programname='HELLO')
         self.taxbill_factory(property=property, uc2008=50, uc2016=10)
 
         response = self.client.get('/properties/?summary=true', format="json")
@@ -319,13 +319,15 @@ class PropertyViewTests(BaseTest, TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
-        self.assertEqual(bool(content[0]['conhrecords']), True)
-        self.assertEqual(bool(content[0]['nycha']), True)
-        self.assertEqual(len(content[0]['subsidyrecords']), 1)
+        self.assertEqual(content[0]['conhrecord'], True)
+        self.assertEqual(content[0]['nycha'], True)
+        self.assertEqual(content[0]['taxlien'], True)
+        self.assertEqual(content[0]['unitsrentstabilized'], 10)
+        self.assertEqual(content[0]['subsidyprograms'], 'HELLO')
         self.assertEqual(content[0]['rentstabilizationrecord']['ucbbl'], '1')
         self.assertEqual(content[0]['rsunits_percent_lost'], -0.8)
-        self.assertEqual(bool(content[1]['nycha']), False)
-        self.assertEqual(len(content[1]['subsidyrecords']), 0)
+        self.assertEqual(content[1]['nycha'], False)
+        self.assertEqual(content[1]['subsidyprograms'], None)
         self.assertEqual(content[1]['rentstabilizationrecord'], None)
         self.assertEqual(content[1]['rsunits_percent_lost'], 0)
 
@@ -335,6 +337,8 @@ class PropertyViewTests(BaseTest, TestCase):
         council = self.council_factory(id=1)
         property1 = self.property_factory(bbl='1', council=council)
         property2 = self.property_factory(bbl='2', council=council)
+
+        self.taxbill_factory(property=property1, uc2017=10)
 
         for i in range(5):
             self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
@@ -368,6 +372,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['bbl'], '1')
+        self.assertEqual(content[0]['unitsrentstabilized'], 10)
         self.assertEqual(content[0]['hpdviolations__01/01/2015-01/01/2019'], 10)
         self.assertEqual(content[0]['hpdcomplaints__01/01/2018-{}'.format(now_date)], 5)
         self.assertEqual(content[0]['dobviolations__01/01/2018-{}'.format(now_date)], 5)

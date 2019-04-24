@@ -155,7 +155,7 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
     subsidyj51 = serializers.SerializerMethodField()
     subsidy421a = serializers.SerializerMethodField()
     nycha = serializers.SerializerMethodField()
-    rentstabilizationrecord = RentStabilizationIdSerializer(many=False, read_only=True)
+    unitsrentstabilized = serializers.SerializerMethodField()
 
     def get_nycha(self, obj):
         try:
@@ -181,10 +181,16 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
         except Exception as e:
             return None
 
+    def get_unitsrentstabilized(self, obj):
+        try:
+            return obj.propertyannotation.unitsrentstabilized
+        except Exception as e:
+            return None
+
     class Meta:
         model = ds.Property
         fields = (ds.Property.SHORT_SUMMARY_FIELDS +
-                  ('nycha', 'subsidyprograms', 'rentstabilizationrecord', 'subsidyj51', 'subsidy421a'))
+                  ('nycha', 'subsidyprograms', 'subsidyj51', 'subsidy421a', 'unitsrentstabilized'))
 
     def generate_date_key(self, params, dataset_prefix='', date_field=''):
 
@@ -249,6 +255,7 @@ class PropertyShortSummarySerializer(serializers.ModelSerializer):
     subsidyprograms = serializers.SerializerMethodField()
     subsidyj51records = serializers.SerializerMethodField()
     subsidy421arecords = serializers.SerializerMethodField()
+    unitsrentstabilized = serializers.SerializerMethodField()
 
     nycha = serializers.SerializerMethodField()
     rentstabilizationrecord = RentStabilizationIdSerializer(many=False, read_only=True)
@@ -256,7 +263,7 @@ class PropertyShortSummarySerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Property
         fields = (ds.Property.SHORT_SUMMARY_FIELDS +
-                  ('nycha', 'subsidyprograms', 'rentstabilizationrecord', 'subsidyj51records', 'subsidy421arecords'))
+                  ('nycha', 'subsidyprograms', 'rentstabilizationrecord', 'subsidyj51records', 'subsidy421arecords', 'unitsrentstabilized'))
 
     def get_nycha(self, obj):
         try:
@@ -282,25 +289,75 @@ class PropertyShortSummarySerializer(serializers.ModelSerializer):
         except Exception as e:
             return None
 
+    def get_unitsrentstabilized(self, obj):
+        try:
+            return obj.propertyannotation.unitsrentstabilized
+        except Exception as e:
+            return None
+
 
 class PropertySummarySerializer(serializers.ModelSerializer):
-    conhrecords = CONHRecordSerializer(source='conhrecord_set', many=True, read_only=True)
     hpdregistrations = HPDRegistrationSerializer(source='hpdregistration_set', many=True, read_only=True)
-    subsidyrecords = CoreSubsidyRecordSerializer(source='coresubsidyrecord_set', many=True, read_only=True)
-    subsidyj51records = SubsidyJ51Serializer(source='subsidyj51_set', many=True, read_only=True)
-    subsidy421arecords = Subsidy421aSerializer(source='subsidy421a_set', many=True, read_only=True)
-
-    nycha = PublicHousingRecordSerializer(source='publichousingrecord_set', many=True, read_only=True)
     buildings = BuildingSummarySerializer(source='building_set', many=True, read_only=True)
-    taxliens = TaxLienSerializer(source='taxlien_set', many=True, read_only=True)
     rentstabilizationrecord = RentStabilizationRecordSerializer(many=False, read_only=True)
+
+    conhrecord = serializers.SerializerMethodField()
+    taxlien = serializers.SerializerMethodField()
+
+    subsidyprograms = serializers.SerializerMethodField()
+    subsidyj51 = serializers.SerializerMethodField()
+    subsidy421a = serializers.SerializerMethodField()
+    nycha = serializers.SerializerMethodField()
+    unitsrentstabilized = serializers.SerializerMethodField()
+
+    def get_conhrecord(self, obj):
+        try:
+            return obj.propertyannotation.conhrecord
+        except Exception as e:
+            return None
+
+    def get_taxlien(self, obj):
+        try:
+            return obj.propertyannotation.taxlien
+        except Exception as e:
+            return None
+
+    def get_nycha(self, obj):
+        try:
+            return obj.propertyannotation.nycha
+        except Exception as e:
+            return None
+
+    def get_subsidy421a(self, obj):
+        try:
+            return obj.propertyannotation.subsidy421a
+        except Exception as e:
+            return None
+
+    def get_subsidyj51(self, obj):
+        try:
+            return obj.propertyannotation.subsidyj51
+        except Exception as e:
+            return None
+
+    def get_subsidyprograms(self, obj):
+        try:
+            return obj.propertyannotation.subsidyprograms
+        except Exception as e:
+            return None
+
+    def get_unitsrentstabilized(self, obj):
+        try:
+            return obj.propertyannotation.unitsrentstabilized
+        except Exception as e:
+            return None
 
     class Meta:
         model = ds.Property
         fields = (
             'bbl', 'zipcode', 'council', 'cd', 'borough', 'yearbuilt', 'unitsres', 'unitstotal',
             'bldgclass', 'zonedist1', 'numbldgs', 'numfloors', 'address', 'lat', 'lng', 'ownertype',
-            'ownername', 'taxliens', 'buildings', 'rsunits_percent_lost', 'nycha', 'hpdregistrations', 'subsidyrecords', 'rentstabilizationrecord', 'subsidyj51records', 'subsidy421arecords', 'conhrecords'
+            'ownername', 'taxlien', 'buildings', 'rsunits_percent_lost', 'nycha', 'hpdregistrations', 'subsidyprograms', 'rentstabilizationrecord', 'unitsrentstabilized', 'subsidyj51', 'subsidy421a', 'conhrecord'
         )
 
     rsunits_percent_lost = serializers.SerializerMethodField()
