@@ -5,7 +5,8 @@ from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.utils.validation_filters import is_null, is_older_than
 from django.db.models import Subquery, OuterRef
 import logging
-
+from django.dispatch import receiver
+from datasets import models as ds
 logger = logging.getLogger('app')
 
 
@@ -79,7 +80,20 @@ class DOBComplaint(BaseDatasetModel, models.Model):
     @classmethod
     def seed_or_update_self(self, **kwargs):
         logger.debug("Seeding/Updating {}", self.__name__)
-        return self.seed_or_update_from_set_diff(callback=self.add_bbls_from_bin, **kwargs)
+        self.seed_or_update_from_set_diff(callback=self.add_bbls_from_bin, **kwargs)
+        logger.debug('annotating properties for {}', self.__name__)
+        self.annotate_all_properties_standard()
 
     def __str__(self):
         return str(self.complaintnumber)
+
+
+@receiver(models.signals.post_save, sender=DOBComplaint)
+def annotate_property_on_save(sender, instance, created, **kwargs):
+    if created == True:
+        try:
+
+            annotation = sender.annotate_property_standard(ds.PropertyAnnotation.objects.get(bbl=instance.bbl))
+            annotation.save()
+        except Exception as e:
+            print(e)
