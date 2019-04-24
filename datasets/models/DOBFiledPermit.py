@@ -110,6 +110,7 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
 def annotate_property_on_save(sender, instance, created, **kwargs):
     if created == True:
         try:
-            sender.annotate_property_standard(instance.bbl.propertyannotation)
+            annotation = sender.annotate_property_standard(instance.bbl.propertyannotation)
+            annotation.save()
         except Exception as e:
             print(e)

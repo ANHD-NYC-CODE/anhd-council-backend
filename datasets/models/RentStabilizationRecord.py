@@ -219,15 +219,6 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
             except Exception as e:
                 continue
 
-        # for record in self.objects.all():
-        #     try:
-        #         property = record.ucbbl
-        #
-        #         property.unitsrentstabilized = property.get_rentstabilized_units()
-        #         property.save()
-        #     except Exception as e:
-        #         continue
-
     def __str__(self):
         return str(self.id)
 
@@ -239,6 +230,8 @@ def annotate_property_on_save(sender, instance, created, **kwargs):
             annotation = ds.PropertyAnnotation.objects.get(bbl=instance.ucbbl)
             annotation.unitsrentstabilized = annotation.bbl.get_rentstabilized_units()
             annotation.save()
+
         except Exception as e:
             print(e)
+
             return

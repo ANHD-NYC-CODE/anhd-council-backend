@@ -13,7 +13,7 @@ class HPDViolationTests(BaseTest, TestCase):
     def tearDown(self):
         self.clean_tests()
 
-    @freeze_time("2018-11-1")
+    @freeze_time("2018-11-01")
     def test_seed_hpdviolation_first(self):
         property = self.property_factory(bbl='3046050019')
         update = self.update_factory(model_name="HPDViolation",
@@ -24,6 +24,8 @@ class HPDViolationTests(BaseTest, TestCase):
         self.assertEqual(update.rows_created, 4)
 
         self.assertEqual(ds.Property.objects.get(bbl='3046050019').propertyannotation.hpdviolations_last30, 1)
+        self.assertEqual(ds.Property.objects.get(bbl='3046050019').propertyannotation.hpdviolations_lastyear, 1)
+        self.assertEqual(ds.Property.objects.get(bbl='3046050019').propertyannotation.hpdviolations_last3years, 1)
 
     def test_seed_hpdviolation_after_update(self):
 

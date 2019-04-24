@@ -56,4 +56,4 @@ class PropertyAnnotation(BaseDatasetModel, models.Model):
     subsidyprograms = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return str(self.id)
+        return str(self.bbl)
