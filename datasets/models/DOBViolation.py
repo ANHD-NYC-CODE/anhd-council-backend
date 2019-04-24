@@ -11,9 +11,8 @@ logger = logging.getLogger('app')
 class DOBViolation(BaseDatasetModel, models.Model):
     class Meta:
         indexes = [
-            models.Index(fields=['bbl', 'issuedate']),
-            models.Index(fields=['issuedate', 'bbl']),
-
+            models.Index(fields=['bbl', '-issuedate']),
+            models.Index(fields=['-issuedate']),
         ]
     download_endpoint = "https://data.cityofnewyork.us/api/views/3h2n-5cm9/rows.csv?accessType=DOWNLOAD"
     QUERY_DATE_KEY = 'issuedate'

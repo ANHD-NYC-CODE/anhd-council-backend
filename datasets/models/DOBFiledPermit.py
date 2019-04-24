@@ -21,8 +21,8 @@ logger = logging.getLogger('app')
 class DOBFiledPermit(BaseDatasetModel, models.Model):
     class Meta:
         indexes = [
-            models.Index(fields=['bbl', 'datefiled']),
-            models.Index(fields=['datefiled', 'bbl']),
+            models.Index(fields=['bbl', '-datefiled']),
+            models.Index(fields=['-datefiled']),
 
         ]
 

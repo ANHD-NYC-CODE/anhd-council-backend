@@ -17,8 +17,8 @@ class LisPenden(BaseDatasetModel, models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=['bbl', 'fileddate']),
-            models.Index(fields=['fileddate', 'bbl']),
+            models.Index(fields=['bbl', '-fileddate']),
+            models.Index(fields=['-fileddate']),
         ]
 
     key = models.TextField(primary_key=True, blank=False, null=False)

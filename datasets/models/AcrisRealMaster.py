@@ -21,11 +21,10 @@ class AcrisRealMaster(BaseDatasetModel, models.Model):
     class Meta:
         indexes = [
             models.Index(fields=['documentid', 'doctype']),
-            models.Index(fields=['doctype', 'documentid']),
-            models.Index(fields=['documentid', 'docdate']),
-            models.Index(fields=['docdate', 'documentid']),
-            models.Index(fields=['documentid', 'docamount']),
-            models.Index(fields=['docamount', 'documentid']),
+            models.Index(fields=['documentid', '-docdate']),
+            models.Index(fields=['-docdate']),
+            models.Index(fields=['documentid', '-docamount']),
+            models.Index(fields=['-docamount']),
 
         ]
 

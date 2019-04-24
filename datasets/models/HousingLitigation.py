@@ -11,8 +11,8 @@ logger = logging.getLogger('app')
 class HousingLitigation(BaseDatasetModel, models.Model):
     class Meta:
         indexes = [
-            models.Index(fields=['bbl', 'caseopendate']),
-            models.Index(fields=['caseopendate', 'bbl']),
+            models.Index(fields=['bbl', '-caseopendate']),
+            models.Index(fields=['-caseopendate']),
 
         ]
 

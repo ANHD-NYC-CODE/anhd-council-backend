@@ -13,8 +13,8 @@ logger = logging.getLogger('app')
 class DOBComplaint(BaseDatasetModel, models.Model):
     class Meta:
         indexes = [
-            models.Index(fields=['bbl', 'dateentered']),
-            models.Index(fields=['dateentered', 'bbl']),
+            models.Index(fields=['bbl', '-dateentered']),
+            models.Index(fields=['-dateentered']),
         ]
     QUERY_DATE_KEY = 'dateentered'
 

@@ -16,8 +16,8 @@ logger = logging.getLogger('app')
 class Eviction(BaseDatasetModel, models.Model):
     class Meta:
         indexes = [
-            models.Index(fields=['bbl', 'executeddate']),
-            models.Index(fields=['executeddate', 'bbl']),
+            models.Index(fields=['bbl', '-executeddate']),
+            models.Index(fields=['-executeddate']),
 
         ]
         unique_together = ('evictionaddress', 'evictionaptnum', 'executeddate', 'marshallastname')

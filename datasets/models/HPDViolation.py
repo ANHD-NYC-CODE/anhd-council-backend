@@ -11,8 +11,8 @@ logger = logging.getLogger('app')
 class HPDViolation(BaseDatasetModel, models.Model):
     class Meta:
         indexes = [
-            models.Index(fields=['bbl', 'approveddate']),
-            models.Index(fields=['approveddate', 'bbl']),
+            models.Index(fields=['bbl', '-approveddate']),
+            models.Index(fields=['-approveddate']),
         ]
     QUERY_DATE_KEY = 'approveddate'
 
