@@ -139,7 +139,7 @@ def prefetch_annotated_datasets(queryset, request):
     return queryset
 
 
-def prefetch_housingtype_sets(queryset):
+# def prefetch_housingtype_sets(queryset):
     return queryset.prefetch_related(Prefetch(
         'publichousingrecord_set', queryset=ds.PublicHousingRecord.objects.only('pk', 'bbl'))).prefetch_related(Prefetch(
             'rentstabilizationrecord', queryset=ds.RentStabilizationRecord.objects.only('pk', 'ucbbl'))).prefetch_related(Prefetch(
@@ -157,7 +157,7 @@ def handle_property_summaries(self, request, *args, **kwargs):
             self.queryset = self.queryset.select_related('propertyannotation')
             self.serializer_class = serial.PropertyShortSummarySerializer
         elif 'summary-type' in request.query_params and request.query_params['summary-type'].lower() == 'short-annotated':
-            self.queryset = prefetch_housingtype_sets(self.queryset)
+            # self.queryset = prefetch_housingtype_sets(self.queryset)
             self.queryset = self.queryset.select_related('propertyannotation')
             # SINGLE-QUERY METHOD CHAIN
             self.queryset = prefetch_annotated_datasets(self.queryset, request)
