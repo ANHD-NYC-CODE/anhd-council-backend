@@ -12,7 +12,7 @@ from core.models import BugReport
 from django.db import connection
 
 
-@app.task(queue='celery')
+@app.task(bind=True, queue='celery')
 def add(x, y):
     print(x + y)
     return x + y

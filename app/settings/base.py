@@ -182,6 +182,16 @@ EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = 'ANHD Team <noreply@anhd.org>'
 EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
 SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY", '')
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/2.1/howto/static-files/
+#
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+STATIC_URL = '/static/'
+# STATICFILES_DIRS = (
+#     os.path.join(BASE_DIR, 'static'),
+# )
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
@@ -203,7 +213,7 @@ TIME_ZONE = "America/New_York"
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_ENABLE_UTC = False
 DJANGO_CELERY_BEAT_TZ_AWARE = True
-CELERY_BEAT_SCHEDULE = 'django_celery_beat.schedulers.DatabaseScheduler'
+CELERYBEAT_SCHEDULE = 'django_celery_beat.schedulers.DatabaseScheduler'
 # CELERY_BEAT_SCHEDULE ?
 CELERY_DEFAULT_QUEUE = 'celery'
 CELERY_DEFAULT_EXCHANGE_TYPE = 'celery'
@@ -217,15 +227,6 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/2.1/howto/static-files/
-#
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-
-STATIC_URL = '/static/'
-# STATICFILES_DIRS = (
-#     os.path.join(BASE_DIR, 'static'),
-# )
 
 MEDIA_URL = '/data/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'data')
