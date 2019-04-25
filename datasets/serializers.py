@@ -237,7 +237,16 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
 
         for dataset in DATASETS:
             dataset_prefix = dataset.__name__.lower()
-            if hasattr(obj, dataset_prefix + 's'):
+            if 'annotation__start' in params and params['annotation__start'] == 'recent':
+                rep[self.generate_date_key(params, dataset, dataset_prefix + 's', dataset.QUERY_DATE_KEY)
+                    ] = getattr(obj.propertyannotation, dataset_prefix + 's_last30')
+            elif 'annotation__start' in params and params['annotation__start'] == 'lastyear':
+                rep[self.generate_date_key(params, dataset, dataset_prefix + 's', dataset.QUERY_DATE_KEY)
+                    ] = getattr(obj.propertyannotation, dataset_prefix + 's_lastyear')
+            elif 'annotation__start' in params and params['annotation__start'] == 'last3years':
+                rep[self.generate_date_key(params, dataset, dataset_prefix + 's', dataset.QUERY_DATE_KEY)
+                    ] = getattr(obj.propertyannotation, dataset_prefix + 's_last3years')
+            elif hasattr(obj, dataset_prefix + 's'):
                 rep[self.generate_date_key(params, dataset, dataset_prefix + 's', dataset.QUERY_DATE_KEY)
                     ] = getattr(obj, dataset_prefix + 's')
             elif dataset == ds.AcrisRealMaster:

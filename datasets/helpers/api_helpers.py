@@ -49,6 +49,10 @@ def get_annotation_start(params, dataset=None, date_field=''):
     elif 'annotation__start' in params:
         if params['annotation__start'] == 'recent':
             start = get_recent_dataset_start(params.get('annotation__start'), dataset)
+        elif params['annotation__start'] == 'lastyear':
+            start = dates.get_last_year(string=True)
+        elif params['annotation__start'] == 'last3years':
+            start = dates.get_last_3years(string=True)
         else:
             start = params['annotation__start']
     elif 'q' in params:

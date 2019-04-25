@@ -621,14 +621,67 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(len(content), 2)
 
         self.assertEqual(content[0]['bbl'], '1')
-        self.assertEqual(content[0]['hpdviolations__12/06/2018-01/05/2019'], None)
+        self.assertEqual(content[0]['hpdviolations__12/06/2018-01/05/2019'], 0)
         self.assertEqual(content[0]['hpdcomplaints__12/01/2018-01/05/2019'], 5)
         self.assertEqual(content[0]['housinglitigations__12/01/2018-01/05/2019'], 5)
         self.assertEqual(content[0]['acrisrealmasters__12/01/2018-01/05/2019'], 1)
 
-        self.assertEqual(content[0]['dobcomplaints__12/06/2018-01/05/2019'], None)
+        self.assertEqual(content[0]['dobcomplaints__12/06/2018-01/05/2019'], 0)
         self.assertEqual(content[0]['ecbviolations__12/06/2018-01/05/2019'], 5)
         self.assertEqual(content[0]['dobfiledpermits__12/06/2018-01/05/2019'], 5)
         self.assertEqual(content[0]['evictions__12/06/2018-01/05/2019'], 5)
         self.assertEqual(content[1]['dobviolations__12/06/2018-01/05/2019'], 1)
         self.assertEqual(content[1]['hpdviolations__12/06/2018-01/05/2019'], 5)
+
+    # summary-annotated serializer
+    # with 'lastyear' annotation start
+    @freeze_time("2019-01-05")
+    def test_results_with_annotate_datasets_8(self):
+        # advanced query params
+        council = self.council_factory(id=1)
+        property1 = self.property_factory(bbl='1', council=council)
+
+        for i in range(5):
+            self.hpdcomplaint_factory(property=property1, receiveddate="2018-01-05")
+
+            self.hpdviolation_factory(property=property1, approveddate="2018-01-05")
+        for i in range(5):
+            self.hpdcomplaint_factory(property=property1, receiveddate="2010-01-05")
+            self.hpdviolation_factory(property=property1, approveddate="2010-01-05")
+
+        query = '/properties/?summary=true&summary-type=short-annotated&annotation__start=lastyear'
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+        self.assertEqual(content[0]['bbl'], '1')
+        self.assertEqual(content[0]['hpdviolations__01/05/2018-01/05/2019'], 5)
+        self.assertEqual(content[0]['hpdcomplaints__01/05/2018-01/05/2019'], 5)
+
+    # summary-annotated serializer
+    # with 'last3years' annotation start
+    @freeze_time("2019-01-05")
+    def test_results_with_annotate_datasets_9(self):
+        # advanced query params
+        council = self.council_factory(id=1)
+        property1 = self.property_factory(bbl='1', council=council)
+
+        for i in range(5):
+            self.hpdcomplaint_factory(property=property1, receiveddate="2016-01-05")
+
+            self.hpdviolation_factory(property=property1, approveddate="2016-01-05")
+        for i in range(5):
+            self.hpdcomplaint_factory(property=property1, receiveddate="2010-01-05")
+            self.hpdviolation_factory(property=property1, approveddate="2010-01-05")
+
+        query = '/properties/?summary=true&summary-type=short-annotated&annotation__start=last3years'
+        response = self.client.get(query, format="json")
+        content = response.data['results']
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+
+        self.assertEqual(content[0]['bbl'], '1')
+        self.assertEqual(content[0]['hpdviolations__01/05/2016-01/05/2019'], 5)
+        self.assertEqual(content[0]['hpdcomplaints__01/05/2016-01/05/2019'], 5)
