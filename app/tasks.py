@@ -25,6 +25,11 @@ def shutdown(self):
     app.control.shutdown()  # send shutdown signal to all workers
 
 
+@app.task(bind=True, queue='celery', max_retries=0)
+def sanity_check():
+    logger.debug('Sanity check running.')
+
+
 @app.task(bind=True, queue='celery', default_retry_delay=60, max_retries=1)
 def clean_temp_directory():
     try:
