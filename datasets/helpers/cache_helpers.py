@@ -11,8 +11,8 @@ import logging
 logger = logging.getLogger('app')
 
 
-def scrub_lispendens(cached_value, request):
-    if not is_authenticated(request):
+def scrub_lispendens(cached_value, request, override=False):
+    if override or not is_authenticated(request):
         if type(cached_value) is dict:
             if 'lispendens' in cached_value:
                 del cached_value['lispendens']
@@ -66,6 +66,13 @@ def cache_request_path():
                 if (response.status_code == 200):
                     logger.debug('Caching: {}'.format(cache_key))
                     cache.set(cache_key, response.data, timeout=settings.CACHE_TTL)
+                    if '__authenticated' in cache_key:  # also cache the scrubbed response for unauthenticated requests
+
+                        cache_key = cache_key.replace('__authenticated', '')
+                        logger.debug('Caching scrubbed varient: {}'.format(cache_key))
+                        value_to_cache = scrub_pagination(response.data)
+                        cache.set(cache_key, value_to_cache, timeout=settings.CACHE_TTL)
+                logger.debug('Serving response: {}'.format(cache_key))
                 return response
         return cached_view
     return cache_decorator

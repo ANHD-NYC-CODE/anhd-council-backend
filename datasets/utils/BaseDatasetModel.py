@@ -162,7 +162,7 @@ class BaseDatasetModel():
                                        )
 
         ds.PropertyAnnotation.objects.update(**{self.__name__.lower() + 's_last30': last30_subquery, self.__name__.lower(
-        ) + 's_lastyear': lastyear_subquery, self.__name__.lower() + 's_last3years': last3years_subquery})
+        ) + 's_lastyear': lastyear_subquery, self.__name__.lower() + 's_last3years': last3years_subquery, self.__name__.lower() + 's_lastupdated': datetime.now()})
 
     @classmethod
     def annotate_property_standard(self, annotation):
@@ -206,7 +206,7 @@ class BaseDatasetModel():
                                        )
 
         ds.PropertyAnnotation.objects.update(**{self.__name__.lower() + 's_last30': last30_subquery}, **{self.__name__.lower(
-        ) + 's_lastyear': lastyear_subquery}, **{self.__name__.lower() + 's_last3years': last3years_subquery})
+        ) + 's_lastyear': lastyear_subquery}, **{self.__name__.lower() + 's_last3years': last3years_subquery, self.__name__.lower() + 's_lastupdated': datetime.now()})
 
     @classmethod
     def annotate_property_month_offset(self, annotation):

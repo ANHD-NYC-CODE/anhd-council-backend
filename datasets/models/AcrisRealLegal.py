@@ -111,7 +111,7 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
             '-documentid__docamount').values('documentid__docamount')[:1])
 
         ds.PropertyAnnotation.objects.update(acrisrealmasters_last30=last30_subquery, acrisrealmasters_lastyear=lastyear_subquery,
-                                             acrisrealmasters_last3years=last3years_subquery, latestsaleprice=latestprice)
+                                             acrisrealmasters_last3years=last3years_subquery, latestsaleprice=latestprice, acrisrealmasters_lastupdated=datetime.now())
 
     def __str__(self):
         return self.key

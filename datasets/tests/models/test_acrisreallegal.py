@@ -20,6 +20,8 @@ class AcrisRealLegalTests(BaseTest, TestCase):
         property = self.property_factory(bbl='1021351059')
         acrisrealmaster = self.acrismaster_factory(
             documentid='2015060400639001', doctype='DEED', docdate='2015-07-31', docamount=1000)
+        acrisrealmaster = self.acrismaster_factory(
+            documentid='2010020400763013', doctype='DEED', docdate='2015-05-31', docamount=500)
         acrisrealmaster2 = self.acrismaster_factory(
             documentid='2012022100546002', doctype='DEED', docdate='2010-07-31', docamount=50)
 
@@ -32,8 +34,8 @@ class AcrisRealLegalTests(BaseTest, TestCase):
         self.assertEqual(update.rows_created, 10)
 
         self.assertEqual(ds.Property.objects.get(bbl='1021351059').propertyannotation.acrisrealmasters_last30, 1)
-        self.assertEqual(ds.Property.objects.get(bbl='1021351059').propertyannotation.acrisrealmasters_lastyear, 1)
-        self.assertEqual(ds.Property.objects.get(bbl='1021351059').propertyannotation.acrisrealmasters_last3years, 1)
+        self.assertEqual(ds.Property.objects.get(bbl='1021351059').propertyannotation.acrisrealmasters_lastyear, 2)
+        self.assertEqual(ds.Property.objects.get(bbl='1021351059').propertyannotation.acrisrealmasters_last3years, 2)
         self.assertEqual(ds.Property.objects.get(bbl='1021351059').propertyannotation.latestsaleprice, 1000)
 
     def test_seed_legals_with_diff(self):
