@@ -213,7 +213,7 @@ TIME_ZONE = "America/New_York"
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_ENABLE_UTC = False
 DJANGO_CELERY_BEAT_TZ_AWARE = True
-CELERYBEAT_SCHEDULE = 'django_celery_beat.schedulers.DatabaseScheduler'
+CELERYBEAT_SCHEDULER = 'django_celery_beat.schedulers.DatabaseScheduler'
 # CELERY_BEAT_SCHEDULE ?
 CELERY_DEFAULT_QUEUE = 'celery'
 CELERY_DEFAULT_EXCHANGE_TYPE = 'celery'
