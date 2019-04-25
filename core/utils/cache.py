@@ -33,14 +33,14 @@ def cache_council_property_summaries_month():
     for record in Council.objects.all().order_by('pk'):
         logger.debug("Caching 1-month Council: {}".format(record.pk))
         requests.get(
-            root_url + '/councils/{}/properties/?format=json&summary=true&summary-type=short-annotated&annotation__start={}&unitsres__gte=1'.format(record.pk, one_month_ago), headers=headers)
+            root_url + '/councils/{}/properties/?format=json&summary=true&summary-type=short-annotated&annotation__start=recent&unitsres__gte=1'.format(record.pk), headers=headers)
 
     logger.debug("Authenticated! Council month Pre-Caching complete!")
 
     for record in Council.objects.all().order_by('pk'):
         logger.debug("Caching 1-month Council: {}".format(record.pk))
         requests.get(
-            root_url + '/councils/{}/properties/?format=json&summary=true&summary-type=short-annotated&annotation__start={}&unitsres__gte=1'.format(record.pk, one_month_ago))
+            root_url + '/councils/{}/properties/?format=json&summary=true&summary-type=short-annotated&annotation__start=recent&unitsres__gte=1'.format(record.pk))
 
     logger.debug("Unauthenticated! Council month Pre-Caching complete!")
 
@@ -54,7 +54,7 @@ def cache_council_property_summaries_year():
     for record in Council.objects.all().order_by('pk'):
         logger.debug("Caching 1-year Council: {}".format(record.pk))
         requests.get(
-            root_url + '/councils/{}/properties/?format=json&summary=true&summary-type=short-annotated&annotation__start={}&unitsres__gte=1'.format(record.pk, one_year_ago), headers=headers)
+            root_url + '/councils/{}/properties/?format=json&summary=true&summary-type=short-annotated&annotation__start=lastyear&unitsres__gte=1'.format(record.pk), headers=headers)
 
     logger.debug("Authenticated Council 1-year Pre-Caching complete!")
 
@@ -62,7 +62,7 @@ def cache_council_property_summaries_year():
     for record in Council.objects.all().order_by('pk'):
         logger.debug("Caching 1-year Council: {}".format(record.pk))
         requests.get(
-            root_url + '/councils/{}/properties/?format=json&summary=true&summary-type=short-annotated&annotation__start={}&unitsres__gte=1'.format(record.pk, one_year_ago))
+            root_url + '/councils/{}/properties/?format=json&summary=true&summary-type=short-annotated&annotation__start=lastyear&unitsres__gte=1'.format(record.pk))
 
     logger.debug("Unauthenticated Council 1-year Pre-Caching complete!")
 
@@ -76,14 +76,14 @@ def cache_council_property_summaries_3_year():
     for record in Council.objects.all().order_by('pk'):
         logger.debug("Caching 3-years Council: {}".format(record.pk))
         requests.get(
-            root_url + '/councils/{}/properties/?format=json&summary=true&summary-type=short-annotated&annotation__start={}&unitsres__gte=1'.format(record.pk, three_years_ago), headers=headers)
+            root_url + '/councils/{}/properties/?format=json&summary=true&summary-type=short-annotated&annotation__start=last3years&unitsres__gte=1'.format(record.pk), headers=headers)
 
     logger.debug("Authenticated Council 3-year Pre-Caching complete!")
 
     for record in Council.objects.all().order_by('pk'):
         logger.debug("Caching 3-years Council: {}".format(record.pk))
         requests.get(
-            root_url + '/councils/{}/properties/?format=json&summary=true&summary-type=short-annotated&annotation__start={}&unitsres__gte=1'.format(record.pk, three_years_ago))
+            root_url + '/councils/{}/properties/?format=json&summary=true&summary-type=short-annotated&annotation__start=last3years&unitsres__gte=1'.format(record.pk))
 
     logger.debug("Unauthenticated Council 3-year Pre-Caching complete!")
 
@@ -96,14 +96,14 @@ def cache_community_property_summaries_month():
     for record in Community.objects.all().order_by('pk'):
         logger.debug("Caching 1-month Community: {}".format(record.pk))
         requests.get(
-            root_url + '/communities/{}/properties/?format=json&summary=true&summary-type=short-annotated&annotation__start={}&unitsres__gte=1'.format(record.pk, one_month_ago), headers=headers)
+            root_url + '/communities/{}/properties/?format=json&summary=true&summary-type=short-annotated&annotation__start=recent&unitsres__gte=1'.format(record.pk), headers=headers)
 
     logger.debug("Authenticated Community month Pre-Caching complete!")
 
     for record in Community.objects.all().order_by('pk'):
         logger.debug("Caching 1-month Community: {}".format(record.pk))
         requests.get(
-            root_url + '/communities/{}/properties/?format=json&summary=true&summary-type=short-annotated&annotation__start={}&unitsres__gte=1'.format(record.pk, one_month_ago))
+            root_url + '/communities/{}/properties/?format=json&summary=true&summary-type=short-annotated&annotation__start=recent&unitsres__gte=1'.format(record.pk))
 
     logger.debug("Unauthenticated Community month Pre-Caching complete!")
 
@@ -117,7 +117,7 @@ def cache_community_property_summaries_year():
     for record in Community.objects.all().order_by('pk'):
         logger.debug("Caching 1-year Community: {}".format(record.pk))
         requests.get(
-            root_url + '/communities/{}/properties/?format=json&summary=true&summary-type=short-annotated&annotation__start={}&unitsres__gte=1'.format(record.pk, one_year_ago), headers=headers)
+            root_url + '/communities/{}/properties/?format=json&summary=true&summary-type=short-annotated&annotation__start=lastyear&unitsres__gte=1'.format(record.pk), headers=headers)
 
     logger.debug("Authenticated Community 1 year Pre-Caching complete!")
 
@@ -125,7 +125,7 @@ def cache_community_property_summaries_year():
     for record in Community.objects.all().order_by('pk'):
         logger.debug("Caching 1-year Community: {}".format(record.pk))
         requests.get(
-            root_url + '/communities/{}/properties/?format=json&summary=true&summary-type=short-annotated&annotation__start={}&unitsres__gte=1'.format(record.pk, one_year_ago))
+            root_url + '/communities/{}/properties/?format=json&summary=true&summary-type=short-annotated&annotation__start=lastyear&unitsres__gte=1'.format(record.pk))
 
     logger.debug("Unauthentcated Community 1 year Pre-Caching complete!")
 
@@ -139,7 +139,7 @@ def cache_community_property_summaries_3_year():
     for record in Community.objects.all().order_by('pk'):
         logger.debug("Caching 3-years Community: {}".format(record.pk))
         requests.get(
-            root_url + '/communities/{}/properties/?format=json&summary=true&summary-type=short-annotated&annotation__start={}&unitsres__gte=1'.format(record.pk, three_years_ago), headers=headers)
+            root_url + '/communities/{}/properties/?format=json&summary=true&summary-type=short-annotated&annotation__start=last3years&unitsres__gte=1'.format(record.pk), headers=headers)
 
     logger.debug("Authenticated Community 3 year Pre-Caching complete!")
 
@@ -147,6 +147,6 @@ def cache_community_property_summaries_3_year():
     for record in Community.objects.all().order_by('pk'):
         logger.debug("Caching 3-years Community: {}".format(record.pk))
         requests.get(
-            root_url + '/communities/{}/properties/?format=json&summary=true&summary-type=short-annotated&annotation__start={}&unitsres__gte=1'.format(record.pk, three_years_ago))
+            root_url + '/communities/{}/properties/?format=json&summary=true&summary-type=short-annotated&annotation__start=last3years&unitsres__gte=1'.format(record.pk))
 
     logger.debug("Unauthenticated Community 3 year Pre-Caching complete!")
