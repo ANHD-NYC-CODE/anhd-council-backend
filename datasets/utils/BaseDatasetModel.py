@@ -13,7 +13,7 @@ import tempfile
 import re
 import logging
 import math
-from dateutil.relativedelta import relativedelta
+from datasets.utils import dates
 from django.db.models import Subquery, OuterRef, Count, IntegerField, F
 
 from datetime import datetime, timezone
@@ -145,9 +145,9 @@ class BaseDatasetModel():
     @classmethod
     def annotate_all_properties_standard(self):
         logger.debug('annotating properties for: {}'.format(self.__name__))
-        last30 = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(days=30)
-        lastyear = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=1)
-        last3years = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=3)
+        last30 = dates.get_last_30(string=False)
+        lastyear = dates.get_last_year(string=False)
+        last3years = dates.get_last_3years(string=False)
 
         last30_subquery = Subquery(self.objects.filter(bbl=OuterRef('bbl'), **{self.QUERY_DATE_KEY + '__gte': last30}).values(
             'bbl').annotate(count=Count('bbl')).values('count'))
@@ -167,9 +167,9 @@ class BaseDatasetModel():
     @classmethod
     def annotate_property_standard(self, annotation):
         try:
-            last30 = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(days=30)
-            lastyear = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=1)
-            last3years = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=3)
+            last30 = dates.get_last_30(string=False)
+            lastyear = dates.get_last_year(string=False)
+            last3years = dates.get_last_3years(string=False)
 
             setattr(annotation, self.__name__.lower() + 's_last30', getattr(annotation.bbl,
                                                                             self.__name__.lower() + '_set').filter(**{self.QUERY_DATE_KEY + '__gte': last30}).count())
@@ -189,9 +189,9 @@ class BaseDatasetModel():
     @classmethod
     def annotate_all_properties_month_offset(self):
         logger.debug('annotating properties for: {}'.format(self.__name__))
-        last30 = datetime.today().replace(day=1, tzinfo=timezone.utc) - relativedelta(months=1)
-        lastyear = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=1)
-        last3years = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=3)
+        last30 = dates.get_last_month(string=False)
+        lastyear = dates.get_last_year(string=False)
+        last3years = dates.get_last_3years(string=False)
 
         last30_subquery = Subquery(self.objects.filter(bbl=OuterRef('bbl'), **{self.QUERY_DATE_KEY + '__gte': last30}).values('bbl').annotate(
             cnt=Count('bbl')).values('cnt'))
@@ -211,9 +211,9 @@ class BaseDatasetModel():
     @classmethod
     def annotate_property_month_offset(self, annotation):
         try:
-            last30 = datetime.today().replace(day=1, tzinfo=timezone.utc) - relativedelta(months=1)
-            lastyear = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=1)
-            last3years = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=3)
+            last30 = dates.get_last_month(string=False)
+            lastyear = dates.get_last_year(string=False)
+            last3years = dates.get_last_3years(string=False)
 
             setattr(annotation, self.__name__.lower() + 's_last30', getattr(annotation.bbl,
                                                                             self.__name__.lower() + '_set').filter(**{self.QUERY_DATE_KEY + '__gte': last30}).count())

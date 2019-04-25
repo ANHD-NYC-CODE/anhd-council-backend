@@ -10,8 +10,8 @@ import os
 import csv
 import uuid
 import logging
-from dateutil.relativedelta import relativedelta
 from datetime import datetime, timezone
+from datasets.utils import dates
 logger = logging.getLogger('app')
 
 
@@ -92,9 +92,9 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
         records = []
         logger.debug('annotating properties for: {}'.format(self.__name__))
 
-        last30 = datetime.today().replace(day=1, tzinfo=timezone.utc) - relativedelta(months=1)
-        lastyear = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=1)
-        last3years = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=3)
+        last30 = dates.get_last_month(string=False)
+        lastyear = dates.get_last_year(string=False)
+        last3years = dates.get_last_3years(string=False)
 
         last30_subquery = Subquery(self.objects.filter(bbl=OuterRef('bbl'), documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES, documentid__docdate__gte=last30).values(
             'bbl').annotate(count=Count('bbl')).values('count'))
@@ -122,9 +122,9 @@ def annotate_property_on_save(sender, instance, created, **kwargs):
     if created == True:
         try:
 
-            last30 = datetime.today().replace(day=1, tzinfo=timezone.utc) - relativedelta(months=1)
-            lastyear = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=1)
-            last3years = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=3)
+            last30 = dates.get_last_month(string=False)
+            lastyear = dates.get_last_year(string=False)
+            last3years = dates.get_last_3years(string=False)
 
             annotation = ds.PropertyAnnotation.objects.get(bbl=instance.bbl)
             annotation.acrisrealmasters_last30 = annotation.bbl.acrisreallegal_set.filter(

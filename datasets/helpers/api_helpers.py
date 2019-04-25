@@ -12,8 +12,7 @@ from django.conf import settings
 import logging
 import json
 from datetime import datetime, timezone
-from dateutil.relativedelta import relativedelta
-
+from datasets.utils import dates
 import re
 logger = logging.getLogger('app')
 
@@ -36,9 +35,9 @@ def get_advanced_search_value(params, dataset_prefix=None, date_field='', date_c
 
 def get_recent_dataset_start(start, dataset):
     if hasattr(dataset, 'RECENT_DATE_PINNED') and dataset.RECENT_DATE_PINNED:
-        return (datetime.today().replace(day=1, tzinfo=timezone.utc) - relativedelta(months=1)).strftime("%Y-%m-%d")
+        return dates.get_last_month(string=True)
 
-    return (datetime.today() - relativedelta(days=30)).strftime("%Y-%m-%d")
+    return dates.get_last_30(string=True)
 
 
 def get_annotation_start(params, dataset=None, date_field=''):
