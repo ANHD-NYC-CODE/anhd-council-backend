@@ -232,6 +232,13 @@ properties_router.register(
     parents_query_lookups=['bbl']
 )
 
+properties_router.register(
+    'propertyannotations',
+    v.propertyannotation_views.PropertyAnnotationViewSet,
+    base_name='property-propertyannotations',
+    parents_query_lookups=['bbl']
+)
+
 
 buildings_router = router.register(r'buildings', v.building_views.BuildingViewSet)
 
