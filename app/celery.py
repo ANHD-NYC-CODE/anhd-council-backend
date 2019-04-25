@@ -15,8 +15,13 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "app.settings.development")
 app = Celery('app', broker=settings.CELERY_BROKER_URL,
              backend=settings.CELERY_BACKEND, include=['app.tasks', 'core.tasks'])
 
-app.config_from_object('django.conf:settings', namespace='CELERY')
 
 # app.now = timezone.now
 # Load task modules from all registered Django app configs.
+# app.config_from_object('django.conf:settings', namespace='CELERY')
 app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
+
+
+from django.apps import apps
+app.config_from_object(settings, namespace='CELERY')
+app.autodiscover_tasks(lambda: [n.name for n in apps.get_app_configs()])
