@@ -11,7 +11,8 @@ from rest_framework import viewsets
 from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from django.core.cache import cache
-from datasets.helpers.api_helpers import handle_property_summaries, cache_me, properties_by_housingtype, ApplicationViewSet
+from datasets.helpers.cache_helpers import cache_request_path
+from datasets.helpers.api_helpers import handle_property_summaries, properties_by_housingtype, ApplicationViewSet
 from datasets.serializers import property_query_serializer
 from datasets.filters import PropertyFilter, AdvancedPropertyFilter
 from datasets import serializers as serial
@@ -33,10 +34,10 @@ class PropertyViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyM
     filterset_class = PropertyFilter
     # permission_classes = (IsAuthenticated,)
 
-    @cache_me()
+    @cache_request_path()
     def list(self, request, *args, **kwargs):
         if not request.user.is_authenticated and 'q' in request.query_params and 'lispenden' in request.query_params['q']:
-            return Response({'detail': 'Please login to view lispenden results'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'detail': 'Please login to view foreclosure results'}, status=status.HTTP_401_UNAUTHORIZED)
 
         if 'q' in request.query_params:
             self.filterset_class = AdvancedPropertyFilter
@@ -45,13 +46,13 @@ class PropertyViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyM
 
         return super().list(request, *args, **kwargs)
 
-    @cache_me()
+    @cache_request_path()
     def retrieve(self, request, *args, **kwargs):
         handle_property_summaries(self, request, *args, **kwargs)
 
         return super().retrieve(request, *args, **kwargs)
 
-    @cache_me()
+    @cache_request_path()
     def buildings_summary(self, request, *args, **kwargs):
         self.serializer_class = serial.PropertyBuildingsSummary
         return super().retrieve(request, *args, **kwargs)

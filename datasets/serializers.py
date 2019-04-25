@@ -6,6 +6,8 @@ from django.conf import settings
 from django.db import models
 import datetime
 import re
+
+from datasets.helpers.cache_helpers import is_authenticated
 from datasets.helpers.api_helpers import get_annotation_start, get_annotation_end
 
 
@@ -171,6 +173,7 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
     subsidy421a = serializers.SerializerMethodField()
     nycha = serializers.SerializerMethodField()
     unitsrentstabilized = serializers.SerializerMethodField()
+    latestsaleprice = serializers.SerializerMethodField()
 
     def get_nycha(self, obj):
         try:
@@ -202,10 +205,16 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
         except Exception as e:
             return None
 
+    def get_latestsaleprice(self, obj):
+        try:
+            return obj.propertyannotation.latestsaleprice
+        except Exception as e:
+            return None
+
     class Meta:
         model = ds.Property
         fields = (ds.Property.SHORT_SUMMARY_FIELDS +
-                  ('nycha', 'subsidyprograms', 'subsidyj51', 'subsidy421a', 'unitsrentstabilized'))
+                  ('nycha', 'subsidyprograms', 'subsidyj51', 'subsidy421a', 'unitsrentstabilized', 'latestsaleprice'))
 
     def generate_date_key(self, params, dataset_prefix='', date_field=''):
 
@@ -220,27 +229,14 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
     def to_representation(self, obj):
         rep = super(serializers.ModelSerializer, self).to_representation(obj)
         params = self.context['request'].query_params
-        # extra_fields = ('hpdviolations', 'hpdcomplaints', 'dobviolations',
-        #                 'dobcomplaints', 'ecbviolations', 'dobfiledpermits', 'evictions')
 
-        # for field in extra_fields:
-        #     if hasattr(obj, field):
-        #         rep[self.generate_date_key(params, field)] = getattr(obj, field)
+        DATASETS = [ds.HPDViolation, ds.HPDComplaint, ds.DOBViolation, ds.DOBComplaint,
+                    ds.ECBViolation, ds.DOBIssuedPermit, ds.DOBFiledPermit, ds.DOBIssuedPermit, ds.Eviction, ds.HousingLitigation, ds.AcrisRealMaster]
+        if is_authenticated(self.context['request']):
+            DATASETS.append(ds.LisPenden)
 
-        #####
-        # This method of annotation produces 1 query per dataset per object
-        # Summing 1000s of queries per request
-        # However it is faster than annotating a single query with join table aggregates
-        # because that method is extremely expensive, and utilizes disk merges of
-        # of over 7GB depending on the table sizes
-        # if you want to use that method, uncomment out the lines in
-        # this file and in datasets.helpers.api_helpers.py, labled "SINGLE-QUERY METHOD CHAIN"
-
-        dataset_annotations = (ds.HPDViolation, ds.HPDComplaint, ds.DOBViolation,
-                               ds.DOBComplaint, ds.ECBViolation, ds.DOBFiledPermit, ds.Eviction, ds.AcrisRealMaster, ds.LisPenden)
-        for dataset in dataset_annotations:
+        for dataset in DATASETS:
             dataset_prefix = dataset.__name__.lower()
-
             if hasattr(obj, dataset_prefix + 's'):
                 rep[self.generate_date_key(params, dataset_prefix + 's', dataset.QUERY_DATE_KEY)
                     ] = getattr(obj, dataset_prefix + 's')

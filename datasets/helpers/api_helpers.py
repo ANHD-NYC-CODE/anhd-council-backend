@@ -6,17 +6,13 @@ from rest_framework.pagination import PageNumberPagination
 from datasets import filter_helpers
 from rest_framework import viewsets
 from collections import OrderedDict
-from copy import deepcopy
 from datasets import models as ds
-from functools import wraps
-from django.db.models import Prefetch, Q, Count
+from django.db.models import Subquery, OuterRef, Count, Prefetch, Q, IntegerField
 from django.conf import settings
 import logging
 import json
-import urllib
 import datetime
 import re
-import datetime
 logger = logging.getLogger('app')
 
 
@@ -67,28 +63,71 @@ def annotated_fields_to_dict(start=None, end=None):
     return {'dates': tuple(filter(None, [start, end]))}
 
 
+# def prefetch_annotated_datasets(queryset, request):
+#     DATASETS = [ds.HPDViolation, ds.HPDComplaint, ds.DOBViolation, ds.DOBComplaint,
+#                 ds.ECBViolation, ds.Eviction, ds.DOBIssuedPermit, ds.DOBFiledPermit, ds.AcrisRealMaster]
+#
+#     params = request.query_params
+#
+#     for dataset in DATASETS:
+#         annotation_dict = annotated_fields_to_dict(start=get_annotation_start(
+#             params, '', dataset.QUERY_DATE_KEY), end=get_annotation_end(params, '', dataset.QUERY_DATE_KEY))
+#
+#         if dataset == ds.AcrisRealMaster:
+#             field_path = 'acrisreallegal__documentid__' + dataset.QUERY_DATE_KEY
+#             date_filters = filter_helpers.value_dict_to_date_filter_dict(field_path, annotation_dict)
+#         else:
+#             field_path = dataset.__name__.lower() + '__' + dataset.QUERY_DATE_KEY
+#             date_filters = filter_helpers.value_dict_to_date_filter_dict(field_path, annotation_dict)
+#         # annotations get overwritten by drf filters if dataset annotation is present.
+#
+#         queryset = filter_helpers.filtered_dataset_annotation(dataset.__name__.lower(), date_filters, queryset)
+#
+#     queryset = queryset.prefetch_related(
+#         Prefetch('acrisreallegal_set', queryset=ds.AcrisRealLegal.objects.select_related('documentid')))
+#
+#     return queryset
+
 def prefetch_annotated_datasets(queryset, request):
     DATASETS = [ds.HPDViolation, ds.HPDComplaint, ds.DOBViolation, ds.DOBComplaint,
-                ds.ECBViolation, ds.Eviction, ds.DOBIssuedPermit, ds.DOBFiledPermit, ds.AcrisRealMaster]
+                ds.ECBViolation, ds.DOBIssuedPermit, ds.DOBFiledPermit, ds.DOBIssuedPermit, ds.Eviction, ds.LisPenden, ds.HousingLitigation, ds.AcrisRealMaster]
 
     params = request.query_params
-
     for dataset in DATASETS:
-        annotation_dict = annotated_fields_to_dict(start=get_annotation_start(
-            params, '', dataset.QUERY_DATE_KEY), end=get_annotation_end(params, '', dataset.QUERY_DATE_KEY))
-
         if dataset == ds.AcrisRealMaster:
-            field_path = 'acrisreallegal__documentid__' + dataset.QUERY_DATE_KEY
+            dataset_prefix = 'acrisreallegal'
+            annotation_dict = annotated_fields_to_dict(start=get_annotation_start(
+                params, '', dataset.QUERY_DATE_KEY), end=get_annotation_end(params, '', dataset.QUERY_DATE_KEY))
+
+            field_path = 'documentid__' + dataset.QUERY_DATE_KEY
             date_filters = filter_helpers.value_dict_to_date_filter_dict(field_path, annotation_dict)
+            count_subquery = Subquery(ds.AcrisRealLegal.objects.filter(bbl=OuterRef('bbl'), documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES, **date_filters).values(
+                'bbl').annotate(count=Count('bbl')).values('count'), output_field=IntegerField())
+            queryset = queryset.prefetch_related(dataset_prefix + '_set').annotate(**
+                                                                                   {'acrisrealmasters': count_subquery})
+        elif dataset == ds.LisPenden:
+            dataset_prefix = dataset.__name__.lower()
+            annotation_dict = annotated_fields_to_dict(start=get_annotation_start(
+                params, '', dataset.QUERY_DATE_KEY), end=get_annotation_end(params, '', dataset.QUERY_DATE_KEY))
+
+            field_path = dataset.QUERY_DATE_KEY
+            date_filters = filter_helpers.value_dict_to_date_filter_dict(field_path, annotation_dict)
+            count_subquery = Subquery(dataset.objects.filter(bbl=OuterRef('bbl'), type='foreclosure', **date_filters).values(
+                'bbl').annotate(count=Count('bbl')).values('count'), output_field=IntegerField())
+            queryset = queryset.prefetch_related(dataset_prefix + '_set').annotate(**
+                                                                                   {dataset_prefix + 's': count_subquery})
+
         else:
-            field_path = dataset.__name__.lower() + '__' + dataset.QUERY_DATE_KEY
+            dataset_prefix = dataset.__name__.lower()
+            annotation_dict = annotated_fields_to_dict(start=get_annotation_start(
+                params, '', dataset.QUERY_DATE_KEY), end=get_annotation_end(params, '', dataset.QUERY_DATE_KEY))
+
+            field_path = dataset.QUERY_DATE_KEY
             date_filters = filter_helpers.value_dict_to_date_filter_dict(field_path, annotation_dict)
-        # annotations get overwritten by drf filters if dataset annotation is present.
-
-        queryset = filter_helpers.filtered_dataset_annotation(dataset.__name__.lower(), date_filters, queryset)
-
-    queryset = queryset.prefetch_related(
-        Prefetch('acrisreallegal_set', queryset=ds.AcrisRealLegal.objects.select_related('documentid')))
+            count_subquery = Subquery(dataset.objects.filter(bbl=OuterRef('bbl'), **date_filters).values(
+                'bbl').annotate(count=Count('bbl')).values('count'), output_field=IntegerField())
+            queryset = queryset.prefetch_related(dataset_prefix + '_set').annotate(**
+                                                                                   {dataset_prefix + 's': count_subquery})
 
     return queryset
 
@@ -114,7 +153,7 @@ def handle_property_summaries(self, request, *args, **kwargs):
             self.queryset = prefetch_housingtype_sets(self.queryset)
             self.queryset = self.queryset.select_related('propertyannotation')
             # SINGLE-QUERY METHOD CHAIN
-            # self.queryset = prefetch_annotated_datasets(self.queryset, request)
+            self.queryset = prefetch_annotated_datasets(self.queryset, request)
 
             self.serializer_class = serial.PropertyShortAnnotatedSerializer
         else:
@@ -191,56 +230,6 @@ class ApplicationViewSet():
             self.pagination_class = None
 
         return super().retrieve(request, *args, **kwargs)
-
-
-def cache_me(relative_key_path=True, get_queryset=False):
-    def cache_decorator(function):
-        @wraps(function)
-        def cached_view(*original_args, **original_kwargs):
-            params = deepcopy(original_args[1].query_params)
-            params.pop('format', None)
-            params.pop('filename', None)
-            cache_key = original_args[1].path + '?' + urllib.parse.urlencode(params)
-
-            # TODO - figure out a way to inject cached data into renderer / response for browsable API pagination
-            # or skip caching on the django RF browsable api templates since they don't work ideally - loses pagination and filters
-            # if original_args[1].accepted_renderer.format == 'api':
-            #     return function(*original_args, **original_kwargs)
-            if cache_key in cache:
-                # cached response will not display pagination buttons in browsable API view
-                # but otherwise preserves the pagination data
-                logger.debug('Serving cache: {}'.format(cache_key))
-                cached_value = cache.get(cache_key)
-
-                # don't serve paginated values with cache
-                if 'results' in cached_value:
-                    cached_value = cached_value['results']
-
-                if not original_args[1].user.is_authenticated:
-                    if type(cached_value) is dict:
-                        pass
-                    else:  # TEMP: only lists have the sensitive data for now.
-
-                        # filter out lispendens in annotated fields for unauthorized users
-                        if len(cached_value):
-                            lispendens_field = [key for key in cached_value[0].keys() if 'lispendens' in key]
-                            if len(lispendens_field):
-                                for value in cached_value:
-                                    del value[lispendens_field[0]]
-
-                return original_args[0].finalize_response(original_args[1], Response(cached_value))
-            else:
-                response = function(*original_args, **original_kwargs)
-
-                # cache only if response is 200
-                if (response.status_code == 200):
-                    logger.debug('Caching: {}'.format(cache_key))
-
-                    cache.set(cache_key, response.data, timeout=settings.CACHE_TTL)
-                return response
-
-        return cached_view
-    return cache_decorator
 
 
 def properties_by_housingtype(request, queryset=None):
