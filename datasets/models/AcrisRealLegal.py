@@ -6,6 +6,8 @@ from django.conf import settings
 from django.dispatch import receiver
 from datasets import models as ds
 from django.db.models import Count, OuterRef, Q, Subquery
+from django.db.models.functions import Coalesce
+
 import os
 import csv
 import uuid
@@ -110,8 +112,8 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
         latestprice = Subquery(self.objects.filter(bbl=OuterRef('bbl'), documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES).order_by(
             '-documentid__docamount').values('documentid__docamount')[:1])
 
-        ds.PropertyAnnotation.objects.update(acrisrealmasters_last30=last30_subquery, acrisrealmasters_lastyear=lastyear_subquery,
-                                             acrisrealmasters_last3years=last3years_subquery, latestsaleprice=latestprice, acrisrealmasters_lastupdated=datetime.now())
+        ds.PropertyAnnotation.objects.update(acrisrealmasters_last30=Coalesce(last30_subquery, 0), acrisrealmasters_lastyear=Coalesce(lastyear_subquery, 0),
+                                             acrisrealmasters_last3years=Coalesce(last3years_subquery, 0), latestsaleprice=latestprice, acrisrealmasters_lastupdated=datetime.now())
 
     def __str__(self):
         return self.key
@@ -127,14 +129,14 @@ def annotate_property_on_save(sender, instance, created, **kwargs):
             last3years = dates.get_last_3years(string=False)
 
             annotation = ds.PropertyAnnotation.objects.get(bbl=instance.bbl)
-            annotation.acrisrealmasters_last30 = annotation.bbl.acrisreallegal_set.filter(
-                documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES, documentid__docdate__gte=last30).count()
+            annotation.acrisrealmasters_last30 = Coalesce(annotation.bbl.acrisreallegal_set.filter(
+                documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES, documentid__docdate__gte=last30).count(), 0)
 
-            annotation.acrisrealmasters_lastyear = annotation.bbl.acrisreallegal_set.filter(
-                documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES, documentid__docdate__gte=lastyear).count()
+            annotation.acrisrealmasters_lastyear = Coalesce(annotation.bbl.acrisreallegal_set.filter(
+                documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES, documentid__docdate__gte=lastyear).count(), 0)
 
-            annotation.acrisrealmasters_last3years = annotation.bbl.acrisreallegal_set.filter(
-                documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES, documentid__docdate__gte=last3years).count()
+            annotation.acrisrealmasters_last3years = Coalesce(annotation.bbl.acrisreallegal_set.filter(
+                documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES, documentid__docdate__gte=last3years).count(), 0)
 
             annotation.latestsaleprice = ds.AcrisRealMaster.objects.filter(documentid__in=annotation.bbl.acrisreallegal_set.values(
                 'documentid'), doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES).latest('docdate').docamount

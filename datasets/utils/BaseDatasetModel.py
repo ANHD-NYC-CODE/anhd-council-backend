@@ -15,6 +15,7 @@ import logging
 import math
 from datasets.utils import dates
 from django.db.models import Subquery, OuterRef, Count, IntegerField, F
+from django.db.models.functions import Coalesce
 
 from datetime import datetime, timezone
 
@@ -127,15 +128,7 @@ class BaseDatasetModel():
 
         if (previous_file and os.path.isfile(previous_file.file.path)):
             seed_from_csv_diff(previous_file.file.path, new_file_path, self, **kwargs)
-        # if (previous_file and os.path.isfile(previous_file.file.path)):
-        #     temp_file_path = write_gen_to_temp_file(create_gen_from_csv_diff(
-        #         previous_file.file.path, new_file_path))
-        #
-        #     cleaned_diff_gen = self.transform_self(temp_file_path)
-        #     logger.debug('Seeding diffed csv gen...')
-        #     batch_upsert_from_gen(self, cleaned_diff_gen, settings.BATCH_SIZE, update=update)
-        #     if os.path.isfile(temp_file_path):
-        #         os.remove(temp_file_path)
+
         else:
             if 'single' in kwargs and kwargs['single']:
                 self.seed_with_single(**kwargs)
@@ -161,8 +154,8 @@ class BaseDatasetModel():
                                        .values('count')
                                        )
 
-        ds.PropertyAnnotation.objects.update(**{self.__name__.lower() + 's_last30': last30_subquery, self.__name__.lower(
-        ) + 's_lastyear': lastyear_subquery, self.__name__.lower() + 's_last3years': last3years_subquery, self.__name__.lower() + 's_lastupdated': datetime.now()})
+        ds.PropertyAnnotation.objects.update(**{self.__name__.lower() + 's_last30': Coalesce(last30_subquery, 0), self.__name__.lower(
+        ) + 's_lastyear': Coalesce(lastyear_subquery, 0), self.__name__.lower() + 's_last3years': Coalesce(last3years_subquery, 0), self.__name__.lower() + 's_lastupdated': datetime.now()})
 
     @classmethod
     def annotate_property_standard(self, annotation):
@@ -171,14 +164,14 @@ class BaseDatasetModel():
             lastyear = dates.get_last_year(string=False)
             last3years = dates.get_last_3years(string=False)
 
-            setattr(annotation, self.__name__.lower() + 's_last30', getattr(annotation.bbl,
-                                                                            self.__name__.lower() + '_set').filter(**{self.QUERY_DATE_KEY + '__gte': last30}).count())
+            setattr(annotation, self.__name__.lower() + 's_last30', Coalesce(getattr(annotation.bbl,
+                                                                                     self.__name__.lower() + '_set').filter(**{self.QUERY_DATE_KEY + '__gte': last30}).count(), 0))
 
-            setattr(annotation, self.__name__.lower() + 's_lastyear', getattr(annotation.bbl,
-                                                                              self.__name__.lower() + '_set').filter(**{self.QUERY_DATE_KEY + '__gte': lastyear}).count())
+            setattr(annotation, self.__name__.lower() + 's_lastyear', Coalesce(getattr(annotation.bbl,
+                                                                                       self.__name__.lower() + '_set').filter(**{self.QUERY_DATE_KEY + '__gte': lastyear}).count(), 0))
 
-            setattr(annotation, self.__name__.lower() + 's_last3years', getattr(annotation.bbl,
-                                                                                self.__name__.lower() + '_set').filter(**{self.QUERY_DATE_KEY + '__gte': last3years}).count())
+            setattr(annotation, self.__name__.lower() + 's_last3years', Coalesce(getattr(annotation.bbl,
+                                                                                         self.__name__.lower() + '_set').filter(**{self.QUERY_DATE_KEY + '__gte': last3years}).count(), 0))
 
             return annotation
         except Exception as e:
@@ -205,8 +198,8 @@ class BaseDatasetModel():
                                        .values('cnt')
                                        )
 
-        ds.PropertyAnnotation.objects.update(**{self.__name__.lower() + 's_last30': last30_subquery}, **{self.__name__.lower(
-        ) + 's_lastyear': lastyear_subquery}, **{self.__name__.lower() + 's_last3years': last3years_subquery, self.__name__.lower() + 's_lastupdated': datetime.now()})
+        ds.PropertyAnnotation.objects.update(**{self.__name__.lower() + 's_last30': Coalesce(last30_subquery, 0)}, **{self.__name__.lower(
+        ) + 's_lastyear': Coalesce(lastyear_subquery, 0)}, **{self.__name__.lower() + 's_last3years': Coalesce(last3years_subquery, 0), self.__name__.lower() + 's_lastupdated': datetime.now()})
 
     @classmethod
     def annotate_property_month_offset(self, annotation):
@@ -215,14 +208,14 @@ class BaseDatasetModel():
             lastyear = dates.get_last_year(string=False)
             last3years = dates.get_last_3years(string=False)
 
-            setattr(annotation, self.__name__.lower() + 's_last30', getattr(annotation.bbl,
-                                                                            self.__name__.lower() + '_set').filter(**{self.QUERY_DATE_KEY + '__gte': last30}).count())
+            setattr(annotation, self.__name__.lower() + 's_last30', Coalesce(getattr(annotation.bbl,
+                                                                                     self.__name__.lower() + '_set').filter(**{self.QUERY_DATE_KEY + '__gte': last30}).count(), 0))
 
-            setattr(annotation, self.__name__.lower() + 's_lastyear', getattr(annotation.bbl,
-                                                                              self.__name__.lower() + '_set').filter(**{self.QUERY_DATE_KEY + '__gte': lastyear}).count())
+            setattr(annotation, self.__name__.lower() + 's_lastyear', Coalesce(getattr(annotation.bbl,
+                                                                                       self.__name__.lower() + '_set').filter(**{self.QUERY_DATE_KEY + '__gte': lastyear}).count(), 0))
 
-            setattr(annotation, self.__name__.lower() + 's_last3years', getattr(annotation.bbl,
-                                                                                self.__name__.lower() + '_set').filter(**{self.QUERY_DATE_KEY + '__gte': last3years}).count())
+            setattr(annotation, self.__name__.lower() + 's_last3years', Coalesce(getattr(annotation.bbl,
+                                                                                         self.__name__.lower() + '_set').filter(**{self.QUERY_DATE_KEY + '__gte': last3years}).count(), 0))
 
             return annotation
         except Exception as e:
