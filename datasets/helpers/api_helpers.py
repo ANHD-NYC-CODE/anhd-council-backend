@@ -11,7 +11,9 @@ from django.db.models import Subquery, OuterRef, Count, Prefetch, Q, IntegerFiel
 from django.conf import settings
 import logging
 import json
-import datetime
+from datetime import datetime, timezone
+from dateutil.relativedelta import relativedelta
+
 import re
 logger = logging.getLogger('app')
 
@@ -32,12 +34,35 @@ def get_advanced_search_value(params, dataset_prefix=None, date_field='', date_c
     return None
 
 
-def get_annotation_start(params, dataset_prefix='', date_field=''):
-    return params.get(dataset_prefix + '__start', params.get('annotation__start', get_advanced_search_value(params, dataset_prefix, date_field, 'gte') or settings.DEFAULT_ANNOTATION_DATE))
+def get_recent_dataset_start(start, dataset):
+    if hasattr(dataset, 'RECENT_DATE_PINNED') and dataset.RECENT_DATE_PINNED:
+        return (datetime.today().replace(day=1, tzinfo=timezone.utc) - relativedelta(months=1)).strftime("%Y-%m-%d")
+
+    return (datetime.today() - relativedelta(days=30)).strftime("%Y-%m-%d")
+
+
+def get_annotation_start(params, dataset=None, date_field=''):
+    dataset_prefix = dataset.__name__.lower() + 's'
+
+    start = settings.DEFAULT_ANNOTATION_DATE
+    if dataset_prefix + '__start' in params:
+        start = params.get(dataset_prefix + '__start')
+    elif 'annotation__start' in params:
+        if params['annotation__start'] == 'recent':
+            start = get_recent_dataset_start(params.get('annotation__start'), dataset)
+        else:
+            start = params['annotation__start']
+    elif 'q' in params:
+        start = get_advanced_search_value(params, dataset_prefix, date_field, 'gte')
+
+    if start:
+        return start
+    else:
+        return settings.DEFAULT_ANNOTATION_DATE
 
 
 def get_annotation_end(params, dataset_prefix='', date_field=''):
-    return params.get(dataset_prefix + '__end', params.get('annotation__end', get_advanced_search_value(params, dataset_prefix, date_field, 'lte') or datetime.datetime.now().strftime("%Y-%m-%d")))
+    return params.get(dataset_prefix + '__end', params.get('annotation__end', get_advanced_search_value(params, dataset_prefix, date_field, 'lte') or datetime.now().strftime("%Y-%m-%d")))
 
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -51,53 +76,32 @@ class StandardResultsSetPagination(PageNumberPagination):
     #     ]))
 
 
-def annotated_fields_to_dict(start=None, end=None):
+def annotated_fields_to_dict(start=None, end=None, dataset=None):
     #####
     # convert annotation fields to date dict
     # start = '2018-01-01'
     # {'dates': ({'__gte': 2018-01-01}, {'__lte': 2018-01-01})}
+
+    if start == 'recent':
+        start = get_recent_dataset_start(start, dataset)
     if start:
-        start = {'__gte': datetime.datetime.strptime(start, '%Y-%m-%d')}
+        start = {'__gte': datetime.strptime(start, '%Y-%m-%d')}
     if end:
-        end = {'__lte': datetime.datetime.strptime(end, '%Y-%m-%d')}
+        end = {'__lte': datetime.strptime(end, '%Y-%m-%d')}
     return {'dates': tuple(filter(None, [start, end]))}
 
-
-# def prefetch_annotated_datasets(queryset, request):
-#     DATASETS = [ds.HPDViolation, ds.HPDComplaint, ds.DOBViolation, ds.DOBComplaint,
-#                 ds.ECBViolation, ds.Eviction, ds.DOBIssuedPermit, ds.DOBFiledPermit, ds.AcrisRealMaster]
-#
-#     params = request.query_params
-#
-#     for dataset in DATASETS:
-#         annotation_dict = annotated_fields_to_dict(start=get_annotation_start(
-#             params, '', dataset.QUERY_DATE_KEY), end=get_annotation_end(params, '', dataset.QUERY_DATE_KEY))
-#
-#         if dataset == ds.AcrisRealMaster:
-#             field_path = 'acrisreallegal__documentid__' + dataset.QUERY_DATE_KEY
-#             date_filters = filter_helpers.value_dict_to_date_filter_dict(field_path, annotation_dict)
-#         else:
-#             field_path = dataset.__name__.lower() + '__' + dataset.QUERY_DATE_KEY
-#             date_filters = filter_helpers.value_dict_to_date_filter_dict(field_path, annotation_dict)
-#         # annotations get overwritten by drf filters if dataset annotation is present.
-#
-#         queryset = filter_helpers.filtered_dataset_annotation(dataset.__name__.lower(), date_filters, queryset)
-#
-#     queryset = queryset.prefetch_related(
-#         Prefetch('acrisreallegal_set', queryset=ds.AcrisRealLegal.objects.select_related('documentid')))
-#
-#     return queryset
 
 def prefetch_annotated_datasets(queryset, request):
     DATASETS = [ds.HPDViolation, ds.HPDComplaint, ds.DOBViolation, ds.DOBComplaint,
                 ds.ECBViolation, ds.DOBIssuedPermit, ds.DOBFiledPermit, ds.DOBIssuedPermit, ds.Eviction, ds.LisPenden, ds.HousingLitigation, ds.AcrisRealMaster]
 
     params = request.query_params
+
     for dataset in DATASETS:
         if dataset == ds.AcrisRealMaster:
             dataset_prefix = 'acrisreallegal'
-            annotation_dict = annotated_fields_to_dict(start=get_annotation_start(
-                params, '', dataset.QUERY_DATE_KEY), end=get_annotation_end(params, '', dataset.QUERY_DATE_KEY))
+            annotation_dict = annotated_fields_to_dict(dataset=dataset, start=get_annotation_start(
+                params, dataset, dataset.QUERY_DATE_KEY), end=get_annotation_end(params, '', dataset.QUERY_DATE_KEY))
 
             field_path = 'documentid__' + dataset.QUERY_DATE_KEY
             date_filters = filter_helpers.value_dict_to_date_filter_dict(field_path, annotation_dict)
@@ -107,8 +111,8 @@ def prefetch_annotated_datasets(queryset, request):
                                                                                    {'acrisrealmasters': count_subquery})
         elif dataset == ds.LisPenden:
             dataset_prefix = dataset.__name__.lower()
-            annotation_dict = annotated_fields_to_dict(start=get_annotation_start(
-                params, '', dataset.QUERY_DATE_KEY), end=get_annotation_end(params, '', dataset.QUERY_DATE_KEY))
+            annotation_dict = annotated_fields_to_dict(dataset=dataset, start=get_annotation_start(
+                params, dataset, dataset.QUERY_DATE_KEY), end=get_annotation_end(params, '', dataset.QUERY_DATE_KEY))
 
             field_path = dataset.QUERY_DATE_KEY
             date_filters = filter_helpers.value_dict_to_date_filter_dict(field_path, annotation_dict)
@@ -119,8 +123,8 @@ def prefetch_annotated_datasets(queryset, request):
 
         else:
             dataset_prefix = dataset.__name__.lower()
-            annotation_dict = annotated_fields_to_dict(start=get_annotation_start(
-                params, '', dataset.QUERY_DATE_KEY), end=get_annotation_end(params, '', dataset.QUERY_DATE_KEY))
+            annotation_dict = annotated_fields_to_dict(dataset=dataset, start=get_annotation_start(
+                params, dataset, dataset.QUERY_DATE_KEY), end=get_annotation_end(params, '', dataset.QUERY_DATE_KEY))
 
             field_path = dataset.QUERY_DATE_KEY
             date_filters = filter_helpers.value_dict_to_date_filter_dict(field_path, annotation_dict)
@@ -183,7 +187,7 @@ class ApplicationViewSet():
             elif ('format' in self.request.GET and self.request.GET['format'] == 'csv') and 'filename' not in self.request.GET:
                 response = super(viewsets.ReadOnlyModelViewSet, self).dispatch(*args, **kwargs)
                 response['Content-Disposition'] = "attachment; filename=%s" % (
-                    "{}-{}-dap-portal.csv".format(self.serializer_class.Meta.model.__name__, datetime.datetime.today().strftime('%Y-%m-%d')))
+                    "{}-{}-dap-portal.csv".format(self.serializer_class.Meta.model.__name__, datetime.today().strftime('%Y-%m-%d')))
                 return response
             else:
                 response = super(viewsets.ReadOnlyModelViewSet, self).dispatch(*args, **kwargs)

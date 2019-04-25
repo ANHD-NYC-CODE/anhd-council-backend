@@ -196,14 +196,15 @@ USE_L10N = True
 USE_TZ = True
 TIME_ZONE = "America/New_York"
 # https://github.com/celery/django-celery-beat/issues/95
-CELERY_TIMEZONE = TIME_ZONE
-CELERY_ENABLE_UTC = False
-DJANGO_CELERY_BEAT_TZ_AWARE = True  # potential fix for beat spamming tasks?
-CELERYBEAT_SCHEDULER = 'django_celery_beat.schedulers.DatabaseScheduler'
 
 # https://stackoverflow.com/questions/19853378/how-to-keep-multiple-independent-celery-queues
 # https://stackoverflow.com/questions/23129967/django-celery-multiple-queues-on-localhost-routing-not-working
 # celery queues setup
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_ENABLE_UTC = False
+DJANGO_CELERY_BEAT_TZ_AWARE = True
+CELERY_BEAT_SCHEDULE = 'django_celery_beat.schedulers.DatabaseScheduler'
+# CELERY_BEAT_SCHEDULE ?
 CELERY_DEFAULT_QUEUE = 'celery'
 CELERY_DEFAULT_EXCHANGE_TYPE = 'celery'
 CELERY_DEFAULT_ROUTING_KEY = 'celery'

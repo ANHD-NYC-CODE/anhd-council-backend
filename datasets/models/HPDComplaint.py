@@ -19,6 +19,7 @@ class HPDComplaint(BaseDatasetModel, models.Model):
         ]
     download_endpoint = "https://data.cityofnewyork.us/api/views/uwyv-629c/rows.csv?accessType=DOWNLOAD"
     QUERY_DATE_KEY = 'receiveddate'
+    RECENT_DATE_PINNED = True
 
     complaintid = models.IntegerField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
