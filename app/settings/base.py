@@ -226,14 +226,6 @@ CELERY_QUEUES = (
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
-
-
-MEDIA_URL = '/data/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'data')
-MEDIA_TEMP_ROOT = os.path.join(MEDIA_ROOT, 'temp')
-LOG_ROOT = os.path.join(BASE_DIR, 'logs')
-
-FLOWER_URL = "localhost:8888"
 CELERY_BROKER_URL = os.environ.get('REDIS_URL', "redis://localhost:6378")
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_BACKEND = 'rpc://'
@@ -245,6 +237,14 @@ CELERY_DISABLE_RATE_LIMITS = False
 CELERY_BROKER_TRANSPORT_OPTIONS = {
     'visibility_timeout': 36000  # 10 hours
 }
+
+MEDIA_URL = '/data/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'data')
+MEDIA_TEMP_ROOT = os.path.join(MEDIA_ROOT, 'temp')
+LOG_ROOT = os.path.join(BASE_DIR, 'logs')
+
+FLOWER_URL = "localhost:8888"
+
 DJANGO_LOG_LEVEL = "DEBUG"
 
 LOGGING = {
