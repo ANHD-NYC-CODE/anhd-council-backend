@@ -33,6 +33,21 @@ class CouncilSummarySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class PropertyAnnotationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.PropertyAnnotation
+        fields = '__all__'
+
+    def to_representation(self, obj):
+        rep = super(serializers.ModelSerializer, self).to_representation(obj)
+
+        if not self.context['request'].user.is_authenticated:
+            del rep['lispendens_last30']
+            del rep['lispendens_lastyear']
+            del rep['lispendens_last3years']
+        return rep
+
+
 class HPDContactSerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.HPDContact

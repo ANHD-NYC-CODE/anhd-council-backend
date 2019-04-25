@@ -188,6 +188,7 @@ class BaseDatasetModel():
 
     @classmethod
     def annotate_all_properties_month_offset(self):
+        logger.debug('annotating properties for: {}'.format(self.__name__))
         last30 = datetime.today().replace(day=1, tzinfo=timezone.utc) - relativedelta(months=1)
         lastyear = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=1)
         last3years = datetime.today().replace(tzinfo=timezone.utc) - relativedelta(years=3)

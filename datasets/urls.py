@@ -422,6 +422,7 @@ router.register(r'doblegacyfiledpermits', v.doblegacyfiledpermit_views.DOBLegacy
 router.register(r'dobnowfiledpermits', v.dobnowfiledpermit_views.DOBNowFiledPermitViewSet)
 router.register(r'publichousingrecords', v.publichousingrecord_views.PublicHousingRecordViewSet)
 router.register(r'lispendens', v.lispenden_views.LisPendenViewSet)
+router.register(r'propertyannotations', v.propertyannotation_views.PropertyAnnotationViewSet)
 
 custom_routes = format_suffix_patterns([
     path('councils/<int:pk>/summary/', council_summary, name='council-summary'),

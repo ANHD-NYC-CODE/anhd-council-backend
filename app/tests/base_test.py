@@ -248,6 +248,14 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         )
         return factory
 
+    def propertyannotation_factory(self, property, **kwargs):
+        if not property:
+            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+
+        factory = d_models.PropertyAnnotation.objects.create(
+            bbl=property
+        )
+
     def hpdviolation_factory(self, violationid=None, property=None, building=None, hpdbuilding=None, currentstatusid=1, currentstatus="ACTIVE", **kwargs):
         name = 'HPDViolation'
         if not violationid:
