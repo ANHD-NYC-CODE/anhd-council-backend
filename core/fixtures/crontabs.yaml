@@ -112,24 +112,24 @@
 - model: django_celery_beat.crontabschedule
   pk: 15
   fields:
-    # 3am monday
+    # 5am monday
     minute: "0"
-    hour: "3"
+    hour: "5"
     day_of_week: "1"
 - model: django_celery_beat.crontabschedule
   pk: 16
   fields:
-    # 3am wednesday
+    # 5am wednesday
     minute: "0"
-    hour: "3"
+    hour: "5"
     day_of_week: "3"
     timezone: "America/New_York"
 - model: django_celery_beat.crontabschedule
   pk: 17
   fields:
-    # 3am friday
+    # 5am friday
     minute: "0"
-    hour: "3"
+    hour: "5"
     day_of_week: "5"
     timezone: "America/New_York"
 - model: django_celery_beat.crontabschedule

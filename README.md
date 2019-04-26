@@ -64,3 +64,9 @@
 1) ssh into the server
 2) open a shell into the container - `sudo docker exec -it app /bin/bash`
 3) open a django shell - `python manage.py shell`
+
+
+# Adding new async tasks
+
+You can load tasks with `python manage.py loaddata tasks`
+But you'll need to delete all the existing tasks in the database. Go to the admin site / Periodic Tasks to delete. 
