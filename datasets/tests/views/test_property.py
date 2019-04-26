@@ -622,17 +622,18 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(len(content), 2)
 
         self.assertEqual(content[0]['bbl'], '1')
-        self.assertEqual(content[0]['hpdviolations__12/06/2018-01/05/2019'], 0)
-        self.assertEqual(content[0]['hpdcomplaints__12/01/2018-01/05/2019'], 5)
-        self.assertEqual(content[0]['housinglitigations__12/01/2018-01/05/2019'], 5)
-        self.assertEqual(content[0]['acrisrealmasters__12/01/2018-01/05/2019'], 1)
 
-        self.assertEqual(content[0]['dobcomplaints__12/06/2018-01/05/2019'], 0)
-        self.assertEqual(content[0]['ecbviolations__12/06/2018-01/05/2019'], 5)
-        self.assertEqual(content[0]['dobfiledpermits__12/06/2018-01/05/2019'], 5)
-        self.assertEqual(content[0]['evictions__12/06/2018-01/05/2019'], 5)
-        self.assertEqual(content[1]['dobviolations__12/06/2018-01/05/2019'], 1)
-        self.assertEqual(content[1]['hpdviolations__12/06/2018-01/05/2019'], 5)
+        self.assertEqual(content[0]['hpdviolations_recent__12/06/2018-01/05/2019'], 0)
+        self.assertEqual(content[0]['hpdcomplaints_recent__12/01/2018-01/05/2019'], 5)
+        self.assertEqual(content[0]['housinglitigations_recent__12/01/2018-01/05/2019'], 5)
+        self.assertEqual(content[0]['acrisrealmasters_recent__12/01/2018-01/05/2019'], 1)
+
+        self.assertEqual(content[0]['dobcomplaints_recent__12/06/2018-01/05/2019'], 0)
+        self.assertEqual(content[0]['ecbviolations_recent__12/06/2018-01/05/2019'], 5)
+        self.assertEqual(content[0]['dobfiledpermits_recent__12/06/2018-01/05/2019'], 5)
+        self.assertEqual(content[0]['evictions_recent__12/06/2018-01/05/2019'], 5)
+        self.assertEqual(content[1]['dobviolations_recent__12/06/2018-01/05/2019'], 1)
+        self.assertEqual(content[1]['hpdviolations_recent__12/06/2018-01/05/2019'], 5)
 
     # summary-annotated serializer
     # with 'lastyear' annotation start
@@ -657,8 +658,8 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['bbl'], '1')
-        self.assertEqual(content[0]['hpdviolations__01/05/2018-01/05/2019'], 5)
-        self.assertEqual(content[0]['hpdcomplaints__01/05/2018-01/05/2019'], 5)
+        self.assertEqual(content[0]['hpdviolations_lastyear__01/05/2018-01/05/2019'], 5)
+        self.assertEqual(content[0]['hpdcomplaints_lastyear__01/05/2018-01/05/2019'], 5)
 
     # summary-annotated serializer
     # with 'last3years' annotation start
@@ -684,8 +685,8 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(len(content), 1)
 
         self.assertEqual(content[0]['bbl'], '1')
-        self.assertEqual(content[0]['hpdviolations__01/05/2016-01/05/2019'], 5)
-        self.assertEqual(content[0]['hpdcomplaints__01/05/2016-01/05/2019'], 5)
+        self.assertEqual(content[0]['hpdviolations_last3years__01/05/2016-01/05/2019'], 5)
+        self.assertEqual(content[0]['hpdcomplaints_last3years__01/05/2016-01/05/2019'], 5)
 
     # summary-annotated serializer
     # annotation_start=full - sending all 3 annotation fields
@@ -726,9 +727,9 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(content[0]['unitsrentstabilized'], 10)
         self.assertEqual(content[0]['latestsaleprice'], 1000)
 
-        self.assertEqual(content[0]['hpdviolations__12/02/2018-01/01/2019'], 5)
-        self.assertEqual(content[0]['hpdcomplaints__12/01/2018-01/01/2019'.format(now_date)], 5)
-        self.assertEqual(content[0]['hpdviolations__01/01/2018-01/01/2019'], 10)
-        self.assertEqual(content[0]['hpdcomplaints__01/01/2018-01/01/2019'.format(now_date)], 10)
-        self.assertEqual(content[0]['hpdviolations__01/01/2016-01/01/2019'], 15)
-        self.assertEqual(content[0]['hpdcomplaints__01/01/2016-01/01/2019'.format(now_date)], 15)
+        self.assertEqual(content[0]['hpdviolations_recent__12/02/2018-01/01/2019'], 5)
+        self.assertEqual(content[0]['hpdcomplaints_recent__12/01/2018-01/01/2019'.format(now_date)], 5)
+        self.assertEqual(content[0]['hpdviolations_lastyear__01/01/2018-01/01/2019'], 10)
+        self.assertEqual(content[0]['hpdcomplaints_lastyear__01/01/2018-01/01/2019'.format(now_date)], 10)
+        self.assertEqual(content[0]['hpdviolations_last3years__01/01/2016-01/01/2019'], 15)
+        self.assertEqual(content[0]['hpdcomplaints_last3years__01/01/2016-01/01/2019'.format(now_date)], 15)

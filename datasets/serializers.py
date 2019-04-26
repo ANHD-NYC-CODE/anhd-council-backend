@@ -234,15 +234,15 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
     def generate_recent_date_key(self, dataset):
         dataset_prefix = dataset.__name__.lower() + 's'
 
-        return dataset_prefix + '__' + '-'.join([dates.get_recent_dataset_start(dataset, string=True), datetime.datetime.now().strftime('%m/%d/%Y')])
+        return dataset_prefix + '_recent__' + '-'.join([dates.get_recent_dataset_start(dataset, string=True), datetime.datetime.now().strftime('%m/%d/%Y')])
 
     def generate_lastyear_date_key(self, dataset):
         dataset_prefix = dataset.__name__.lower() + 's'
-        return dataset_prefix + '__' + '-'.join([dates.get_last_year(string=True), datetime.datetime.now().strftime('%m/%d/%Y')])
+        return dataset_prefix + '_lastyear__' + '-'.join([dates.get_last_year(string=True), datetime.datetime.now().strftime('%m/%d/%Y')])
 
     def generate_last3years_date_key(self, dataset):
         dataset_prefix = dataset.__name__.lower() + 's'
-        return dataset_prefix + '__' + '-'.join([dates.get_last3years(string=True), datetime.datetime.now().strftime('%m/%d/%Y')])
+        return dataset_prefix + '_last3years__' + '-'.join([dates.get_last3years(string=True), datetime.datetime.now().strftime('%m/%d/%Y')])
 
     def to_representation(self, obj):
         rep = super(serializers.ModelSerializer, self).to_representation(obj)
@@ -256,13 +256,13 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
         for dataset in DATASETS:
             dataset_prefix = dataset.__name__.lower()
             if 'annotation__start' in params and params['annotation__start'] == 'recent':
-                rep[self.generate_date_key(params, dataset, dataset_prefix + 's', dataset.QUERY_DATE_KEY)
+                rep[self.generate_date_key(params, dataset, dataset_prefix + 's_recent', dataset.QUERY_DATE_KEY)
                     ] = getattr(obj.propertyannotation, dataset_prefix + 's_last30')
             elif 'annotation__start' in params and params['annotation__start'] == 'lastyear':
-                rep[self.generate_date_key(params, dataset, dataset_prefix + 's', dataset.QUERY_DATE_KEY)
+                rep[self.generate_date_key(params, dataset, dataset_prefix + 's_lastyear', dataset.QUERY_DATE_KEY)
                     ] = getattr(obj.propertyannotation, dataset_prefix + 's_lastyear')
             elif 'annotation__start' in params and params['annotation__start'] == 'last3years':
-                rep[self.generate_date_key(params, dataset, dataset_prefix + 's', dataset.QUERY_DATE_KEY)
+                rep[self.generate_date_key(params, dataset, dataset_prefix + 's_last3years', dataset.QUERY_DATE_KEY)
                     ] = getattr(obj.propertyannotation, dataset_prefix + 's_last3years')
             elif 'annotation__start' in params and params['annotation__start'] == 'full':
                 rep[self.generate_recent_date_key(dataset)] = getattr(
