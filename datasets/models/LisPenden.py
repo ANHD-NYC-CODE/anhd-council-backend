@@ -4,7 +4,6 @@ from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.utils.validation_filters import is_null
 import logging
 from datasets import models as ds
-from django.dispatch import receiver
 
 logger = logging.getLogger('app')
 
@@ -67,21 +66,6 @@ class LisPenden(BaseDatasetModel, models.Model):
         logger.debug("Seeding/Updating {}", self.__name__)
         self.seed_or_update_from_set_diff(**kwargs)
         logger.debug('annotating properties for {}', self.__name__)
-        self.annotate_properties()
-
-    @classmethod
-    def annotate_properties(self):
-        self.annotate_all_properties_month_offset()
 
     def __str__(self):
         return str(self.key)
-
-
-@receiver(models.signals.post_save, sender=LisPenden)
-def annotate_property_on_save(sender, instance, created, **kwargs):
-    if created == True:
-        try:
-            annotation = sender.annotate_property_month_offset(ds.PropertyAnnotation.objects.get(bbl=instance.bbl))
-            annotation.save()
-        except Exception as e:
-            print(e)
