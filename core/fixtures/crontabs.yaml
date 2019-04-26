@@ -5,13 +5,6 @@
     minute: "*"
     timezone: "America/New_York"
 - model: django_celery_beat.crontabschedule
-  pk: 1
-  fields:
-    # every hour
-    minute: "0"
-    hour: "*"
-    timezone: "America/New_York"
-- model: django_celery_beat.crontabschedule
   pk: 2
   fields:
     # every day midnight
@@ -202,4 +195,11 @@
     # every noon
     minute: "0"
     hour: "12"
+    timezone: "America/New_York"
+- model: django_celery_beat.crontabschedule
+  pk: 27
+  fields:
+    # every hour
+    minute: "0"
+    hour: "*"
     timezone: "America/New_York"
