@@ -140,7 +140,7 @@ class BaseDatasetModel():
         logger.debug('annotating properties for: {}'.format(self.__name__))
         last30 = dates.get_last_30(string=False)
         lastyear = dates.get_last_year(string=False)
-        last3years = dates.get_last_3years(string=False)
+        last3years = dates.get_last3years(string=False)
 
         last30_subquery = Subquery(self.objects.filter(bbl=OuterRef('bbl'), **{self.QUERY_DATE_KEY + '__gte': last30}).values(
             'bbl').annotate(count=Count('bbl')).values('count'))
@@ -162,7 +162,7 @@ class BaseDatasetModel():
         try:
             last30 = dates.get_last_30(string=False)
             lastyear = dates.get_last_year(string=False)
-            last3years = dates.get_last_3years(string=False)
+            last3years = dates.get_last3years(string=False)
 
             setattr(annotation, self.__name__.lower() + 's_last30', Coalesce(getattr(annotation.bbl,
                                                                                      self.__name__.lower() + '_set').filter(**{self.QUERY_DATE_KEY + '__gte': last30}).count(), 0))
@@ -184,7 +184,7 @@ class BaseDatasetModel():
         logger.debug('annotating properties for: {}'.format(self.__name__))
         last30 = dates.get_last_month(string=False)
         lastyear = dates.get_last_year(string=False)
-        last3years = dates.get_last_3years(string=False)
+        last3years = dates.get_last3years(string=False)
 
         last30_subquery = Subquery(self.objects.filter(bbl=OuterRef('bbl'), **{self.QUERY_DATE_KEY + '__gte': last30}).values('bbl').annotate(
             cnt=Count('bbl')).values('cnt'))
@@ -206,7 +206,7 @@ class BaseDatasetModel():
         try:
             last30 = dates.get_last_month(string=False)
             lastyear = dates.get_last_year(string=False)
-            last3years = dates.get_last_3years(string=False)
+            last3years = dates.get_last3years(string=False)
 
             setattr(annotation, self.__name__.lower() + 's_last30', Coalesce(getattr(annotation.bbl,
                                                                                      self.__name__.lower() + '_set').filter(**{self.QUERY_DATE_KEY + '__gte': last30}).count(), 0))

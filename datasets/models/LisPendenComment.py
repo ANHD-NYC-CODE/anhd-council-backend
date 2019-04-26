@@ -77,7 +77,7 @@ class LisPendenComment(BaseDatasetModel, models.Model):
 
         last30 = dates.get_last_month(string=False)
         lastyear = dates.get_last_year(string=False)
-        last3years = dates.get_last_3years(string=False)
+        last3years = dates.get_last3years(string=False)
 
         last30_subquery = Subquery(ds.LisPenden.objects.filter(bbl=OuterRef('bbl'), type=ds.LisPenden.LISPENDEN_TYPES['foreclosure'], fileddate__gte=last30).values(
             'bbl').annotate(count=Count('bbl')).values('count'))
@@ -104,7 +104,7 @@ def annotate_property_on_save(sender, instance, created, **kwargs):
         try:
             last30 = dates.get_last_month(string=False)
             lastyear = dates.get_last_year(string=False)
-            last3years = dates.get_last_3years(string=False)
+            last3years = dates.get_last3years(string=False)
 
             annotation = ds.PropertyAnnotation.objects.get(bbl=instance.bbl)
             annotation.lispendens_last30 = Coalesce(annotation.bbl.acrisreallegal_set.filter(

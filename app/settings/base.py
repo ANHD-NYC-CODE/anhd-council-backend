@@ -23,8 +23,7 @@ BATCH_SIZE = 100000
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY', '')
-DEFAULT_ANNOTATION_DATE = datetime.datetime(  # jan 1st, last year
-    year=datetime.datetime.now().year - 1, month=1, day=1).strftime('%Y-%m-%d')
+
 CACHE_REQUEST_KEY = os.environ.get('CACHE_REQUEST_KEY', '')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/

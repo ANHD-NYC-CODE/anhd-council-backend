@@ -15,32 +15,32 @@ import logging
 logger = logging.getLogger('app')
 
 
-@app.task(bind=True, queue='celery', autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 2})
+@app.task(bind=True, queue='celery', autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 5})
 def async_cache_council_property_summaries_month(self):
     return cache_council_property_summaries_month()
 
 
-@app.task(bind=True, queue='celery', autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 2})
+@app.task(bind=True, queue='celery', autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 5})
 def async_cache_council_property_summaries_year(self):
     return cache_council_property_summaries_year()
 
 
-@app.task(bind=True, queue='celery', autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 2})
+@app.task(bind=True, queue='celery', autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 5})
 def async_cache_council_property_summaries_3_year(self):
     return cache_council_property_summaries_3_year()
 
 
-@app.task(bind=True, queue='celery', autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 2})
+@app.task(bind=True, queue='celery', autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 5})
 def async_cache_community_property_summaries_month(self):
     return cache_community_property_summaries_month()
 
 
-@app.task(bind=True, queue='celery', autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 2})
+@app.task(bind=True, queue='celery', autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 5})
 def async_cache_community_property_summaries_year(self):
     return cache_community_property_summaries_year()
 
 
-@app.task(bind=True, queue='celery', autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 2})
+@app.task(bind=True, queue='celery', autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 5})
 def async_cache_community_property_summaries_3_year(self):
     return cache_community_property_summaries_3_year()
 

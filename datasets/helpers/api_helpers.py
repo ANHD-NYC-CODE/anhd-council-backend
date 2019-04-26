@@ -33,26 +33,21 @@ def get_advanced_search_value(params, dataset_prefix=None, date_field='', date_c
     return None
 
 
-def get_recent_dataset_start(start, dataset):
-    if hasattr(dataset, 'RECENT_DATE_PINNED') and dataset.RECENT_DATE_PINNED:
-        return dates.get_last_month(string=True)
-
-    return dates.get_last_30(string=True)
-
-
 def get_annotation_start(params, dataset=None, date_field=''):
     dataset_prefix = dataset.__name__.lower() + 's'
 
-    start = settings.DEFAULT_ANNOTATION_DATE
+    start = dates.get_default_annotation_date(dataset, True)
     if dataset_prefix + '__start' in params:
         start = params.get(dataset_prefix + '__start')
     elif 'annotation__start' in params:
         if params['annotation__start'] == 'recent':
-            start = get_recent_dataset_start(params.get('annotation__start'), dataset)
+            start = dates.get_recent_dataset_start(dataset, string=False)
         elif params['annotation__start'] == 'lastyear':
-            start = dates.get_last_year(string=True)
+            start = dates.get_last_year(string=False)
         elif params['annotation__start'] == 'last3years':
-            start = dates.get_last_3years(string=True)
+            start = dates.get_last3years(string=False)
+        elif params['annotation__start'] == 'full':
+            start = dates.get_recent_dataset_start(dataset, string=False)
         else:
             start = params['annotation__start']
     elif 'q' in params:
@@ -61,7 +56,7 @@ def get_annotation_start(params, dataset=None, date_field=''):
     if start:
         return start
     else:
-        return settings.DEFAULT_ANNOTATION_DATE
+        return dates.get_default_annotation_date(dataset, True)
 
 
 def get_annotation_end(params, dataset_prefix='', date_field=''):
@@ -86,9 +81,14 @@ def annotated_fields_to_dict(start=None, end=None, dataset=None):
     # {'dates': ({'__gte': 2018-01-01}, {'__lte': 2018-01-01})}
 
     if start == 'recent':
-        start = get_recent_dataset_start(start, dataset)
+        start = dates.get_recent_dataset_start(dataset, string=True)
     if start:
-        start = {'__gte': datetime.strptime(start, '%Y-%m-%d')}
+        if isinstance(start, str):
+            start = {'__gte': dates.parse_date_string(start)}
+
+        else:
+            start = {'__gte': start}
+
     if end:
         end = {'__lte': datetime.strptime(end, '%Y-%m-%d')}
     return {'dates': tuple(filter(None, [start, end]))}
@@ -160,7 +160,8 @@ def handle_property_summaries(self, request, *args, **kwargs):
             # self.queryset = prefetch_housingtype_sets(self.queryset)
             self.queryset = self.queryset.select_related('propertyannotation')
             # SINGLE-QUERY METHOD CHAIN
-            self.queryset = prefetch_annotated_datasets(self.queryset, request)
+            if 'annotation__start' not in request.query_params:
+                self.queryset = prefetch_annotated_datasets(self.queryset, request)
 
             self.serializer_class = serial.PropertyShortAnnotatedSerializer
         else:

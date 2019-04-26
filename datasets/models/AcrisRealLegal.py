@@ -96,7 +96,7 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
 
         last30 = dates.get_last_month(string=False)
         lastyear = dates.get_last_year(string=False)
-        last3years = dates.get_last_3years(string=False)
+        last3years = dates.get_last3years(string=False)
 
         last30_subquery = Subquery(self.objects.filter(bbl=OuterRef('bbl'), documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES, documentid__docdate__gte=last30).values(
             'bbl').annotate(count=Count('bbl')).values('count'))
@@ -126,7 +126,7 @@ def annotate_property_on_save(sender, instance, created, **kwargs):
 
             last30 = dates.get_last_month(string=False)
             lastyear = dates.get_last_year(string=False)
-            last3years = dates.get_last_3years(string=False)
+            last3years = dates.get_last3years(string=False)
 
             annotation = ds.PropertyAnnotation.objects.get(bbl=instance.bbl)
             annotation.acrisrealmasters_last30 = Coalesce(annotation.bbl.acrisreallegal_set.filter(
