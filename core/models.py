@@ -48,12 +48,9 @@ class Dataset(models.Model):
 
             if api_last_updated.replace(tzinfo=timezone.utc) > self.api_last_updated.replace(tzinfo=timezone.utc):
                 self.model().create_async_update_worker()
-                self.api_last_updated = api_last_updated
-                self.save()
             else:
                 logger.debug('Dataset {} is up to date.'.format(self.name))
         else:
-            self.check_api_for_update()
             self.model().create_async_update_worker()
 
     def seed_dataset(self, **kwargs):
@@ -187,6 +184,7 @@ def add_task_result_to_update(sender, instance, created, **kwargs):
                 u.task_result = instance
                 u.completed_date = instance.date_done
                 u.save()
+                u.dataset.check_api_for_update()  # update dataset update time after success
                 async_send_update_success_mail.delay(u.id)
 
         except Exception as e:
