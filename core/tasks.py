@@ -7,12 +7,18 @@ from app.mailer import send_update_error_mail, send_update_success_mail, send_ge
 from core.utils.cache import cache_council_property_summaries_month, cache_community_property_summaries_month
 from core.utils.cache import cache_council_property_summaries_year, cache_community_property_summaries_year
 from core.utils.cache import cache_council_property_summaries_3_year, cache_community_property_summaries_3_year
+from core.utils.cache import cache_council_property_summaries_full, cache_community_property_summaries_full
 
 import os
 
 import logging
 
 logger = logging.getLogger('app')
+
+
+@app.task(bind=True, queue='celery', autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 5})
+def async_cache_council_property_summaries_full(self):
+    return cache_council_property_summaries_full()
 
 
 @app.task(bind=True, queue='celery', autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 5})
@@ -28,6 +34,11 @@ def async_cache_council_property_summaries_year(self):
 @app.task(bind=True, queue='celery', autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 5})
 def async_cache_council_property_summaries_3_year(self):
     return cache_council_property_summaries_3_year()
+
+
+@app.task(bind=True, queue='celery', autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 5})
+def async_cache_community_property_summaries_full(self):
+    return cache_community_property_summaries_full()
 
 
 @app.task(bind=True, queue='celery', autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 5})
