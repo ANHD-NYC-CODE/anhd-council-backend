@@ -10,6 +10,9 @@ import json
 import re
 import logging
 from django.dispatch import receiver
+from core.tasks import async_download_and_update
+
+
 logger = logging.getLogger('app')
 
 
@@ -44,6 +47,10 @@ class Eviction(BaseDatasetModel, models.Model):
     geosearch_address = models.TextField(blank=True, null=True)
 
     slim_query_fields = ["courtindexnumber", "bbl", "executeddate"]
+
+    @classmethod
+    def create_async_update_worker(self):
+        async_download_and_update.delay(self.get_dataset().id)
 
     @classmethod
     def download(self):

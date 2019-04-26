@@ -5,6 +5,8 @@ from datasets.utils.validation_filters import is_null, does_not_contain_values
 from core.utils.database import execute
 from django.dispatch import receiver
 from datasets import models as ds
+from core.tasks import async_create_update
+
 import logging
 
 logger = logging.getLogger('app')
@@ -51,6 +53,10 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
     type = models.TextField(blank=True, null=True)
 
     slim_query_fields = ["id", "bbl", "datefiled"]
+
+    @classmethod
+    def create_async_update_worker(self):
+        async_create_update.delay(self.get_dataset().id)
 
     @classmethod
     def upsert_permit_sql(self, other_table, cols):

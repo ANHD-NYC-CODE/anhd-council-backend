@@ -8,6 +8,9 @@ import logging
 import datetime
 logger = logging.getLogger('app')
 from datasets import models as ds
+from core.tasks import async_download_and_update
+from core.tasks import async_download_and_update
+
 
 from django.dispatch import receiver
 
@@ -39,6 +42,14 @@ class CONHRecord(BaseDatasetModel, models.Model):
     longitude = models.DecimalField(decimal_places=16, max_digits=32, blank=True, null=True)
 
     slim_query_fields = ["id", 'bbl']
+
+    @classmethod
+    def create_async_update_worker(self):
+        async_download_and_update.delay(self.get_dataset().id)
+
+    @classmethod
+    def create_async_update_worker(self):
+        async_download_and_update.delay(self.get_dataset().id)
 
     @classmethod
     def pre_validation_filters(self, gen_rows):

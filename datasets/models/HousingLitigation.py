@@ -5,6 +5,9 @@ from datasets.utils.validation_filters import is_null
 import logging
 from django.dispatch import receiver
 from datasets import models as ds
+from core.tasks import async_download_and_update
+
+
 logger = logging.getLogger('app')
 
 
@@ -50,6 +53,10 @@ class HousingLitigation(BaseDatasetModel, models.Model):
     nta = models.TextField(blank=True, null=True)
 
     slim_query_fields = ["litigationid", "bbl", "caseopendate"]
+
+    @classmethod
+    def create_async_update_worker(self):
+        async_download_and_update.delay(self.get_dataset().id)
 
     @classmethod
     def download(self):

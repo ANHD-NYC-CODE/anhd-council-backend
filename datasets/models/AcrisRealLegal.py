@@ -7,6 +7,7 @@ from django.dispatch import receiver
 from datasets import models as ds
 from django.db.models import Count, OuterRef, Q, Subquery
 from django.db.models.functions import Coalesce
+from core.tasks import async_download_and_update
 
 import os
 import csv
@@ -51,6 +52,10 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
     slim_query_fields = ["bbl", "documentid"]
 
     @classmethod
+    def create_async_update_worker(self):
+        async_download_and_update.delay(self.get_dataset().id)
+
+    @classmethod
     def download(self):
         return self.download_file(self.download_endpoint)
 
@@ -87,7 +92,8 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
         else:
             self.async_concurrent_seed(**kwargs)
 
-        # self.annotate_properties() # run this in an async scheduled task
+        logger.debug('annotating properties for {}', self.__name__)
+        self.annotate_properties()
 
     @classmethod
     def annotate_properties(self):

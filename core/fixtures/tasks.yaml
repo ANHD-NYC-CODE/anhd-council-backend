@@ -315,7 +315,7 @@
     description: "Annotate properties with acris"
     task: "core.tasks.async_annotate_properties"
     crontab: 23
-    args: "[]"
+    args: "[4]"
     kwargs: "{}"
     date_changed: "2019-01-01"
 - model: django_celery_beat.periodictask

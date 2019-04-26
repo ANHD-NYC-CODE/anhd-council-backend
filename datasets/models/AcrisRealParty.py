@@ -12,6 +12,8 @@ import os
 import csv
 import uuid
 import logging
+from core.tasks import async_download_and_update
+
 
 logger = logging.getLogger('app')
 
@@ -33,6 +35,10 @@ class AcrisRealParty(BaseDatasetModel, models.Model):
     state = models.TextField(blank=True, null=True)
     zip = models.TextField(blank=True, null=True)
     goodthroughdate = models.DateTimeField(blank=True, null=True)
+
+    @classmethod
+    def create_async_update_worker(self):
+        async_download_and_update.delay(self.get_dataset().id)
 
     @classmethod
     def download(self):

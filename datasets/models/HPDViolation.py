@@ -4,6 +4,7 @@ from core.utils.transform import from_csv_file_to_gen
 from datasets.utils.validation_filters import is_null, is_older_than
 import logging
 from django.dispatch import receiver
+from core.tasks import async_download_and_update
 from datasets import models as ds
 logger = logging.getLogger('app')
 
@@ -65,6 +66,10 @@ class HPDViolation(BaseDatasetModel, models.Model):
     nta = models.TextField(blank=True, null=True)
 
     slim_query_fields = ["violationid", "bbl", "approveddate"]
+
+    @classmethod
+    def create_async_update_worker(self):
+        async_download_and_update.delay(self.get_dataset().id)
 
     @classmethod
     def download(self):

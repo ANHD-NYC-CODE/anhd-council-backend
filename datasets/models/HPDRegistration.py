@@ -3,6 +3,8 @@ from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.utils.validation_filters import is_null
 import logging
+from core.tasks import async_download_and_update
+
 
 logger = logging.getLogger('app')
 
@@ -31,6 +33,10 @@ class HPDRegistration(BaseDatasetModel, models.Model):
     communityboard = models.IntegerField(blank=True, null=True)
     lastregistrationdate = models.DateTimeField(blank=True, null=True)
     registrationenddate = models.DateTimeField(blank=True, null=True)
+
+    @classmethod
+    def create_async_update_worker(self):
+        async_download_and_update.delay(self.get_dataset().id)
 
     @classmethod
     def download(self):

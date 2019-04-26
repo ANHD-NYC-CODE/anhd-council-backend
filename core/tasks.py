@@ -1,5 +1,6 @@
 from __future__ import absolute_import, unicode_literals
 
+from celery import chain
 from app.celery import app
 from core import models as c
 from django.conf import settings
@@ -83,6 +84,12 @@ def async_annotate_properties(self, dataset_id):
 def async_check_api_for_update(self, dataset_id):
     dataset = c.Dataset.objects.get(id=dataset_id)
     dataset.check_api_for_update()
+
+
+@app.task(bind=True, queue='celery', acks_late=True, max_retries=1)
+def async_check_api_for_update_and_update(self, dataset_id):
+    dataset = c.Dataset.objects.get(id=dataset_id)
+    dataset.async_check_api_for_update_and_update()
 
 
 @app.task(bind=True, queue='celery', acks_late=True, max_retries=1)

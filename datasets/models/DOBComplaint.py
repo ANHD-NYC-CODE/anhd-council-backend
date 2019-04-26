@@ -7,6 +7,8 @@ from django.db.models import Subquery, OuterRef
 import logging
 from django.dispatch import receiver
 from datasets import models as ds
+from core.tasks import async_download_and_update
+
 logger = logging.getLogger('app')
 
 
@@ -41,6 +43,10 @@ class DOBComplaint(BaseDatasetModel, models.Model):
     dobrundate = models.DateTimeField(db_index=True, blank=True, null=True)
 
     slim_query_fields = ["complaintnumber", "bbl", "dateentered"]
+
+    @classmethod
+    def create_async_update_worker(self):
+        async_download_and_update.delay(self.get_dataset().id)
 
     @classmethod
     def download(self):

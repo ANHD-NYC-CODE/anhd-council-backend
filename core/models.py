@@ -44,14 +44,14 @@ class Dataset(models.Model):
             api_last_updated = getattr(ds, self.model_name).fetch_last_updated()
 
             if api_last_updated.replace(tzinfo=timezone.utc) > self.api_last_updated.replace(tzinfo=timezone.utc):
-                async_download_and_update.delay(self.id)
+                self.model().create_async_update_worker()
                 self.api_last_updated = api_last_updated
                 self.save()
             else:
                 logger.debug('Dataset {} is up to date.'.format(self.name))
         else:
             self.check_api_for_update()
-            async_download_and_update.delay(self.id)
+            self.model().create_async_update_worker()
 
     def seed_dataset(self, **kwargs):
         getattr(ds, self.model_name).seed_or_update_self(**kwargs)

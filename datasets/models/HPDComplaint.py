@@ -6,6 +6,8 @@ from django.db.models import OuterRef, Subquery
 from datasets import models as ds
 import logging
 from django.dispatch import receiver
+from core.tasks import async_download_and_update
+
 
 logger = logging.getLogger('app')
 
@@ -44,6 +46,10 @@ class HPDComplaint(BaseDatasetModel, models.Model):
     statusdate = models.DateTimeField(db_index=True, blank=True, null=True)
 
     slim_query_fields = ["complaintid", "bbl", "receiveddate"]
+
+    @classmethod
+    def create_async_update_worker(self):
+        async_download_and_update.delay(self.get_dataset().id)
 
     @classmethod
     def download(self):

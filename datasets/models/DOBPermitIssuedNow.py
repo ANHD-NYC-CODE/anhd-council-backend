@@ -3,6 +3,8 @@ from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.utils.validation_filters import is_null, is_older_than, does_not_contain_values
 import logging
+from core.tasks import async_download_and_update
+
 
 logger = logging.getLogger('app')
 
@@ -59,6 +61,10 @@ class DOBPermitIssuedNow(BaseDatasetModel, models.Model):
 
     # class Meta:
     #     unique_together = ('jobfilingnumber', 'workpermit', 'issueddate')
+
+    @classmethod
+    def create_async_update_worker(self):
+        async_download_and_update.delay(self.get_dataset().id)
 
     @classmethod
     def download(self):

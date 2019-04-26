@@ -9,6 +9,7 @@ import os
 import csv
 import uuid
 import logging
+from core.tasks import async_download_and_update
 
 logger = logging.getLogger('app')
 
@@ -51,6 +52,10 @@ class AcrisRealMaster(BaseDatasetModel, models.Model):
     LEASE_DOC_TYPES = ("LEAS", "ASSTO", "MLEA1")
 
     TAX_DOC_TYPES = ("RPTT")
+
+    @classmethod
+    def create_async_update_worker(self):
+        async_download_and_update.delay(self.get_dataset().id)
 
     @classmethod
     def construct_sales_query(self, relation_path):

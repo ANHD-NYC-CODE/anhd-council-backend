@@ -4,6 +4,9 @@ from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.utils.validation_filters import is_null, is_older_than
 import logging
 
+from core.tasks import async_download_and_update
+
+
 logger = logging.getLogger('app')
 
 # TODO: split into HPD Complaint and HPD Problems
@@ -32,6 +35,10 @@ class HPDProblem(BaseDatasetModel, models.Model):
     status = models.TextField(db_index=True, blank=True, null=True)
     statusdate = models.DateTimeField(db_index=True, blank=True, null=True)
     statusdescription = models.TextField(blank=True, null=True)
+
+    @classmethod
+    def create_async_update_worker(self):
+        async_download_and_update.delay(self.get_dataset().id)
 
     @classmethod
     def download(self):

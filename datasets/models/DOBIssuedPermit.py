@@ -4,6 +4,8 @@ from core.utils.database import execute
 from datasets import models as ds
 from django.dispatch import receiver
 import logging
+from core.tasks import async_create_update
+
 
 logger = logging.getLogger('app')
 
@@ -48,6 +50,10 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
     type = models.TextField(blank=True, null=True)
 
     slim_query_fields = ["key", "bbl", "issuedate"]
+
+    @classmethod
+    def create_async_update_worker(self):
+        async_create_update.delay(self.get_dataset().id)
 
     @classmethod
     def pre_validation_filters(self, gen_rows):
