@@ -6,6 +6,7 @@
     crontab: 1
     args: "[]"
     kwargs: "{}"
+    date_changed: "2019-04-25"
 - model: django_celery_beat.periodictask
   fields:
     name: "Check and Update HPDViolation"
@@ -14,6 +15,7 @@
     crontab: 10 # every 7pm
     args: "[21]"
     kwargs: "{}"
+    date_changed: "2019-04-25"
 - model: django_celery_beat.periodictask
   fields:
     name: "Check and Update DOBViolation"
@@ -22,6 +24,7 @@
     crontab: 10 # every 7pm
     args: "[12]"
     kwargs: "{}"
+    date_changed: "2019-04-25"
 - model: django_celery_beat.periodictask
   fields:
     name: "Check and Update ECBViolation"
@@ -30,6 +33,7 @@
     crontab: 10 # every 7pm
     args: "[13]"
     kwargs: "{}"
+    date_changed: "2019-04-25"
 - model: django_celery_beat.periodictask
   fields:
     name: "Check and Update HPDComplaint"
@@ -38,6 +42,7 @@
     crontab: 11 # every 8pm
     args: "[17]"
     kwargs: "{}"
+    date_changed: "2019-04-25"
 - model: django_celery_beat.periodictask
   fields:
     name: "Check and Update HPDProblem"
@@ -46,6 +51,7 @@
     crontab: 11 # every 8pm
     args: "[18]"
     kwargs: "{}"
+    date_changed: "2019-04-25"
 - model: django_celery_beat.periodictask
   fields:
     name: "Check and Update HPDRegistration"
@@ -54,6 +60,7 @@
     crontab: 11 # every 8pm
     args: "[20]"
     kwargs: "{}"
+    date_changed: "2019-04-25"
 - model: django_celery_beat.periodictask
   fields:
     name: "Check and Update HPDContact"
@@ -62,6 +69,7 @@
     crontab: 11 # every 8pm
     args: "[19]"
     kwargs: "{}"
+    date_changed: "2019-04-25"
 - model: django_celery_beat.periodictask
   fields:
     name: "Check and Update Eviction"
@@ -70,6 +78,7 @@
     crontab: 11 # every 8pm
     args: "[14]"
     kwargs: "{}"
+    date_changed: "2019-04-25"
 - model: django_celery_beat.periodictask
   fields:
     name: "Check and Update HousingLitigations"
@@ -78,6 +87,7 @@
     crontab: 12 # every 9pm
     args: "[15]"
     kwargs: "{}"
+    date_changed: "2019-04-25"
 - model: django_celery_beat.periodictask
   fields:
     name: "Check and Update DOBLegacyFiledPermit"
@@ -86,6 +96,7 @@
     crontab: 12 # every 9pm
     args: "[9]"
     kwargs: "{}"
+    date_changed: "2019-04-25"
 - model: django_celery_beat.periodictask
   fields:
     name: "Check and Update DOBLegacyFiledPermit"
@@ -94,6 +105,7 @@
     crontab: 12 # every 9pm
     args: "[34]"
     kwargs: "{}"
+    date_changed: "2019-04-25"
 - model: django_celery_beat.periodictask
   fields:
     name: "Check and Update DOBLegacyFiledPermit"
@@ -102,6 +114,7 @@
     crontab: 12 # every 9pm
     args: "[10]"
     kwargs: "{}"
+    date_changed: "2019-04-25"
 - model: django_celery_beat.periodictask
   fields:
     name: "Check and Update DOBLegacyFiledPermit"
@@ -110,6 +123,7 @@
     crontab: 12 # every 9pm
     args: "[11]"
     kwargs: "{}"
+    date_changed: "2019-04-25"
 - model: django_celery_beat.periodictask
   fields:
     name: "Check and Update DOBFiledPermit"
@@ -118,6 +132,7 @@
     crontab: 13 # every 10pm
     args: "[35]"
     kwargs: "{}"
+    date_changed: "2019-04-25"
 - model: django_celery_beat.periodictask
   fields:
     name: "Check and Update DOBIssuedPermit"
@@ -126,6 +141,7 @@
     crontab: 13 # every 10pm
     args: "[26]"
     kwargs: "{}"
+    date_changed: "2019-04-25"
 - model: django_celery_beat.periodictask
   fields:
     name: "Check and Update DOBComplaint"
@@ -134,6 +150,7 @@
     crontab: 13 # every 10pm
     args: "[8]"
     kwargs: "{}"
+    date_changed: "2019-04-25"
 - model: django_celery_beat.periodictask
   fields:
     name: "Check and Update CONHRecord"
@@ -142,6 +159,7 @@
     crontab: 13 # every 10pm
     args: "[33]"
     kwargs: "{}"
+    date_changed: "2019-04-25"
 - model: django_celery_beat.periodictask
   fields:
     name: "Check and Update Acris"
@@ -150,6 +168,7 @@
     crontab: 14 # every 11pm
     args: "[]"
     kwargs: "{}"
+    date_changed: "2019-04-25"
 - model: django_celery_beat.periodictask
   fields:
     name: "Clean temp directory"
@@ -158,6 +177,7 @@
     crontab: 26 # every noon
     args: "[]"
     kwargs: "{}"
+    date_changed: "2019-04-25"
 - model: django_celery_beat.periodictask
   fields:
     name: "Reset cache at midnight"
@@ -166,6 +186,7 @@
     crontab: 3 # every 1 am
     args: "[]"
     kwargs: "{}"
+    date_changed: "2019-04-25"
 - model: django_celery_beat.periodictask
   fields:
     name: "Vacuum DB Monday"
@@ -174,6 +195,7 @@
     crontab: 15
     args: "[]"
     kwargs: "{}"
+    date_changed: "2019-04-25"
 - model: django_celery_beat.periodictask
   fields:
     name: "Vacuum DB Wednesday"
@@ -182,6 +204,7 @@
     crontab: 16
     args: "[]"
     kwargs: "{}"
+    date_changed: "2019-04-25"
 - model: django_celery_beat.periodictask
   fields:
     name: "Vacuum DB Friday"
@@ -190,3 +213,4 @@
     crontab: 17
     args: "[]"
     kwargs: "{}"
+    date_changed: "2019-04-25"
