@@ -23,6 +23,7 @@ class Eviction(BaseDatasetModel, models.Model):
         unique_together = ('evictionaddress', 'evictionaptnum', 'executeddate', 'marshallastname')
 
     download_endpoint = "https://data.cityofnewyork.us/api/views/6z8x-wfk4/rows.csv?accessType=DOWNLOAD"
+    API_ID = '6z8x-wfk4'
     QUERY_DATE_KEY = 'executeddate'
 
     courtindexnumber = models.TextField(primary_key=True, blank=False, null=False)

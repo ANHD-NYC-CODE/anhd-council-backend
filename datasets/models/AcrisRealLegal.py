@@ -18,6 +18,7 @@ logger = logging.getLogger('app')
 
 
 class AcrisRealLegal(BaseDatasetModel, models.Model):
+    API_ID = '8h5j-fqxa'
     download_endpoint = 'https://data.cityofnewyork.us/api/views/8h5j-fqxa/rows.csv?accessType=DOWNLOAD'
     QUERY_DATE_KEY = 'documentid__docdate'
 

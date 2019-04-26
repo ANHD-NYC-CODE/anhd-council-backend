@@ -108,6 +108,7 @@ services:
     depends_on:
       - redis
   redis:
+    restart: always
     hostname: redis
     container_name: "redis"
     image: redis:alpine

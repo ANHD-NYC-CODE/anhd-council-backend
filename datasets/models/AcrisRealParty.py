@@ -17,6 +17,7 @@ logger = logging.getLogger('app')
 
 
 class AcrisRealParty(BaseDatasetModel, models.Model):
+    API_ID = '636b-3b5g'
     download_endpoint = 'https://data.cityofnewyork.us/api/views/636b-3b5g/rows.csv?accessType=DOWNLOAD'
 
     key = models.TextField(primary_key=True, blank=False, null=False)

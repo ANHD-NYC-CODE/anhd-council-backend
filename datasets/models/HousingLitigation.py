@@ -16,6 +16,7 @@ class HousingLitigation(BaseDatasetModel, models.Model):
 
         ]
 
+    API_ID = '59kj-x8nc'
     QUERY_DATE_KEY = 'caseopendate'
     RECENT_DATE_PINNED = True
     download_endpoint = "https://data.cityofnewyork.us/api/views/59kj-x8nc/rows.csv?accessType=DOWNLOAD"

@@ -15,6 +15,7 @@ logger = logging.getLogger('app')
 
 
 class DOBPermitIssuedNow(BaseDatasetModel, models.Model):
+    API_ID = 'rbx6-tga4'
     download_endpoint = "https://data.cityofnewyork.us/api/views/rbx6-tga4/rows.csv?accessType=DOWNLOAD"
 
     jobfilingnumber = models.TextField(blank=True, null=True)

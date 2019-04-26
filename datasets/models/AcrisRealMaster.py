@@ -14,6 +14,7 @@ logger = logging.getLogger('app')
 
 
 class AcrisRealMaster(BaseDatasetModel, models.Model):
+    API_ID = 'bnx9-e6tj'
     download_endpoint = 'https://data.cityofnewyork.us/api/views/bnx9-e6tj/rows.csv?accessType=DOWNLOAD'
     QUERY_DATE_KEY = 'docdate'
     RECENT_DATE_PINNED = True

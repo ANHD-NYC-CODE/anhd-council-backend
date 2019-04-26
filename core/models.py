@@ -4,7 +4,7 @@ from django.dispatch import receiver
 from django.apps import apps
 from django.conf import settings
 from django_celery_results.models import TaskResult
-from core.tasks import async_seed_file, async_seed_table, async_send_update_success_mail
+from core.tasks import async_seed_file, async_seed_table, async_send_update_success_mail, async_download_and_update
 from datasets import models as ds
 from core import models as c_models
 from django.utils import timezone
@@ -24,6 +24,7 @@ class Dataset(models.Model):
     automated = models.BooleanField(blank=True, null=True)
     update_instructions = models.TextField(blank=True, null=True)
     download_endpoint = models.TextField(blank=True, null=True)
+    api_last_updated = models.DateTimeField(blank=True, null=True)
 
     def model(self):
         return getattr(ds, self.model_name)
@@ -33,6 +34,24 @@ class Dataset(models.Model):
 
     def update(self, file=None):
         return Update.objects.create(dataset=self, file=file)
+
+    def check_api_for_update(self):
+        self.api_last_updated = getattr(ds, self.model_name).fetch_last_updated()
+        self.save()
+
+    def check_for_update_and_update(self):
+        if self.api_last_updated:
+            api_last_updated = getattr(ds, self.model_name).fetch_last_updated()
+
+            if api_last_updated.replace(tzinfo=timezone.utc) > self.api_last_updated.replace(tzinfo=timezone.utc):
+                async_download_and_update.delay(self.id)
+                self.api_last_updated = api_last_updated
+                self.save()
+            else:
+                logger.debug('Dataset {} is up to date.'.format(self.name))
+        else:
+            self.check_api_for_update()
+            async_download_and_update.delay(self.id)
 
     def seed_dataset(self, **kwargs):
         getattr(ds, self.model_name).seed_or_update_self(**kwargs)

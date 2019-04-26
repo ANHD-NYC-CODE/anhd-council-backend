@@ -14,6 +14,7 @@ class ECBViolation(BaseDatasetModel, models.Model):
             models.Index(fields=['bbl', '-issuedate']),
             models.Index(fields=['-issuedate']),
         ]
+    API_ID = '6bgk-3dad'
     download_endpoint = "https://data.cityofnewyork.us/api/views/6bgk-3dad/rows.csv?accessType=DOWNLOAD"
     QUERY_DATE_KEY = 'issuedate'
 

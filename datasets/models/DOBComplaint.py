@@ -16,6 +16,7 @@ class DOBComplaint(BaseDatasetModel, models.Model):
             models.Index(fields=['bbl', '-dateentered']),
             models.Index(fields=['-dateentered']),
         ]
+    API_ID = 'eabe-havv'
     QUERY_DATE_KEY = 'dateentered'
 
     download_endpoint = "https://nycopendata.socrata.com/api/views/eabe-havv/rows.csv?accessType=DOWNLOAD"

@@ -9,10 +9,12 @@ from core.utils.csv_helpers import count_csv_rows, split_csv
 import os
 import csv
 import requests
+import json
 import tempfile
 import re
 import logging
 import math
+import datetime
 from datasets.utils import dates
 from django.db.models import Subquery, OuterRef, Count, IntegerField, F
 from django.db.models.functions import Coalesce
@@ -25,6 +27,16 @@ logger = logging.getLogger('app')
 
 
 class BaseDatasetModel():
+    @classmethod
+    def fetch_last_updated(self):
+        try:
+            response = json.loads(requests.get(
+                'https://data.cityofnewyork.us/api/views/{}.json'.format(self.API_ID)).text)
+            return datetime.fromtimestamp(response['rowsUpdatedAt'])
+        except Exception as e:
+            logger.warning("Unable to retrieve last API update date", e)
+            return None
+
     @classmethod
     def get_dataset(self):
         return c_models.Dataset.objects.filter(model_name=self.__name__).first()

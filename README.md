@@ -14,10 +14,11 @@
 2) Get `.env` file from dev.
 3) Run build script `sh build.prod.sh` or `sh build.dev.sh` depending on your environment
 4) (first time startup) Shell into app container `docker exec -i -t app /bin/bash` and  
- - create super user `python3.6 manage.py createsuperuser`
- - seed datasets `python3.6 manage.py loaddata /app/core/fixtures/datasets.yaml`
- - seed automation tasks `python3.6 manage.py loaddata /app/core/fixtures/tasks.yaml`
- - seed council info `python3.6 manage.py loaddata /app/core/fixtures/councils.yaml`
+ - create super user `python manage.py createsuperuser`
+ - seed datasets `python manage.py loaddata /app/core/fixtures/datasets.yaml`
+ - seed crontabs `python manage.py loaddata /app/core/fixtures/crontabs.yaml`
+ - seed automation tasks `python manage.py loaddata /app/core/fixtures/tasks.yaml`
+ - seed council info `python manage.py loaddata /app/core/fixtures/councils.yaml`
 5) Upload initial datafiles and update
   - councils
   - pluto properties

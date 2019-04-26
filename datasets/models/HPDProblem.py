@@ -10,6 +10,7 @@ logger = logging.getLogger('app')
 
 
 class HPDProblem(BaseDatasetModel, models.Model):
+    API_ID = 'a2nx-4u46'
     download_endpoint = "https://data.cityofnewyork.us/api/views/a2nx-4u46/rows.csv?accessType=DOWNLOAD"
 
     problemid = models.IntegerField(primary_key=True, blank=False, null=False)

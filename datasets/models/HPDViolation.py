@@ -14,6 +14,8 @@ class HPDViolation(BaseDatasetModel, models.Model):
             models.Index(fields=['bbl', '-approveddate']),
             models.Index(fields=['-approveddate']),
         ]
+
+    API_ID = 'wvxf-dwi5'
     QUERY_DATE_KEY = 'approveddate'
 
     download_endpoint = "https://data.cityofnewyork.us/api/views/wvxf-dwi5/rows.csv?accessType=DOWNLOAD"

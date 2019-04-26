@@ -8,6 +8,7 @@ logger = logging.getLogger('app')
 
 
 class HPDContact(BaseDatasetModel, models.Model):
+    API_ID = 'feu5-w2e2'
     download_endpoint = "https://data.cityofnewyork.us/api/views/feu5-w2e2/rows.csv?accessType=DOWNLOAD"
 
     registrationcontactid = models.IntegerField(primary_key=True, blank=False, null=False)

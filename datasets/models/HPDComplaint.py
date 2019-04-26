@@ -17,6 +17,7 @@ class HPDComplaint(BaseDatasetModel, models.Model):
             models.Index(fields=['-receiveddate']),
 
         ]
+    API_ID = 'uwyv-629c'
     download_endpoint = "https://data.cityofnewyork.us/api/views/uwyv-629c/rows.csv?accessType=DOWNLOAD"
     QUERY_DATE_KEY = 'receiveddate'
     RECENT_DATE_PINNED = True

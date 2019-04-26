@@ -12,6 +12,7 @@ logger = logging.getLogger('app')
 
 
 class DOBPermitIssuedLegacy(BaseDatasetModel, models.Model):
+    API_ID = 'ipu4-2q9a'
     download_endpoint = "https://data.cityofnewyork.us/api/views/ipu4-2q9a/rows.csv?accessType=DOWNLOAD"
 
     job = models.TextField(blank=False, null=False)
