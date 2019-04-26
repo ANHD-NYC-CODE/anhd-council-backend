@@ -1,330 +1,192 @@
 - model: django_celery_beat.periodictask
-  pk: 1
   fields:
-    name: "Update AcrisRealMaster"
-    description: "Updates Acris Real Property Masters data every Friday 1130pm"
-    task: "core.tasks.async_download_and_update"
-    crontab: 16
-    args: "[5]"
-    kwargs: "{}"
-    date_changed: "2019-01-01"
-- model: django_celery_beat.periodictask
-  pk: 2
-  fields:
-    name: "Update AcrisRealLegal"
-    description: "Updates Acris Real Property Legals data every Saturday 830pm"
-    task: "core.tasks.async_download_and_update"
-    crontab: 14
-    args: "[4]"
-    kwargs: "{}"
-    date_changed: "2019-01-01"
-- model: django_celery_beat.periodictask
-  pk: 3
-  fields:
-    name: "Update AcrisRealParty"
-    description: "Updates Acris Real Property Parties data every Sunday 1130pm"
-    task: "core.tasks.async_download_and_update"
-    crontab: 15
-    args: "[6]"
-    kwargs: "{}"
-    date_changed: "2019-01-01"
-- model: django_celery_beat.periodictask
-  pk: 4
-  fields:
-    name: "Update HPDViolation"
-    description: "Updates HPD Violations data every day 9pm"
-    task: "core.tasks.async_download_and_update"
-    crontab: 5
-    args: "[21]"
-    kwargs: "{}"
-    date_changed: "2019-01-01"
-- model: django_celery_beat.periodictask
-  pk: 5
-  fields:
-    name: "Update HPDComplaint"
-    description: "HPD Complaint Update every 2nd of the month at 9pm"
-    task: "core.tasks.async_download_and_update"
-    crontab: 11
-    args: "[17]"
-    kwargs: "{}"
-    date_changed: "2019-01-01"
-- model: django_celery_beat.periodictask
-  pk: 6
-  fields:
-    name: "Update HPDProblem"
-    description: "HPD Problem Update every 2nd of the month at 10pm"
-    task: "core.tasks.async_download_and_update"
-    crontab: 13
-    args: "[18]"
-    kwargs: "{}"
-    date_changed: "2019-01-01"
-- model: django_celery_beat.periodictask
-  pk: 7
-  fields:
-    name: "Update DOBViolation"
-    description: "Updates DOB Violations data every day 9pm"
-    task: "core.tasks.async_download_and_update"
-    crontab: 5
-    args: "[12]"
-    kwargs: "{}"
-    date_changed: "2019-01-01"
-- model: django_celery_beat.periodictask
-  pk: 8
-  fields:
-    name: "Update ECBViolation"
-    description: "Updates ECB Violations data every day 10pm"
-    task: "core.tasks.async_download_and_update"
-    crontab: 6
-    args: "[13]"
-    kwargs: "{}"
-    date_changed: "2019-01-01"
-- model: django_celery_beat.periodictask
-  pk: 9
-  fields:
-    name: "Update DOBComplaint"
-    description: "Updates DOB Complaints data every day 10pm"
-    task: "core.tasks.async_download_and_update"
-    crontab: 6
-    args: "[8]"
-    kwargs: "{}"
-    date_changed: "2019-01-01"
-- model: django_celery_beat.periodictask
-  pk: 10
-  fields:
-    name: "Update DOBLegacyFiledPermit"
-    description: "Updates DOB (Legacy) Construction Permit Filings data every day 11pm"
-    task: "core.tasks.async_download_and_update"
-    crontab: 7
-    args: "[9]"
-    kwargs: "{}"
-    date_changed: "2019-01-01"
-- model: django_celery_beat.periodictask
-  pk: 11
-  fields:
-    name: "Update DOBPermitIssuedLegacy"
-    description: "Updates DOB (Legacy) Construction Permit Issued data every midnight"
-    task: "core.tasks.async_download_and_update"
-    crontab: 12
-    args: "[10]"
-    kwargs: "{}"
-    date_changed: "2019-01-01"
-- model: django_celery_beat.periodictask
-  pk: 12
-  fields:
-    name: "Update DOBPermitIssuedNow"
-    description: "Updates DOB (NOW) Construction Permit Issued data every day 11pm"
-    task: "core.tasks.async_download_and_update"
-    crontab: 7
-    args: "[11]"
-    kwargs: "{}"
-    date_changed: "2019-01-01"
-- model: django_celery_beat.periodictask
-  pk: 13
-  fields:
-    name: "Update DOBPermitIssued"
-    description: "Updates joined DOB Construction Permit Issued data every 1am"
-    task: "core.tasks.async_create_update"
-    crontab: 17
-    args: "[26]"
-    kwargs: "{}"
-    date_changed: "2019-01-01"
-- model: django_celery_beat.periodictask
-  pk: 14
-  fields:
-    name: "Update Eviction"
-    description: "Updates Eviction data every midnight"
-    task: "core.tasks.async_download_and_update"
-    crontab: 12
-    args: "[14]"
-    kwargs: "{}"
-    date_changed: "2019-01-01"
-- model: django_celery_beat.periodictask
-  pk: 15
-  fields:
-    name: "Update HPDRegistration"
-    description: "Updates HPD Registrations data every 2nd of the month at 9pm"
-    task: "core.tasks.async_download_and_update"
-    crontab: 11
-    args: "[20]"
-    kwargs: "{}"
-    date_changed: "2019-01-01"
-- model: django_celery_beat.periodictask
-  pk: 16
-  fields:
-    name: "Update HPDContact"
-    description: "Updates HPD Contacts data every 2nd of the month at 9pm"
-    task: "core.tasks.async_download_and_update"
-    crontab: 13
-    args: "[19]"
-    kwargs: "{}"
-    date_changed: "2019-01-01"
-- model: django_celery_beat.periodictask
-  pk: 17
-  fields:
-    name: "Update Housing Litigation"
-    description: "Updates Housing Litigations data every 2nd of the month at 9pm"
-    task: "core.tasks.async_download_and_update"
-    crontab: 11
-    args: "[15]"
-    kwargs: "{}"
-    date_changed: "2019-01-01"
-- model: django_celery_beat.periodictask
-  pk: 18
-  fields:
-    name: "Update HousingBuildingRecord"
-    description: "Updates Housing Building Jurisdiction data every 7th of the month at midnight"
-    task: "core.tasks.async_download_and_update"
-    crontab: 4
-    args: "[16]"
-    kwargs: "{}"
-    date_changed: "2019-01-01"
-- model: django_celery_beat.periodictask
-  pk: 19
-  fields:
-    name: "Clean temp directory"
-    description: "Maintainence task. 1pm every afternoon"
-    task: "app.tasks.clean_temp_directory"
-    crontab: 8
+    name: "Sanity check"
+    description: "Runs every minute to sanity check beat/django integration"
+    task: "app.tasks.sanity_check"
+    crontab: 1
     args: "[]"
     kwargs: "{}"
-    date_changed: "2019-01-01"
 - model: django_celery_beat.periodictask
-  pk: 20
+  fields:
+    name: "Check and Update HPDViolation"
+    description: "Checks api for HPD Violation update and updates."
+    task: "core.tasks.async_check_api_for_update_and_update"
+    crontab: 10 # every 7pm
+    args: "[21]"
+    kwargs: "{}"
+- model: django_celery_beat.periodictask
+  fields:
+    name: "Check and Update DOBViolation"
+    description: "Checks api for DOBViolation update and updates."
+    task: "core.tasks.async_check_api_for_update_and_update"
+    crontab: 10 # every 7pm
+    args: "[12]"
+    kwargs: "{}"
+- model: django_celery_beat.periodictask
+  fields:
+    name: "Check and Update ECBViolation"
+    description: "Checks api for ECBViolation update and updates."
+    task: "core.tasks.async_check_api_for_update_and_update"
+    crontab: 10 # every 7pm
+    args: "[13]"
+    kwargs: "{}"
+- model: django_celery_beat.periodictask
+  fields:
+    name: "Check and Update HPDComplaint"
+    description: "Checks api for HPDComplaint update and updates."
+    task: "core.tasks.async_check_api_for_update_and_update"
+    crontab: 11 # every 8pm
+    args: "[17]"
+    kwargs: "{}"
+- model: django_celery_beat.periodictask
+  fields:
+    name: "Check and Update HPDProblem"
+    description: "Checks api for HPDProblem update and updates."
+    task: "core.tasks.async_check_api_for_update_and_update"
+    crontab: 11 # every 8pm
+    args: "[18]"
+    kwargs: "{}"
+- model: django_celery_beat.periodictask
+  fields:
+    name: "Check and Update HPDRegistration"
+    description: "Checks api for HPDRegistration update and updates."
+    task: "core.tasks.async_check_api_for_update_and_update"
+    crontab: 11 # every 8pm
+    args: "[20]"
+    kwargs: "{}"
+- model: django_celery_beat.periodictask
+  fields:
+    name: "Check and Update HPDContact"
+    description: "Checks api for HPDContact update and updates."
+    task: "core.tasks.async_check_api_for_update_and_update"
+    crontab: 11 # every 8pm
+    args: "[19]"
+    kwargs: "{}"
+- model: django_celery_beat.periodictask
+  fields:
+    name: "Check and Update Eviction"
+    description: "Checks api for Eviction update and updates."
+    task: "core.tasks.async_check_api_for_update_and_update"
+    crontab: 11 # every 8pm
+    args: "[14]"
+    kwargs: "{}"
+- model: django_celery_beat.periodictask
+  fields:
+    name: "Check and Update HousingLitigations"
+    description: "Checks api for HousingLitigations update and updates."
+    task: "core.tasks.async_check_api_for_update_and_update"
+    crontab: 12 # every 9pm
+    args: "[15]"
+    kwargs: "{}"
+- model: django_celery_beat.periodictask
+  fields:
+    name: "Check and Update DOBLegacyFiledPermit"
+    description: "Checks api for DOBLegacyFiledPermit update and updates."
+    task: "core.tasks.async_check_api_for_update_and_update"
+    crontab: 12 # every 9pm
+    args: "[9]"
+    kwargs: "{}"
+- model: django_celery_beat.periodictask
+  fields:
+    name: "Check and Update DOBLegacyFiledPermit"
+    description: "Checks api for DOBLegacyFiledPermit update and updates."
+    task: "core.tasks.async_check_api_for_update_and_update"
+    crontab: 12 # every 9pm
+    args: "[34]"
+    kwargs: "{}"
+- model: django_celery_beat.periodictask
+  fields:
+    name: "Check and Update DOBLegacyFiledPermit"
+    description: "Checks api for DOBLegacyFiledPermit update and updates."
+    task: "core.tasks.async_check_api_for_update_and_update"
+    crontab: 12 # every 9pm
+    args: "[10]"
+    kwargs: "{}"
+- model: django_celery_beat.periodictask
+  fields:
+    name: "Check and Update DOBLegacyFiledPermit"
+    description: "Checks api for DOBLegacyFiledPermit update and updates."
+    task: "core.tasks.async_check_api_for_update_and_update"
+    crontab: 12 # every 9pm
+    args: "[11]"
+    kwargs: "{}"
+- model: django_celery_beat.periodictask
+  fields:
+    name: "Check and Update DOBFiledPermit"
+    description: "Checks api for DOBFiledPermit update and updates."
+    task: "core.tasks.async_check_api_for_update_and_update"
+    crontab: 13 # every 10pm
+    args: "[35]"
+    kwargs: "{}"
+- model: django_celery_beat.periodictask
+  fields:
+    name: "Check and Update DOBIssuedPermit"
+    description: "Checks api for DOBIssuedPermit update and updates."
+    task: "core.tasks.async_check_api_for_update_and_update"
+    crontab: 13 # every 10pm
+    args: "[26]"
+    kwargs: "{}"
+- model: django_celery_beat.periodictask
+  fields:
+    name: "Check and Update DOBComplaint"
+    description: "Checks api for DOBComplaint update and updates."
+    task: "core.tasks.async_check_api_for_update_and_update"
+    crontab: 13 # every 10pm
+    args: "[8]"
+    kwargs: "{}"
+- model: django_celery_beat.periodictask
+  fields:
+    name: "Check and Update CONHRecord"
+    description: "Checks api for CONHRecord update and updates."
+    task: "core.tasks.async_check_api_for_update_and_update"
+    crontab: 13 # every 10pm
+    args: "[33]"
+    kwargs: "{}"
+- model: django_celery_beat.periodictask
+  fields:
+    name: "Check and Update Acris"
+    description: "Checks api for Acris for updates and update one at a time each day."
+    task: "core.tasks.async_check_acris_for_update_and_update"
+    crontab: 14 # every 11pm
+    args: "[]"
+    kwargs: "{}"
+- model: django_celery_beat.periodictask
+  fields:
+    name: "Clean temp directory"
+    description: "Maintainence task."
+    task: "app.tasks.clean_temp_directory"
+    crontab: 26 # every noon
+    args: "[]"
+    kwargs: "{}"
+- model: django_celery_beat.periodictask
   fields:
     name: "Reset cache at midnight"
     description: "Maintainence task."
     task: "app.tasks.reset_cache"
-    crontab: 12
+    crontab: 3 # every 1 am
     args: "[]"
     kwargs: "{}"
-    date_changed: "2019-01-01"
 - model: django_celery_beat.periodictask
-  pk: 21
-  fields:
-    name: "Update HPDComplaint backup"
-    description: "Backup HPD Complaints Update every 7th of the month at midnight"
-    task: "core.tasks.async_download_and_update"
-    crontab: 4
-    args: "[17]"
-    kwargs: "{}"
-    date_changed: "2019-01-01"
-- model: django_celery_beat.periodictask
-  pk: 22
-  fields:
-    name: "Update HPDProblem backup"
-    description: "Backup HPD Problem Update every 7th of the month at midnight"
-    task: "core.tasks.async_download_and_update"
-    crontab: 4
-    args: "[18]"
-    kwargs: "{}"
-    date_changed: "2019-01-01"
-- model: django_celery_beat.periodictask
-  pk: 23
-  fields:
-    name: "Update HPDRegistration backup"
-    description: "Updates HPD Registrations data every 7th of the month at midnight"
-    task: "core.tasks.async_download_and_update"
-    crontab: 4
-    args: "[20]"
-    kwargs: "{}"
-    date_changed: "2019-01-01"
-- model: django_celery_beat.periodictask
-  pk: 24
-  fields:
-    name: "Update HPDContact backup"
-    description: "Updates HPD Registration Contacts data every 7th of the month at midnight"
-    task: "core.tasks.async_download_and_update"
-    crontab: 4
-    args: "[19]"
-    kwargs: "{}"
-    date_changed: "2019-01-01"
-- model: django_celery_beat.periodictask
-  pk: 25
-  fields:
-    name: "Update Housing Litigation backup"
-    description: "Updates Housing Litigations data every 7th of the month at midnight"
-    task: "core.tasks.async_download_and_update"
-    crontab: 4
-    args: "[15]"
-    kwargs: "{}"
-    date_changed: "2019-01-01"
-- model: django_celery_beat.periodictask
-  pk: 26
-  fields:
-    name: "Update DOBPermitFiledNow"
-    description: "Updates DOB (NOW) Construction Permit Filed data every day 11pm"
-    task: "core.tasks.async_download_and_update"
-    crontab: 7
-    args: "[34]"
-    kwargs: "{}"
-    date_changed: "2019-01-01"
-- model: django_celery_beat.periodictask
-  pk: 27
-  fields:
-    name: "Update DOBPermitFiled"
-    description: "Updates joined DOB Construction Permit Filed data every 2am"
-    task: "core.tasks.async_create_update"
-    crontab: 18
-    args: "[35]"
-    kwargs: "{}"
-    date_changed: "2019-01-01"
-- model: django_celery_beat.periodictask
-  pk: 28
-  fields:
-    name: "Update CONHRecord"
-    description: "Updates joined CONH list every 3rd of the month at 1am"
-    task: "core.tasks.async_create_update"
-    crontab: 19
-    args: "[33]"
-    kwargs: "{}"
-    date_changed: "2019-01-01"
-- model: django_celery_beat.periodictask
-  pk: 29
   fields:
     name: "Vacuum DB Monday"
     description: "Maintainence task. 3am every MWF morning"
     task: "app.tasks.clean_database"
-    crontab: 20
+    crontab: 15
     args: "[]"
     kwargs: "{}"
-    date_changed: "2019-01-01"
 - model: django_celery_beat.periodictask
-  pk: 30
   fields:
     name: "Vacuum DB Wednesday"
     description: "Maintainence task. 3am every MWF morning"
     task: "app.tasks.clean_database"
-    crontab: 21
+    crontab: 16
     args: "[]"
     kwargs: "{}"
-    date_changed: "2019-01-01"
 - model: django_celery_beat.periodictask
-  pk: 31
   fields:
     name: "Vacuum DB Friday"
     description: "Maintainence task. 3am every MWF morning"
     task: "app.tasks.clean_database"
-    crontab: 22
+    crontab: 17
     args: "[]"
     kwargs: "{}"
-    date_changed: "2019-01-01"
-- model: django_celery_beat.periodictask
-  pk: 32
-  fields:
-    name: "Annotate Acris properties"
-    description: "Annotate properties with acris"
-    task: "core.tasks.async_annotate_properties"
-    crontab: 23
-    args: "[4]"
-    kwargs: "{}"
-    date_changed: "2019-01-01"
-- model: django_celery_beat.periodictask
-  pk: 33
-  fields:
-    name: "Sanity check"
-    description: "Runs every hour to sanity check beat/django integration"
-    task: "app.tasks.sanity_check"
-    crontab: 24
-    args: "[]"
-    kwargs: "{}"
-    date_changed: "2019-01-01"

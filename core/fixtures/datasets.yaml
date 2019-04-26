@@ -189,7 +189,7 @@
   fields:
     name: Address Record
     model_name: AddressRecord
-    automated: True
+    automated: False
 - model: core.dataset
   pk: 31
   fields:

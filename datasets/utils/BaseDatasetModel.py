@@ -30,9 +30,12 @@ class BaseDatasetModel():
     @classmethod
     def fetch_last_updated(self):
         try:
-            response = json.loads(requests.get(
-                'https://data.cityofnewyork.us/api/views/{}.json'.format(self.API_ID)).text)
-            return datetime.fromtimestamp(response['rowsUpdatedAt'])
+            if getattr(self, 'API_ID', None):
+                response = json.loads(requests.get(
+                    'https://data.cityofnewyork.us/api/views/{}.json'.format(self.API_ID)).text)
+                return datetime.fromtimestamp(response['rowsUpdatedAt'])
+            else:
+                return datetime.datetime.now()
         except Exception as e:
             logger.warning("Unable to retrieve last API update date", e)
             return None

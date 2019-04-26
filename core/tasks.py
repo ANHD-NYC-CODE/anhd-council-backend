@@ -93,6 +93,20 @@ def async_check_api_for_update_and_update(self, dataset_id):
 
 
 @app.task(bind=True, queue='celery', acks_late=True, max_retries=1)
+def async_check_acris_for_update_and_update(self):
+    acrismaster_dataset = c.Dataset.objects.get(model_name='AcrisRealMaster')
+    acrislegal_dataset = c.Dataset.objects.get(model_name='AcrisRealLegal')
+    acrisparty_dataset = c.Dataset.objects.get(model_name='AcrisRealParty')
+
+    if acrismaster_dataset.needs_update():
+        acrismaster_dataset.model().create_async_update_worker()
+    elif acrislegal_dataset.needs_update():
+        acrislegal_dataset.model().create_async_update_worker()
+    elif acrisparty_dataset.needs_update():
+        acrisparty_dataset.model().create_async_update_worker()
+
+
+@app.task(bind=True, queue='celery', acks_late=True, max_retries=1)
 def async_create_update(self, dataset_id, file_id=None):
     file = c.DataFile.objects.get(id=file_id) if file_id else None
     try:
