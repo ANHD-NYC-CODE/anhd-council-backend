@@ -223,7 +223,7 @@ CELERY_QUEUES = (
     Queue('update', Exchange('updates'), routing_key='updates'),
 )
 
-CELERY_ACCEPT_CONTENT = ['json']
+CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_BROKER_URL = os.environ.get('REDIS_URL', "redis://localhost:6378")

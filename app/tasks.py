@@ -11,6 +11,10 @@ from users.models import CustomUser, UserRequest
 from core.models import BugReport
 from django.db import connection
 
+import logging
+
+logger = logging.getLogger('app')
+
 
 @app.task(bind=True, queue='celery')
 def add(x, y):
@@ -26,8 +30,8 @@ def shutdown(self):
 
 
 @app.task(bind=True, queue='celery', max_retries=0)
-def sanity_check():
-    logger.debug('Sanity check running.')
+def sanity_check(self):
+    logger.info('Sanity check running.')
 
 
 @app.task(bind=True, queue='celery', default_retry_delay=60, max_retries=1)
