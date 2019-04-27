@@ -36,7 +36,7 @@ class Dataset(models.Model):
         return Update.objects.create(dataset=self, file=file)
 
     def needs_update(self):
-        return self.api_last_updated == getattr(ds, self.model_name).fetch_last_updated()
+        return self.api_last_updated != getattr(ds, self.model_name).fetch_last_updated()
 
     def check_api_for_update(self):
         self.api_last_updated = getattr(ds, self.model_name).fetch_last_updated()

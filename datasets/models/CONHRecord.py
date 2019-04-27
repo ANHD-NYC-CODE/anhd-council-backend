@@ -44,6 +44,10 @@ class CONHRecord(BaseDatasetModel, models.Model):
     slim_query_fields = ["id", 'bbl']
 
     @classmethod
+    def download(self):
+        return self.download_file(self.download_endpoint)
+
+    @classmethod
     def create_async_update_worker(self):
         async_download_and_update.delay(self.get_dataset().id)
 
