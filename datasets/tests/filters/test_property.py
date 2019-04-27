@@ -360,11 +360,11 @@ class PropertyFilterTests(BaseTest, TestCase):
         property4 = self.property_factory(bbl=4, council=council)
 
         for i in range(5):
-            am = self.acrismaster_factory(doctype="MTGE", docdate="2018-01-01")
+            am = self.acrismaster_factory(doctype="DEED", docdate="2018-01-01")
             self.acrislegal_factory(master=am, property=property1)
 
         for i in range(5):
-            am = self.acrismaster_factory(doctype="MTGE", docdate="2010-01-01")
+            am = self.acrismaster_factory(doctype="DEED", docdate="2010-01-01")
             self.acrislegal_factory(master=am, property=property3)
 
         for i in range(5):

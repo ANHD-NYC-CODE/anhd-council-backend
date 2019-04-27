@@ -43,6 +43,9 @@ class LisPendenComment(BaseDatasetModel, models.Model):
     @classmethod
     def mark_lispenden_foreclosures(self):
         keys = set()
+        # does all the foreclosure comments each time,
+        # in case the data we receive is out of sync and newer comments refer to
+        # older lispendens
         for comment in self.objects.prefetch_related('key').all():
             # search for word foreclosure
 

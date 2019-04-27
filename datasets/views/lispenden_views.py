@@ -13,7 +13,8 @@ from rest_framework.permissions import IsAuthenticated
 
 class LisPendenViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
-    queryset = ds.LisPenden.objects.filter(type="foreclosure").all().order_by('pk')
+    queryset = ds.LisPenden.objects.filter(type="foreclosure").prefetch_related(
+        'lispendencomment_set').all().order_by('pk')
     serializer_class = serial.LisPendenSerializer
     permission_classes = (IsAuthenticated,)
 

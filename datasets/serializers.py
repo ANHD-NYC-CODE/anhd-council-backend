@@ -568,10 +568,19 @@ class DOBNowFiledPermitSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class LisPendenCommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.LisPendenComment
+        fields = '__all__'
+
+
 class LisPendenSerializer(serializers.ModelSerializer):
+    comments = LisPendenCommentSerializer(source='lispendencomment_set', many=True, read_only=True)
+
     class Meta:
         model = ds.LisPenden
-        fields = '__all__'
+        fields = ('key', 'bbl', 'entereddate', 'zip', 'bc', 'fileddate', 'index', 'debtor', 'cr',
+                  'attorney', 'thirdparty', 'satdate', 'sattype', 'disp', 'type', 'comments')
 
 
 def property_query_serializer(properties):

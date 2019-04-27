@@ -44,7 +44,7 @@ class AcrisRealMasterFilterTests(BaseTest, TestCase):
     def test_doctype_field(self):
         acrismaster1 = self.acrismaster_factory(documentid="a", doctype="DEED", docdate="2018-01-01")
         acrismaster2 = self.acrismaster_factory(documentid="b", doctype="LEAS", docdate="2018-01-01")
-        acrismaster3 = self.acrismaster_factory(documentid="c", doctype="DEED, TS", docdate="2018-01-01")
+        acrismaster3 = self.acrismaster_factory(documentid="c", doctype="DEED", docdate="2018-01-01")
 
         query = '/acrisrealmasters/?doctype__icontains=deed'
         response = self.client.get(query, format="json")

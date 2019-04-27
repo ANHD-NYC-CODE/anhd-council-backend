@@ -52,7 +52,7 @@ class AcrisRealMaster(BaseDatasetModel, models.Model):
     LEASE_DOC_TYPES = ("LEAS", "ASSTO", "MLEA1")
 
     TAX_DOC_TYPES = ("RPTT")
-    SALE_DOC_TYPES = ("DEED")
+    SALE_DOC_TYPES = ("DEED",)
 
     @classmethod
     def create_async_update_worker(self):
