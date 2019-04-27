@@ -89,7 +89,7 @@ def async_check_api_for_update(self, dataset_id):
 @app.task(bind=True, queue='celery', acks_late=True, max_retries=1)
 def async_check_api_for_update_and_update(self, dataset_id):
     dataset = c.Dataset.objects.get(id=dataset_id)
-    dataset.async_check_api_for_update_and_update()
+    dataset.check_api_for_update_and_update()
 
 
 @app.task(bind=True, queue='celery', acks_late=True, max_retries=1)
