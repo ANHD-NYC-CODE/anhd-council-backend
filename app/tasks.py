@@ -3,7 +3,7 @@ from app.celery import app
 import shutil
 from core.tasks import async_send_general_task_error_mail
 from rest_framework_simplejwt.token_blacklist.management.commands import flushexpiredtokens
-from django.core import cache
+from django.core.cache import cache
 from core.utils.cache import create_async_cache_workers
 import celery
 from app.mailer import send_new_user_email, send_new_user_request_email, send_bug_report_email
