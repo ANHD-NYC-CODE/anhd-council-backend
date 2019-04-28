@@ -10,7 +10,8 @@ from app.mailer import send_new_user_email, send_new_user_request_email, send_bu
 from users.models import CustomUser, UserRequest
 from core.models import BugReport
 from django.db import connection
-
+from core import models as c
+from django.conf import settings
 import logging
 
 logger = logging.getLogger('app')
@@ -35,10 +36,11 @@ def sanity_check(self):
 
 
 @app.task(bind=True, queue='celery', default_retry_delay=60, max_retries=1)
-def clean_temp_directory():
+def clean_temp_directory(self):
     try:
         flushexpiredtokens.Command().handle()
         shutil.rmtree(settings.MEDIA_TEMP_ROOT)
+        c.Update.ensure_update_task_results()
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
         async_send_general_task_error_mail.delay(str(e))
@@ -46,7 +48,7 @@ def clean_temp_directory():
 
 
 @app.task(bind=True, queue='celery', default_retry_delay=60, max_retries=1)
-def reset_cache():
+def reset_cache(self):
     try:
         cache.clear()
         create_async_cache_workers()
@@ -57,7 +59,7 @@ def reset_cache():
 
 
 @app.task(bind=True, queue='celery', default_retry_delay=60, max_retries=1)
-def clean_database():
+def clean_database(self):
     try:
         force_proxy = connection.cursor()
         realconn = connection.connection

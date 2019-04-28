@@ -6,3 +6,5 @@
 - CHANGELOG CREATED
 - Add lispenden comments to lispenden serializer for api delivery
 - change AcrisRealMaster SALE_DOC_TYPES to ONLY `DEED`
+- adds User 'id' field to serializer for analytics
+- fixes caching and cleanup background task bugs

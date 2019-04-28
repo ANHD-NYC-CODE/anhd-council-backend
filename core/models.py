@@ -6,7 +6,6 @@ from django.conf import settings
 from django_celery_results.models import TaskResult
 from core.tasks import async_seed_file, async_seed_table, async_send_update_success_mail, async_download_and_update
 from datasets import models as ds
-from core import models as c_models
 from django.utils import timezone
 
 import time
@@ -146,6 +145,16 @@ class Update(models.Model):
 
     def __str__(self):
         return str(self.id)
+
+    @classmethod
+    def ensure_update_task_results(self):
+        for update in self.objects.filter(task_result__isnull=True):
+            try:
+                task_result = TaskResult.objects.get(task_id=update.task_id)
+                update.task_result = task_result
+                update.save()
+            except Exception as e:
+                logger.debug('Task result with task_id {} not found'.format(update.task_id))
 
 
 @receiver(models.signals.post_save, sender=Update)

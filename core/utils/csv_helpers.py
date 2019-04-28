@@ -32,7 +32,7 @@ def split_csv(source_filepath, dest_folder, split_file_prefix,
             i = 0
             target_filename = '{}_{}.csv'.format(split_file_prefix, file_idx)
             target_filepath = os.path.join(dest_folder, target_filename)
-            file_paths.append(target_filepath)
+
             with open(target_filepath, 'w') as target:
                 writer = csv.writer(target, delimiter=',', quotechar='"', doublequote=True,
                                     quoting=csv.QUOTE_ALL, skipinitialspace=True)
@@ -51,6 +51,8 @@ def split_csv(source_filepath, dest_folder, split_file_prefix,
             if i == 0:
                 # we only wrote the header, so delete that file
                 os.remove(target_filepath)
+            else:
+                file_paths.append(target_filepath)
 
             file_idx += 1
 

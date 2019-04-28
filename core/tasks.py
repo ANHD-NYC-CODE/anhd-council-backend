@@ -1,5 +1,5 @@
 from __future__ import absolute_import, unicode_literals
-
+from django_celery_results.models import TaskResult
 from celery import chain
 from app.celery import app
 from core import models as c
