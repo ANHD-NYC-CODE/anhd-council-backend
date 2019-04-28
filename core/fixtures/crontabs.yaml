@@ -109,6 +109,8 @@
     minute: "0"
     hour: "5"
     day_of_week: "1"
+    timezone: "America/New_York"
+    
 - model: django_celery_beat.crontabschedule
   pk: 16
   fields:
