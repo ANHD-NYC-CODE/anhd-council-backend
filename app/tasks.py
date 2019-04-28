@@ -36,11 +36,16 @@ def sanity_check(self):
 
 
 @app.task(bind=True, queue='celery', default_retry_delay=60, max_retries=1)
+def async_ensure_update_task_results(self):
+    c.Update.ensure_update_task_results()
+
+
+@app.task(bind=True, queue='celery', default_retry_delay=60, max_retries=1)
 def clean_temp_directory(self):
     try:
         flushexpiredtokens.Command().handle()
         shutil.rmtree(settings.MEDIA_TEMP_ROOT)
-        c.Update.ensure_update_task_results()
+
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
         async_send_general_task_error_mail.delay(str(e))

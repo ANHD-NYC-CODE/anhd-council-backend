@@ -102,6 +102,8 @@
     minute: "0"
     hour: "23"
     timezone: "America/New_York"
+
+
 - model: django_celery_beat.crontabschedule
   pk: 15
   fields:
@@ -110,7 +112,7 @@
     hour: "5"
     day_of_week: "1"
     timezone: "America/New_York"
-    
+
 - model: django_celery_beat.crontabschedule
   pk: 16
   fields:
@@ -204,4 +206,12 @@
     # every hour
     minute: "0"
     hour: "*"
+    timezone: "America/New_York"
+- model: django_celery_beat.crontabschedule
+  pk: 28
+  fields:
+    # 5am sunday
+    minute: "0"
+    hour: "5"
+    day_of_week: "0"
     timezone: "America/New_York"

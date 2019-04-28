@@ -189,28 +189,19 @@
     date_changed: "2019-04-25"
 - model: django_celery_beat.periodictask
   fields:
-    name: "Vacuum DB Monday"
-    description: "Maintainence task. 5am every MWF morning"
+    name: "Vacuum DB Sunday"
+    description: "Maintainence task. 5am every sunday morning"
     task: "app.tasks.clean_database"
-    crontab: 15
+    crontab: 28
     args: "[]"
     kwargs: "{}"
     date_changed: "2019-04-25"
 - model: django_celery_beat.periodictask
   fields:
-    name: "Vacuum DB Wednesday"
-    description: "Maintainence task. 5am every MWF morning"
-    task: "app.tasks.clean_database"
-    crontab: 16
-    args: "[]"
-    kwargs: "{}"
-    date_changed: "2019-04-25"
-- model: django_celery_beat.periodictask
-  fields:
-    name: "Vacuum DB Friday"
-    description: "Maintainence task. 5am every MWF morning"
-    task: "app.tasks.clean_database"
-    crontab: 17
+    name: "Ensure update task results"
+    description: "Maintainence task. 12pm every day"
+    task: "app.tasks.async_ensure_update_task_results"
+    crontab: 26
     args: "[]"
     kwargs: "{}"
     date_changed: "2019-04-25"
