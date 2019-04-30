@@ -37,9 +37,9 @@ def cache_council_property_summaries_full(token):
 def cache_community_property_summaries_full(token):
     from datasets.models import Community
     # token = settings.CACHE_REQUEST_KEY
-    logger.debug('t: {}'.format(token))
+
     headers = {"whoisit": token}
-    logger.debug('h: {}'.format(headers))
+
     root_url = 'http://localhost:8000' if settings.DEBUG else 'https://api.displacementalert.org'
 
     for record in Community.objects.all().order_by('pk'):
