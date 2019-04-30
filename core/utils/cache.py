@@ -10,7 +10,7 @@ from django.conf import settings
 
 
 def create_async_cache_workers():
-    from core.tasks import async_cache_council_property_summaries_month, async_cache_community_property_summaries_month, async_cache_council_property_summaries_year, async_cache_community_property_summaries_year, async_cache_council_property_summaries_3_year, async_cache_community_property_summaries_3_year, async_cache_council_property_summaries_full, async_cache_community_property_summaries_full
+    from core.tasks import async_cache_council_property_summaries_full, async_cache_community_property_summaries_full
 
     async_cache_council_property_summaries_full.delay()
     async_cache_community_property_summaries_full.delay()
