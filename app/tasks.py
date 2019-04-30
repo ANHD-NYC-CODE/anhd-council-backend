@@ -57,7 +57,7 @@ def clean_temp_directory(self):
 @app.task(bind=True, queue='celery', default_retry_delay=60, max_retries=1)
 def reset_cache(self):
     try:
-        logger.debug('reset: '.format(settings.CACHE_REQUEST_KEY))
+        logger.debug('reset: {}'.format(settings.CACHE_REQUEST_KEY))
 
         cache.clear()
         create_async_cache_workers()
