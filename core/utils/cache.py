@@ -21,7 +21,9 @@ def create_async_cache_workers():
 def cache_council_property_summaries_full():
     from datasets.models import Council
     token = settings.CACHE_REQUEST_KEY
+    logger.debug('t: {}'.format(token))
     headers = {"whoisit": token}
+    logger.debug('h: {}'.format(headers))
     root_url = 'http://localhost:8000' if settings.DEBUG else 'https://api.displacementalert.org'
 
     # cache 1 month
@@ -36,7 +38,9 @@ def cache_council_property_summaries_full():
 def cache_community_property_summaries_full():
     from datasets.models import Community
     token = settings.CACHE_REQUEST_KEY
+    logger.debug('t: {}'.format(token))
     headers = {"whoisit": token}
+    logger.debug('h: {}'.format(headers))
     root_url = 'http://localhost:8000' if settings.DEBUG else 'https://api.displacementalert.org'
 
     for record in Community.objects.all().order_by('pk'):
