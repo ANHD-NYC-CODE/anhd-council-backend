@@ -10,8 +10,6 @@ from django.conf import settings
 
 
 def create_async_cache_workers(token):
-    logger.debug('create: {}'.format(settings.CACHE_REQUEST_KEY))
-    logger.debug('create environ: {}'.format(os.environ['CACHE_REQUEST_KEY']))
     from core.tasks import async_cache_council_property_summaries_full, async_cache_community_property_summaries_full
 
     async_cache_council_property_summaries_full.delay(token)

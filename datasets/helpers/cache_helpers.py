@@ -35,10 +35,6 @@ def scrub_pagination(cached_value):
 
 
 def is_authenticated(request):
-    # if 'whoisit' in request.headers:
-    #     logger.debug('headers: {}'.format(request.headers['whoisit']))
-    # logger.debug('cache: {}'.format(settings.CACHE_REQUEST_KEY))
-
     return request.user.is_authenticated or 'whoisit' in request.headers and request.headers['whoisit'] == settings.CACHE_REQUEST_KEY
 
 

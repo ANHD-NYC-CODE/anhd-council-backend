@@ -184,7 +184,7 @@
     description: "Maintainence task."
     task: "app.tasks.reset_cache"
     crontab: 3 # every 1 am
-    args: "[]"
+    args: "[]" # add token to args in admin
     kwargs: "{}"
     date_changed: "2019-04-25"
 - model: django_celery_beat.periodictask
@@ -193,7 +193,7 @@
     description: "Maintainence task."
     task: "app.tasks.recache"
     crontab: 5 # every 3 am
-    args: "[]"
+    args: "[]" # add token to args in admin
     kwargs: "{}"
     date_changed: "2019-04-25"
 - model: django_celery_beat.periodictask
