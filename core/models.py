@@ -152,6 +152,7 @@ class Update(models.Model):
             try:
                 task_result = TaskResult.objects.get(task_id=update.task_id)
                 update.task_result = task_result
+                update.completed_date = task_result.date_done
                 update.save()
             except Exception as e:
                 logger.debug('Task result with task_id {} not found'.format(update.task_id))
