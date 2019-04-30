@@ -24,8 +24,6 @@ from datetime import datetime, timezone
 from core.tasks import async_seed_split_file
 
 logger = logging.getLogger('app')
-import pytz
-local_tz = pytz.timezone("US/Eastern")
 
 
 class BaseDatasetModel():
@@ -35,7 +33,7 @@ class BaseDatasetModel():
             if getattr(self, 'API_ID', None):
                 response = json.loads(requests.get(
                     'https://data.cityofnewyork.us/api/views/{}.json'.format(self.API_ID)).text)
-                return datetime.fromtimestamp(response['rowsUpdatedAt'], local_tz)
+                return datetime.fromtimestamp(response['rowsUpdatedAt'], timezone.utc)
             else:
                 return datetime.datetime.now()
         except Exception as e:
