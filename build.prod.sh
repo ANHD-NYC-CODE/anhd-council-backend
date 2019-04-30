@@ -1,5 +1,5 @@
 docker build -f Dockerfile --tag app_image .
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d --force-recreate --remove-orphans # --force-recreate
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build --force-recreate --remove-orphans # --force-recreate
 docker exec -it app python manage.py migrate
 # sudo docker exec -it redis redis-cli FLUSHALL
 docker image prune -f
