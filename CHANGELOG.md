@@ -10,3 +10,5 @@
 - fixes caching and cleanup worker task bugs
 
 ### V1.0.0b1.0.1
+- Extended cache timeout to 24 hours
+- added a `recache` task to be run after `reset_cache` to ensure all cached values successfully were saved.
