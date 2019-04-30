@@ -13,7 +13,7 @@ from datasets import models as ds
 
 class HPDProblemViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
-    queryset = ds.HPDProblem.objects.all().order_by('pk')
+    queryset = ds.HPDProblem.objects.prefetch('hpdcomplaint').all().order_by('pk')
     serializer_class = serial.HPDProblemSerializer
 
     @cache_request_path()

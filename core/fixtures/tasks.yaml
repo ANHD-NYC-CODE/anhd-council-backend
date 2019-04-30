@@ -189,6 +189,15 @@
     date_changed: "2019-04-25"
 - model: django_celery_beat.periodictask
   fields:
+    name: "2nd cache pass"
+    description: "Maintainence task."
+    task: "app.tasks.recache"
+    crontab: 5 # every 3 am
+    args: "[]"
+    kwargs: "{}"
+    date_changed: "2019-04-25"
+- model: django_celery_beat.periodictask
+  fields:
     name: "Vacuum DB Sunday"
     description: "Maintainence task. 5am every sunday morning"
     task: "app.tasks.clean_database"

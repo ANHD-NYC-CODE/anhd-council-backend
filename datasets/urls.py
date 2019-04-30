@@ -85,6 +85,13 @@ properties_router.register(
 )
 
 properties_router.register(
+    'hpdproblems',
+    v.hpdproblem_views.HPDProblemViewSet,
+    base_name='property-hpdproblems',
+    parents_query_lookups=['complaintid__bbl']
+)
+
+properties_router.register(
     'dobviolations',
     v.dobviolation_views.DOBViolationViewSet,
     base_name='property-dobviolations',

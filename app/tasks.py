@@ -51,11 +51,25 @@ def clean_temp_directory(self):
         async_send_general_task_error_mail.delay(str(e))
         raise e
 
+# clears cache
+
 
 @app.task(bind=True, queue='celery', default_retry_delay=60, max_retries=1)
 def reset_cache(self):
     try:
         cache.clear()
+        create_async_cache_workers()
+    except Exception as e:
+        logger.error('Error during task: {}'.format(e))
+        async_send_general_task_error_mail.delay(str(e))
+        raise e
+
+# does not clear cache
+
+
+@app.task(bind=True, queue='celery', default_retry_delay=60, max_retries=1)
+def recache(self):
+    try:
         create_async_cache_workers()
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
