@@ -15,12 +15,12 @@ logger = logging.getLogger('app')
 
 
 @app.task(bind=True, queue='celery', autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 5})
-def async_cache_council_property_summaries_full(self):
+def async_cache_council_property_summaries_full(self, token):
     return cache_council_property_summaries_full()
 
 
 @app.task(bind=True, queue='celery', autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 5})
-def async_cache_community_property_summaries_full(self):
+def async_cache_community_property_summaries_full(self, token):
     return cache_community_property_summaries_full()
 
 

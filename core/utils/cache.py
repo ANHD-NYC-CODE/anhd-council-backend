@@ -9,25 +9,22 @@ from datasets.utils import dates
 from django.conf import settings
 
 
-def create_async_cache_workers():
+def create_async_cache_workers(token):
     logger.debug('create: {}'.format(settings.CACHE_REQUEST_KEY))
     logger.debug('create environ: {}'.format(os.environ['CACHE_REQUEST_KEY']))
     from core.tasks import async_cache_council_property_summaries_full, async_cache_community_property_summaries_full
 
-    async_cache_council_property_summaries_full.delay()
-    async_cache_community_property_summaries_full.delay()
+    async_cache_council_property_summaries_full.delay(token)
+    async_cache_community_property_summaries_full.delay(token)
 
     logger.debug('Async caching started')
 
 
-def cache_council_property_summaries_full():
+def cache_council_property_summaries_full(token):
     from datasets.models import Council
-    token = settings.CACHE_REQUEST_KEY
-    logger.debug('t: {}'.format(token))
-    logger.debug('t environ: {}'.format(os.environ['CACHE_REQUEST_KEY']))
+    # token = settings.CACHE_REQUEST_KEY
 
     headers = {"whoisit": token}
-    logger.debug('h: {}'.format(headers))
     root_url = 'http://localhost:8000' if settings.DEBUG else 'https://api.displacementalert.org'
 
     # cache 1 month
@@ -39,9 +36,9 @@ def cache_council_property_summaries_full():
     logger.debug("Authenticated! Council month Pre-Caching complete!")
 
 
-def cache_community_property_summaries_full():
+def cache_community_property_summaries_full(token):
     from datasets.models import Community
-    token = settings.CACHE_REQUEST_KEY
+    # token = settings.CACHE_REQUEST_KEY
     logger.debug('t: {}'.format(token))
     headers = {"whoisit": token}
     logger.debug('h: {}'.format(headers))
