@@ -1,4 +1,5 @@
 import os
+import time
 
 import requests
 import logging
@@ -30,6 +31,7 @@ def cache_council_property_summaries_full(token):
         logger.debug("Caching full Council: {}".format(record.pk))
         requests.get(
             root_url + '/councils/{}/properties/?format=json&summary=true&summary-type=short-annotated&annotation__start=full&unitsres__gte=1'.format(record.pk), headers=headers)
+        time.sleep(5)
 
     logger.debug("Authenticated! Council month Pre-Caching complete!")
 
@@ -46,5 +48,6 @@ def cache_community_property_summaries_full(token):
         logger.debug("Caching full Community: {}".format(record.pk))
         requests.get(
             root_url + '/communities/{}/properties/?format=json&summary=true&summary-type=short-annotated&annotation__start=full&unitsres__gte=1'.format(record.pk), headers=headers)
+        time.sleep(5)
 
     logger.debug("Authenticated Community month Pre-Caching complete!")
