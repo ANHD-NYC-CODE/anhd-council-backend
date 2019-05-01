@@ -42,8 +42,8 @@ def construct_cache_key(request, params):
     params.pop('format', None)
     params.pop('filename', None)
     cache_key = request.path + '?' + urllib.parse.urlencode(params)
-    if is_authenticated(request):
-        cache_key = cache_key + '__authenticated'
+    # if is_authenticated(request):
+    #     cache_key = cache_key + '__authenticated'
     return cache_key
 
 
