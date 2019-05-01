@@ -152,7 +152,7 @@ def bulk_insert_from_file(model, file_path, **kwargs):
         'clean_csv_' + uuid.uuid4().hex) + '.mock' if settings.TESTING else '.csv')
     update = kwargs['update'] if 'update' in kwargs else None
     rows = model.transform_self_from_file(file_path, update=update)
-    logger.debug("writing temp file for {}".format(table_name))
+    logger.debug("writing temp file for {} at {}".format(table_name, temp_file_path))
     gen_to_csv(rows, temp_file_path)
     logger.debug("temp file complete for {}".format(table_name))
 

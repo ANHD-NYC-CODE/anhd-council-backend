@@ -90,10 +90,11 @@ def gen_to_csv(rows, new_path):
         writer = csv.writer(new_csv, delimiter=',')
         try:
             first_row = next(rows)
+            # write headers and first row
+            writer.writerow([*first_row.keys()])
+            writer.writerow([*first_row.values()])
+            for row in rows:
+                writer.writerow([*row.values()])
         except Exception as e:
-            return
-        # write headers and first row
-        writer.writerow([*first_row.keys()])
-        writer.writerow([*first_row.values()])
-        for row in rows:
-            writer.writerow([*row.values()])
+            logger.error(e)
+            raise e
