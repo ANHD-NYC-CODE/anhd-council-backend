@@ -148,7 +148,7 @@ def from_csv_file_to_gen(file_path_or_generator, update=None, cleaner=None):
 
     if update and c:
         if update.total_rows:
-            update.total_rows = update.total_rows + count_csv_rows(file_path_or_generator)
+            update.total_rows = count_csv_rows(file_path_or_generator)
         else:
             update.total_rows = count_csv_rows(file_path_or_generator)
         update.save()

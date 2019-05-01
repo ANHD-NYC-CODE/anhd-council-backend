@@ -44,7 +44,14 @@ def async_ensure_update_task_results(self):
 def clean_temp_directory(self):
     try:
         flushexpiredtokens.Command().handle()
-        shutil.rmtree(settings.MEDIA_TEMP_ROOT)
+        folder = settings.MEDIA_TEMP_ROOT
+        for the_file in os.listdir(folder):
+            file_path = os.path.join(folder, the_file)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+            except Exception as e:
+                print(e)
 
     except Exception as e:
         logger.error('Error during task: {}'.format(e))

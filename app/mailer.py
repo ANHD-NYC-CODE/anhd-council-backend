@@ -66,8 +66,8 @@ def send_general_task_error_mail(error):
     subject = "DAP Portal - * Error * During Council Portal Update"
     content = "A task error occurred: \n\n{} \n\n Please visit the task manager to investigate.".format(error)
 
-    for user in settings.ADMINS:
-        to = user.email
+    for admin in settings.ADMINS:
+        to = admin[1]
         send_mail(to, subject, content)
 
 
@@ -75,8 +75,8 @@ def send_update_error_mail(update, error):
     subject = "DAP Portal - * Error * During Council Portal Update"
     content = "Update {} for {} failed with error: \n\n{}".format(update.id, update.dataset, error)
 
-    for user in settings.ADMINS:
-        to = user.email
+    for admin in settings.ADMINS:
+        to = admin[1]
         send_mail(to, subject, content)
 
 
