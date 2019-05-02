@@ -4,9 +4,12 @@ from datasets.helpers.api_helpers import ApplicationViewSet
 from datasets import serializers as serial
 from datasets import models as ds
 from django.contrib.postgres.search import SearchVector
-from django.db.models import Q, F
+from django.db.models import Q, F, Case, When
 from django.contrib.postgres.search import SearchQuery, SearchRank
 from rest_framework.permissions import IsAuthenticated
+import logging
+
+logger = logging.getLogger('app')
 
 
 class SearchViewSet(ApplicationViewSet, viewsets.ReadOnlyModelViewSet):
@@ -52,18 +55,20 @@ class SearchViewSet(ApplicationViewSet, viewsets.ReadOnlyModelViewSet):
 
                 return ds.AddressRecord.objects.extra(
                     select=select, where=[where_q], order_by=order
-                ).order_by('-rank')[:8]
+                ).order_by('-rank')[:4]
 
             # returns results mixed with 2 queries -
             # 1: does not include :* on the first token only`
             # 2: includes :* prefix on all tokens
-            # qs = construct_search_query(search_term, True).union(
-            #     construct_search_query(search_term, False)).order_by('-rank')[:8]
+            qs = construct_search_query(search_term, False).union(
+                construct_search_query(search_term, True)).order_by('-rank').values('key', 'rank')
 
-            # Prefixes all tokens
-            qs = construct_search_query(search_term, True)
-            keys = list(doc.key for doc in qs)
-            self.queryset = ds.AddressRecord.objects.filter(key__in=keys).distinct('bin')
+            keys_list = list(doc['key'] for doc in qs)
+
+            # Preserves order of keys_list in final query
+            preserved = Case(*[When(key=key, then=pos) for pos, key in enumerate(keys_list)])
+
+            self.queryset = ds.AddressRecord.objects.filter(key__in=keys_list).order_by(preserved)
 
         else:
             self.queryset = ds.Building.objects.all().order_by('pk')

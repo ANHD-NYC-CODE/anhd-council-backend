@@ -174,7 +174,7 @@
     name: "Clean temp directory"
     description: "Maintainence task."
     task: "app.tasks.clean_temp_directory"
-    crontab: 26 # every noon
+    crontab: 28 # 5am sunday
     args: "[]"
     kwargs: "{}"
     date_changed: "2019-04-25"
@@ -201,7 +201,7 @@
     name: "Vacuum DB Sunday"
     description: "Maintainence task. 5am every sunday morning"
     task: "app.tasks.clean_database"
-    crontab: 28
+    crontab: 28 # 5 am sunday
     args: "[]"
     kwargs: "{}"
     date_changed: "2019-04-25"
