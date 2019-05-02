@@ -111,7 +111,7 @@
     name: "Check and Update DOBLegacyIssuedPermit"
     description: "Checks api for DOBLegacyIssuedPermit update and updates."
     task: "core.tasks.async_check_api_for_update_and_update"
-    crontab: 12 # every 9pm
+    crontab: 13 # every 10pm
     args: "[10]"
     kwargs: "{}"
     date_changed: "2019-04-25"
@@ -120,7 +120,7 @@
     name: "Check and Update DOBNowIssuedPermit"
     description: "Checks api for DOBNowIssuedPermit update and updates."
     task: "core.tasks.async_check_api_for_update_and_update"
-    crontab: 12 # every 9pm
+    crontab: 13 # every 10pm
     args: "[11]"
     kwargs: "{}"
     date_changed: "2019-04-25"
@@ -129,7 +129,7 @@
     name: "Check and Update DOBFiledPermit"
     description: "Checks api for DOBFiledPermit update and updates."
     task: "core.tasks.async_check_api_for_update_and_update"
-    crontab: 13 # every 10pm
+    crontab: 14 # every 11pm
     args: "[35]"
     kwargs: "{}"
     date_changed: "2019-04-25"
@@ -138,7 +138,7 @@
     name: "Check and Update DOBIssuedPermit"
     description: "Checks api for DOBIssuedPermit update and updates."
     task: "core.tasks.async_check_api_for_update_and_update"
-    crontab: 13 # every 10pm
+    crontab: 14 # every 10pm
     args: "[26]"
     kwargs: "{}"
     date_changed: "2019-04-25"

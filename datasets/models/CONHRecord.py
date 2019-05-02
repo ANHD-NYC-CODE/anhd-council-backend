@@ -4,8 +4,8 @@ from django.utils import timezone
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.utils.validation_filters import is_null
-import logging
 import datetime
+import logging
 logger = logging.getLogger('app')
 from datasets import models as ds
 from core.tasks import async_download_and_update

@@ -13,6 +13,7 @@ from django.db import connection
 from core import models as c
 from django.conf import settings
 import logging
+import os
 
 logger = logging.getLogger('app')
 

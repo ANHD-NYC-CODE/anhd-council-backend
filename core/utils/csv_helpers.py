@@ -2,6 +2,8 @@ import csv
 from zipfile import ZipFile
 # String (filepath) -> String
 import os
+import logging
+logger = logging.getLogger('app')
 
 
 def split_csv(source_filepath, dest_folder, split_file_prefix,
