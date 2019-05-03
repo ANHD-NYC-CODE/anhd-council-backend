@@ -249,9 +249,9 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
         params = self.context['request'].query_params
 
         DATASETS = [ds.HPDViolation, ds.HPDComplaint, ds.DOBViolation, ds.DOBComplaint,
-                    ds.ECBViolation, ds.DOBIssuedPermit, ds.DOBFiledPermit, ds.DOBIssuedPermit, ds.Eviction, ds.HousingLitigation, ds.AcrisRealMaster]
-        if is_authenticated(self.context['request']):
-            DATASETS.append(ds.LisPenden)
+                    ds.ECBViolation, ds.DOBIssuedPermit, ds.DOBFiledPermit, ds.DOBIssuedPermit, ds.Eviction, ds.HousingLitigation, ds.AcrisRealMaster, ds.LisPenden]
+        # if is_authenticated(self.context['request']):
+        #     DATASETS.append(ds.LisPenden)
 
         for dataset in DATASETS:
             dataset_prefix = dataset.__name__.lower()
