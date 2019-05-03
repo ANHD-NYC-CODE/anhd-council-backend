@@ -40,6 +40,10 @@ class LisPendenComment(BaseDatasetModel, models.Model):
     def transform_self(self, file_path, update=None):
         return self.pre_validation_filters(from_csv_file_to_gen(file_path, update))
 
+    def foreclosure_in_comment(self):
+        word_list = ('foreclos', 'forclos')
+        return any(x in self.datecomments.lower() for x in word_list)
+
     @classmethod
     def mark_lispenden_foreclosures(self):
         keys = set()
@@ -51,7 +55,7 @@ class LisPendenComment(BaseDatasetModel, models.Model):
 
             if comment.key_id in keys:
                 continue
-            if 'foreclosure' in comment.datecomments.lower():
+            if comment.foreclosure_in_comment():
                 related_comments = self.objects.prefetch_related('key').filter(key=comment.key_id)
                 # search for word 'mortgage' in all comments related to the lispenden
                 for related_comment in related_comments:

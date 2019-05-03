@@ -4,6 +4,7 @@ from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.utils.validation_filters import is_null
 import logging
 from datasets import models as ds
+from django.db.models import Q
 
 logger = logging.getLogger('app')
 
@@ -51,6 +52,37 @@ class LisPenden(BaseDatasetModel, models.Model):
                 continue
             yield row
 
+    def has_bank_creditor(self):
+        if not self.cr:
+            return False
+        creditor_list = ('MORTGAGE', 'AMRO', 'BANC', 'BANK', 'CAPITAL', 'CHASE MAN',
+                         'CREDIT',
+                         'EQUITIES',
+                         'FARGO',
+                         'FEDERAL SB',
+                         'FINAN',
+                         'FSB',
+                         'FUNDING',
+                         'HOLDING',
+                         'INVEST',
+                         'LEND',
+                         'LOAN',
+                         'MORGAN CHASE',
+                         'M & T CORP',
+                         'S & L',
+                         'SAVING',
+                         'TRUST',)  # from coredata script
+
+        return any(x in self.cr.upper() for x in creditor_list)
+
+    @classmethod
+    def mark_foreclosure_with_creditor(self):
+        for lispenden in self.objects.filter(~Q(type=self.LISPENDEN_TYPES['foreclosure'])):
+            if lispenden.has_bank_creditor():
+
+                lispenden.type = self.LISPENDEN_TYPES['foreclosure']
+                lispenden.save()
+
     # trims down new update files to preserve memory
     # uses original header values
     @classmethod
@@ -66,6 +98,7 @@ class LisPenden(BaseDatasetModel, models.Model):
         logger.debug("Seeding/Updating {}", self.__name__)
         self.seed_or_update_from_set_diff(**kwargs)
         logger.debug('annotating properties for {}', self.__name__)
+        self.mark_foreclosure_with_creditor()
 
     def __str__(self):
         return str(self.key)

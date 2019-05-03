@@ -15,3 +15,7 @@
 
 ### V1.0.0b1.0.2
 - Improved query results for address fts - results are now ordered by rank
+
+
+### V1.0.0b1.0.21
+- Added creditor to foreclosure discovery scheme
