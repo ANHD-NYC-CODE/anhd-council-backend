@@ -3,7 +3,7 @@ from django.conf import settings
 from rest_framework.response import Response
 import gzip
 import json
-
+from rest_framework.utils.serializer_helpers import ReturnDict
 from copy import deepcopy
 import urllib
 from functools import wraps
@@ -22,7 +22,7 @@ def scrub_pagination(cached_value):
 
 def scrub_lispendens(cached_value, request):
     if not is_authenticated(request):
-        if type(cached_value) is dict:
+        if type(cached_value) is dict or isinstance(cached_value, ReturnDict):
             if 'lispendens' in cached_value:
                 del cached_value['lispendens']
             pass
@@ -30,6 +30,7 @@ def scrub_lispendens(cached_value, request):
 
             # filter out lispendens in annotated fields for unauthorized users
             if len(cached_value):
+
                 lispendens_fields = [key for key in cached_value[0].keys() if 'lispendens' in key]
                 if len(lispendens_fields):
                     for value in cached_value:
