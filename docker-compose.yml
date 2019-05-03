@@ -114,6 +114,7 @@ services:
     image: redis:alpine
     volumes:
       - redis_data:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
     networks:
       - network1
     env_file:
