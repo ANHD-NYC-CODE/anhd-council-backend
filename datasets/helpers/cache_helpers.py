@@ -1,6 +1,8 @@
 from django.core.cache import cache
 from django.conf import settings
 from rest_framework.response import Response
+import gzip
+import json
 
 from copy import deepcopy
 import urllib
@@ -26,6 +28,11 @@ def scrub_lispendens(cached_value, request, override=False):
                     for value in cached_value:
                         del value[lispendens_field[0]]
     return cached_value
+
+
+def decompress_cache(cached_value):
+
+    return json.loads(gzip.decompress(cached_value).decode())
 
 
 def scrub_pagination(cached_value):
@@ -58,20 +65,23 @@ def cache_request_path():
             if cache_key in cache:
                 logger.debug('Serving cache: {}'.format(cache_key))
                 cached_value = cache.get(cache_key)
-                cached_value = scrub_pagination(cached_value)
+                cached_value = decompress_cache(cached_value)
                 cached_value = scrub_lispendens(cached_value, request)
                 return original_args[0].finalize_response(request, Response(cached_value))
             else:
                 response = function(*original_args, **original_kwargs)
                 if (response.status_code == 200):
+                    value_to_cache = response.data
+                    value_to_cache = scrub_pagination(value_to_cache)
                     logger.debug('Caching: {}'.format(cache_key))
-                    cache.set(cache_key, response.data, timeout=settings.CACHE_TTL)
-                    if '__authenticated' in cache_key:  # also cache the scrubbed response for unauthenticated requests
 
+                    cache.set(cache_key, gzip.compress(json.dumps(
+                        value_to_cache).encode('utf-8')), timeout=settings.CACHE_TTL)
+                    if '__authenticated' in cache_key:  # also cache the scrubbed response for unauthenticated requests
                         cache_key = cache_key.replace('__authenticated', '')
                         logger.debug('Caching scrubbed varient: {}'.format(cache_key))
-                        value_to_cache = scrub_pagination(response.data)
-                        cache.set(cache_key, value_to_cache, timeout=settings.CACHE_TTL)
+                        cache.set(cache_key, gzip.compress(json.dumps(
+                            value_to_cache).encode('utf-8')), timeout=settings.CACHE_TTL)
                 logger.debug('Serving response: {}'.format(cache_key))
                 return response
         return cached_view
