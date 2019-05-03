@@ -18,7 +18,7 @@ class HousingLitigationViewTests(BaseTest, TestCase):
         self.housinglitigation_factory(litigationid="2")
 
         response = self.client.get('/housinglitigations/', format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)

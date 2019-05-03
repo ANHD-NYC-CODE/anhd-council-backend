@@ -248,12 +248,11 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
         rep = super(serializers.ModelSerializer, self).to_representation(obj)
         params = self.context['request'].query_params
 
-        DATASETS = [ds.HPDViolation, ds.HPDComplaint, ds.DOBViolation, ds.DOBComplaint,
-                    ds.ECBViolation, ds.DOBIssuedPermit, ds.DOBFiledPermit, ds.DOBIssuedPermit, ds.Eviction, ds.HousingLitigation, ds.AcrisRealMaster, ds.LisPenden]
         # if is_authenticated(self.context['request']):
         #     DATASETS.append(ds.LisPenden)
 
-        for dataset in DATASETS:
+        for model_name in ds.PropertyAnnotation.ANNOTATED_DATASETS:
+            dataset = getattr(ds, model_name)
             dataset_prefix = dataset.__name__.lower()
             if 'annotation__start' in params and params['annotation__start'] == 'recent':
                 rep[self.generate_date_key(params, dataset, dataset_prefix + 's_recent', dataset.QUERY_DATE_KEY)

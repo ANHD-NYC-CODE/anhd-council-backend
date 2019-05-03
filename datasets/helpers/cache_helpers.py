@@ -79,7 +79,8 @@ def cache_request_path():
                 return original_args[0].finalize_response(request, Response(cached_value))
             else:
                 response = function(*original_args, **original_kwargs)
-                if (response.status_code == 200):
+
+                if (response.status_code == 200):  # only cache good responses
                     value_to_cache = response.data
                     value_to_cache = scrub_pagination(value_to_cache)
                     value_to_cache = compress_cache(value_to_cache)
@@ -90,9 +91,11 @@ def cache_request_path():
                     #     cache_key = cache_key.replace('__authenticated', '')
                     #     logger.debug('Caching scrubbed varient: {}'.format(cache_key))
                     #     cache.set(cache_key, value_to_cache, timeout=settings.CACHE_TTL)
-                logger.debug('Serving response: {}'.format(cache_key))
-                scrubbed_response = scrub_pagination(response.data)  # TODO: remove pagination altogether
-                scrubbed_response = scrub_lispendens(scrubbed_response, request)
-                return original_args[0].finalize_response(request, Response(scrubbed_response))
+                    logger.debug('Serving response: {}'.format(cache_key))
+                    scrubbed_response = scrub_pagination(response.data)  # TODO: remove pagination altogether
+                    scrubbed_response = scrub_lispendens(scrubbed_response, request)
+                    return original_args[0].finalize_response(request, Response(scrubbed_response))
+                else:
+                    return response
         return cached_view
     return cache_decorator

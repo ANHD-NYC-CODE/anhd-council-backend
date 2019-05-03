@@ -19,7 +19,7 @@ class AcrisRealLegalViewTests(BaseTest, TestCase):
         self.acrislegal_factory(master=master)
 
         response = self.client.get('/acrisreallegals/', format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)

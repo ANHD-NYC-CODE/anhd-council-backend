@@ -18,7 +18,7 @@ class HPDRegistrationViewTests(BaseTest, TestCase):
         self.hpdregistration_factory(registrationid="2")
 
         response = self.client.get('/hpdregistrations/', format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -38,7 +38,7 @@ class HPDRegistrationViewTests(BaseTest, TestCase):
         self.hpdcontact_factory(registration=registration)
 
         response = self.client.get('/hpdregistrations/1/hpdcontacts/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)

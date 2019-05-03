@@ -18,7 +18,7 @@ class DOBViolationViewTests(BaseTest, TestCase):
         self.dobviolation_factory(isndobbisviol="2")
 
         response = self.client.get('/dobviolations/', format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)

@@ -34,6 +34,7 @@ class SearchTests(BaseTest, TestCase):
         content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
+
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['buildingnumber'], "50-52")
         self.assertEqual(content[0]['buildingstreet'], "MAIN STREET")

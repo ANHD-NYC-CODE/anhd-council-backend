@@ -180,7 +180,7 @@
     date_changed: "2019-04-25"
 - model: django_celery_beat.periodictask
   fields:
-    name: "Reset cache at midnight"
+    name: "Reset cache at 1am"
     description: "Maintainence task."
     task: "app.tasks.reset_cache"
     crontab: 3 # every 1 am
@@ -211,6 +211,15 @@
     description: "Maintainence task. 12pm every day"
     task: "app.tasks.async_ensure_update_task_results"
     crontab: 26
+    args: "[]"
+    kwargs: "{}"
+    date_changed: "2019-04-25"
+- model: django_celery_beat.periodictask
+  fields:
+    name: "Recount Property Annotations"
+    description: "Maintainence task. midnight every day"
+    task: "app.tasks.async_annotate_properties_with_all_datasets"
+    crontab: 2
     args: "[]"
     kwargs: "{}"
     date_changed: "2019-04-25"

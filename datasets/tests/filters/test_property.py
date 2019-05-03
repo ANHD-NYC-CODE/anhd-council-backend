@@ -24,7 +24,7 @@ class PropertyFilterTests(BaseTest, TestCase):
 
         query = '/properties/?yearbuilt__gte=1950'
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -37,7 +37,7 @@ class PropertyFilterTests(BaseTest, TestCase):
 
         query = '/properties/?bbls=1,2'
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
         self.assertEqual(content[0]['bbl'], '1')
@@ -56,7 +56,7 @@ class PropertyFilterTests(BaseTest, TestCase):
 
         query = '/properties/?hpdviolations__gte=10'
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -78,7 +78,7 @@ class PropertyFilterTests(BaseTest, TestCase):
 
         query = '/properties/?hpdviolations__start=2018-01-01&hpdviolations__end=2019-01-01&hpdviolations__gte=5'
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -100,7 +100,7 @@ class PropertyFilterTests(BaseTest, TestCase):
 
         query = '/properties/?dobviolations__start=2018-01-01&dobviolations__end=2019-01-01&dobviolations__gte=5'
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -122,7 +122,7 @@ class PropertyFilterTests(BaseTest, TestCase):
 
         query = '/properties/?ecbviolations__start=2018-01-01&ecbviolations__end=2019-01-01&ecbviolations__gte=5'
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -144,7 +144,7 @@ class PropertyFilterTests(BaseTest, TestCase):
 
         query = '/properties/?hpdcomplaints__start=2018-01-01&hpdcomplaints__end=2019-01-01&hpdcomplaints__gte=5'
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -166,7 +166,7 @@ class PropertyFilterTests(BaseTest, TestCase):
 
         query = '/properties/?dobcomplaints__start=2018-01-01&dobcomplaints__end=2019-01-01&dobcomplaints__gte=5'
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -188,7 +188,7 @@ class PropertyFilterTests(BaseTest, TestCase):
 
         query = '/properties/?evictions__start=2018-01-01&evictions__end=2019-01-01&evictions__gte=5'
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -210,7 +210,7 @@ class PropertyFilterTests(BaseTest, TestCase):
 
         query = '/properties/?dobissuedpermits__start=2018-01-01&dobissuedpermits__end=2019-01-01&dobissuedpermits__gte=5'
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -232,7 +232,7 @@ class PropertyFilterTests(BaseTest, TestCase):
 
         query = '/properties/?dobfiledpermits__start=2018-01-01&dobfiledpermits__end=2019-01-01&dobfiledpermits__gte=5'
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -247,7 +247,7 @@ class PropertyFilterTests(BaseTest, TestCase):
 
         query = '/properties/?rsunitslost__start=2007&rsunitslost__end=2017&rsunitslost__gte=0.9'
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -267,7 +267,7 @@ class PropertyFilterTests(BaseTest, TestCase):
 
         query = '/properties/?rsunitslost__gte=0.9&rsunitslost__start=2007'
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -292,7 +292,7 @@ class PropertyFilterTests(BaseTest, TestCase):
 
         query = '/properties/?rsunitslost__gte=0.9&rsunitslost__start=2007'
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -318,7 +318,7 @@ class PropertyFilterTests(BaseTest, TestCase):
 
         query = '/properties/?rsunitslost__exact=0&rsunitslost__start=2007'
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)  # number has somehow gone up
@@ -339,7 +339,7 @@ class PropertyFilterTests(BaseTest, TestCase):
 
         query = '/properties/?acrisrealmasteramounts__start=2017-01-01&acrisrealmasteramounts__end=2018-01-01&acrisrealmasteramounts__gte=5'
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -374,7 +374,7 @@ class PropertyFilterTests(BaseTest, TestCase):
         # 5 sales between 2017-2018
         query = '/properties/?acrisrealmasters__start=2017-01-01&acrisrealmasters__end=2018-01-01&acrisrealmasters__gte=5'
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -402,7 +402,7 @@ class PropertyFilterTests(BaseTest, TestCase):
         query = '/properties/?dobissuedpermits__start=2017-01-01&dobissuedpermits__end=2018-01-01&dobissuedpermits__gte=10'
         response = self.client.get(query, format="json")
 
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -429,7 +429,7 @@ class PropertyFilterTests(BaseTest, TestCase):
         # 10 permits between 2017-2018
         query = '/properties/?evictions__start=2017-01-01&evictions__end=2018-01-01&evictions__gte=10'
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -450,7 +450,7 @@ class PropertyFilterTests(BaseTest, TestCase):
         # any buildings with tax liens in 2018
         query = '/properties/?taxlien=2018'
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -472,7 +472,7 @@ class PropertyFilterTests(BaseTest, TestCase):
         # any lihtc buildings ending 2018
         query = '/properties/?coresubsidyrecord__programname=lihtc&coresubsidyrecord__enddate__lte=2018-01-01'
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -497,7 +497,7 @@ class PropertyFilterTests(BaseTest, TestCase):
         # any lihtc buildings ending 2018
         query = '/properties/?coresubsidyrecord__programname__any=lihtc,j-51&coresubsidyrecord__enddate__lte=2018-01-01'
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -527,7 +527,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         query = '/properties/?q=*condition_0=AND+filter_0=hpdviolations__count__gte=5,hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01'
 
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -552,7 +552,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         query = '/properties/?q=*condition_0=AND+filter_0=hpdviolations__count__gte=5'
 
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -584,7 +584,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         query = '/properties/?q=*condition_0=OR+filter_0=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5+filter_1=dobviolations__issuedate__gte=2018-01-01,dobviolations__issuedate__lte=2019-01-01,dobviolations__count__gte=5'
 
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -614,7 +614,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         query = '/properties/?q=*condition_0=AND+filter_0=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5+filter_0=dobviolations__issuedate__gte=2018-01-01,dobviolations__issuedate__lte=2019-01-01,dobviolations__count__gte=5'
 
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -648,7 +648,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         query = '/properties/?q=*condition_0=AND+filter_0=condition_1+filter_0=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5+*condition_1=OR+filter_1=dobviolations__issuedate__gte=2018-01-01,dobviolations__issuedate__lte=2019-01-01,dobviolations__count__gte=5+filter_1=ecbviolations__issuedate__gte=2018-01-01,ecbviolations__issuedate__lte=2019-01-01,ecbviolations__count__gte=5'
 
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -682,7 +682,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         query = '/properties/?q=*condition_0=OR+filter_0=condition_1+filter_0=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5+*condition_1=AND+filter_1=dobviolations__issuedate__gte=2018-01-01,dobviolations__issuedate__lte=2019-01-01,dobviolations__count__gte=5+group_1B=ecbviolations__issuedate__gte=2018-01-01,ecbviolations__issuedate__lte=2019-01-01,ecbviolations__count__gte=5'
 
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 4)
@@ -720,7 +720,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         query = '/properties/?q=*condition_0=AND+filter_0=condition_1+filter_0=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5+*condition_1=OR+filter_1=condition_2+filter_1=dobviolations__issuedate__gte=2018-01-01,dobviolations__issuedate__lte=2019-01-01,dobviolations__count__gte=5+*condition_2=AND+filter_2=ecbviolations__issuedate__gte=2018-01-01,ecbviolations__issuedate__lte=2019-01-01,ecbviolations__count__gte=5+group_2A=hpdcomplaints__receiveddate__gte=2018-01-01,hpdcomplaints__receiveddate__lte=2019-01-01,hpdcomplaints__count__gte=5'
 
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -758,7 +758,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         query = '/properties/?q=*condition_0=OR+filter_0=condition_1+filter_0=condition_2+*condition_1=AND+filter_1=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5+filter_1=hpdcomplaints__receiveddate__gte=2018-01-01,hpdcomplaints__receiveddate__lte=2019-01-01,hpdcomplaints__count__gte=5+*condition_2=AND+filter_2=dobviolations__issuedate__gte=2018-01-01,dobviolations__issuedate__lte=2019-01-01,dobviolations__count__gte=5+filter_2=ecbviolations__issuedate__gte=2018-01-01,ecbviolations__issuedate__lte=2019-01-01,ecbviolations__count__gte=5'
 
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -785,7 +785,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
 
         response = self.client.get(query, format="json")
 
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -820,7 +820,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
 
         response = self.client.get(query, format="json")
 
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
 
@@ -862,7 +862,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
 
         response = self.client.get(query, format="json")
 
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
 
@@ -888,7 +888,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         query = '/properties/?q=*condition_0=AND+filter_0=acrisreallegals__documentid__docdate__gte=2017-01-01,acrisreallegals__documentid__docdate__lte=2018-01-01,acrisreallegals__documentid__count__gte=5'
 
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -933,7 +933,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         # properties with 5 sales between 2017-2018 and sold for over $5 between 2017-2018
         query = '/properties/?q=*condition_0=AND+filter_0=acrisreallegals__documentid__count__gte=5,acrisreallegals__documentid__docdate__gte=2018-01-01+filter_1=acrisreallegals__documentid__docamount__gte=10,acrisreallegals__documentid__docdate__gte=2018-01-01'
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -962,7 +962,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
 
         response = self.client.get(query, format="json")
 
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -991,7 +991,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
 
         response = self.client.get(query, format="json")
 
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -1019,7 +1019,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         query = '/properties/?q=*condition_0=AND+filter_0=evictions__executeddate__gte=2017-01-01,evictions__executeddate__lte=2018-01-01,evictions__count__gte=10'
 
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -1045,7 +1045,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         token = self.get_access_token()
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -1084,7 +1084,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         query = '/properties/?q=*condition_0=AND+filter_0=taxliens__count__gte=1'
 
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -1102,7 +1102,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         query = '/properties/?q=*condition_0=AND+filter_0=conhrecords__count__gte=1'
 
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -1193,7 +1193,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         query = '/properties/?council=1&housingtype=rr&coresubsidyrecord__programname=j-51&q=*condition_0=AND+filter_0=condition_1+filter_0=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5+*condition_1=OR+filter_1=dobviolations__issuedate__gte=2018-01-01,dobviolations__issuedate__lte=2019-01-01,dobviolations__count__gte=5+filter_1=ecbviolations__issuedate__gte=2018-01-01,ecbviolations__issuedate__lte=2019-01-01,ecbviolations__count__gte=5'
 
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -1229,7 +1229,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         query = '/properties/?council=1&housingtype=rs&rsunitslost__gte=0.5&rsunitslost__start=2007&q=*condition_0=AND+filter_0=hpdviolations__count__gte=5,hpdviolations__approveddate__gte=2018-01-01'
 
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -1280,7 +1280,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
 
         response = self.client.get(query, format="json")
 
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -1315,7 +1315,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         query = '/properties/?council=1&housingtype=rr&coresubsidyrecord__programname__any=421a+Affordable&q=*condition_0=AND+filter_0=hpdviolations__count__gte=5,hpdviolations__approveddate__gte=2018-01-01'
 
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -1377,7 +1377,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         query = '/properties/?q=*condition_0=OR+filter_0=hpdviolations__count__gte=5,hpdviolations__approveddate__gte=2018-01-01+filter_1=hpdviolations__count__gte=5,hpdviolations__approveddate__lte=2010-01-01'
 
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)

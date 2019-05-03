@@ -18,7 +18,7 @@ class HPDContactViewTests(BaseTest, TestCase):
         self.hpdcontact_factory()
 
         response = self.client.get('/hpdcontacts/', format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)

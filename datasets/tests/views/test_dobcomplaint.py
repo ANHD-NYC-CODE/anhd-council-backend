@@ -18,7 +18,7 @@ class DOBComplaintViewTests(BaseTest, TestCase):
         self.dobcomplaint_factory(complaintnumber="2")
 
         response = self.client.get('/dobcomplaints/', format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)

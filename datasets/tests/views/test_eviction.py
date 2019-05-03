@@ -18,7 +18,7 @@ class EvictionViewTests(BaseTest, TestCase):
         self.eviction_factory(id="2")
 
         response = self.client.get('/evictions/', format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)

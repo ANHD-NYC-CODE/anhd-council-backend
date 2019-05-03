@@ -18,7 +18,7 @@ class CommunitylViewTests(BaseTest, TestCase):
         self.community_factory()
 
         response = self.client.get('/communities/', format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -38,7 +38,7 @@ class CommunitylViewTests(BaseTest, TestCase):
         self.property_factory(cd=community, bbl="2")
 
         response = self.client.get('/communities/1/properties/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)

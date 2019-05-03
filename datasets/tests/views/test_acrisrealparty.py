@@ -19,7 +19,7 @@ class AcrisRealPartyViewTests(BaseTest, TestCase):
         self.acrisparty_factory(master=master)
 
         response = self.client.get('/acrisrealparties/', format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)

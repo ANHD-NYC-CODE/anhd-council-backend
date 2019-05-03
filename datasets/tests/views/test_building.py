@@ -18,7 +18,7 @@ class BuildingViewTests(BaseTest, TestCase):
         self.building_factory(bin="2")
 
         response = self.client.get('/buildings/', format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -38,7 +38,7 @@ class BuildingViewTests(BaseTest, TestCase):
         self.hpdviolation_factory(building=building)
 
         response = self.client.get('/buildings/1/hpdviolations/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -49,7 +49,7 @@ class BuildingViewTests(BaseTest, TestCase):
         self.hpdcomplaint_factory(building=building)
 
         response = self.client.get('/buildings/1/hpdcomplaints/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -60,7 +60,7 @@ class BuildingViewTests(BaseTest, TestCase):
         self.dobviolation_factory(building=building)
 
         response = self.client.get('/buildings/1/dobviolations/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -71,7 +71,7 @@ class BuildingViewTests(BaseTest, TestCase):
         self.dobcomplaint_factory(building=building)
 
         response = self.client.get('/buildings/1/dobcomplaints/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -82,7 +82,7 @@ class BuildingViewTests(BaseTest, TestCase):
         self.ecbviolation_factory(building=building)
 
         response = self.client.get('/buildings/1/ecbviolations/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -93,7 +93,7 @@ class BuildingViewTests(BaseTest, TestCase):
         self.housinglitigation_factory(building=building)
 
         response = self.client.get('/buildings/1/housinglitigations/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -104,7 +104,7 @@ class BuildingViewTests(BaseTest, TestCase):
         self.hpdregistration_factory(building=building)
 
         response = self.client.get('/buildings/1/hpdregistrations/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -115,7 +115,7 @@ class BuildingViewTests(BaseTest, TestCase):
         self.permitissuedlegacy_factory(building=building)
 
         response = self.client.get('/buildings/1/dobpermitissuedlegacy/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -126,7 +126,7 @@ class BuildingViewTests(BaseTest, TestCase):
         self.permitissuednow_factory(building=building)
 
         response = self.client.get('/buildings/1/dobpermitissuednow/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -137,7 +137,7 @@ class BuildingViewTests(BaseTest, TestCase):
         self.dobissuedpermit_factory(building=building)
 
         response = self.client.get('/buildings/1/dobissuedpermits/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -148,7 +148,7 @@ class BuildingViewTests(BaseTest, TestCase):
         self.dobfiledpermit_factory(building=building)
 
         response = self.client.get('/buildings/1/dobfiledpermits/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -159,7 +159,7 @@ class BuildingViewTests(BaseTest, TestCase):
         self.doblegacyfiledpermit_factory(building=building)
 
         response = self.client.get('/buildings/1/doblegacyfiledpermits/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)

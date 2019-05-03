@@ -18,7 +18,7 @@ class SubsidyJ51Tests(BaseTest, TestCase):
         self.subsidyj51_factory()
 
         response = self.client.get('/subsidyj51/', format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)

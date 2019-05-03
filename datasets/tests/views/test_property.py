@@ -20,7 +20,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.property_factory(bbl="2")
 
         response = self.client.get('/properties/')
-        content = response.data['results']
+        content = response.data
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
@@ -40,7 +40,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.building_factory(bin="2", property=property)
 
         response = self.client.get('/properties/1/buildings/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -51,7 +51,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.hpdbuilding_factory(buildingid="2", property=property)
 
         response = self.client.get('/properties/1/hpdbuildings/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -62,7 +62,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.hpdviolation_factory(property=property)
 
         response = self.client.get('/properties/1/hpdviolations/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -73,7 +73,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.hpdcomplaint_factory(property=property)
 
         response = self.client.get('/properties/1/hpdcomplaints/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -84,7 +84,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.dobviolation_factory(property=property)
 
         response = self.client.get('/properties/1/dobviolations/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -96,7 +96,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.dobcomplaint_factory(building=building)
 
         response = self.client.get('/properties/1/dobcomplaints/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -107,7 +107,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.ecbviolation_factory(property=property)
 
         response = self.client.get('/properties/1/ecbviolations/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -120,7 +120,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.acrislegal_factory(master=master2, property=property)
 
         response = self.client.get('/properties/1/acrisrealmasters/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -131,7 +131,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.eviction_factory(id="2", property=property)
 
         response = self.client.get('/properties/1/evictions/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -142,7 +142,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.housinglitigation_factory(property=property)
 
         response = self.client.get('/properties/1/housinglitigations/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -153,7 +153,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.hpdregistration_factory(property=property)
 
         response = self.client.get('/properties/1/hpdregistrations/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -164,7 +164,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.taxlien_factory(property=property)
 
         response = self.client.get('/properties/1/taxliens/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -176,7 +176,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.taxbill_factory(property=property2)
 
         response = self.client.get('/properties/1/taxbills/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -187,7 +187,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.subsidy421a_factory(property=property)
 
         response = self.client.get('/properties/1/subsidy421a/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -198,7 +198,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.subsidyj51_factory(property=property)
 
         response = self.client.get('/properties/1/subsidyj51/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -209,7 +209,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.coredata_factory(property=property)
 
         response = self.client.get('/properties/1/coredata/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -220,7 +220,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.permitissuedlegacy_factory(property=property)
 
         response = self.client.get('/properties/1/dobpermitissuedlegacy/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -231,7 +231,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.permitissuednow_factory(property=property)
 
         response = self.client.get('/properties/1/dobpermitissuednow/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -242,7 +242,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.dobissuedpermit_factory(property=property)
 
         response = self.client.get('/properties/1/dobissuedpermits/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -253,7 +253,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.dobfiledpermit_factory(property=property)
 
         response = self.client.get('/properties/1/dobfiledpermits/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -264,7 +264,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.doblegacyfiledpermit_factory(property=property)
 
         response = self.client.get('/properties/1/doblegacyfiledpermits/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -275,7 +275,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.publichousingrecord_factory(property=property)
 
         response = self.client.get('/properties/1/publichousingrecords/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -294,7 +294,7 @@ class PropertyViewTests(BaseTest, TestCase):
 
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
         response = self.client.get('/properties/1/lispendens/', format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -316,7 +316,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.taxbill_factory(property=property, uc2008=50, uc2016=10)
 
         response = self.client.get('/properties/?summary=true', format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -368,7 +368,7 @@ class PropertyViewTests(BaseTest, TestCase):
 
         query = '/properties/?summary=true&summary-type=short-annotated&annotation__start=2018-01-01&hpdviolations__start=2015-01-01&hpdviolations__end=2019-01-01&hpdviolations__gte=5'
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
         now_date = datetime.datetime.now().strftime("%m/%d/%Y")
 
         self.assertEqual(response.status_code, 200)
@@ -410,7 +410,7 @@ class PropertyViewTests(BaseTest, TestCase):
 
         query = '/properties/?summary=true&summary-type=short-annotated&q=*condition_0=AND+filter_0=hpdviolations__approveddate__gte=2017-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5+filter_0=dobviolations__issuedate__gte=2018-01-01,dobviolations__issuedate__lte=2019-01-01,dobviolations__count__gte=5'
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         now_date = datetime.datetime.now().strftime("%m/%d/%Y")
 
@@ -450,7 +450,7 @@ class PropertyViewTests(BaseTest, TestCase):
 
         query = '/properties/?summary=true&summary-type=short-annotated&q=*condition_0=AND+filter_0=hpdviolations__approveddate__gte=2017-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5'
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         now_date = datetime.datetime.now().strftime("%m/%d/%Y")
 
@@ -493,7 +493,7 @@ class PropertyViewTests(BaseTest, TestCase):
         query = '/properties/?housingtype=all&q=*condition_0=OR+filter_0=hpdviolations__count__gte=5,hpdviolations__approveddate__gte=2017-01-01+filter_1=dobviolations__count__gte=5,dobviolations__issuedate__gte=2018-01-01&summary=true&summary-type=short-annotated'
         response = self.client.get(query, format="json")
 
-        content = response.data['results']
+        content = response.data
 
         now_date = datetime.datetime.now().strftime("%m/%d/%Y")
 
@@ -520,7 +520,7 @@ class PropertyViewTests(BaseTest, TestCase):
         pre_cache_query = '/properties/?summary=true&summary-type=short-annotated&annotation__start=2018-01-01'
         pre_cache_response = self.client.get(pre_cache_query, format="json")
 
-        pre_cache_content = pre_cache_response.data['results']
+        pre_cache_content = pre_cache_response.data
 
         now_date = datetime.datetime.now().strftime("%m/%d/%Y")
 
@@ -558,7 +558,7 @@ class PropertyViewTests(BaseTest, TestCase):
         pre_cache_query = '/properties/?summary=true&summary-type=short-annotated&annotation__start=2018-01-01'
         pre_cache_response = self.client.get(pre_cache_query, format="json")
 
-        pre_cache_content = pre_cache_response.data['results']
+        pre_cache_content = pre_cache_response.data
 
         now_date = datetime.datetime.now().strftime("%m/%d/%Y")
 
@@ -614,7 +614,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
         query = '/properties/?summary=true&summary-type=short-annotated&annotation__start=recent'
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         now_date = datetime.datetime.now().strftime("%m/%d/%Y")
 
@@ -653,7 +653,7 @@ class PropertyViewTests(BaseTest, TestCase):
 
         query = '/properties/?summary=true&summary-type=short-annotated&annotation__start=lastyear'
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -679,7 +679,7 @@ class PropertyViewTests(BaseTest, TestCase):
 
         query = '/properties/?summary=true&summary-type=short-annotated&annotation__start=last3years'
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -718,7 +718,7 @@ class PropertyViewTests(BaseTest, TestCase):
 
         query = '/properties/?summary=true&summary-type=short-annotated&annotation__start=full'
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
         now_date = datetime.datetime.now().strftime("%m/%d/%Y")
 
         self.assertEqual(response.status_code, 200)

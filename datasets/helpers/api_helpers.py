@@ -95,12 +95,11 @@ def annotated_fields_to_dict(start=None, end=None, dataset=None):
 
 
 def prefetch_annotated_datasets(queryset, request):
-    DATASETS = [ds.HPDViolation, ds.HPDComplaint, ds.DOBViolation, ds.DOBComplaint,
-                ds.ECBViolation, ds.DOBIssuedPermit, ds.DOBFiledPermit, ds.DOBIssuedPermit, ds.Eviction, ds.LisPenden, ds.HousingLitigation, ds.AcrisRealMaster]
 
     params = request.query_params
 
-    for dataset in DATASETS:
+    for model_name in ds.PropertyAnnotation.ANNOTATED_DATASETS:
+        dataset = getattr(ds, model_name)
         if dataset == ds.AcrisRealMaster:
             dataset_prefix = 'acrisreallegal'
             annotation_dict = annotated_fields_to_dict(dataset=dataset, start=get_annotation_start(

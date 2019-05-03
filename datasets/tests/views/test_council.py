@@ -18,7 +18,7 @@ class CouncilViewTests(BaseTest, TestCase):
         self.council_factory()
 
         response = self.client.get('/councils/', format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -38,7 +38,7 @@ class CouncilViewTests(BaseTest, TestCase):
         self.property_factory(council=council, bbl="2")
 
         response = self.client.get('/councils/1/properties/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)

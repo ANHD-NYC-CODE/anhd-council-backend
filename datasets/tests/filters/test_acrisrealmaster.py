@@ -23,7 +23,7 @@ class AcrisRealMasterFilterTests(BaseTest, TestCase):
 
         query = '/acrisrealmasters/?docamount__gte=10'
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -35,7 +35,7 @@ class AcrisRealMasterFilterTests(BaseTest, TestCase):
 
         query = '/acrisrealmasters/?doctype=DEED'
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -48,7 +48,7 @@ class AcrisRealMasterFilterTests(BaseTest, TestCase):
 
         query = '/acrisrealmasters/?doctype__icontains=deed'
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -62,7 +62,7 @@ class AcrisRealMasterFilterTests(BaseTest, TestCase):
 
         query = '/acrisrealmasters/?docdate__gte=2018-01-01'
         response = self.client.get(query, format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)

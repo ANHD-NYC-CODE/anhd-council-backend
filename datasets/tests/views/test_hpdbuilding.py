@@ -18,7 +18,7 @@ class HPDBuildingViewTests(BaseTest, TestCase):
         self.hpdbuilding_factory(buildingid="2")
 
         response = self.client.get('/hpdbuildings/', format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -39,7 +39,7 @@ class HPDBuildingViewTests(BaseTest, TestCase):
         self.hpdviolation_factory(hpdbuilding=hpdbuilding)
 
         response = self.client.get('/hpdbuildings/1/hpdviolations/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -50,7 +50,7 @@ class HPDBuildingViewTests(BaseTest, TestCase):
         self.hpdcomplaint_factory(hpdbuilding=hpdbuilding)
 
         response = self.client.get('/hpdbuildings/1/hpdcomplaints/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -61,7 +61,7 @@ class HPDBuildingViewTests(BaseTest, TestCase):
         self.hpdregistration_factory(hpdbuilding=hpdbuilding)
 
         response = self.client.get('/hpdbuildings/1/hpdregistrations/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)

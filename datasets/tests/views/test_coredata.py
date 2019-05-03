@@ -18,7 +18,7 @@ class CoreDataTests(BaseTest, TestCase):
         self.coredata_factory()
 
         response = self.client.get('/coredata/', format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)

@@ -18,7 +18,7 @@ class AcrisRealMasterViewTests(BaseTest, TestCase):
         self.acrismaster_factory(doctype="DEED", documentid="2")
 
         response = self.client.get('/acrisrealmasters/', format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -38,7 +38,7 @@ class AcrisRealMasterViewTests(BaseTest, TestCase):
         self.acrisparty_factory(master=master)
 
         response = self.client.get('/acrisrealmasters/1/acrisrealparties/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)

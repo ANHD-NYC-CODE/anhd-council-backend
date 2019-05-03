@@ -29,7 +29,7 @@ class LisPendenViewTests(BaseTest, TestCase):
 
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
         response = self.client.get('/lispendens/', format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)

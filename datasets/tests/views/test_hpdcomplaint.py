@@ -18,7 +18,7 @@ class HPDComplaintViewTests(BaseTest, TestCase):
         self.hpdcomplaint_factory(complaintid="2")
 
         response = self.client.get('/hpdcomplaints/', format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -29,7 +29,7 @@ class HPDComplaintViewTests(BaseTest, TestCase):
         self.hpdproblem_factory(complaint=complaint1)
         self.hpdproblem_factory(complaint=complaint1)
         response = self.client.get('/hpdcomplaints/', format="json")
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
@@ -51,7 +51,7 @@ class HPDComplaintViewTests(BaseTest, TestCase):
         self.hpdproblem_factory(complaint=complaint)
 
         response = self.client.get('/hpdcomplaints/1/hpdproblems/')
-        content = response.data['results']
+        content = response.data
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
