@@ -32,12 +32,19 @@ def scrub_lispendens(cached_value, request, override=False):
 
 def decompress_cache(cached_value):
 
-    return json.loads(gzip.decompress(cached_value).decode())
+    return json.loads(gzip.decompress(cached_value).decode('utf-8'))
+
+
+def compress_cache(cached_value):
+    # convert datetimes to be json serializable
+    json_value = json.dumps(cached_value, default=lambda o: o.isoformat() if hasattr(o, 'isoformat') else o)
+    return gzip.compress(json_value.encode('utf-8'))
 
 
 def scrub_pagination(cached_value):
     if 'results' in cached_value:
         cached_value = cached_value['results']
+
     return cached_value
 
 
@@ -73,15 +80,14 @@ def cache_request_path():
                 if (response.status_code == 200):
                     value_to_cache = response.data
                     value_to_cache = scrub_pagination(value_to_cache)
+                    value_to_cache = compress_cache(value_to_cache)
                     logger.debug('Caching: {}'.format(cache_key))
 
-                    cache.set(cache_key, gzip.compress(json.dumps(
-                        value_to_cache).encode('utf-8')), timeout=settings.CACHE_TTL)
-                    if '__authenticated' in cache_key:  # also cache the scrubbed response for unauthenticated requests
-                        cache_key = cache_key.replace('__authenticated', '')
-                        logger.debug('Caching scrubbed varient: {}'.format(cache_key))
-                        cache.set(cache_key, gzip.compress(json.dumps(
-                            value_to_cache).encode('utf-8')), timeout=settings.CACHE_TTL)
+                    cache.set(cache_key, value_to_cache, timeout=settings.CACHE_TTL)
+                    # if '__authenticated' in cache_key:  # also cache the scrubbed response for unauthenticated requests
+                    #     cache_key = cache_key.replace('__authenticated', '')
+                    #     logger.debug('Caching scrubbed varient: {}'.format(cache_key))
+                    #     cache.set(cache_key, value_to_cache, timeout=settings.CACHE_TTL)
                 logger.debug('Serving response: {}'.format(cache_key))
                 return response
         return cached_view
