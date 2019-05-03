@@ -13,6 +13,13 @@ import logging
 logger = logging.getLogger('app')
 
 
+def scrub_pagination(cached_value):
+    if 'results' in cached_value:
+        cached_value = cached_value['results']
+
+    return cached_value
+
+
 def scrub_lispendens(cached_value, request):
     if not is_authenticated(request):
         if type(cached_value) is dict:
@@ -23,10 +30,11 @@ def scrub_lispendens(cached_value, request):
 
             # filter out lispendens in annotated fields for unauthorized users
             if len(cached_value):
-                lispendens_field = [key for key in cached_value[0].keys() if 'lispendens' in key]
-                if len(lispendens_field):
+                lispendens_fields = [key for key in cached_value[0].keys() if 'lispendens' in key]
+                if len(lispendens_fields):
                     for value in cached_value:
-                        del value[lispendens_field[0]]
+                        for field in lispendens_fields:
+                            del value[field]
     return cached_value
 
 
@@ -39,13 +47,6 @@ def compress_cache(cached_value):
     # convert datetimes to be json serializable
     json_value = json.dumps(cached_value, default=lambda o: o.isoformat() if hasattr(o, 'isoformat') else o)
     return gzip.compress(json_value.encode('utf-8'))
-
-
-def scrub_pagination(cached_value):
-    if 'results' in cached_value:
-        cached_value = cached_value['results']
-
-    return cached_value
 
 
 def is_authenticated(request):
