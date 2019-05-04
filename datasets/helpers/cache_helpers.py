@@ -58,8 +58,8 @@ def construct_cache_key(request, params):
     params.pop('format', None)
     params.pop('filename', None)
     cache_key = request.path + '?' + urllib.parse.urlencode(params)
-    # if is_authenticated(request):
-    #     cache_key = cache_key + '__authenticated'
+    if is_authenticated(request):
+        cache_key = cache_key + '__authenticated'
     return cache_key
 
 
@@ -87,10 +87,10 @@ def cache_request_path():
                     logger.debug('Caching: {}'.format(cache_key))
 
                     cache.set(cache_key, value_to_cache, timeout=settings.CACHE_TTL)
-                    # if '__authenticated' in cache_key:  # also cache the scrubbed response for unauthenticated requests
-                    #     cache_key = cache_key.replace('__authenticated', '')
-                    #     logger.debug('Caching scrubbed varient: {}'.format(cache_key))
-                    #     cache.set(cache_key, value_to_cache, timeout=settings.CACHE_TTL)
+                    if '__authenticated' in cache_key:  # also cache the scrubbed response for unauthenticated requests
+                        cache_key = cache_key.replace('__authenticated', '')
+                        logger.debug('Caching scrubbed varient: {}'.format(cache_key))
+                        cache.set(cache_key, value_to_cache, timeout=settings.CACHE_TTL)
                     logger.debug('Serving response: {}'.format(cache_key))
                     scrubbed_response = scrub_pagination(response.data)  # TODO: remove pagination altogether
                     scrubbed_response = scrub_lispendens(scrubbed_response, request)
