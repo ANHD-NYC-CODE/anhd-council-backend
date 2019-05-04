@@ -90,6 +90,7 @@ class AddressRecordTests(BaseTest, TestCase):
         address7 = ds.AddressRecord.objects.get(
             number="1-20", street="Real Street", borough="Manhattan", zipcode="99999")
         self.assertEqual(bool(address7), True)
+        self.assertEqual(address7.bin, None)  # make sure no BIN gets added if property record existed first
         address8 = ds.AddressRecord.objects.get(
             number="1-22", street="Real Street", borough="Manhattan", zipcode="99999")
         self.assertEqual(bool(address8), True)

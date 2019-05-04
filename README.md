@@ -48,15 +48,17 @@
 ## Continuous deployment
 
  - Run this remote task to update the production server.
- - Updating the server will interrupt any running workers. When the workers restart, they will have to restart the task from the beginning. Keep this in mind if any long running tasks are currently running.
+ - Updating the server will interrupt any running workers and clear the redis cache. Keep this in mind if any long running tasks are currently running.
 
-1) `ssh -t anhd@45.55.44.160 "cd /var/www/anhd-council-backend && sudo sh pull.sh"`
+1) `sh deploy.sh`
 
  - or if already SSHed inside, Run the build script `sh build.prod.sh`
   - pulls from master
   - restarts app
   - restarts nginx
   - restarts celery workers
+
+2) Rebuild the cache by visiting the admin interface the running the periodic task titled "reset cache" - takes approx 30-45 min to complete.
 
 
 # Opening a live shell
@@ -69,4 +71,4 @@
 # Adding new async tasks
 
 You can load tasks with `python manage.py loaddata tasks`
-But you'll need to delete all the existing tasks in the database. Go to the admin site / Periodic Tasks to delete. 
+But you'll need to delete all the existing tasks in the database. Go to the admin site / Periodic Tasks to delete.

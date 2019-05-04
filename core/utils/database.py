@@ -8,7 +8,7 @@ from io import StringIO
 
 import itertools
 import csv
-import uuid
+import random
 import math
 import os
 import json
@@ -83,7 +83,7 @@ def create_gen_from_csv_diff(original_file_path, new_file_path):
 def write_gen_to_temp_file(gen_rows):
 
     temp_file_path = os.path.join(settings.MEDIA_TEMP_ROOT, str(
-        'set_diff' + uuid.uuid4().hex) + '.mock' if settings.TESTING else '.csv')
+        'set_diff' + str(random.randint(1, 10000000))) + '.mock' if settings.TESTING else '.csv')
     headers = iter(next(gen_rows))
     with open(temp_file_path, 'w') as temp_file:
         writer = csv.writer(temp_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL, skipinitialspace=True)
@@ -128,7 +128,7 @@ def seed_from_csv_diff(original_file_path, new_file_path, model, **kwargs):
 
     diff = new_diff_set - original_diff_set
     temp_file_path = os.path.join(settings.MEDIA_TEMP_ROOT, str(
-        'set_diff' + uuid.uuid4().hex) + '.mock' if settings.TESTING else '.csv')
+        'set_diff' + str(random.randint(1, 10000000))) + '.mock' if settings.TESTING else '.csv')
     with open(temp_file_path, 'w') as temp_file:
         writer = csv.writer(temp_file, delimiter=',')
         writer.writerow(headers)
@@ -149,7 +149,7 @@ def bulk_insert_from_file(model, file_path, **kwargs):
     logger.debug('creating temp csv with cleaned rows and seeding...')
     # create new csv with cleaned rows
     temp_file_path = os.path.join(settings.MEDIA_TEMP_ROOT, str(
-        'clean_csv_' + uuid.uuid4().hex) + '.mock' if settings.TESTING else '.csv')
+        'clean_csv_' + str(random.randint(1, 10000000))) + '.mock' if settings.TESTING else '.csv')
     update = kwargs['update'] if 'update' in kwargs else None
     rows = model.transform_self_from_file(file_path, update=update)
     logger.debug("writing temp file for {} at {}".format(table_name, temp_file_path))
@@ -290,10 +290,10 @@ def batch_upsert_rows(model, rows, batch_size, update=None, no_conflict=False):
 
         except Exception as e:
             logger.info('Database - error upserting rows. Doing single row upsert. - Error: {}'.format(e))
-            upsert_single_rows(model, rows, update=update)
+            upsert_single_rows(model, rows, update=update, no_conflict=no_conflict)
 
 
-def upsert_single_rows(model, rows, update=None):
+def upsert_single_rows(model, rows, update=None, no_conflict=False):
     table_name = model._meta.db_table
     primary_key = model._meta.pk.name
     rows_created = 0
@@ -303,7 +303,7 @@ def upsert_single_rows(model, rows, update=None):
         try:
             with connection.cursor() as curs:
                 with transaction.atomic():
-                    curs.execute(upsert_query(table_name, row, primary_key, no_conflict=False),
+                    curs.execute(upsert_query(table_name, row, primary_key, no_conflict=no_conflict),
                                  build_row_values(row))
                     rows_updated = rows_updated + 1
                     rows_created = rows_created + 1
