@@ -90,7 +90,7 @@ def async_create_update(self, dataset_id, file_id=None):
         raise e
 
 
-@app.task(bind=True, queue='celery', acks_late=True, max_retries=1)
+@app.task(bind=True, queue='update', acks_late=True, max_retries=1)
 def async_annotate_properties_with_all_datasets(self):
     for model_name in settings.ANNOTATED_DATASETS:
         if model_name == 'AcrisRealMaster':
