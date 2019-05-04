@@ -118,6 +118,9 @@ class AddressRecord(BaseDatasetModel, models.Model):
             # Do not create addresses for special buildings
             if bool(re.search(r"(GAR|GARAGE|FRONT|REAR|BEACH|AIR|AIRRGTS|AIR RGTS|WBLDG|EBLDG)", building.lhnd.upper())):
                 continue
+            # Do not create addresses for special buildings
+            if bool(re.search(r"(GAR|GARAGE|FRONT|REAR|BEACH|AIR|AIRRGTS|AIR RGTS|WBLDG|EBLDG)", building.hhnd.upper())):
+                continue
             lhnd_split = building.lhnd.split('-')
             hhnd_split = building.hhnd.split('-')
 
@@ -189,31 +192,18 @@ class AddressRecord(BaseDatasetModel, models.Model):
             number_letter = re.sub(r"[a-zA-Z]", "", number_letter)  # removes letter
             key = self.create_key(number_letter, street, borough, zipcode, property.bbl)
 
-            property_buildings = property.building_set.all()
-            if property_buildings.count() == 1:
-                # Try to return some building info if property only has 1 building
-                building = property_buildings.first()
-                bin = building.bin
-                buildingstreet = building.stname.strip()
-                buildingnumber = building.get_house_number()
-                if buildingnumber:
-                    buildingnumber = buildingnumber.replace(' ', '').strip()
-            else:
-                building = None
-                bin = None
-                buildingstreet = None
-                buildingnumber = None
-
-            return {
+            dict = {
                 'key': key,
                 'bbl': property.bbl,
-                'bin': bin,
+                'bin': None,
                 'number': number_letter.strip() if number_letter else None,
                 'street': street.strip() if street else None,
                 'borough': borough.strip() if borough else None,
                 'zipcode': zipcode.strip() if zipcode else None,
                 'address': "",
             }
+
+            return dict
 
     @classmethod
     def build_property_gen(self):
@@ -226,18 +216,6 @@ class AddressRecord(BaseDatasetModel, models.Model):
     @classmethod
     def seed_or_update_self(self, **kwargs):
         self.build_table(overwrite=True)
-
-    # @classmethod
-    # def build_table(self, **kwargs):
-    #     file_path = kwargs['file_path']
-    #     batch_size = settings.BATCH_SIZE
-    #     building_gen = self.build_building_gen(file_path=file_path)
-    #     batch_upsert_from_gen(self, building_gen, batch_size, no_conflict=False, **kwargs)
-    #     property_gen = self.build_property_gen()
-    #     batch_upsert_from_gen(self, property_gen, batch_size, no_conflict=True, **kwargs)
-    #
-    #     self.build_search()
-    #     logger.debug("Address Record seeding complete!")
 
     @classmethod
     def build_table(self, overwrite=True, **kwargs):
