@@ -1,8 +1,9 @@
-from django.db import models
+from django.db import models, connection, transaction, utils
 from django.db.models import Q
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.database import copy_insert_from_csv, batch_upsert_from_gen
 from django.contrib.postgres.search import SearchVector, SearchVectorField
+
 from datasets import models as ds
 from core.utils.bbl import code_to_boro, abrv_to_borough
 from django.conf import settings
@@ -41,6 +42,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
 
     class Meta:
         indexes = [GinIndex(fields=['address'])]
+        # unique_together = ('bbl', 'number', 'street')
 
     @classmethod
     def create_key(self, number, street, borough, zipcode, bbl):
@@ -247,6 +249,31 @@ class AddressRecord(BaseDatasetModel, models.Model):
 
         self.build_search()
         logger.debug("Address Record seeding complete!")
+
+    # @classmethod
+    # def create_property_addresses(self):
+    #     import pdb
+    #     pdb.set_trace()
+    #
+    # @classmethod
+    # def create_building_addresses(self):
+    #     import pdb
+    #     pdb.set_trace()
+    #
+    # @classmethod
+    # def build_table(self):
+    #     logger.debug('Building address table from scratch.')
+    #     with connection.cursor() as curs:
+    #         with transaction.atomic():
+    #             logger.debug('Deleting all records with atomic transaction...')
+    #             self.objects.all().delete()
+    #             logger.debug('Creating property addresses...')
+    #             self.create_property_addresses()
+    #             logger.debug('Creating building addresses...')
+    #             self.create_building_addresses()
+    #             logger.debug('Building search index...')
+    #             self.build_search()
+    #             logger.debug("Address Record seeding complete!")
 
     @classmethod
     def build_search(self):
