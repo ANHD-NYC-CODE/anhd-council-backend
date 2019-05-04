@@ -268,6 +268,7 @@ def batch_upsert_from_gen(model, rows, batch_size, **kwargs):
             raise e
 
 
+# No Conflict = True means DO NOTHING on conflict. False means update on conflict.
 def batch_upsert_rows(model, rows, batch_size, update=None, no_conflict=False):
     table_name = model._meta.db_table
     primary_key = model._meta.pk.name
