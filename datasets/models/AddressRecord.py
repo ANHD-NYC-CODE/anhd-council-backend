@@ -248,13 +248,11 @@ class AddressRecord(BaseDatasetModel, models.Model):
                 logger.debug('Deleting all records with atomic transaction...')
                 self.objects.all().delete()
 
-            logger.debug('Creating property addresses...')
             property_gen = self.build_property_gen()
 
             logger.debug('bulk inserting property addresses...')
             batch_upsert_from_gen(self, property_gen, settings.BATCH_SIZE, no_conflict=True, **kwargs)
 
-            logger.debug('Creating building addresses...')
             building_gen = self.build_building_gen()
 
             logger.debug('bulk inserting building addresses...')
