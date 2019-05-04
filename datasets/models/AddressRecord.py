@@ -225,7 +225,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        self.build_table(file_path=kwargs['file_path'], overwrite=True)
+        self.build_table(overwrite=True)
 
     # @classmethod
     # def build_table(self, **kwargs):
