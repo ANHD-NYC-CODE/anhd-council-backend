@@ -92,20 +92,7 @@ def async_create_update(self, dataset_id, file_id=None):
 
 @app.task(bind=True, queue='celery', acks_late=True, max_retries=1)
 def async_annotate_properties_with_all_datasets(self):
-    def split_list(alist, wanted_parts=1):
-        length = len(alist)
-        return [alist[i * length // wanted_parts: (i + 1) * length // wanted_parts]
-                for i in range(wanted_parts)]
-    split1, split2 = split_list(settings.ANNOTATED_DATASETS, 2)
-
-    # splits list in 2 and sends to different async workers
-    async_annotate_properties_list_of_datasets.delay(split1)
-    async_annotate_properties_list_of_datasets.delay(split2)
-
-
-@app.task(bind=True, queue='update', acks_late=True, max_retries=1)
-def async_annotate_properties_list_of_datasets(self, datasets_list):
-    for model_name in datasets_list:
+    for model_name in settings.ANNOTATED_DATASETS:
         if model_name == 'AcrisRealMaster':
             model_name = 'AcrisRealLegal'
         dataset = c.Dataset.objects.get(model_name=model_name)
