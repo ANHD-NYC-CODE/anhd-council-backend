@@ -19,7 +19,7 @@ def create_async_cache_workers(token):
     logger.debug('Async caching started')
 
 
-def cache_council_property_summaries_full(token, sleep=10, start=0):
+def cache_council_property_summaries_full(token, sleep=2, start=0):
     from datasets.models import Council
     # token = settings.CACHE_REQUEST_KEY
 
@@ -41,7 +41,7 @@ def cache_council_property_summaries_full(token, sleep=10, start=0):
     logger.debug("Authenticated! Council month Pre-Caching complete!")
 
 
-def cache_community_property_summaries_full(token, sleep=10, start=0):
+def cache_community_property_summaries_full(token, sleep=2, start=0):
     from datasets.models import Community
     # token = settings.CACHE_REQUEST_KEY
 
