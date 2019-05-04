@@ -23,3 +23,7 @@
 ### V1.0.0b1.0.22
 - Added a daily property annotation task
 - add more eviction cleanup code
+
+### V1.0.0b1.0.23
+- Fixed bug in daily property annotation task
+- added a full rebuild deploy script.
