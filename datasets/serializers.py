@@ -419,19 +419,25 @@ class BuildingSerializer(serializers.ModelSerializer):
         model = ds.Building
         fields = '__all__'
 
+#
+# class BuildingSearchSerializer(serializers.BaseSerializer):
+#     def to_representation(self, obj):
+#         return {
+#             'bin': obj.bin_id,
+#             'bbl': obj.bbl_id,
+#             'buildingnumber': obj.buildingnumber,
+#             'buildingstreet': obj.buildingstreet,
+#             'propertyaddress': obj.propertyaddress,
+#             'borough': obj.borough,
+#             'zipcode': obj.zipcode,
+#             'alternateaddress': obj.alternateaddress
+#         }
 
-class BuildingSearchSerializer(serializers.BaseSerializer):
-    def to_representation(self, obj):
-        return {
-            'bin': obj.bin_id,
-            'bbl': obj.bbl_id,
-            'buildingnumber': obj.buildingnumber,
-            'buildingstreet': obj.buildingstreet,
-            'propertyaddress': obj.propertyaddress,
-            'borough': obj.borough,
-            'zipcode': obj.zipcode,
-            'alternateaddress': obj.alternateaddress
-        }
+
+class BuildingSearchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.AddressRecord
+        fields = '__all__'
 
 
 class HPDBuildingSerializer(serializers.ModelSerializer):

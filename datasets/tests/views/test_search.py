@@ -19,14 +19,14 @@ class SearchTests(BaseTest, TestCase):
         building = self.building_factory(lhnd="50", hhnd="52")
         building2 = self.building_factory(lhnd="100", hhnd="52")
 
-        self.address_factory(building=building, number="50", buildingnumber="50-52",
-                             street="MAIN STREET", buildingstreet="MAIN STREET", borough="Brooklyn", zipcode='11111')
+        self.address_factory(building=building, number="50",
+                             street="MAIN STREET", borough="Brooklyn", zipcode='11111')
         self.address_factory(building=building,  number="52",
-                             street="MAIN STREET", buildingnumber="50-52",
-                             buildingstreet="MAIN STREET", borough="Brooklyn", zipcode='11111')
+                             street="MAIN STREET",
+                             borough="Brooklyn", zipcode='11111')
         self.address_factory(building=building2,  number="100",
-                             street="JONES DRIVE", buildingnumber="100",
-                             buildingstreet="JONES DRIVE", borough="Brooklyn", zipcode='11111')
+                             street="JONES DRIVE",
+                             borough="Brooklyn", zipcode='11111')
 
         ds.AddressRecord.build_search()
 
@@ -36,8 +36,8 @@ class SearchTests(BaseTest, TestCase):
         self.assertEqual(response.status_code, 200)
 
         self.assertEqual(len(content), 1)
-        self.assertEqual(content[0]['buildingnumber'], "50-52")
-        self.assertEqual(content[0]['buildingstreet'], "MAIN STREET")
+        self.assertEqual(content[0]['number'], "50")
+        self.assertEqual(content[0]['street'], "MAIN STREET")
 
     def test_building_search_2(self):
         # Search:
