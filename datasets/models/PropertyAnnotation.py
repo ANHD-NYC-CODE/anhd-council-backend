@@ -9,8 +9,6 @@ logger = logging.getLogger('app')
 
 
 class PropertyAnnotation(BaseDatasetModel, models.Model):
-    ANNOTATED_DATASETS = ['HPDViolation', 'HPDComplaint', 'DOBViolation', 'DOBComplaint',
-                          'ECBViolation', 'DOBIssuedPermit', 'DOBFiledPermit', 'DOBIssuedPermit', 'Eviction', 'HousingLitigation', 'AcrisRealMaster', 'LisPenden']
 
     bbl = models.OneToOneField('Property', db_column='bbl', db_constraint=False,
                                on_delete=models.SET_NULL, null=True, blank=True)

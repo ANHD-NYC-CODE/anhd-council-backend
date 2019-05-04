@@ -92,9 +92,9 @@ def async_create_update(self, dataset_id, file_id=None):
 
 @app.task(bind=True, queue='celery', acks_late=True, max_retries=1)
 def async_annotate_properties_with_all_datasets(self):
-    from datasets import models as ds
-
-    for model_name in ds.PropertyAnnotation.ANNOTATED_DATASETS:
+    for model_name in settings.ANNOTATED_DATASETS:
+        if model_name == 'AcrisRealMaster':
+            model_name = 'AcrisRealLegal'
         async_annotate_properties_with_dataset.delay(getattr(ds, model_name).get_dataset().id)
 
 

@@ -251,7 +251,7 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
         # if is_authenticated(self.context['request']):
         #     DATASETS.append(ds.LisPenden)
 
-        for model_name in ds.PropertyAnnotation.ANNOTATED_DATASETS:
+        for model_name in settings.ANNOTATED_DATASETS:
             dataset = getattr(ds, model_name)
             dataset_prefix = dataset.__name__.lower()
             if 'annotation__start' in params and params['annotation__start'] == 'recent':

@@ -333,6 +333,7 @@ LOGGING = {
     }
 }
 
+
 # Use exact model names from datasets/models
 ACTIVE_MODELS = [
     'Council',
@@ -369,6 +370,11 @@ ACTIVE_MODELS = [
     'TaxLien',
     'LisPenden',
     'LisPendenComment',
-    'CONHRecord'
+    'CONHRecord',
+    'PropertyAnnotation'
 
 ]
+
+
+ANNOTATED_DATASETS = ['HPDViolation', 'HPDComplaint', 'DOBViolation', 'DOBComplaint',
+                      'ECBViolation', 'DOBIssuedPermit', 'DOBFiledPermit', 'DOBIssuedPermit', 'Eviction', 'HousingLitigation', 'AcrisRealMaster', 'LisPenden']

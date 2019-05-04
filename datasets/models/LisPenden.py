@@ -100,5 +100,30 @@ class LisPenden(BaseDatasetModel, models.Model):
         logger.debug('annotating properties for {}', self.__name__)
         self.mark_foreclosure_with_creditor()
 
+    @classmethod
+    def annotate_properties(self):
+        count = 0
+        records = []
+        logger.debug('annotating properties for: {}'.format(self.__name__))
+
+        last30 = dates.get_last_month(string=False)
+        lastyear = dates.get_last_year(string=False)
+        last3years = dates.get_last3years(string=False)
+
+        last30_subquery = Subquery(self.objects.filter(bbl=OuterRef('bbl'), type=self.LISPENDEN_TYPES['foreclosure'], fileddate__gte=last30).values(
+            'bbl').annotate(count=Count('bbl')).values('count'))
+
+        lastyear_subquery = Subquery(self.objects.filter(bbl=OuterRef(
+            'bbl'), type=self.LISPENDEN_TYPES['foreclosure'], fileddate__gte=lastyear).values('bbl').annotate(count=Count('bbl')).values('count'))
+
+        last3years_subquery = Subquery(self.objects
+                                       .filter(bbl=OuterRef('bbl'), type=self.LISPENDEN_TYPES['foreclosure'], fileddate__gte=last3years).values('bbl')
+                                       .annotate(count=Count('bbl'))
+                                       .values('count')
+                                       )
+
+        ds.PropertyAnnotation.objects.update(lispendens_last30=Coalesce(last30_subquery, 0), lispendens_lastyear=Coalesce(
+            lastyear_subquery, 0), lispendens_last3years=Coalesce(last3years_subquery, 0), lispendens_lastupdated=datetime.now())
+
     def __str__(self):
         return str(self.key)

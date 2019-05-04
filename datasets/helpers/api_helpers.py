@@ -98,7 +98,7 @@ def prefetch_annotated_datasets(queryset, request):
 
     params = request.query_params
 
-    for model_name in ds.PropertyAnnotation.ANNOTATED_DATASETS:
+    for model_name in settings.ANNOTATED_DATASETS:
         dataset = getattr(ds, model_name)
         if dataset == ds.AcrisRealMaster:
             dataset_prefix = 'acrisreallegal'
