@@ -170,10 +170,11 @@ class Eviction(BaseDatasetModel, models.Model):
 
     @classmethod
     def validate_geosearch_match(self, geosearch_match, cleaned_address):
-        # remove apostrophes
         if not geosearch_match:
             return False
-        geosearch_match = re.sub('\'', '', geosearch_match)
+
+        # remove apostrophes
+        geosearch_match['label'] = re.sub(r"\'", '', geosearch_match['label'])
         # without borough, New York, NY, USA tokens
         geosearch_house_street = remove_building_terms(geosearch_match['label'].split(', ')[0].upper())
         geosearch_borough = geosearch_match['label'].split(', ')[1].upper()
