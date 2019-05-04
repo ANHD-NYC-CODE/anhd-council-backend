@@ -165,7 +165,7 @@
     name: "Check and Update Acris"
     description: "Checks api for Acris for updates and update one at a time each day."
     task: "core.tasks.async_check_acris_for_update_and_update"
-    crontab: 14 # every 11pm
+    crontab: 5 # every 3am
     args: "[]"
     kwargs: "{}"
     date_changed: "2019-04-25"
@@ -192,7 +192,7 @@
     name: "2nd cache pass"
     description: "Maintainence task."
     task: "app.tasks.recache"
-    crontab: 5 # every 3 am
+    crontab: 4 # every 2 am
     args: "[]" # add token to args in admin
     kwargs: "{}"
     date_changed: "2019-04-25"

@@ -19,3 +19,7 @@
 
 ### V1.0.0b1.0.21
 - Added creditor to foreclosure discovery scheme
+
+### V1.0.0b1.0.22
+- Added a daily property annotation task
+- add more eviction cleanup code

@@ -107,6 +107,7 @@ class Eviction(BaseDatasetModel, models.Model):
             match = re.search(pattern, eviction.evictionaddress.upper())
             if match:
                 cleaned_address = match.group(0)
+                # TODO: remove house letter from cleaned address
                 self.save_eviction(eviction=eviction, cleaned_address=cleaned_address)
                 address_match = ds.AddressRecord.objects.filter(
                     address=cleaned_address + ' {}'.format(eviction.borough))
@@ -139,6 +140,7 @@ class Eviction(BaseDatasetModel, models.Model):
             return None
 
         match = None
+        # First compare the borough and zipcode of geosearch and cleaned address
         for feature in parsed['features']:
             if 'borough' not in feature['properties'] or 'postalcode' not in feature['properties']:
                 logger.debug('Geosearch result not usable without borough or postalcode: {}'.format(
@@ -147,6 +149,7 @@ class Eviction(BaseDatasetModel, models.Model):
             if feature['properties']['borough'].upper() == eviction.borough and feature['properties']['postalcode'] == eviction.evictionzip:
                 match = feature['properties']
 
+        # next compare the house and street numbers
         if match and self.validate_geosearch_match(match, cleaned_address):
             try:
                 bbl = ds.Property.objects.get(bbl=match['pad_bbl'])
@@ -167,6 +170,10 @@ class Eviction(BaseDatasetModel, models.Model):
 
     @classmethod
     def validate_geosearch_match(self, geosearch_match, cleaned_address):
+        # remove apostrophes
+        if not geosearch_match:
+            return False
+        geosearch_match = re.sub('\'', '', geosearch_match)
         # without borough, New York, NY, USA tokens
         geosearch_house_street = remove_building_terms(geosearch_match['label'].split(', ')[0].upper())
         geosearch_borough = geosearch_match['label'].split(', ')[1].upper()

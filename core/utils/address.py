@@ -73,6 +73,8 @@ def remove_building_terms(string):
 def clean_number_and_streets(string, include_house_number):
     string = string.upper()
 
+    # double space
+    string = re.sub(r"\b  \b", ' ', string)
     # apostrophe
     string = re.sub(r"'S\b", 'S', string)
 
@@ -248,6 +250,15 @@ def clean_number_and_streets(string, include_house_number):
     string = re.sub(r"\bWE ST\b", "WEST", string)
     string = re.sub(r"\bBORINQUENA\b", "BORINQUEN", string)
     string = re.sub(r"\bAVENUE OF THE AMERICAS\b", "AMERICAS AVENUE", string)
+    string = re.sub(r"\bWMOSHOLU\b", "WEST MOSHOLU", string)
+    string = re.sub(r"\bFINGERBOAR D\b", "FINGERBOARD", string)
+    string = re.sub(r"\bBOY LAND\b", "BOYLAND", string)
+    string = re.sub(r"\bBOYLAN D\b", "BOYLAND", string)
+    string = re.sub(r"\bKINGSBR IDGE\b", "BOYLAND", string)
+    string = re.sub(r"\bRESEVOIR\b", "RESERVIOR", string)
+    string = re.sub(r"\bWASHINGT ON\b", "WASHINGTON", string)
+    string = re.sub(r"\bBA Y\b", "BAY", string)
+    string = re.sub(r"\bCHANNE L\b", "CHANNEL", string)
 
     # Replace Street Appreviations
     HOLY_SAINTS = ['FELIX', 'ANDREWS', 'PAULS', 'JOSEPH', 'MARKS', 'LAWRENCE', 'JAMES',

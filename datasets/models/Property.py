@@ -310,7 +310,7 @@ class Property(BaseDatasetModel, models.Model):
 
     @classmethod
     def add_geometry(self):
-        for record in self.objects.all():
+        for record in self.objects.filter(lng__isnull=True, lat__isnull=True).all():
             lng, lat = get_geo(record)
             record.lat = lat
             record.lng = lng
