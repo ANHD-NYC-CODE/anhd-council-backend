@@ -35,14 +35,10 @@ class AddressRecord(BaseDatasetModel, models.Model):
     borough = models.TextField(blank=True, null=True)
     zipcode = models.TextField(blank=True, null=True)
     address = SearchVectorField(blank=True, null=True)
-    buildingnumber = models.TextField(blank=True, null=True)
-    buildingstreet = models.TextField(blank=True, null=True)
-    propertyaddress = models.TextField(blank=True, null=True)
-    alternateaddress = models.BooleanField(blank=True, null=True)
 
     class Meta:
         indexes = [GinIndex(fields=['address'])]
-        # unique_together = ('bbl', 'number', 'street')
+        unique_together = ('bbl', 'number', 'street')
 
     @classmethod
     def create_key(self, number, street, borough, zipcode, bbl):
@@ -51,18 +47,14 @@ class AddressRecord(BaseDatasetModel, models.Model):
 
     @classmethod
     def address_row_from_building(self, number='', building=None):
-        try:
-            bbl = building['bbl']
-            property = ds.Property.objects.get(bbl=bbl)
-        except Exception as e:
-            return None
-
-        bin = building['bin']
-        building_low = building['lhnd'].strip()
-        building_high = building['hhnd'].strip()
-        building_street = building['stname'].strip()
-        building_zip = building['zipcode'].strip()
-        building_boro = building['boro'].strip()
+        bbl = building.bbl_id
+        bin = building.bin
+        number = re.sub(r"[a-zA-Z]", "", number).strip()  # removes all letters from number
+        building_low = str(building.lhnd).strip()
+        building_high = str(building.hhnd).strip()
+        building_street = str(building.stname).strip()
+        building_zip = str(building.zipcode).strip()
+        building_boro = str(building.boro).strip()
         building_number = ds.Building.construct_house_number(building_low,
                                                              building_high)
         if building_number:
@@ -71,7 +63,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
         key = self.create_key(number, building_street, code_to_boro(
             building_boro), building_zip, bbl)
 
-        return {
+        dict = {
             'key': key,
             'bbl': bbl,
             'bin': bin,
@@ -80,11 +72,9 @@ class AddressRecord(BaseDatasetModel, models.Model):
             'borough': code_to_boro(building_boro),
             'zipcode': building_zip,
             'address': "",
-            "buildingnumber": building_number,
-            "buildingstreet": building_street,
-            "propertyaddress": property.address,
-            "alternateaddress": False
         }
+
+        return dict
 
     @classmethod
     def generate_rangelist(self, low, high, prefix=None):
@@ -121,25 +111,27 @@ class AddressRecord(BaseDatasetModel, models.Model):
         return (number, letter)
 
     @classmethod
-    def build_building_gen(self, file_path=None):
-        logger.debug("Generating Addresses from building csv...")
-        building_gen = ds.Building.transform_self(file_path)
+    def build_building_gen(self):
+        # Do not create address record for buildings without bbls
+        for building in ds.Building.objects.filter(bbl__isnull=False).all():
 
-        for building in building_gen:
-            if re.search(r"(GAR|GARAGE|FRONT|REAR|BEACH|AIR|AIRRGTS|AIR RGTS|WBLDG|EBLDG)", building['stname']):
-                pass
-            lhnd_split = building['lhnd'].split('-')
-            hhnd_split = building['hhnd'].split('-')
+            # Do not create addresses for special buildings
+            if bool(re.search(r"(GAR|GARAGE|FRONT|REAR|BEACH|AIR|AIRRGTS|AIR RGTS|WBLDG|EBLDG)", building.lhnd.upper())):
+                continue
+            lhnd_split = building.lhnd.split('-')
+            hhnd_split = building.hhnd.split('-')
+
             # numbers formatted: 50
             if len(lhnd_split) <= 1:
-                low_number, low_letter = self.split_number_letter(building['lhnd'])
-                high_number, high_letter = self.split_number_letter(building['hhnd'])
-                # create rangelist
-                if building['lhnd'].strip() == building['hhnd'].strip():
-                    address_row = self.address_row_from_building(number=building['lhnd'].strip(),
+                low_number, low_letter = self.split_number_letter(building.lhnd)
+                high_number, high_letter = self.split_number_letter(building.hhnd)
+                # if lhnd is equal to hhnd, number = lhnd
+                if building.lhnd.strip() == building.hhnd.strip():
+                    address_row = self.address_row_from_building(number=building.lhnd.strip(),
                                                                  building=building)
                     if address_row:
                         yield address_row
+                # otherwise, create rangelist of numbers
                 else:
                     # For that one number that has a lhnd = 52 and hhnd = 54 1/2
                     # Removing the 1/2 part from the high number
@@ -194,6 +186,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
             zipcode = property.zipcode
             borough = abrv_to_borough(property.borough)
 
+            number_letter = re.sub(r"[a-zA-Z]", "", number_letter)  # removes letter
             key = self.create_key(number_letter, street, borough, zipcode, property.bbl)
 
             property_buildings = property.building_set.all()
@@ -220,10 +213,6 @@ class AddressRecord(BaseDatasetModel, models.Model):
                 'borough': borough.strip() if borough else None,
                 'zipcode': zipcode.strip() if zipcode else None,
                 'address': "",
-                "buildingnumber": buildingnumber,
-                "buildingstreet": buildingstreet,
-                "propertyaddress": property.address.strip() if property.address else None,
-                "alternateaddress": True
             }
 
     @classmethod
@@ -238,42 +227,42 @@ class AddressRecord(BaseDatasetModel, models.Model):
     def seed_or_update_self(self, **kwargs):
         self.build_table(file_path=kwargs['file_path'], overwrite=True)
 
+    # @classmethod
+    # def build_table(self, **kwargs):
+    #     file_path = kwargs['file_path']
+    #     batch_size = settings.BATCH_SIZE
+    #     building_gen = self.build_building_gen(file_path=file_path)
+    #     batch_upsert_from_gen(self, building_gen, batch_size, no_conflict=False, **kwargs)
+    #     property_gen = self.build_property_gen()
+    #     batch_upsert_from_gen(self, property_gen, batch_size, no_conflict=True, **kwargs)
+    #
+    #     self.build_search()
+    #     logger.debug("Address Record seeding complete!")
+
     @classmethod
-    def build_table(self, **kwargs):
-        file_path = kwargs['file_path']
-        batch_size = settings.BATCH_SIZE
-        building_gen = self.build_building_gen(file_path=file_path)
-        batch_upsert_from_gen(self, building_gen, batch_size, no_conflict=False, **kwargs)
-        property_gen = self.build_property_gen()
-        batch_upsert_from_gen(self, property_gen, batch_size, no_conflict=True, **kwargs)
+    def build_table(self, overwrite=True, **kwargs):
+        logger.debug('Building address table from scratch.')
+        # do inside atomic transaction to keep old results live while updating
+        with transaction.atomic():
+            if overwrite:
+                logger.debug('Deleting all records with atomic transaction...')
+                self.objects.all().delete()
 
-        self.build_search()
-        logger.debug("Address Record seeding complete!")
+            logger.debug('Creating property addresses...')
+            property_gen = self.build_property_gen()
 
-    # @classmethod
-    # def create_property_addresses(self):
-    #     import pdb
-    #     pdb.set_trace()
-    #
-    # @classmethod
-    # def create_building_addresses(self):
-    #     import pdb
-    #     pdb.set_trace()
-    #
-    # @classmethod
-    # def build_table(self):
-    #     logger.debug('Building address table from scratch.')
-    #     with connection.cursor() as curs:
-    #         with transaction.atomic():
-    #             logger.debug('Deleting all records with atomic transaction...')
-    #             self.objects.all().delete()
-    #             logger.debug('Creating property addresses...')
-    #             self.create_property_addresses()
-    #             logger.debug('Creating building addresses...')
-    #             self.create_building_addresses()
-    #             logger.debug('Building search index...')
-    #             self.build_search()
-    #             logger.debug("Address Record seeding complete!")
+            logger.debug('bulk inserting property addresses...')
+            batch_upsert_from_gen(self, property_gen, settings.BATCH_SIZE, no_conflict=True, **kwargs)
+
+            logger.debug('Creating building addresses...')
+            building_gen = self.build_building_gen()
+
+            logger.debug('bulk inserting building addresses...')
+            batch_upsert_from_gen(self, building_gen, settings.BATCH_SIZE, no_conflict=False, **kwargs)
+
+            logger.debug('Building search index...')
+            self.build_search()
+            logger.debug("Address Record seeding complete!")
 
     @classmethod
     def build_search(self):

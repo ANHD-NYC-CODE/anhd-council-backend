@@ -13,30 +13,65 @@ class AddressRecordTests(BaseTest, TestCase):
         self.clean_tests()
 
     def test_seed_addresssearch(self):
-        dataset = c_models.Dataset.objects.create(name='Building', model_name='Building')
-        file = c_models.DataFile.objects.create(file=self.get_file(
-            'mock_buildings_1.csv'), dataset=dataset)
 
-        property = self.property_factory(bbl="1000010010", address="123 Fake Street", borough="MN", zipcode="99999")
+        # adds 1
+        property = self.property_factory(
+            bbl="1000010010", address="123 Fake Property Street", borough="MN", zipcode="99999")
+
+        # adds 1
         property2 = self.property_factory(bbl="1000010011", address="1-20 Real Street", borough="MN", zipcode="99999")
+
+        # adds 1
         property3 = self.property_factory(bbl="1000010012", address="100a Fake Street", borough="MN", zipcode="99999")
 
-        ds.AddressRecord.build_table(file_path=file.file.path, overwrite=True)
+        # adds 1
+        self.building_factory(property=property, bin='1', lhnd='1', hhnd='1', stname='Fake Street', zipcode='99999')
 
-        self.assertEqual(ds.AddressRecord.objects.count(), 15)
+        # adds 1
+        self.building_factory(property=property, bin='2', lhnd='2a', hhnd='2a', stname='Fake Street', zipcode='99999')
+
+        # adds 3
+        self.building_factory(property=property, bin='3', lhnd='1', hhnd='5', stname='Real Street', zipcode='99999')
+
+        # adds 1
+        self.building_factory(property=property, bin='4', lhnd='1-10',
+                              hhnd='1-10', stname='Real Street', zipcode='99999')
+
+        # adds 0 - letter removed so it turns into a duplicate
+        self.building_factory(property=property, bin='5', lhnd='1-10a',
+                              hhnd='1-10a', stname='Real Street', zipcode='99999')
+
+        # adds 1 (does not add 1-20 due to existing property address)
+        self.building_factory(property=property2, bin='6', lhnd='1-20',
+                              hhnd='1-22', stname='Real Street', zipcode='99999')
+
+        # adds 1
+        self.building_factory(property=property, bin='7', lhnd='10 1/2',
+                              hhnd='10 1/2', stname='Half Street', zipcode='99999')
+
+        # adds 1
+        self.building_factory(property=property, bin='8', lhnd='10-01',
+                              hhnd='10-01', stname='Fake Street', zipcode='99999')
+
+        # adds 2
+        self.building_factory(property=property, bin='9', lhnd='10-03',
+                              hhnd='10-05', stname='Fake Street', zipcode='99999')
+
+        # Does not add this address due to 'Garage'
+        self.building_factory(property=property, bin='10', lhnd='1 Garage',
+                              hhnd='1 Garage', stname='Fake Street', zipcode='99999')
+
+        ds.AddressRecord.build_table(overwrite=True)
+
+        self.assertEqual(ds.AddressRecord.objects.count(), 14)
         address1 = ds.AddressRecord.objects.get(
             number="1", street="Fake Street", borough="Manhattan", zipcode="99999")
-        self.assertEqual(address1.buildingstreet, 'Fake Street')
-        self.assertEqual(address1.buildingnumber, '1')
-        self.assertEqual(address1.propertyaddress, property.address)
-
         self.assertEqual(bool(address1), True)
+
+        # removed letter
         address2 = ds.AddressRecord.objects.get(
-            number="1a", street="Fake Street", borough="Manhattan", zipcode="99999")
+            number="2", street="Fake Street", borough="Manhattan", zipcode="99999")
         self.assertEqual(bool(address2), True)
-        self.assertEqual(address2.buildingstreet, 'Fake Street')
-        self.assertEqual(address2.buildingnumber, '1a')
-        self.assertEqual(address2.propertyaddress, property.address)
 
         address3 = ds.AddressRecord.objects.get(
             number="1", street="Real Street", borough="Manhattan", zipcode="99999")
@@ -47,62 +82,39 @@ class AddressRecordTests(BaseTest, TestCase):
         address5 = ds.AddressRecord.objects.get(
             number="5", street="Real Street", borough="Manhattan", zipcode="99999")
         self.assertEqual(bool(address5), True)
-        doubles = ds.AddressRecord.objects.filter(
+
+        address6 = ds.AddressRecord.objects.get(
             number="1-10", street="Real Street", borough="Manhattan", zipcode="99999")
-        address6 = doubles[0]
         self.assertEqual(bool(address6), True)
-        address7 = doubles[1]
+
+        address7 = ds.AddressRecord.objects.get(
+            number="1-20", street="Real Street", borough="Manhattan", zipcode="99999")
         self.assertEqual(bool(address7), True)
         address8 = ds.AddressRecord.objects.get(
-            number="1-20", street="Real Street", borough="Manhattan", zipcode="99999")
+            number="1-22", street="Real Street", borough="Manhattan", zipcode="99999")
         self.assertEqual(bool(address8), True)
         address9 = ds.AddressRecord.objects.get(
-            number="1-22", street="Real Street", borough="Manhattan", zipcode="99999")
+            number="10 1/2", street="Half Street", borough="Manhattan", zipcode="99999")
         self.assertEqual(bool(address9), True)
         address10 = ds.AddressRecord.objects.get(
-            number="10 1/2", street="Half Street", borough="Manhattan", zipcode="99999")
+            number="123", street="Fake Property Street", borough="Manhattan", zipcode="99999")
         self.assertEqual(bool(address10), True)
-        address11 = ds.AddressRecord.objects.get(
-            number="123", street="Fake Street", borough="Manhattan", zipcode="99999")
-        self.assertEqual(bool(address11), True)
 
         # skips property 2 due to key contstraint
 
+        # removed letter
+        address11 = ds.AddressRecord.objects.get(
+            number="100", street="Fake Street", borough="Manhattan", zipcode="99999")
+        self.assertEqual(bool(address11), True)
+
         address12 = ds.AddressRecord.objects.get(
-            number="100a", street="Fake Street", borough="Manhattan", zipcode="99999")
+            number="10-01", street="Fake Street", borough="Manhattan", zipcode="99999")
         self.assertEqual(bool(address12), True)
-        self.assertEqual(address12.buildingstreet, None)
-        self.assertEqual(address12.buildingnumber, None)
-        self.assertEqual(address12.propertyaddress, property3.address)
 
         address13 = ds.AddressRecord.objects.get(
-            number="10-01", street="Fake Street", borough="Manhattan", zipcode="99999")
+            number="10-03", street="Fake Street", borough="Manhattan", zipcode="99999")
         self.assertEqual(bool(address13), True)
 
         address14 = ds.AddressRecord.objects.get(
-            number="10-03", street="Fake Street", borough="Manhattan", zipcode="99999")
-        self.assertEqual(bool(address14), True)
-
-        address15 = ds.AddressRecord.objects.get(
             number="10-05", street="Fake Street", borough="Manhattan", zipcode="99999")
-        self.assertEqual(bool(address15), True)
-
-    def test_seed_addresssearch_update(self):
-        dataset = c_models.Dataset.objects.create(name='Building', model_name='Building')
-        file = c_models.DataFile.objects.create(file=self.get_file(
-            'mock_buildings_2.csv'), dataset=dataset)
-
-        property = self.property_factory(bbl="1000010010")
-        # no range, number
-        building1 = self.building_factory(bin=1, lhnd="1", hhnd="1", stname="Fake Street",
-                                          boro="1", zipcode="99999", property=property)
-
-        ds.AddressRecord.build_table(file_path=file.file.path, overwrite=True)
-        file2 = c_models.DataFile.objects.create(file=self.get_file(
-            'mock_buildings_2_diff.csv'), dataset=dataset)
-        building2 = self.building_factory(bin=2, lhnd="1", hhnd="1", stname="Real Street",
-                                          boro="1", zipcode="99999", property=property)
-
-        ds.AddressRecord.build_table(file_path=file2.file.path, overwrite=True)
-
-        self.assertEqual(ds.AddressRecord.objects.count(), 2)
+        self.assertEqual(bool(address14), True)
