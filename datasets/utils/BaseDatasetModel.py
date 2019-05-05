@@ -121,7 +121,7 @@ class BaseDatasetModel():
     # Good for overwrites
     def bulk_seed(self, **kwargs):
         if 'raw' in kwargs and kwargs['raw'] == True:
-            copy_file(self, **kwargs)
+            copy_file(self, file_path=kwargs['file_path'], **kwargs)
         else:
             bulk_insert_from_file(self, **kwargs)
 

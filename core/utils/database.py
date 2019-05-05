@@ -148,16 +148,17 @@ def bulk_insert_from_file(model, file_path, **kwargs):
     table_name = model._meta.db_table
     logger.debug('creating temp csv with cleaned rows and seeding...')
     # create new csv with cleaned rows
+
+    temp_file_extension = '.mock' if settings.TESTING else '.csv'
     temp_file_path = os.path.join(settings.MEDIA_TEMP_ROOT, str(
-        'clean_csv_' + str(random.randint(1, 10000000))) + '.mock' if settings.TESTING else '.csv')
+        'clean_csv_' + str(random.randint(1, 10000000))) + temp_file_extension)
     update = kwargs['update'] if 'update' in kwargs else None
     rows = model.transform_self_from_file(file_path, update=update)
     logger.debug("writing temp file for {} at {}".format(table_name, temp_file_path))
     gen_to_csv(rows, temp_file_path)
     logger.debug("temp file complete for {}".format(table_name))
 
-    kwargs['file_path'] = temp_file_path
-    copy_file(model, **kwargs)
+    copy_file(model, file_path=temp_file_path, **kwargs)
 
     if os.path.isfile(temp_file_path):
         os.remove(temp_file_path)
@@ -166,17 +167,18 @@ def bulk_insert_from_file(model, file_path, **kwargs):
         kwargs['callback']()
 
 
-def copy_file(model, **kwargs):
+def copy_file(model, file_path=None, **kwargs):
+
     table_name = model._meta.db_table
-    with open(kwargs['file_path'], 'r') as file:
+    with open(file_path, 'r') as file:
         columns = file.readline().replace('"', '').replace('\n', '')
         sql = copy_query(table_name, columns)
 
         try:
-            copy_insert_from_csv(table_name, kwargs['file_path'], **kwargs)
+            copy_insert_from_csv(table_name, file_path, **kwargs)
         except Exception as e:
             logger.warning("Database - Bulk Import Error - beginning Batch seeding. Error: {}".format(e))
-            rows = from_csv_file_to_gen(kwargs['file_path'], kwargs['update'])
+            rows = from_csv_file_to_gen(file_path, kwargs['update'])
             batch_upsert_from_gen(model, rows, settings.BATCH_SIZE, **kwargs)
 
 

@@ -114,7 +114,11 @@ class Eviction(BaseDatasetModel, models.Model):
                 address_match = ds.AddressRecord.objects.filter(
                     address=cleaned_address + ' {}'.format(eviction.borough))
                 if len(address_match) == 1:
-                    self.save_eviction(eviction=eviction, bbl=address_match[0].bbl)
+                    try:
+                        self.save_eviction(eviction=eviction, bbl=address_match[0].bbl)
+                    except Exception as e:
+                        logger.warning(e, address_match[0].bbl, address_match[0].bbl_id)
+                        raise e
 
                 elif len(address_match) > 1:
                     # not a super generic query like 123 STREET or 45 AVENUE
@@ -159,7 +163,7 @@ class Eviction(BaseDatasetModel, models.Model):
                 self.save_eviction(eviction=eviction, bbl=bbl, geosearch_address=match['label'])
             except Exception as e:
                 self.save_eviction(eviction=eviction, geosearch_address=match['label'])
-                logger.debug('unable to match response bbl {} to a db record'.format(match['pad_bbl']))
+                logger.warning('unable to match response bbl {} to a db record'.format(match['pad_bbl']))
                 return None
         else:
             if match:
@@ -238,4 +242,4 @@ def annotate_property_on_save(sender, instance, created, **kwargs):
             annotation = sender.annotate_property_standard(ds.PropertyAnnotation.objects.get(bbl=instance.bbl))
             annotation.save()
         except Exception as e:
-            print(e)
+            logger.warning(e)

@@ -53,10 +53,7 @@
 1) `sh deploy.sh`
 
  - or if already SSHed inside, Run the build script `sh build.prod.sh`
-  - pulls from master
-  - restarts app
-  - restarts nginx
-  - restarts celery workers
+
 
 2) Rebuild the cache by visiting the admin interface the running the periodic task titled "reset cache" - takes approx 30-45 min to complete.
 
@@ -70,5 +67,14 @@
 
 # Adding new async tasks
 
-You can load tasks with `python manage.py loaddata tasks`
-But you'll need to delete all the existing tasks in the database. Go to the admin site / Periodic Tasks to delete.
+You can load tasks with `python manage.py loaddata crontabs` and `python manage.py loaddata tasks` or add them manually in the `periodic tasks` section of the admin panel
+
+# Updating Pluto or PAD
+
+Updating either one of these will leave the old entries intact and overwrite any existing entries that conflict with the new entries. To update these records, create an update in the admin panel using the appropriate file containing the new data.
+
+# Building the address table
+
+Whenever you update Pluto or PAD, you'll need to update the address records to make the properties searchable. Updating the address records will delete all records and seed new ones from the existing property and building records. This runs within an atomic transaction, so there will be no interruption to the live address data while this is happening.
+
+To do so, create an update within the admin panel with only the dataset `AddressRecord` selected.
