@@ -114,7 +114,11 @@ class AddressRecord(BaseDatasetModel, models.Model):
     def build_building_gen(self):
         # Do not create address record for buildings without bbls
         for building in ds.Building.objects.filter(bbl__isnull=False).all():
-
+            try:
+                building.bbl
+            except Exception as e:
+                logger.debug('no BBL for bin {}'.format(building.bin))
+                continue
             # Do not create addresses for special buildings
             if bool(re.search(r"(GAR|GARAGE|FRONT|REAR|BEACH|AIR|AIRRGTS|AIR RGTS|WBLDG|EBLDG)", building.lhnd.upper())):
                 continue

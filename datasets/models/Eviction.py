@@ -114,22 +114,12 @@ class Eviction(BaseDatasetModel, models.Model):
                 address_match = ds.AddressRecord.objects.filter(
                     address=cleaned_address + ' {}'.format(eviction.borough))
                 if len(address_match) == 1:
-                    try:
-                        self.save_eviction(eviction=eviction, bbl=address_match[0].bbl)
-                    except Exception as e:
-                        logger.debug("eviction exception: {} - {} - {}".format(e,
-                                                                               address_match[0].key, address_match[0].bbl_id))
-                        raise e
+                    self.save_eviction(eviction=eviction, bbl=address_match[0].bbl)
 
                 elif len(address_match) > 1:
                     # not a super generic query like 123 STREET or 45 AVENUE
                     if not re.match(r"(\d+ (\bSTREET|\bAVENUE))", cleaned_address):
-                        try:
-                            self.save_eviction(eviction=eviction, bbl=address_match[0].bbl)
-                        except Exception as e:
-                            logger.debug("eviction exception: {} - {} - {}".format(e,
-                                                                                   address_match[0].key, address_match[0].bbl_id))
-                            raise e
+                        self.save_eviction(eviction=eviction, bbl=address_match[0].bbl)
                     else:
                         # logger.debug(
                         #     "no eviction match - multiple matches found on generic address: {}".format(eviction.evictionaddress))
