@@ -117,7 +117,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
             try:
                 building.bbl
             except Exception as e:
-                logger.debug('no BBL for bin {}'.format(building.bin))
+                logger.debug('no BBL record: {} for bin {}'.format(building.bbl_id, building.bin))
                 continue
             # Do not create addresses for special buildings
             if bool(re.search(r"(GAR|GARAGE|FRONT|REAR|BEACH|AIR|AIRRGTS|AIR RGTS|WBLDG|EBLDG)", building.lhnd.upper())):
