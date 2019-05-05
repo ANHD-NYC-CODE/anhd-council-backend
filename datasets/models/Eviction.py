@@ -117,7 +117,7 @@ class Eviction(BaseDatasetModel, models.Model):
                     try:
                         self.save_eviction(eviction=eviction, bbl=address_match[0].bbl)
                     except Exception as e:
-                        logger.warning(e, address_match.key, address_match[0].bbl_id)
+                        logger.warning(e, address_match[0].key, address_match[0].bbl_id)
                         raise e
 
                 elif len(address_match) > 1:
@@ -126,7 +126,7 @@ class Eviction(BaseDatasetModel, models.Model):
                         try:
                             self.save_eviction(eviction=eviction, bbl=address_match[0].bbl)
                         except Exception as e:
-                            logger.warning(e, address_match.key, address_match[0].bbl_id)
+                            logger.warning(e, address_match[0].key, address_match[0].bbl_id)
                             raise e
                     else:
                         # logger.debug(
