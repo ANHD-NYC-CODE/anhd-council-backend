@@ -123,7 +123,11 @@ class Eviction(BaseDatasetModel, models.Model):
                 elif len(address_match) > 1:
                     # not a super generic query like 123 STREET or 45 AVENUE
                     if not re.match(r"(\d+ (\bSTREET|\bAVENUE))", cleaned_address):
-                        self.save_eviction(eviction=eviction, bbl=address_match[0].bbl)
+                        try:
+                            self.save_eviction(eviction=eviction, bbl=address_match[0].bbl)
+                        except Exception as e:
+                            logger.warning(e, address_match.key, address_match[0].bbl_id)
+                            raise e
                     else:
                         # logger.debug(
                         #     "no eviction match - multiple matches found on generic address: {}".format(eviction.evictionaddress))
