@@ -72,18 +72,18 @@ class HPDComplaint(BaseDatasetModel, models.Model):
             yield row
 
     @classmethod
+    def transform_self(self, file_path, update=None):
+        return self.pre_validation_filters(with_bbl(from_csv_file_to_gen(file_path, update), allow_blank=True))
+
+    @classmethod
     def add_bins_from_buildingid(self):
         logger.debug(" * Adding BINs through building for HPD Complaints.")
         bin = ds.HPDBuildingRecord.objects.filter(buildingid=OuterRef('buildingid')).values_list('bin')[:1]
         self.objects.prefetch_related('buildingid').all().update(bin=Subquery(bin))
 
     @classmethod
-    def transform_self(self, file_path, update=None):
-        return self.pre_validation_filters(with_bbl(from_csv_file_to_gen(file_path, update), allow_blank=True))
-
-    @classmethod
     def seed_or_update_self(self, **kwargs):
-        self.seed_or_update_from_set_diff(callback=self.add_bins_from_buildingid, **kwargs)
+        self.seed_with_upsert(callback=self.add_bins_from_buildingid, **kwargs)
         logger.debug('annotating properties for {}', self.__name__)
         self.annotate_properties()
 
