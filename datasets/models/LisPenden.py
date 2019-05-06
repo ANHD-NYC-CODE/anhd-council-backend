@@ -42,7 +42,7 @@ class LisPenden(BaseDatasetModel, models.Model):
     sattype = models.TextField(blank=True, null=True)
     disp = models.TextField(blank=True, null=True)
     type = models.TextField(blank=True, null=True)
-
+    source = models.TextField(blank=True, null=True)
     LISPENDEN_TYPES = {
         'foreclosure': 'foreclosure'
     }

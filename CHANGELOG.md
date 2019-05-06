@@ -27,3 +27,7 @@
 ### V1.0.0b1.0.23
 - Fixed bug in daily property annotation task
 - added a full rebuild deploy script.
+
+### V1.0.0b1.0.25
+- changed all models using set_diff updates to seed_with_upsert
+- added a source field to the lispenden model
