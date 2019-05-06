@@ -63,8 +63,6 @@ class PropertyTests(BaseTest, TestCase):
 
         self.assertEqual(ds.Property.objects.count(), 3)
         self.assertEqual(ds.PropertyAnnotation.objects.count(), 3)
-        self.assertEqual(new_update.rows_created, 1)
-        self.assertEqual(new_update.rows_updated, 1)
 
 
 class BuildingTests(BaseTest, TestCase):
@@ -89,8 +87,7 @@ class BuildingTests(BaseTest, TestCase):
                                          file_name="mock_propertymap_bobaadr_diff.csv", previous_file_name="mock_propertymap_bobaadr.csv")
         ds.Building.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds.Building.objects.count(), 10)
-        self.assertEqual(new_update.rows_created, 1)
-        self.assertEqual(new_update.rows_updated, 10)
+
         self.assertEqual(ds.Building.objects.get(
             bin="1086410").hhnd, "25")
         changed_record = ds.Building.objects.get(bin="1086412")
@@ -107,8 +104,6 @@ class TaxLotTests(BaseTest, TestCase):
 
         ds.TaxLot.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds.TaxLot.objects.count(), 4)
-        self.assertEqual(update.rows_created, 4)
-        self.assertEqual(update.rows_updated, 0)
 
     def test_seed_taxlot_after_update(self):
         update = self.update_factory(model_name="TaxLot",
@@ -119,8 +114,6 @@ class TaxLotTests(BaseTest, TestCase):
                                          file_name="mock_taxlot_diff.csv", previous_file_name="mock_taxlot.csv")
         ds.TaxLot.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds.TaxLot.objects.count(), 6)
-        self.assertEqual(new_update.rows_created, 6)
-        self.assertEqual(new_update.rows_updated, 0)
 
 
 class HPDComplaint(BaseTest, TestCase):
@@ -161,8 +154,7 @@ class HPDComplaint(BaseTest, TestCase):
 
         ds.HPDComplaint.seed_or_update_self(
             file_path=update_diff.file.file.path, update=update_diff)
-        self.assertEqual(update_diff.rows_created, 1)
-        self.assertEqual(update_diff.rows_updated, 1)
+
         self.assertEqual(ds.HPDComplaint.objects.get(complaintid=6961276).status, "CLOSE")
 
 
@@ -190,8 +182,7 @@ class HPDProblem(BaseTest, TestCase):
 
         ds.HPDProblem.seed_or_update_self(
             file_path=update_diff.file.file.path, update=update_diff)
-        self.assertEqual(update_diff.rows_created, 2)
-        self.assertEqual(update_diff.rows_updated, 1)
+
         self.assertEqual(ds.HPDProblem.objects.filter(complaintid=6961276)[0].unittypeid, 91)
         self.assertEqual(len(ds.HPDProblem.objects.filter(complaintid=6961276)), 3)
 
@@ -223,8 +214,7 @@ class DOBViolationTests(BaseTest, TestCase):
 
         ds.DOBViolation.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds.DOBViolation.objects.count(), 11)
-        self.assertEqual(new_update.rows_created, 1)
-        # self.assertEqual(new_update.rows_updated, 1)
+
         self.assertEqual(ds.DOBViolation.objects.get(
             isndobbisviol=544483).violationcategory, "V*-DOB VIOLATION - DISMISSED")
         changed_record = ds.DOBViolation.objects.get(isndobbisviol=1347329)
@@ -260,8 +250,7 @@ class ECBViolationTests(BaseTest, TestCase):
 
         ds.ECBViolation.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds.ECBViolation.objects.count(), 6)
-        self.assertEqual(new_update.rows_created, 1)
-        self.assertEqual(new_update.rows_updated, 1)
+
         self.assertEqual(ds.ECBViolation.objects.get(
             ecbviolationnumber="34830294Z").ecbviolationstatus, "RESOLVE")
         changed_record = ds.ECBViolation.objects.get(ecbviolationnumber="38087901Z")
@@ -297,8 +286,7 @@ class DOBComplaintTests(BaseTest, TestCase):
                                          file_name="mock_dob_complaints_diff.csv", previous_file_name="mock_dob_complaints.csv")
         ds.DOBComplaint.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds.DOBComplaint.objects.count(), 11)
-        self.assertEqual(new_update.rows_created, 1)
-        self.assertEqual(new_update.rows_updated, 1)
+
         self.assertEqual(ds.DOBComplaint.objects.get(
             complaintnumber="4483428").status, "CLOSED")
         changed_record = ds.DOBComplaint.objects.get(complaintnumber="1347612")
@@ -332,8 +320,7 @@ class HousingLitigationTests(BaseTest, TestCase):
                                          file_name="mock_housing_litigations_diff.csv", previous_file_name="mock_housing_litigations.csv")
         ds.HousingLitigation.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds.HousingLitigation.objects.count(), 11)
-        self.assertEqual(new_update.rows_created, 1)
-        self.assertEqual(new_update.rows_updated, 1)
+
         self.assertEqual(ds.HousingLitigation.objects.get(
             litigationid="281964").casestatus, "CLOSED")
         changed_record = ds.HousingLitigation.objects.get(litigationid="270054")
@@ -360,8 +347,7 @@ class HPDRegistrationTests(BaseTest, TestCase):
                                          file_name='mock_hpd_registrations_diff.csv', previous_file_name='mock_hpd_registrations.csv')
         ds.HPDRegistration.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds.HPDRegistration.objects.count(), 5)
-        self.assertEqual(new_update.rows_created, 1)
-        self.assertEqual(new_update.rows_updated, 1)
+
         self.assertEqual(ds.HPDRegistration.objects.get(
             registrationid="336228").boro, "BROOKLYN")
         changed_record = ds.HPDRegistration.objects.get(registrationid="325524")
@@ -390,8 +376,7 @@ class HPDContactTests(BaseTest, TestCase):
 
         ds.HPDContact.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds.HPDContact.objects.count(), 5)
-        self.assertEqual(new_update.rows_created, 1)
-        self.assertEqual(new_update.rows_updated, 1)
+
         self.assertEqual(ds.HPDContact.objects.get(
             registrationcontactid="33193103").type, "CorporateOwner")
         changed_record = ds.HPDContact.objects.get(registrationcontactid="33193106")
@@ -419,8 +404,7 @@ class HPDBuildingRecordTests(BaseTest, TestCase):
                                          file_name="mock_hpd_building_records_diff.csv", previous_file_name="mock_hpd_building_records.csv")
         ds.HPDBuildingRecord.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds.HPDBuildingRecord.objects.count(), 7)
-        self.assertEqual(new_update.rows_created, 1)
-        self.assertEqual(new_update.rows_updated, 1)
+
         self.assertEqual(ds.HPDBuildingRecord.objects.get(
             buildingid="859129").housenumber, "0")
         changed_record = ds.HPDBuildingRecord.objects.get(buildingid="510673")
@@ -451,8 +435,7 @@ class TaxLienTests(BaseTest, TestCase):
                                          file_name="mock_tax_liens.csv", previous_file_name="mock_tax_liens.csv")
         ds.TaxLien.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds.TaxLien.objects.count(), 9)
-        self.assertEqual(new_update.rows_created, 9)
-        self.assertEqual(new_update.rows_updated, 0)
+
         self.assertEqual(ds.Property.objects.get(bbl='1001351101').propertyannotation.taxlien, True)
 
 
@@ -480,8 +463,6 @@ class CoreSubsidyRecordTests(BaseTest, TestCase):
                                          file_name="mock_coredatarecords.xlsx", previous_file_name="mock_coredatarecords.xlsx")
         ds.CoreSubsidyRecord.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds.CoreSubsidyRecord.objects.count(), 10)
-        self.assertEqual(new_update.rows_created, 10)
-        self.assertEqual(new_update.rows_updated, 0)
 
 
 class SubsidyJ51Tests(BaseTest, TestCase):
@@ -507,8 +488,6 @@ class SubsidyJ51Tests(BaseTest, TestCase):
                                          file_name="mock_subsidyj51.csv", previous_file_name="mock_subsidyj51.csv")
         ds.SubsidyJ51.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds.SubsidyJ51.objects.count(), 19)
-        self.assertEqual(new_update.rows_created, 19)
-        self.assertEqual(new_update.rows_updated, 0)
 
 
 class Subsidy421aTests(BaseTest, TestCase):
@@ -535,8 +514,6 @@ class Subsidy421aTests(BaseTest, TestCase):
                                          file_name="mock_subsidy421a.csv", previous_file_name="mock_subsidy421a.csv")
         ds.Subsidy421a.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds.Subsidy421a.objects.count(), 10)
-        self.assertEqual(new_update.rows_created, 10)
-        self.assertEqual(new_update.rows_updated, 0)
 
 
 class DOBPermitIssuedLegacyTests(BaseTest, TestCase):
@@ -560,8 +537,6 @@ class DOBPermitIssuedLegacyTests(BaseTest, TestCase):
                                          file_name="mock_dob_permit_issued_legacy_diff.csv", previous_file_name="mock_dob_permit_issued_legacy.csv")
         ds.DOBPermitIssuedLegacy.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds.DOBPermitIssuedLegacy.objects.count(), 10)
-        self.assertEqual(new_update.rows_created, 10)
-        self.assertEqual(new_update.rows_updated, 0)
 
         changed_record = ds.DOBPermitIssuedLegacy.objects.filter(job='123527200', permitsino='3574712')[0]
         self.assertEqual(changed_record.filingstatus, 'RENEWAL')
@@ -577,7 +552,6 @@ class DOBPermitIssuedNowTests(BaseTest, TestCase):
         ds.DOBPermitIssuedNow.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(update.total_rows, 5)
         self.assertEqual(ds.DOBPermitIssuedNow.objects.count(), 5)
-        self.assertEqual(update.rows_created, 5)
 
     def test_seed_record_after_update(self):
         update = self.update_factory(model_name="DOBPermitIssuedNow",
@@ -588,8 +562,6 @@ class DOBPermitIssuedNowTests(BaseTest, TestCase):
                                          file_name="mock_dob_permit_issued_now_diff.csv", previous_file_name="mock_dob_permit_issued_now.csv")
         ds.DOBPermitIssuedNow.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds.DOBPermitIssuedNow.objects.count(), 6)
-        self.assertEqual(new_update.rows_created, 6)
-        self.assertEqual(new_update.rows_updated, 0)
 
         changed_record = ds.DOBPermitIssuedNow.objects.filter(
             jobfilingnumber='B00093657-I1', workpermit='B00093657-I1-SH')[0]
@@ -611,8 +583,7 @@ class DOBPermitIssuedTests(BaseTest, TestCase):
         ds.DOBIssuedPermit.seed_or_update_self(update=update)
         self.assertEqual(ds.DOBIssuedPermit.objects.count(), 10)
         self.assertEqual(update.total_rows, 10)
-        self.assertEqual(update.rows_created, 10)
-        self.assertEqual(update.rows_updated, 0)
+
         self.assertEqual(ds.Property.objects.get(bbl='1').propertyannotation.dobissuedpermits_last30, 5)
         self.assertEqual(ds.Property.objects.get(bbl='1').propertyannotation.dobissuedpermits_lastyear, 10)
         self.assertEqual(ds.Property.objects.get(bbl='1').propertyannotation.dobissuedpermits_last3years, 10)
@@ -644,8 +615,6 @@ class DOBPermitIssuedTests(BaseTest, TestCase):
         self.assertEqual(ds.DOBIssuedPermit.objects.get(key="a1").jobdescription, "B1")
         self.assertEqual(ds.DOBIssuedPermit.objects.get(key="b1").jobdescription, "bye")
         self.assertEqual(update2.total_rows, 22)
-        self.assertEqual(update2.rows_created, 10)
-        self.assertEqual(update2.rows_updated, 12)
 
 
 class DOBPermitFiledTests(BaseTest, TestCase):
@@ -669,8 +638,6 @@ class DOBPermitFiledTests(BaseTest, TestCase):
                                          file_name="mock_dob_permit_filed_legacy_diff.csv", previous_file_name="mock_dob_permit_issued_now.csv")
         ds.DOBLegacyFiledPermit.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds.DOBLegacyFiledPermit.objects.count(), 5)
-        self.assertEqual(new_update.rows_created, 5)
-        self.assertEqual(new_update.rows_updated, 0)
 
         changed_record = ds.DOBLegacyFiledPermit.objects.filter(
             job='421677974')[0]
@@ -701,8 +668,6 @@ class PublicHousingRecordTests(BaseTest, TestCase):
                                          file_name="mock_public_housing_record_diff.csv", previous_file_name="mock_dob_permit_issued_now.csv")
         ds.PublicHousingRecord.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds.PublicHousingRecord.objects.count(), 10)
-        self.assertEqual(new_update.rows_created, 10)
-        self.assertEqual(new_update.rows_updated, 0)
 
         changed_record = ds.PublicHousingRecord.objects.filter(
             address='79GAR WEST 225TH STREET')[0]
