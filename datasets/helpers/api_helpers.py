@@ -59,9 +59,8 @@ def get_annotation_start(params, dataset=None, date_field=''):
         return dates.get_default_annotation_date(dataset, True)
 
 
-def get_annotation_end(params, dataset, date_field=''):
-    dataset_prefix = dataset.__name__.lower() + 's'
-    return params.get(dataset_prefix + '__end', params.get('annotation__end', get_advanced_search_value(params, dataset_prefix, date_field, 'lte') or dates.get_dataset_end_date(dataset, string=False)))
+def get_annotation_end(params, dataset_prefix='', date_field=''):
+    return params.get(dataset_prefix + '__end', params.get('annotation__end', get_advanced_search_value(params, dataset_prefix, date_field, 'lte') or datetime.now().strftime("%Y-%m-%d")))
 
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -91,11 +90,7 @@ def annotated_fields_to_dict(start=None, end=None, dataset=None):
             start = {'__gte': start}
 
     if end:
-        if isinstance(end, str):
-            end = {'__lte': dates.parse_date_string(end)}
-
-        else:
-            end = {'__lte': end}
+        end = {'__lte': datetime.strptime(end, '%Y-%m-%d')}
     return {'dates': tuple(filter(None, [start, end]))}
 
 
@@ -108,7 +103,7 @@ def prefetch_annotated_datasets(queryset, request):
         if dataset == ds.AcrisRealMaster:
             dataset_prefix = 'acrisreallegal'
             annotation_dict = annotated_fields_to_dict(dataset=dataset, start=get_annotation_start(
-                params, dataset, dataset.QUERY_DATE_KEY), end=get_annotation_end(params, dataset, dataset.QUERY_DATE_KEY))
+                params, dataset, dataset.QUERY_DATE_KEY), end=get_annotation_end(params, '', dataset.QUERY_DATE_KEY))
 
             field_path = 'documentid__' + dataset.QUERY_DATE_KEY
             date_filters = filter_helpers.value_dict_to_date_filter_dict(field_path, annotation_dict)
@@ -119,7 +114,7 @@ def prefetch_annotated_datasets(queryset, request):
         elif dataset == ds.LisPenden:
             dataset_prefix = dataset.__name__.lower()
             annotation_dict = annotated_fields_to_dict(dataset=dataset, start=get_annotation_start(
-                params, dataset, dataset.QUERY_DATE_KEY), end=get_annotation_end(params, dataset, dataset.QUERY_DATE_KEY))
+                params, dataset, dataset.QUERY_DATE_KEY), end=get_annotation_end(params, '', dataset.QUERY_DATE_KEY))
 
             field_path = dataset.QUERY_DATE_KEY
             date_filters = filter_helpers.value_dict_to_date_filter_dict(field_path, annotation_dict)
@@ -131,7 +126,7 @@ def prefetch_annotated_datasets(queryset, request):
         else:
             dataset_prefix = dataset.__name__.lower()
             annotation_dict = annotated_fields_to_dict(dataset=dataset, start=get_annotation_start(
-                params, dataset, dataset.QUERY_DATE_KEY), end=get_annotation_end(params, dataset, dataset.QUERY_DATE_KEY))
+                params, dataset, dataset.QUERY_DATE_KEY), end=get_annotation_end(params, '', dataset.QUERY_DATE_KEY))
 
             field_path = dataset.QUERY_DATE_KEY
             date_filters = filter_helpers.value_dict_to_date_filter_dict(field_path, annotation_dict)

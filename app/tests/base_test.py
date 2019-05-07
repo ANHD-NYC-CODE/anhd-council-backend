@@ -91,7 +91,7 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         return factory
 
     def dataset_factory(self, name=None, **kwargs):
-        return c_models.Dataset.objects.create(name=name, model_name=name, **kwargs)
+        return c_models.Dataset.objects.create(name=name, model_name=name)
 
     def datafile_factory(self, dataset=None, **kwargs):
         return c_models.DataFile.objects.create(dataset=dataset, **kwargs)

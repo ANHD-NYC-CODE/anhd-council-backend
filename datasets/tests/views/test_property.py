@@ -5,9 +5,7 @@ from app.tests.base_test import BaseTest
 from datasets import models as ds
 from datasets import views as v
 import datetime
-from dateutil.relativedelta import relativedelta
 from freezegun import freeze_time
-
 
 import logging
 logging.disable(logging.CRITICAL)
@@ -337,17 +335,6 @@ class PropertyViewTests(BaseTest, TestCase):
     # summary-annotated serializer
     @freeze_time("2019-01-01")
     def test_results_with_annotate_datasets_1(self):
-        self.dataset_factory(name='HPDViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HPDComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='ECBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBFiledPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBIssuedPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='Eviction', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HousingLitigation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealMaster', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealLegal', api_last_updated=datetime.datetime.today())
         # kitchen sink
         council = self.council_factory(id=1)
         property1 = self.property_factory(bbl='1', council=council)
@@ -389,30 +376,18 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(content[0]['bbl'], '1')
         self.assertEqual(content[0]['unitsrentstabilized'], 10)
         self.assertEqual(content[0]['hpdviolations__01/01/2015-01/01/2019'], 10)
-        self.assertEqual(content[0]['hpdcomplaints__01/01/2018-12/31/2018'.format(now_date)], 5)
+        self.assertEqual(content[0]['hpdcomplaints__01/01/2018-01/01/2019'.format(now_date)], 5)
         self.assertEqual(content[0]['dobviolations__01/01/2018-01/01/2019'.format(now_date)], 5)
         self.assertEqual(content[0]['dobcomplaints__01/01/2018-01/01/2019'.format(now_date)], 5)
         self.assertEqual(content[0]['ecbviolations__01/01/2018-01/01/2019'.format(now_date)], 5)
         self.assertEqual(content[0]['dobfiledpermits__01/01/2018-01/01/2019'.format(now_date)], 5)
         self.assertEqual(content[0]['evictions__01/01/2018-01/01/2019'.format(now_date)], 5)
         # self.assertEqual(content[0]['dobissuedpermits'], 5)
-        self.assertEqual(content[0]['acrisrealmasters__01/01/2018-12/31/2018'.format(now_date)], 1)
+        self.assertEqual(content[0]['acrisrealmasters__01/01/2018-01/01/2019'.format(now_date)], 1)
 
     # summary-annotated serializer
     @freeze_time("2019-01-01")
     def test_results_with_annotate_datasets_2(self):
-        self.dataset_factory(name='HPDViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HPDComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='ECBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBFiledPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBIssuedPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='Eviction', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HousingLitigation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealMaster', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealLegal', api_last_updated=datetime.datetime.today())
-
         # advanced query params
         council = self.council_factory(id=1)
         property1 = self.property_factory(bbl='1', council=council)
@@ -420,7 +395,7 @@ class PropertyViewTests(BaseTest, TestCase):
 
         for i in range(5):
             self.hpdviolation_factory(property=property1, approveddate="2019-01-01")
-            self.hpdcomplaint_factory(property=property1, receiveddate="2018-12-01")
+            self.hpdcomplaint_factory(property=property1, receiveddate="2019-01-01")
             self.dobviolation_factory(property=property1, issuedate="2019-01-01")
             self.dobcomplaint_factory(property=property1, dateentered="2019-01-01")
             self.ecbviolation_factory(property=property1, issuedate="2019-01-01")
@@ -443,7 +418,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['bbl'], '1')
         self.assertEqual(content[0]['hpdviolations__01/01/2017-01/01/2019'], 5)
-        self.assertEqual(content[0]['hpdcomplaints__12/01/2018-12/31/2018'], 5)
+        self.assertEqual(content[0]['hpdcomplaints__12/01/2018-01/01/2019'], 5)
         self.assertEqual(content[0]['dobviolations__01/01/2018-01/01/2019'], 5)
         self.assertEqual(content[0]['dobcomplaints__12/02/2018-01/01/2019'], 5)
         self.assertEqual(content[0]['ecbviolations__12/02/2018-01/01/2019'], 5)
@@ -453,18 +428,6 @@ class PropertyViewTests(BaseTest, TestCase):
     # summary-annotated serializer
     @freeze_time("2019-01-01")
     def test_results_with_annotate_datasets_3(self):
-        self.dataset_factory(name='HPDViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HPDComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='ECBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBFiledPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBIssuedPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='Eviction', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HousingLitigation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealMaster', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealLegal', api_last_updated=datetime.datetime.today())
-
         # advanced query params
         council = self.council_factory(id=1)
         property1 = self.property_factory(bbl='1', council=council)
@@ -496,7 +459,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(content[0]['bbl'], '1')
 
         self.assertEqual(content[0]['hpdviolations__01/01/2017-01/01/2019'], 5)
-        self.assertEqual(content[0]['hpdcomplaints__12/01/2018-12/31/2018'], None)
+        self.assertEqual(content[0]['hpdcomplaints__12/01/2018-01/01/2019'], None)
         self.assertEqual(content[0]['dobviolations__12/02/2018-01/01/2019'], None)
         self.assertEqual(content[0]['dobcomplaints__12/02/2018-01/01/2019'], None)
         self.assertEqual(content[0]['ecbviolations__12/02/2018-01/01/2019'], None)
@@ -507,18 +470,6 @@ class PropertyViewTests(BaseTest, TestCase):
 
     @freeze_time("2019-01-01")
     def test_results_with_annotate_datasets_4(self):
-        self.dataset_factory(name='HPDViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HPDComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='ECBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBFiledPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBIssuedPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='Eviction', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HousingLitigation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealMaster', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealLegal', api_last_updated=datetime.datetime.today())
-
         # advanced query params
         council = self.council_factory(id=1)
         property1 = self.property_factory(bbl='1', council=council)
@@ -558,18 +509,6 @@ class PropertyViewTests(BaseTest, TestCase):
 
     @freeze_time("2019-01-01")
     def test_results_with_annotate_datasets_5(self):
-        self.dataset_factory(name='HPDViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HPDComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='ECBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBFiledPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBIssuedPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='Eviction', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HousingLitigation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealMaster', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealLegal', api_last_updated=datetime.datetime.today())
-
         # Cached, unauthorized
         council = self.council_factory(id=1)
         property1 = self.property_factory(bbl='1', council=council)
@@ -605,18 +544,6 @@ class PropertyViewTests(BaseTest, TestCase):
 
     @freeze_time("2019-01-01")
     def test_results_with_annotate_datasets_6(self):
-        self.dataset_factory(name='HPDViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HPDComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='ECBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBFiledPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBIssuedPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='Eviction', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HousingLitigation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealMaster', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealLegal', api_last_updated=datetime.datetime.today())
-
         # Cached, authorized
         council = self.council_factory(id=1)
         property1 = self.property_factory(bbl='1', council=council)
@@ -639,7 +566,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(len(pre_cache_content), 1)
         self.assertEqual(pre_cache_content[0]['bbl'], '1')
 
-        self.assertEqual(pre_cache_content[0]['lispendens__01/01/2018-12/31/2018'], 5)
+        self.assertEqual(pre_cache_content[0]['lispendens__01/01/2018-{}'.format(now_date)], 5)
 
         post_cache_query = '/properties/?summary=true&summary-type=short-annotated&annotation__start=2018-01-01'
         post_cache_response = self.client.get(post_cache_query, format="json")
@@ -651,26 +578,12 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(post_cache_response.status_code, 200)
         self.assertEqual(len(post_cache_content), 1)
         self.assertEqual(post_cache_content[0]['bbl'], '1')
-        self.assertEqual(post_cache_content[0]['lispendens__01/01/2018-12/31/2018'], 5)
+        self.assertEqual(post_cache_content[0]['lispendens__01/01/2018-{}'.format(now_date)], 5)
 
     # summary-annotated serializer
     # with 'recent' annotation start
     @freeze_time("2019-01-05")
     def test_results_with_annotate_datasets_7(self):
-        self.dataset_factory(name='HPDViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HPDComplaint', api_last_updated=datetime.datetime.today().replace(
-            day=1) - relativedelta(months=1))
-        self.dataset_factory(name='DOBComplaint', api_last_updated=datetime.datetime.today().replace(
-            day=1))
-        self.dataset_factory(name='DOBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='ECBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBFiledPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBIssuedPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='Eviction', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HousingLitigation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealMaster', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealLegal', api_last_updated=datetime.datetime.today())
-
         # advanced query params
         council = self.council_factory(id=1)
         property1 = self.property_factory(bbl='1', council=council)
@@ -711,14 +624,11 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(content[0]['bbl'], '1')
 
         self.assertEqual(content[0]['hpdviolations_recent__12/06/2018-01/05/2019'], 0)
+        self.assertEqual(content[0]['hpdcomplaints_recent__12/01/2018-01/05/2019'], 5)
+        self.assertEqual(content[0]['housinglitigations_recent__12/01/2018-01/05/2019'], 5)
+        self.assertEqual(content[0]['acrisrealmasters_recent__12/01/2018-01/05/2019'], 1)
 
-        # starts 1 month and on the 1st before api_last_updated field
-        self.assertEqual(content[0]['hpdcomplaints_recent__11/01/2018-11/30/2018'], 5)
-        self.assertEqual(content[0]['housinglitigations_recent__12/01/2018-12/31/2018'], 5)
-        self.assertEqual(content[0]['acrisrealmasters_recent__12/01/2018-12/31/2018'], 1)
-
-        self.assertEqual(content[0]['dobcomplaints_recent__12/06/2018-01/01/2019'],
-                         0)  # last api update on 1st of month
+        self.assertEqual(content[0]['dobcomplaints_recent__12/06/2018-01/05/2019'], 0)
         self.assertEqual(content[0]['ecbviolations_recent__12/06/2018-01/05/2019'], 5)
         self.assertEqual(content[0]['dobfiledpermits_recent__12/06/2018-01/05/2019'], 5)
         self.assertEqual(content[0]['evictions_recent__12/06/2018-01/05/2019'], 5)
@@ -729,18 +639,6 @@ class PropertyViewTests(BaseTest, TestCase):
     # with 'lastyear' annotation start
     @freeze_time("2019-01-05")
     def test_results_with_annotate_datasets_8(self):
-        self.dataset_factory(name='HPDViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HPDComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='ECBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBFiledPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBIssuedPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='Eviction', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HousingLitigation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealMaster', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealLegal', api_last_updated=datetime.datetime.today())
-
         # advanced query params
         council = self.council_factory(id=1)
         property1 = self.property_factory(bbl='1', council=council)
@@ -761,25 +659,12 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['bbl'], '1')
         self.assertEqual(content[0]['hpdviolations_lastyear__01/05/2018-01/05/2019'], 5)
-        self.assertEqual(content[0]['hpdcomplaints_lastyear__01/05/2018-12/31/2018'], 5)
+        self.assertEqual(content[0]['hpdcomplaints_lastyear__01/05/2018-01/05/2019'], 5)
 
     # summary-annotated serializer
     # with 'last3years' annotation start
     @freeze_time("2019-01-05")
     def test_results_with_annotate_datasets_9(self):
-
-        self.dataset_factory(name='HPDViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HPDComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='ECBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBFiledPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBIssuedPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='Eviction', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HousingLitigation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealMaster', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealLegal', api_last_updated=datetime.datetime.today())
-
         # advanced query params
         council = self.council_factory(id=1)
         property1 = self.property_factory(bbl='1', council=council)
@@ -801,24 +686,12 @@ class PropertyViewTests(BaseTest, TestCase):
 
         self.assertEqual(content[0]['bbl'], '1')
         self.assertEqual(content[0]['hpdviolations_last3years__01/05/2016-01/05/2019'], 5)
-        self.assertEqual(content[0]['hpdcomplaints_last3years__01/05/2016-12/31/2018'], 5)
+        self.assertEqual(content[0]['hpdcomplaints_last3years__01/05/2016-01/05/2019'], 5)
 
     # summary-annotated serializer
     # annotation_start=full - sending all 3 annotation fields
     @freeze_time("2019-01-01")
     def test_results_with_annotate_datasets_10(self):
-        self.dataset_factory(name='HPDViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HPDComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='ECBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBFiledPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBIssuedPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='Eviction', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HousingLitigation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealMaster', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealLegal', api_last_updated=datetime.datetime.today())
-
         # kitchen sink
         council = self.council_factory(id=1)
         property1 = self.property_factory(bbl='1', council=council)
@@ -855,8 +728,8 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(content[0]['latestsaleprice'], 1000)
 
         self.assertEqual(content[0]['hpdviolations_recent__12/02/2018-01/01/2019'], 5)
-        self.assertEqual(content[0]['hpdcomplaints_recent__12/01/2018-12/31/2018'], 5)
+        self.assertEqual(content[0]['hpdcomplaints_recent__12/01/2018-01/01/2019'.format(now_date)], 5)
         self.assertEqual(content[0]['hpdviolations_lastyear__01/01/2018-01/01/2019'], 10)
-        self.assertEqual(content[0]['hpdcomplaints_lastyear__01/01/2018-12/31/2018'], 10)
+        self.assertEqual(content[0]['hpdcomplaints_lastyear__01/01/2018-01/01/2019'.format(now_date)], 10)
         self.assertEqual(content[0]['hpdviolations_last3years__01/01/2016-01/01/2019'], 15)
-        self.assertEqual(content[0]['hpdcomplaints_last3years__01/01/2016-12/31/2018'], 15)
+        self.assertEqual(content[0]['hpdcomplaints_last3years__01/01/2016-01/01/2019'.format(now_date)], 15)

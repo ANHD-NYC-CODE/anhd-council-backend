@@ -4,11 +4,11 @@ from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.utils.validation_filters import is_null, is_older_than
 from django.db.models import OuterRef, Subquery
 from datasets import models as ds
+import logging
 from django.dispatch import receiver
 from core.tasks import async_download_and_update
 
 
-import logging
 logger = logging.getLogger('app')
 
 
