@@ -67,6 +67,9 @@ def get_last_month_since_api_update(dataset, string=False):
         logger.debug(e)
         return get_last_month(string)
 
+    if not date:
+        return get_last_month(string)
+
     if string:
         return (date).strftime("%m/%d/%Y")
     else:
