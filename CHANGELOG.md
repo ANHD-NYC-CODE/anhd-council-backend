@@ -34,3 +34,7 @@
 
 ### V1.0.0b1.0.26
 - annotate tables based on api_last_updated date
+
+### V1.0.0b1.0.27
+- refactor annotation serializer to generate fields once, rather than on each representation object
+- refactor property annotations for late datasets to use new api_last_updated date method
