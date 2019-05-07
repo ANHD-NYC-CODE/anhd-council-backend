@@ -6,7 +6,7 @@ from core.utils.database import execute
 from django.dispatch import receiver
 from datasets import models as ds
 from core.tasks import async_create_update
-
+from datetime import datetime
 import logging
 
 logger = logging.getLogger('app')
@@ -107,6 +107,10 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
 
         logger.debug('annotating properties for {}', self.__name__)
         self.annotate_properties()
+
+        dataset = self.get_dataset()
+        dataset.api_last_updated = datetime.today()
+        dataset.save()
 
     @classmethod
     def annotate_properties(self):

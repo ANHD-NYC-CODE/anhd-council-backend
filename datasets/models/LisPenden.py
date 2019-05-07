@@ -103,6 +103,9 @@ class LisPenden(BaseDatasetModel, models.Model):
         self.seed_with_upsert(**kwargs)
         logger.debug('annotating properties for {}', self.__name__)
         self.mark_foreclosure_with_creditor()
+        dataset = self.get_dataset()
+        dataset.api_last_updated = datetime.today()
+        dataset.save()
 
     @classmethod
     def annotate_properties(self):
