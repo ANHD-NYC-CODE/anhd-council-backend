@@ -31,6 +31,3 @@
 ### V1.0.0b1.0.25
 - changed all models using set_diff updates to seed_with_upsert
 - added a source field to the lispenden model
-
-### V1.0.0b1.0.26
-- annotate tables based on api_last_updated date
