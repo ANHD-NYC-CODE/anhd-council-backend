@@ -37,6 +37,9 @@ def get_dataset_end_date(dataset, string=False):
         date = datetime.today()
         logger.debug(e)
 
+    if not date:
+        date = datetime.today()
+
     if string:
         return date.strftime("%m/%d/%Y")
     else:
