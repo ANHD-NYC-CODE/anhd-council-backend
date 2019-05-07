@@ -12,7 +12,7 @@ from rest_framework_extensions.mixins import NestedViewSetMixin
 
 from django.core.cache import cache
 from datasets.helpers.cache_helpers import cache_request_path
-from datasets.helpers.api_helpers import handle_property_summaries, properties_by_housingtype, ApplicationViewSet
+from datasets.helpers.api_helpers import build_annotated_fields, handle_property_summaries, properties_by_housingtype, ApplicationViewSet
 from datasets.serializers import property_query_serializer
 from datasets.filters import PropertyFilter, AdvancedPropertyFilter
 from datasets import serializers as serial
@@ -33,6 +33,15 @@ class PropertyViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyM
     filter_backends = (DjangoFilterBackend,)
     filterset_class = PropertyFilter
     # permission_classes = (IsAuthenticated,)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+
+        if 'summary' in self.request.query_params and self.request.query_params['summary'] == 'true':
+            if 'summary-type' in self.request.query_params and self.request.query_params['summary-type'].lower() == 'short-annotated':
+                # calculate dynamic annotation fields here.
+                context['fields'] = build_annotated_fields(self.request)
+        return context
 
     @cache_request_path()
     def list(self, request, *args, **kwargs):

@@ -110,7 +110,7 @@ class LisPenden(BaseDatasetModel, models.Model):
         records = []
         logger.debug('annotating properties for: {}'.format(self.__name__))
 
-        last30 = dates.get_last_month(string=False)
+        last30 = dates.get_last_month_since_api_update(self.get_dataset(), string=False)
         lastyear = dates.get_last_year(string=False)
         last3years = dates.get_last3years(string=False)
 

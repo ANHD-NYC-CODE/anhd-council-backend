@@ -168,6 +168,10 @@ class PropertySerializer(serializers.ModelSerializer):
 
 
 class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.Property
+        fields = (ds.Property.SHORT_SUMMARY_FIELDS +
+                  ('nycha', 'subsidyprograms', 'subsidyj51', 'subsidy421a', 'unitsrentstabilized', 'latestsaleprice'))
 
     subsidyprograms = serializers.SerializerMethodField()
     subsidyj51 = serializers.SerializerMethodField()
@@ -212,38 +216,6 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
         except Exception as e:
             return None
 
-    class Meta:
-        model = ds.Property
-        fields = (ds.Property.SHORT_SUMMARY_FIELDS +
-                  ('nycha', 'subsidyprograms', 'subsidyj51', 'subsidy421a', 'unitsrentstabilized', 'latestsaleprice'))
-
-    def generate_date_key(self, params, dataset, label_prefix='', date_field=''):
-        annotation_start = get_annotation_start(
-            params, dataset, date_field)
-
-        if isinstance(annotation_start, str):
-            start_date = dates.parse_date_string(annotation_start).strftime("%m/%d/%Y")
-        else:
-            start_date = annotation_start.strftime("%m/%d/%Y")
-
-        end_date = dates.parse_date_string(get_annotation_end(
-            params, dataset, date_field)).strftime("%m/%d/%Y")
-
-        return label_prefix + '__' + '-'.join(filter(None, [start_date, end_date]))
-
-    def generate_recent_date_key(self, dataset):
-        dataset_prefix = dataset.__name__.lower() + 's'
-
-        return dataset_prefix + '_recent__' + '-'.join([dates.get_recent_dataset_start(dataset, string=True), dates.get_dataset_end_date(dataset, string=True)])
-
-    def generate_lastyear_date_key(self, dataset):
-        dataset_prefix = dataset.__name__.lower() + 's'
-        return dataset_prefix + '_lastyear__' + '-'.join([dates.get_last_year(string=True), dates.get_dataset_end_date(dataset, string=True)])
-
-    def generate_last3years_date_key(self, dataset):
-        dataset_prefix = dataset.__name__.lower() + 's'
-        return dataset_prefix + '_last3years__' + '-'.join([dates.get_last3years(string=True), dates.get_dataset_end_date(dataset, string=True)])
-
     def to_representation(self, obj):
         rep = super(serializers.ModelSerializer, self).to_representation(obj)
         params = self.context['request'].query_params
@@ -251,34 +223,44 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
         # if is_authenticated(self.context['request']):
         #     DATASETS.append(ds.LisPenden)
 
+        def get_context_field(dataset_prefix, date_label=None):
+            for field in self.context['fields']:
+                if date_label:
+                    if dataset_prefix in field and date_label in field:
+                        return field
+                else:
+                    if dataset_prefix in field:
+                        return field
+            return None
+
         for model_name in settings.ANNOTATED_DATASETS:
             dataset = getattr(ds, model_name)
             dataset_prefix = dataset.__name__.lower()
             if 'annotation__start' in params and params['annotation__start'] == 'recent':
-                rep[self.generate_date_key(params, dataset, dataset_prefix + 's_recent', dataset.QUERY_DATE_KEY)
-                    ] = getattr(obj.propertyannotation, dataset_prefix + 's_last30')
-            elif 'annotation__start' in params and params['annotation__start'] == 'lastyear':
-                rep[self.generate_date_key(params, dataset, dataset_prefix + 's_lastyear', dataset.QUERY_DATE_KEY)
-                    ] = getattr(obj.propertyannotation, dataset_prefix + 's_lastyear')
-            elif 'annotation__start' in params and params['annotation__start'] == 'last3years':
-                rep[self.generate_date_key(params, dataset, dataset_prefix + 's_last3years', dataset.QUERY_DATE_KEY)
-                    ] = getattr(obj.propertyannotation, dataset_prefix + 's_last3years')
-            elif 'annotation__start' in params and params['annotation__start'] == 'full':
-                rep[self.generate_recent_date_key(dataset)] = getattr(
+                rep[get_context_field(dataset_prefix, 'recent')] = getattr(
                     obj.propertyannotation, dataset_prefix + 's_last30')
-                rep[self.generate_lastyear_date_key(dataset)] = getattr(
+            elif 'annotation__start' in params and params['annotation__start'] == 'lastyear':
+                rep[get_context_field(dataset_prefix, 'lastyear')] = getattr(
                     obj.propertyannotation, dataset_prefix + 's_lastyear')
-                rep[self.generate_last3years_date_key(dataset)] = getattr(
+            elif 'annotation__start' in params and params['annotation__start'] == 'last3years':
+                rep[get_context_field(dataset_prefix, 'last3years')] = getattr(
                     obj.propertyannotation, dataset_prefix + 's_last3years')
+            elif 'annotation__start' in params and params['annotation__start'] == 'full':
+                rep[get_context_field(dataset_prefix, 'recent')] = getattr(
+                    obj.propertyannotation, dataset_prefix + 's_last30')
+                rep[get_context_field(dataset_prefix, 'lastyear')] = getattr(
+                    obj.propertyannotation, dataset_prefix + 's_lastyear')
+                rep[get_context_field(dataset_prefix, 'last3years')] = getattr(
+                    obj.propertyannotation, dataset_prefix + 's_last3years')
+
             elif hasattr(obj, dataset_prefix + 's'):
-                rep[self.generate_date_key(params, dataset, dataset_prefix + 's', dataset.QUERY_DATE_KEY)
-                    ] = getattr(obj, dataset_prefix + 's')
+                rep[get_context_field(dataset_prefix)] = getattr(obj, dataset_prefix + 's')
             elif dataset == ds.AcrisRealMaster:
-                rep[self.generate_date_key(params, dataset, dataset_prefix + 's', dataset.QUERY_DATE_KEY)] = getattr(obj, 'acrisreallegal_set').filter(documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES).filter(**{'documentid__' + dataset.QUERY_DATE_KEY + '__gte': get_annotation_start(
+                rep[get_context_field(dataset_prefix)] = getattr(obj, 'acrisreallegal_set').filter(documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES).filter(**{'documentid__' + dataset.QUERY_DATE_KEY + '__gte': get_annotation_start(
                     params, dataset, dataset.QUERY_DATE_KEY), 'documentid__' + dataset.QUERY_DATE_KEY + '__lte': get_annotation_end(params, dataset, dataset.QUERY_DATE_KEY)}).count()
             else:
                 # apply default annotation start date, advanced search starts, etc
-                rep[self.generate_date_key(params, dataset, dataset_prefix + 's', dataset.QUERY_DATE_KEY)] = getattr(obj, dataset_prefix + '_set').filter(**{dataset.QUERY_DATE_KEY + '__gte': get_annotation_start(
+                rep[get_context_field(dataset_prefix)] = getattr(obj, dataset_prefix + '_set').filter(**{dataset.QUERY_DATE_KEY + '__gte': get_annotation_start(
                     params, dataset, dataset.QUERY_DATE_KEY), dataset.QUERY_DATE_KEY + '__lte': get_annotation_end(params, dataset, dataset.QUERY_DATE_KEY)}).count()
 
         return rep

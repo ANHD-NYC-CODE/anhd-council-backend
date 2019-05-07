@@ -143,13 +143,66 @@ def prefetch_annotated_datasets(queryset, request):
     return queryset
 
 
-# def prefetch_housingtype_sets(queryset):
+def prefetch_housingtype_sets(queryset):
     return queryset.prefetch_related(Prefetch(
         'publichousingrecord_set', queryset=ds.PublicHousingRecord.objects.only('pk', 'bbl'))).prefetch_related(Prefetch(
             'rentstabilizationrecord', queryset=ds.RentStabilizationRecord.objects.only('pk', 'ucbbl'))).prefetch_related(Prefetch(
                 'coresubsidyrecord_set', queryset=ds.CoreSubsidyRecord.objects.only('pk', 'bbl'))).prefetch_related(Prefetch(
                     'subsidyj51_set', queryset=ds.SubsidyJ51.objects.only('pk', 'bbl'))).prefetch_related(Prefetch(
                         'subsidy421a_set', queryset=ds.Subsidy421a.objects.only('pk', 'bbl'))).only(*ds.Property.SHORT_SUMMARY_FIELDS)
+
+
+def build_annotated_fields(request):
+    def generate_date_key(params, dataset, label_prefix='', date_field=''):
+        annotation_start = get_annotation_start(
+            params, dataset, date_field)
+
+        if isinstance(annotation_start, str):
+            start_date = dates.parse_date_string(annotation_start).strftime("%m/%d/%Y")
+        else:
+            start_date = annotation_start.strftime("%m/%d/%Y")
+
+        end_date = dates.parse_date_string(get_annotation_end(
+            params, dataset, date_field)).strftime("%m/%d/%Y")
+
+        return label_prefix + '__' + '-'.join(filter(None, [start_date, end_date]))
+
+    def generate_recent_date_key(dataset):
+        dataset_prefix = dataset.__name__.lower() + 's'
+
+        return dataset_prefix + '_recent__' + '-'.join([dates.get_recent_dataset_start(dataset, string=True), dates.get_dataset_end_date(dataset, string=True)])
+
+    def generate_lastyear_date_key(dataset):
+        dataset_prefix = dataset.__name__.lower() + 's'
+        return dataset_prefix + '_lastyear__' + '-'.join([dates.get_last_year(string=True), dates.get_dataset_end_date(dataset, string=True)])
+
+    def generate_last3years_date_key(dataset):
+        dataset_prefix = dataset.__name__.lower() + 's'
+        return dataset_prefix + '_last3years__' + '-'.join([dates.get_last3years(string=True), dates.get_dataset_end_date(dataset, string=True)])
+
+    fields_list = []
+    params = request.query_params
+    for model_name in settings.ANNOTATED_DATASETS:
+        dataset = getattr(ds, model_name)
+        dataset_prefix = dataset.__name__.lower()
+        if 'annotation__start' in params and params['annotation__start'] == 'recent':
+            fields_list.append(generate_date_key(params, dataset, dataset_prefix + 's_recent', dataset.QUERY_DATE_KEY)
+                               )
+        elif 'annotation__start' in params and params['annotation__start'] == 'lastyear':
+            fields_list.append(generate_date_key(params, dataset, dataset_prefix + 's_lastyear', dataset.QUERY_DATE_KEY)
+                               )
+        elif 'annotation__start' in params and params['annotation__start'] == 'last3years':
+            fields_list.append(generate_date_key(params, dataset, dataset_prefix + 's_last3years', dataset.QUERY_DATE_KEY)
+                               )
+        elif 'annotation__start' in params and params['annotation__start'] == 'full':
+            fields_list.append(generate_recent_date_key(dataset))
+            fields_list.append(generate_lastyear_date_key(dataset))
+            fields_list.append(generate_last3years_date_key(dataset))
+
+        else:
+            # apply default annotation start date, advanced search starts, etc
+            fields_list.append(generate_date_key(params, dataset, dataset_prefix + 's', dataset.QUERY_DATE_KEY))
+    return fields_list
 
 
 def handle_property_summaries(self, request, *args, **kwargs):
@@ -161,7 +214,6 @@ def handle_property_summaries(self, request, *args, **kwargs):
             self.queryset = self.queryset.select_related('propertyannotation')
             self.serializer_class = serial.PropertyShortSummarySerializer
         elif 'summary-type' in request.query_params and request.query_params['summary-type'].lower() == 'short-annotated':
-            # self.queryset = prefetch_housingtype_sets(self.queryset)
             self.queryset = self.queryset.select_related('propertyannotation')
             # SINGLE-QUERY METHOD CHAIN
             if 'annotation__start' not in request.query_params:
