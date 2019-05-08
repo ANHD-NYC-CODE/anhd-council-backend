@@ -254,15 +254,17 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
                     obj.propertyannotation, dataset_prefix + 's_last3years')
 
             elif hasattr(obj, dataset_prefix + 's'):
+                # annotated from advanced search
                 rep[get_context_field(dataset_prefix)] = getattr(obj, dataset_prefix + 's')
             elif dataset == ds.AcrisRealMaster:
                 rep[get_context_field(dataset_prefix)] = getattr(obj, 'acrisreallegal_set').filter(documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES).filter(**{'documentid__' + dataset.QUERY_DATE_KEY + '__gte': get_annotation_start(
                     params, dataset, dataset.QUERY_DATE_KEY), 'documentid__' + dataset.QUERY_DATE_KEY + '__lte': get_annotation_end(params, dataset, dataset.QUERY_DATE_KEY)}).count()
             else:
-                # apply default annotation start date, advanced search starts, etc
+                # apply default annotation start date, default advanced search starts, etc
                 rep[get_context_field(dataset_prefix)] = getattr(obj, dataset_prefix + '_set').filter(**{dataset.QUERY_DATE_KEY + '__gte': get_annotation_start(
                     params, dataset, dataset.QUERY_DATE_KEY), dataset.QUERY_DATE_KEY + '__lte': get_annotation_end(params, dataset, dataset.QUERY_DATE_KEY)}).count()
-
+                # rep[get_context_field(dataset_prefix, 'recent')] = getattr(
+                #     obj.propertyannotation, dataset_prefix + 's_last30')
         return rep
 
 
