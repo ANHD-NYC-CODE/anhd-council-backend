@@ -538,8 +538,10 @@ class PropertyViewTests(BaseTest, TestCase):
             self.hpdviolation_factory(property=property2, approveddate="2010-01-01")
         for i in range(1):
             self.dobviolation_factory(property=property2, issuedate="2018-01-01")
+            self.acrislegal_factory(property=property2, master=self.acrismaster_factory(
+                documentid='1', docdate="2018-12-01", doctype="DEED", docamount=1))
 
-        query = '/properties/?housingtype=all&q=*condition_0=OR+filter_0=hpdviolations__count__gte=5,hpdviolations__approveddate__gte=2017-01-01+filter_1=dobviolations__count__gte=5,dobviolations__issuedate__gte=2018-01-01&summary=true&summary-type=short-annotated'
+        query = '/properties/?housingtype=all&q=*condition_0=OR+filter_0=hpdviolations__count__gte=5,hpdviolations__approveddate__gte=2017-01-01+filter_1=acrisreallegals__documentid__count__gte=1,acrisreallegals__documentid__docdate__gte=2018-01-01+filter_2=dobviolations__count__gte=5,dobviolations__issuedate__gte=2018-01-01&summary=true&summary-type=short-annotated'
         response = self.client.get(query, format="json")
 
         content = response.data
@@ -551,10 +553,12 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(content[0]['bbl'], '1')
         self.assertEqual(content[0]['hpdviolations__01/01/2017-{}'.format(now_date)], None)
         self.assertEqual(content[0]['dobviolations__01/01/2018-{}'.format(now_date)], 5)
+        self.assertEqual(content[0]['ecbviolations__12/02/2018-{}'.format(now_date)], None)
 
         self.assertEqual(content[1]['bbl'], '2')
         self.assertEqual(content[1]['hpdviolations__01/01/2017-{}'.format(now_date)], 5)
         self.assertEqual(content[1]['dobviolations__01/01/2018-{}'.format(now_date)], 1)
+        self.assertEqual(content[1]['acrisrealmasters__01/01/2018-12/31/2018'], 1)
 
     @freeze_time("2019-01-01")
     def test_results_with_annotate_datasets_5(self):

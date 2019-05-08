@@ -17,53 +17,6 @@ import re
 logger = logging.getLogger('app')
 
 
-def get_advanced_search_value(params, dataset_prefix=None, date_field='', date_comparison='gte'):
-    if not dataset_prefix:
-        return None
-    if 'q' in params:
-        q = params['q']
-        reg = r'{}([^(,| )]*)'.format(dataset_prefix)
-        matches = re.findall(reg, q)
-
-        if len(matches) > 0:
-            date_match = next((x for x in matches if "{}__{}".format(date_field, date_comparison) in x), None)
-            if date_match:
-                return date_match.split('=')[1]
-
-    return None
-
-
-def get_annotation_start(params, dataset=None, date_field=''):
-    dataset_prefix = dataset.__name__.lower() + 's'
-
-    start = dates.get_default_annotation_date(dataset, True)
-    if dataset_prefix + '__start' in params:
-        start = params.get(dataset_prefix + '__start')
-    elif 'annotation__start' in params:
-        if params['annotation__start'] == 'recent':
-            start = dates.get_recent_dataset_start(dataset, string=False)
-        elif params['annotation__start'] == 'lastyear':
-            start = dates.get_last_year(string=False)
-        elif params['annotation__start'] == 'last3years':
-            start = dates.get_last3years(string=False)
-        elif params['annotation__start'] == 'full':
-            start = dates.get_recent_dataset_start(dataset, string=False)
-        else:
-            start = params['annotation__start']
-    elif 'q' in params:
-        start = get_advanced_search_value(params, dataset_prefix, date_field, 'gte')
-
-    if start:
-        return start
-    else:
-        return dates.get_default_annotation_date(dataset, True)
-
-
-def get_annotation_end(params, dataset, date_field=''):
-    dataset_prefix = dataset.__name__.lower() + 's'
-    return params.get(dataset_prefix + '__end', params.get('annotation__end', get_advanced_search_value(params, dataset_prefix, date_field, 'lte') or dates.get_dataset_end_date(dataset, string=False)))
-
-
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 100
 
@@ -97,6 +50,15 @@ def annotated_fields_to_dict(start=None, end=None, dataset=None):
         else:
             end = {'__lte': end}
     return {'dates': tuple(filter(None, [start, end]))}
+
+
+def prefetch_housingtype_sets(queryset):
+    return queryset.prefetch_related(Prefetch(
+        'publichousingrecord_set', queryset=ds.PublicHousingRecord.objects.only('pk', 'bbl'))).prefetch_related(Prefetch(
+            'rentstabilizationrecord', queryset=ds.RentStabilizationRecord.objects.only('pk', 'ucbbl'))).prefetch_related(Prefetch(
+                'coresubsidyrecord_set', queryset=ds.CoreSubsidyRecord.objects.only('pk', 'bbl'))).prefetch_related(Prefetch(
+                    'subsidyj51_set', queryset=ds.SubsidyJ51.objects.only('pk', 'bbl'))).prefetch_related(Prefetch(
+                        'subsidy421a_set', queryset=ds.Subsidy421a.objects.only('pk', 'bbl'))).only(*ds.Property.SHORT_SUMMARY_FIELDS)
 
 
 def prefetch_annotated_datasets(queryset, request):
@@ -143,13 +105,54 @@ def prefetch_annotated_datasets(queryset, request):
     return queryset
 
 
-def prefetch_housingtype_sets(queryset):
-    return queryset.prefetch_related(Prefetch(
-        'publichousingrecord_set', queryset=ds.PublicHousingRecord.objects.only('pk', 'bbl'))).prefetch_related(Prefetch(
-            'rentstabilizationrecord', queryset=ds.RentStabilizationRecord.objects.only('pk', 'ucbbl'))).prefetch_related(Prefetch(
-                'coresubsidyrecord_set', queryset=ds.CoreSubsidyRecord.objects.only('pk', 'bbl'))).prefetch_related(Prefetch(
-                    'subsidyj51_set', queryset=ds.SubsidyJ51.objects.only('pk', 'bbl'))).prefetch_related(Prefetch(
-                        'subsidy421a_set', queryset=ds.Subsidy421a.objects.only('pk', 'bbl'))).only(*ds.Property.SHORT_SUMMARY_FIELDS)
+def get_advanced_search_value(params, dataset_prefix=None, date_field='', date_comparison='gte'):
+    if not dataset_prefix:
+        return None
+    if 'q' in params:
+        if dataset_prefix == 'acrisrealmasters':
+            dataset_prefix = 'acrisreallegals'
+
+        q = params['q']
+        reg = r'{}([^(,| )]*)'.format(dataset_prefix)
+        matches = re.findall(reg, q)
+
+        if len(matches) > 0:
+            date_match = next((x for x in matches if "{}__{}".format(date_field, date_comparison) in x), None)
+            if date_match:
+                return date_match.split('=')[1]
+
+    return None
+
+
+def get_annotation_start(params, dataset=None, date_field=''):
+    dataset_prefix = dataset.__name__.lower() + 's'
+
+    start = dates.get_default_annotation_date(dataset, True)
+    if dataset_prefix + '__start' in params:
+        start = params.get(dataset_prefix + '__start')
+    elif 'annotation__start' in params:
+        if params['annotation__start'] == 'recent':
+            start = dates.get_recent_dataset_start(dataset, string=False)
+        elif params['annotation__start'] == 'lastyear':
+            start = dates.get_last_year(string=False)
+        elif params['annotation__start'] == 'last3years':
+            start = dates.get_last3years(string=False)
+        elif params['annotation__start'] == 'full':
+            start = dates.get_recent_dataset_start(dataset, string=False)
+        else:
+            start = params['annotation__start']
+    elif 'q' in params:
+        start = get_advanced_search_value(params, dataset_prefix, date_field, 'gte')
+
+    if start:
+        return start
+    else:
+        return dates.get_default_annotation_date(dataset, True)
+
+
+def get_annotation_end(params, dataset, date_field=''):
+    dataset_prefix = dataset.__name__.lower() + 's'
+    return params.get(dataset_prefix + '__end', params.get('annotation__end', get_advanced_search_value(params, dataset_prefix, date_field, 'lte') or dates.get_dataset_end_date(dataset, string=False)))
 
 
 def build_annotated_fields(request):
