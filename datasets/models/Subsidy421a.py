@@ -59,7 +59,7 @@ class Subsidy421a(BaseDatasetModel, models.Model):
                 current_programs = annotation.subsidyprograms or ''
                 annotation.subsidy421a = True
                 annotation.subsidyprograms = ', '.join(
-                    filter(None, set([*current_programs.split(', '), '421a Tax Incentive Program'])))
+                    filter(None, set([*current_programs.split(', '), '421-a Tax Incentive Program'])))
                 annotation.save()
             except Exception as e:
                 print(e)

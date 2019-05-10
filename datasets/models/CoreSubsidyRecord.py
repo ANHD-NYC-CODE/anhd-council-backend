@@ -68,8 +68,8 @@ class CoreSubsidyRecord(BaseDatasetModel, models.Model):
     def standardize_programnames(self, row):
         # Raw:
         # 420-c Tax Incentive Program
-        # 421a Affordable
-        # 421a Tax Incentive Program
+        # 421-a Affordable
+        # 421-a Tax Incentive Program
         # 421-g Tax Incentive Program
         # Article 8A/HRP
         # Federal Public Housing
