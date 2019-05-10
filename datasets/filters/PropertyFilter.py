@@ -36,8 +36,9 @@ def rsunits_filter(self, queryset, name, values):
 
 def programnames_filter(self, queryset, name, value):
     qs = []
+
     if value['exact']:
-        return queryset.filter(**{name: value['exact']}).distinct('bbl')
+        return queryset.filter(**{"{}__icontains".format(name): value['exact']}).distinct('bbl')
     if value['icontains']:
         return queryset.filter(**{"{}__icontains".format(name): value['icontains']}).distinct('bbl')
     if value['any']:
@@ -164,7 +165,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     # Subsidy Program Names
 
     def filter_programnames(self, queryset, name, value):
-        return programnames_filter(self, queryset, name, value)
+        return programnames_filter(self, queryset, 'propertyannotation__subsidyprograms', value)
 
     def filter_acrisrealmasteramounts_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(

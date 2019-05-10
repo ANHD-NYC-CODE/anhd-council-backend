@@ -90,7 +90,7 @@ class AdvancedPropertyFilter(django_filters.rest_framework.FilterSet):
             programname_params = (params['coresubsidyrecord__programname__any'][0], None, None, None)
 
             bbl_queryset = bbl_queryset.filter(bbl__in=programnames_filter(
-                self, bbl_queryset, 'coresubsidyrecord__programname', CommaSeparatedConditionField.compress(self, programname_params)))
+                self, bbl_queryset, 'propertyannotation__subsidyprograms', CommaSeparatedConditionField.compress(self, programname_params)))
         # add all the other params
         for key, value in params.items():
             try:

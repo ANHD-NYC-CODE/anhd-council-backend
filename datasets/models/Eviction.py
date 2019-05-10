@@ -98,14 +98,11 @@ class Eviction(BaseDatasetModel, models.Model):
     @classmethod
     def link_eviction_to_pluto_by_address(self):
 
-        evictions = self.objects.filter(bbl__isnull=True)
+        evictions = self.objects.filter(bbl__isnull=True, geosearch_address__isnull=True)
         for eviction in evictions:
             # matches STREET or STREET EAST / WEST etc
             pattern = r'[0-9].*?(\bLANE|\bHIGHWAY|\bSQUARE|\bEXPRESSWAY|\bPARKWAY|\bPARK|\bSTREET|\bAVENUE|\bPLACE|\bBOULEVARD|\bDRIVE|\bROAD|\bCONCOURSE|\bPLAZA|\bTERRACE|\bCOURT|\bLOOP|\bCIRCLE)(\sNORTH|\sSOUTH|\sEAST|\sWEST)?'
 
-            # pattern = r'[0-9].*?((\bLANE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bLANE)|(\bHIGHWAY (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bHIGHWAY)|(\bSQUARE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bSQUARE)|(\bEXPRESSWAY (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bEXPRESSWAY)|(\bPARKWAY (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bPARKWAY)|(\bPARK (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bPARK)|(\bSTREET (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bSTREET)|((\bAVENUE \w\b (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bAVENUE \w\b)|(\bAVENUE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bAVENUE))|(\bPLACE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bPLACE)|(\bBOULEVARD (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bBOULEVARD)|(\bDRIVE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bDRIVE)|(\bROAD (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bROAD)|(\bCONCOURSE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bCONCOURSE)|(\bPLAZA (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bPLAZA)|(\bTERRACE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bTERRACE)|(\bCOURT (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bCOURT)|(\bLOOP (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bLOOP)|(\bCRESCENT (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bCRESCENT)|(\bBROADWAY (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bBROADWAY)|(\bWAY (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bWAY)|(\bWALK (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bWALK)|(\bTURNPIKE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bTURNPIKE)|(\bPROMENADE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bPROMENADE)|(\bRIDGE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bRIDGE)|(\bOVAL (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bOVAL)|(\bSLIP (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bSLIP)|(\bCIRCLE (\bWEST|\bEAST|\bNORTH|\bSOUTH)|\bCIRCLE))'
-
-            # pattern = r'[0-9].*?(\bLANE|\bEXPRESSWAY|\bPARKWAY|\bSTREET|(\bAVENUE \w\b|\bAVENUE)|\bPLACE|\bBOULEVARD|\bDRIVE|\bROAD|\bCONCOURSE|\bPLAZA|\bTERRACE|\bCOURT|\bLOOP|\bCRESENT|\bBROADWAY|\bWAY|\bWALK|\bTURNPIKE|\bPROMENADE|\bRIDGE|\bOVAL|\bSLIP|\bCIRCLE)'
             match = re.search(pattern, eviction.evictionaddress.upper())
             if match:
                 cleaned_address = match.group(0)

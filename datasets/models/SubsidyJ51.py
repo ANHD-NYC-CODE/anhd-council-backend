@@ -56,9 +56,10 @@ class SubsidyJ51(BaseDatasetModel, models.Model):
         for record in self.objects.all():
             try:
                 annotation = record.bbl.propertyannotation
+                current_programs = annotation.subsidyprograms or ''
                 annotation.subsidyj51 = True
                 annotation.subsidyprograms = ', '.join(
-                    filter(None, set([annotation.subsidyprograms, 'J-51 Tax Incentive'])))
+                    filter(None, set([*current_programs.split(', '), 'J-51 Tax Incentive'])))
                 annotation.save()
             except Exception as e:
                 print(e)
@@ -72,7 +73,10 @@ def annotate_property_on_save(sender, instance, created, **kwargs):
     if created == True:
         try:
             annotation = ds.PropertyAnnotation.objects.get(bbl=instance.bbl)
+            current_programs = annotation.subsidyprograms or ''
             annotation.subsidyj51 = True
+            annotation.subsidyprograms = ', '.join(
+                filter(None, set([*current_programs.split(', '), 'J-51 Tax Incentive'])))
             annotation.save()
         except Exception as e:
             print(e)
