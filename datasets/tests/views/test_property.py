@@ -386,6 +386,7 @@ class PropertyViewTests(BaseTest, TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
+
         self.assertEqual(content[0]['bbl'], '1')
         self.assertEqual(content[0]['unitsrentstabilized'], 10)
         self.assertEqual(content[0]['hpdviolations__01/01/2015-01/01/2019'], 10)

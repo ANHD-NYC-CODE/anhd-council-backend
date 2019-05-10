@@ -128,6 +128,7 @@ def get_annotation_start(params, dataset=None, date_field=''):
     dataset_prefix = dataset.__name__.lower() + 's'
 
     start = dates.get_default_annotation_date(dataset, True)
+
     if dataset_prefix + '__start' in params:
         start = params.get(dataset_prefix + '__start')
     elif 'annotation__start' in params:
@@ -203,8 +204,9 @@ def build_annotated_fields(request):
             fields_list.append(generate_last3years_date_key(dataset))
 
         else:
-            # apply default annotation start date, advanced search starts, etc
-            fields_list.append(generate_date_key(params, dataset, dataset_prefix + 's', dataset.QUERY_DATE_KEY))
+            # default time frame is set to "RECENT"
+            fields_list.append(generate_date_key(params, dataset, dataset_prefix + 's', dataset.QUERY_DATE_KEY)
+                               )
     return fields_list
 
 

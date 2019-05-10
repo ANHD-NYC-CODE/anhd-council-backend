@@ -30,8 +30,7 @@ def scrub_lispendens(cached_value, request):
 
             # filter out lispendens in annotated fields for unauthorized users
             if len(cached_value):
-
-                lispendens_fields = [key for key in cached_value[0].keys() if 'lispendens' in key]
+                lispendens_fields = [key for key in cached_value[0].keys() if key and 'lispendens' in key]
                 if len(lispendens_fields):
                     for value in cached_value:
                         for field in lispendens_fields:
