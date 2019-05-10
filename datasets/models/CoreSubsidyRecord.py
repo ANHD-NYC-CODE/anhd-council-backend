@@ -123,7 +123,8 @@ class CoreSubsidyRecord(BaseDatasetModel, models.Model):
             try:
                 annotation = record.bbl.propertyannotation
 
-                annotation.subsidyprograms = ', '.join(filter(None, [annotation.subsidyprograms, record.programname]))
+                annotation.subsidyprograms = ', '.join(
+                    filter(None, set([annotation.subsidyprograms, record.programname])))
 
                 annotation.save()
             except Exception as e:

@@ -37,9 +37,9 @@ def rsunits_filter(self, queryset, name, values):
 def programnames_filter(self, queryset, name, value):
     qs = []
     if value['exact']:
-        return queryset.filter(**{name: value['exact']})
+        return queryset.filter(**{name: value['exact']}).distinct('bbl')
     if value['icontains']:
-        return queryset.filter(**{"{}__icontains".format(name): value['icontains']})
+        return queryset.filter(**{"{}__icontains".format(name): value['icontains']}).distinct('bbl')
     if value['any']:
         qs.append(reduce(operator.or_, (Q(**{name: item}) for item in value['any'])))
     if value['all']:
@@ -47,7 +47,7 @@ def programnames_filter(self, queryset, name, value):
 
     combined_q = reduce(operator.and_, (q for q in qs))
 
-    return queryset.filter(combined_q)
+    return queryset.filter(combined_q).distinct('bbl')
 
 
 def has_date_filter(query_params):

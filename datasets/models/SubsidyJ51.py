@@ -57,6 +57,8 @@ class SubsidyJ51(BaseDatasetModel, models.Model):
             try:
                 annotation = record.bbl.propertyannotation
                 annotation.subsidyj51 = True
+                annotation.subsidyprograms = ', '.join(
+                    filter(None, set([annotation.subsidyprograms, 'J-51 Tax Incentive'])))
                 annotation.save()
             except Exception as e:
                 print(e)

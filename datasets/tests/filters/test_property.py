@@ -466,6 +466,8 @@ class PropertyFilterTests(BaseTest, TestCase):
         property3 = self.property_factory(bbl=3, council=council)
 
         self.coredata_factory(property=property1, enddate="2018-01-01", programname="lihtc")
+        self.coredata_factory(property=property1, enddate="2018-01-01",
+                              programname="lihtc")  # duplicate which should get filtered out
         self.coredata_factory(property=property2, enddate="2018-01-01", programname="j-51")
         self.coredata_factory(property=property3, enddate="2025-01-01", programname="lihtc")
 
