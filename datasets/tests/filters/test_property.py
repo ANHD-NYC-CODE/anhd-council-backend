@@ -472,7 +472,7 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.coredata_factory(property=property3, enddate="2025-01-01", programname="lihtc")
 
         # any lihtc buildings ending 2018
-        query = '/properties/?coresubsidyrecord__programname=lihtc&coresubsidyrecord__enddate__lte=2018-01-01'
+        query = '/properties/?subsidyprograms__programname=lihtc&coresubsidyrecord__enddate__lte=2018-01-01'
         response = self.client.get(query, format="json")
         content = response.data
 
@@ -497,7 +497,7 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.coredata_factory(property=property4, enddate="2018-01-01", programname="421-a")
 
         # any lihtc buildings ending 2018
-        query = '/properties/?coresubsidyrecord__programname__any=lihtc,j-51&coresubsidyrecord__enddate__lte=2018-01-01'
+        query = '/properties/?subsidyprograms__programname__any=lihtc,j-51&coresubsidyrecord__enddate__lte=2018-01-01'
         response = self.client.get(query, format="json")
         content = response.data
 
@@ -1192,7 +1192,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
             self.ecbviolation_factory(property=property6, issuedate="2018-01-01")
 
         # properties in council 1 with rent regulated j-51 and with 5 HPD violations b/t 2018- 2019 AND (5 DOB violations b/t 2018-2019 OR 5 ECB violations b/t 2018-2019)
-        query = '/properties/?council=1&housingtype=rr&coresubsidyrecord__programname=j-51&q=*condition_0=AND+filter_0=condition_1+filter_0=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5+*condition_1=OR+filter_1=dobviolations__issuedate__gte=2018-01-01,dobviolations__issuedate__lte=2019-01-01,dobviolations__count__gte=5+filter_1=ecbviolations__issuedate__gte=2018-01-01,ecbviolations__issuedate__lte=2019-01-01,ecbviolations__count__gte=5'
+        query = '/properties/?council=1&housingtype=rr&subsidyprograms__programname=j-51&q=*condition_0=AND+filter_0=condition_1+filter_0=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5+*condition_1=OR+filter_1=dobviolations__issuedate__gte=2018-01-01,dobviolations__issuedate__lte=2019-01-01,dobviolations__count__gte=5+filter_1=ecbviolations__issuedate__gte=2018-01-01,ecbviolations__issuedate__lte=2019-01-01,ecbviolations__count__gte=5'
 
         response = self.client.get(query, format="json")
         content = response.data
@@ -1314,7 +1314,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
             self.hpdviolation_factory(property=property5, approveddate="2018-01-01")
 
         # properties in council 1 with rent regulated j-51 and with 5 HPD violations b/t 2018- 2019 AND (5 DOB violations b/t 2018-2019 OR 5 ECB violations b/t 2018-2019)
-        query = '/properties/?council=1&housingtype=rr&coresubsidyrecord__programname__any=421a+Affordable&q=*condition_0=AND+filter_0=hpdviolations__count__gte=5,hpdviolations__approveddate__gte=2018-01-01'
+        query = '/properties/?council=1&housingtype=rr&subsidyprograms__programname__any=421a+Affordable&q=*condition_0=AND+filter_0=hpdviolations__count__gte=5,hpdviolations__approveddate__gte=2018-01-01'
 
         response = self.client.get(query, format="json")
         content = response.data

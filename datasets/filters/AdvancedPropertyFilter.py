@@ -86,9 +86,15 @@ class AdvancedPropertyFilter(django_filters.rest_framework.FilterSet):
             bbl_queryset = bbl_queryset.filter(bbl__in=rsunits_filter(self,
                                                                       bbl_queryset, name, PercentWithDateField.compress(self, rsunitslost_params)))
 
-        if 'coresubsidyrecord__programname__any' in params:
-            programname_params = (params['coresubsidyrecord__programname__any'][0], None, None, None)
-
+        if 'subsidyprograms__programname' in ''.join(params.keys()):
+            if 'subsidyprograms__programname__any' in params:
+                programname_params = (params['subsidyprograms__programname__any'][0], None, None, None)
+            elif 'subsidyprograms__programname__all' in params:
+                programname_params = (None, params['subsidyprograms__programname__all'][0], None, None)
+            elif 'subsidyprograms__programname__icontains' in params:
+                programname_params = (None, None, None, params['subsidyprograms__programname__icontains'][0])
+            else:
+                programname_params = (None, None, params['subsidyprograms__programname'][0], None)
             bbl_queryset = bbl_queryset.filter(bbl__in=programnames_filter(
                 self, bbl_queryset, 'propertyannotation__subsidyprograms', CommaSeparatedConditionField.compress(self, programname_params)))
         # add all the other params

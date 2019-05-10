@@ -131,7 +131,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         field_name='coresubsidyrecord__enddate', lookup_expr='date__gte')
     coresubsidyrecord__enddate__gt = django_filters.DateFilter(
         field_name='coresubsidyrecord__enddate', lookup_expr='date__gt')
-    coresubsidyrecord__programname = CommaSeparatedConditionFilter(method="filter_programnames")
+    subsidyprograms__programname = CommaSeparatedConditionFilter(method="filter_programnames")
 
     def filter_council_exact(self, queryset, name, value):
         return queryset.council(value)
