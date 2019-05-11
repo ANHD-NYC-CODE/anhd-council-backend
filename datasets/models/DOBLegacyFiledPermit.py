@@ -19,11 +19,11 @@ class DOBLegacyFiledPermit(BaseDatasetModel, models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=['bbl', 'dobrundate']),  # obsolete
-            models.Index(fields=['dobrundate', 'bbl']),  # obsolete
-            models.Index(fields=['bbl', 'prefilingdate']),
-            models.Index(fields=['prefilingdate', 'bbl']),
-
+            #     models.Index(fields=['bbl', 'dobrundate']),  # obsolete
+            #     models.Index(fields=['dobrundate', 'bbl']),  # obsolete
+            #     models.Index(fields=['bbl', 'prefilingdate']),
+            #     models.Index(fields=['prefilingdate', 'bbl']),
+            #
         ]
 
     job = models.TextField(blank=False, null=False)
@@ -111,7 +111,7 @@ class DOBLegacyFiledPermit(BaseDatasetModel, models.Model):
     zip = models.TextField(blank=True, null=True)
     ownersphone = models.TextField(blank=True, null=True)
     jobdescription = models.TextField(blank=True, null=True)
-    dobrundate = models.DateTimeField(db_index=True, blank=True, null=True)
+    dobrundate = models.DateTimeField(blank=True, null=True)
     totalconstructionfloorarea = models.TextField(blank=True, null=True)
     withdrawalflag = models.TextField(blank=True, null=True)
     signoffdate = models.DateTimeField(blank=True, null=True)

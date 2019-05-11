@@ -38,7 +38,7 @@ class AcrisRealMaster(BaseDatasetModel, models.Model):
     doctype = models.TextField(db_index=True, blank=True, null=True)
     docdate = models.DateTimeField(db_index=True, blank=True, null=True)
     docamount = models.BigIntegerField(db_index=True, blank=True, null=True)
-    recordedfiled = models.DateTimeField(db_index=True, blank=True, null=True)
+    recordedfiled = models.DateTimeField(blank=True, null=True)
     modifieddate = models.DateTimeField(blank=True, null=True)
     reelyear = models.SmallIntegerField(blank=True, null=True)
     reelnbr = models.IntegerField(blank=True, null=True)

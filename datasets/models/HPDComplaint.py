@@ -40,10 +40,10 @@ class HPDComplaint(BaseDatasetModel, models.Model):
     lot = models.IntegerField(blank=True, null=True)
     apartment = models.TextField(blank=True, null=True)
     communityboard = models.IntegerField(blank=True, null=True)
-    receiveddate = models.DateTimeField(db_index=True, blank=True, null=True)
-    statusid = models.IntegerField(db_index=True, blank=True, null=True)
+    receiveddate = models.DateTimeField(blank=True, null=True)
+    statusid = models.IntegerField(blank=True, null=True)
     status = models.TextField(db_index=True, blank=True, null=True)
-    statusdate = models.DateTimeField(db_index=True, blank=True, null=True)
+    statusdate = models.DateTimeField(blank=True, null=True)
 
     slim_query_fields = ["complaintid", "bbl", "receiveddate"]
 

@@ -25,8 +25,6 @@ class CoreSubsidyRecord(BaseDatasetModel, models.Model):
         indexes = [
             models.Index(fields=['bbl', 'programname']),
             models.Index(fields=['bbl', 'enddate']),
-            models.Index(fields=['programname', 'bbl']),
-            models.Index(fields=['enddate', 'bbl']),
         ]
 
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
@@ -38,10 +36,10 @@ class CoreSubsidyRecord(BaseDatasetModel, models.Model):
     regulatorytool = models.TextField(blank=True, null=True)
     programname = models.TextField(db_index=True, blank=True, null=True)
     projectname = models.TextField(blank=True, null=True)
-    preservation = models.TextField(db_index=True, blank=True, null=True)
-    tenure = models.TextField(db_index=True, blank=True, null=True)
+    preservation = models.TextField(blank=True, null=True)
+    tenure = models.TextField(blank=True, null=True)
     startdate = models.DateTimeField(blank=True, null=True)
-    enddate = models.DateTimeField(blank=True, null=True)
+    enddate = models.DateTimeField(db_index=True, blank=True, null=True)
     reacscore = models.TextField(blank=True, null=True)
     reacdate = models.DateTimeField(blank=True, null=True)
     cdid = models.SmallIntegerField(blank=True, null=True)
@@ -52,7 +50,7 @@ class CoreSubsidyRecord(BaseDatasetModel, models.Model):
     cdname = models.TextField(blank=True, null=True)
     ccdname = models.TextField(blank=True, null=True)
     pumaname = models.TextField(blank=True, null=True)
-    assessedvalue = models.BigIntegerField(db_index=True, blank=True, null=True)
+    assessedvalue = models.BigIntegerField(blank=True, null=True)
     yearbuilt = models.SmallIntegerField(blank=True, null=True)
     ownername = models.TextField(blank=True, null=True)
     resunits = models.SmallIntegerField(blank=True, null=True)
