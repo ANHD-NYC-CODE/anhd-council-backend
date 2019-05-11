@@ -101,7 +101,7 @@ class LisPenden(BaseDatasetModel, models.Model):
     def seed_or_update_self(self, **kwargs):
         logger.debug("Seeding/Updating {}", self.__name__)
         self.seed_with_upsert(**kwargs)
-        logger.debug('annotating properties for {}', self.__name__)
+        logger.debug('marking foreclosures by creditor for {}', self.__name__)
         self.mark_foreclosure_with_creditor()
         dataset = self.get_dataset()
         dataset.api_last_updated = datetime.today()

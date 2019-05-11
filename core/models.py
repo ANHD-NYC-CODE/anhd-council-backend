@@ -39,7 +39,8 @@ class Dataset(models.Model):
 
     def check_api_for_update(self):
         self.api_last_updated = getattr(ds, self.model_name).fetch_last_updated()
-        self.save()
+        if self.api_last_updated:
+            self.save()
 
     def check_api_for_update_and_update(self):
         if self.api_last_updated:
