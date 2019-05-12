@@ -19,7 +19,7 @@
  - seed crontabs `python manage.py loaddata /app/core/fixtures/crontabs.yaml`
  - seed automation tasks `python manage.py loaddata /app/core/fixtures/tasks.yaml`
  - seed council info `python manage.py loaddata /app/core/fixtures/councils.yaml`
-5) Upload initial datafiles and update (or download the pre-seeded database `.tar` from here: )
+5) Upload initial datafiles and update (or download the pre-seeded database `.tar` from here: https://www.dropbox.com/s/lxdzcjkoezsn086/dap_council_pgvol1.tar?dl=0)
   - councils
   - pluto properties
   - buildings
@@ -34,7 +34,7 @@
 
 ## Development Setup
 
-1) You can download a pre-seeded database from dropbox here: This. database comes with all the councils, communities, properties, buildings, address records, and subsidy programs pre-loaded.
+1) You can download a pre-seeded database from dropbox here: https://www.dropbox.com/s/lxdzcjkoezsn086/dap_council_pgvol1.tar?dl=0 This. database comes with all the councils, communities, properties, buildings, address records, and subsidy programs pre-loaded.
 2) Once downloaded, put the `.tar` file in the project root and create all the postgres docker services + volumes `docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d postgres`
 3) Then stop postgres `docker-compose stop postgres`
 4) And run this command to copy the data - `docker run --rm --volumes-from postgres -v $(pwd):/backup ubuntu bash -c "cd / && tar xvf /backup/dap_council_pgvol1.tar`
