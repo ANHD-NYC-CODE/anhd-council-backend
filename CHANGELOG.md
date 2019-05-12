@@ -38,3 +38,7 @@
 ### V1.0.0b1.0.27
 - refactor annotation serializer to generate fields once, rather than on each representation object
 - refactor property annotations for late datasets to use new api_last_updated date method
+
+### V1.0.0b1.0.28
+- speed up property table seeding - massive slowdown due to triple generator passes
+- split up address cleanup functions into standarization (for all) & typo cleanup (for evictions only)

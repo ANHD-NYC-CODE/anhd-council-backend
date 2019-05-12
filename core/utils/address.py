@@ -70,13 +70,15 @@ def remove_building_terms(string):
     return string
 
 
-def clean_number_and_streets(string, include_house_number):
-    string = string.upper()
+def clean_those_typos(string):
+    ##
+    # Used for Eviction addresses
 
-    # double space
-    string = re.sub(r"\b  \b", ' ', string)
-    # apostrophe
-    string = re.sub(r"'S\b", 'S', string)
+    # spacing
+    string = string.replace("  ", " ")
+    string = string.replace("   ", " ")
+    string = string.replace("    ", " ")
+    string = string.replace("     ", " ")
 
     # Beach
     string = re.sub(r"\bBEAC H\b", 'BEACH', string)
@@ -170,7 +172,6 @@ def clean_number_and_streets(string, include_house_number):
     string = re.sub(r"\bTER RACE\b", 'TERRACE', string)
     string = re.sub(r"\bTE RRACE\b", 'TERRACE', string)
     string = re.sub(r"\bT ERRACE\b", 'TERRACE', string)
-    string = re.sub(r"\bTERR\b", 'TERRACE', string)
 
     # CONCOURSE
     string = re.sub(r'\bCONC OURSE\b', 'CONCOURSE', string)
@@ -179,23 +180,7 @@ def clean_number_and_streets(string, include_house_number):
     # COURT
     string = re.sub(r'\bCOUR T\b', 'COURT', string)
 
-    # remove double space
-    string = string.upper().replace("  ", " ")
-    string = string.upper().replace("   ", " ")
-    string = string.upper().replace("    ", " ")
-    string = string.upper().replace("     ", " ")
-
-    # rmove +
-    string = string.upper().replace("+", '')
-
-    # remove all periods
-    string = string.upper().replace('.', '')
-
-    # remove space dash space
-    string = string.upper().replace(' - ', ' ')
-
     # FOUND TYPOS
-
     string = re.sub(r"\bPAR\b", "PARK", string)
     string = re.sub(r"\bSTEEE T\b", "STREET", string)
     string = re.sub(r"\bSTREEET\b", "STREET", string)
@@ -260,6 +245,43 @@ def clean_number_and_streets(string, include_house_number):
     string = re.sub(r"\bBA Y\b", "BAY", string)
     string = re.sub(r"\bCHANNE L\b", "CHANNEL", string)
 
+    return string
+
+
+def clean_number_and_streets(string, include_house_number, clean_typos=False):
+    string = string.upper()
+    if clean_typos:
+        string = clean_those_typos(string)
+
+    # Clean property addresses with weird typo - "1o" instead of "10"
+    string = re.sub(r"\b1o\b", "10", string)
+    string = re.sub(r"\b-1o\b", "-10", string)
+    string = re.sub(r"\b2o\b", "20", string)
+    string = re.sub(r"\b-2o\b", "-20", string)
+    string = re.sub(r"\b3o\b", "30", string)
+    string = re.sub(r"\b-3o\b", "-30", string)
+    string = re.sub(r"\b4o\b", "40", string)
+    string = re.sub(r"\b-4o\b", "-40", string)
+    string = re.sub(r"\b5o\b", "50", string)
+    string = re.sub(r"\b6o\b", "60", string)
+    string = re.sub(r"\b7o\b", "70", string)
+    string = re.sub(r"\b8o\b", "80", string)
+    string = re.sub(r"\b9o\b", "90", string)
+
+    ##
+    # Standard Formatting
+    # apostrophe
+    string = re.sub(r"'S\b", 'S', string)
+
+    # rmove +
+    string = string.replace("+", '')
+
+    # remove all periods
+    string = string.replace('.', '')
+
+    # remove space dash space
+    string = string.replace(' - ', ' ')
+
     # Replace Street Appreviations
     HOLY_SAINTS = ['FELIX', 'ANDREWS', 'PAULS', 'JOSEPH', 'MARKS', 'LAWRENCE', 'JAMES',
                    'NICHOLAS', 'HOLLIS', 'JOHNS', "JOHN'S", "EDWARDS", "GEORGES", "GEORGE", "OUEN", "MARYS", "THERESA", "LUKES", "JUDE", "ANN", "ANNS"]
@@ -288,9 +310,9 @@ def clean_number_and_streets(string, include_house_number):
     string = re.sub(r"\bPKWAY\b", "PARKWAY", string)
     string = re.sub(r"\bEXPWY\b", "EXPRESSWAY", string)
     string = re.sub(r"\bEXP WY\b", "EXPRESSWAY", string)
-
     string = re.sub(r"\bTPKE\b", "TURNPIKE", string)
-
+    string = re.sub(r"\bBLVD\b", 'BOULEVARD', string)
+    string = re.sub(r"\bTERR\b", 'TERRACE', string)
     string = re.sub(r"\bNY\b", "NEW YORK", string)
     string = re.sub(r"\bADAM C POWELL\b", "ADAM CLAYTON POWELL", string)
 
@@ -330,22 +352,7 @@ def clean_number_and_streets(string, include_house_number):
             original = match.group().strip()
             number, rest = original.split(' ', 1)
             match = " ".join([number_to_text(number), rest])
-            string = string.upper().replace(original, match)
-
-        # Clean property addresses with weird typo - "1o" instead of "10"
-        string = re.sub(r"\b1o\b", "10", string)
-        string = re.sub(r"\b-1o\b", "-10", string)
-        string = re.sub(r"\b2o\b", "20", string)
-        string = re.sub(r"\b-2o\b", "-20", string)
-        string = re.sub(r"\b3o\b", "30", string)
-        string = re.sub(r"\b-3o\b", "-30", string)
-        string = re.sub(r"\b4o\b", "40", string)
-        string = re.sub(r"\b-4o\b", "-40", string)
-        string = re.sub(r"\b5o\b", "50", string)
-        string = re.sub(r"\b6o\b", "60", string)
-        string = re.sub(r"\b7o\b", "70", string)
-        string = re.sub(r"\b8o\b", "80", string)
-        string = re.sub(r"\b9o\b", "90", string)
+            string = string.replace(original, match)
 
     else:
         match = re.search(r"(?=\d* (DRIVE|ROAD|PLACE|STREET|AVENUE))(\d+ (DRIVE|ROAD|PLACE|STREET|AVENUE))", string)
@@ -353,7 +360,7 @@ def clean_number_and_streets(string, include_house_number):
             original = match.group().strip()
             number, rest = original.split(' ', 1)
             match = " ".join([number_to_text(number).lower(), rest])
-            string = string.upper().replace(original, match)
+            string = string.replace(original, match)
 
     # remove dashes from street-names-with-dashes (but not 12-14 number dashes)
     string = re.sub(r"(?=[a-zA-Z]*\-[a-zA-Z])\-", " ", string)

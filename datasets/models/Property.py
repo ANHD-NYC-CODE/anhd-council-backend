@@ -296,11 +296,19 @@ class Property(BaseDatasetModel, models.Model):
         logger.debug("prevalidating properties")
         count = 0
         for row in gen_rows:
+            # Address Standardizing
             row['original_address'] = row['address']
-            row['address'] = clean_number_and_streets(row['address'], True)
+            row['address'] = clean_number_and_streets(row['address'], True, clean_typos=False)
+
+            # GEO
+            lat, lng = get_geo(row)
+            row['lat'] = lat
+            row['lng'] = lng
+
+            # Count
             count = count + 1
-            if count % settings.BATCH_SIZE == 0:
-                logger.debug("cleaned {} properties".format(count))
+            if count % 10000 == 0:
+                logger.debug("prepared {} properties".format(count))
 
             yield row
 
@@ -308,6 +316,7 @@ class Property(BaseDatasetModel, models.Model):
     def transform_self(self, file_path, update=None):
         return self.pre_validation_filters(from_csv_file_to_gen(extract_csvs_from_zip(file_path), update))
 
+    # SLOW
     @classmethod
     def add_geometry(self):
         for record in self.objects.filter(lng__isnull=True, lat__isnull=True).all():
@@ -319,8 +328,8 @@ class Property(BaseDatasetModel, models.Model):
     @classmethod
     def seed_or_update_self(self, **kwargs):
         self.seed_with_upsert(**kwargs)
-        logger.debug('adding geometry')
-        self.add_geometry()
+        # logger.debug('adding geometry')
+        # self.add_geometry()
         logger.debug('adding property annotations')
         self.create_property_annotations()
 

@@ -74,7 +74,7 @@ class Eviction(BaseDatasetModel, models.Model):
             row = row.upper().replace(',JR.', ' JR')
             row = row.upper().replace(', JR.', ' JR')
 
-            row = clean_number_and_streets(row, True)
+            row = clean_number_and_streets(row, True, clean_typos=True)
             yield row.upper().strip()
 
     @classmethod
@@ -178,7 +178,8 @@ class Eviction(BaseDatasetModel, models.Model):
         geosearch_house_street = remove_building_terms(geosearch_match['label'].split(', ')[0].upper())
         geosearch_borough = geosearch_match['label'].split(', ')[1].upper()
 
-        geosearch = ', '.join([clean_number_and_streets(geosearch_house_street, True), geosearch_borough]).upper()
+        geosearch = ', '.join([clean_number_and_streets(geosearch_house_street,
+                                                        True, clean_typos=True), geosearch_borough]).upper()
         if geosearch == cleaned_address:
             # First naive match against house + street + borough
             return True

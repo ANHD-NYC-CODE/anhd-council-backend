@@ -8,7 +8,7 @@ import pyproj
 from zipfile import ZipFile
 from pyproj import *
 import copy
-
+from django.conf import settings
 from .bbl import bbl
 from .utility import merge
 from core.utils.csv_helpers import count_csv_rows
@@ -161,7 +161,11 @@ def from_csv_file_to_gen(file_path_or_generator, update=None, cleaner=None):
         else:
             headers = clean_headers(f.readline())
             reader = csv.DictReader(f, fieldnames=headers)
+        count = 0
         for row in reader:
+            count = count + 1
+            if count % settings.BATCH_SIZE == 0:
+                logger.debug('processed {} csv rows'.format(count))
             yield row
 
 
@@ -195,12 +199,18 @@ def get_geo(row):
 
 
 def with_geo(table):
+    logger.debug('processing geo...')
+    count = 0
     for row in table:
         try:
             coords = (float(row['xcoord']), float(row['ycoord']))
             lng, lat = ny_state_coords_to_lat_lng(*coords)
+            count = count + 1
+            if count % 10000 == 0:
+                logger.debug('Processed {} geos'.format(count))
             yield merge(row, {'lng': lng, 'lat': lat})
-        except:
+        except Exception as e:
+            logger.debug(e)
             yield merge(row, {'lng': None, 'lat': None})
 
 
