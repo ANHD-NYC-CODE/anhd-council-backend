@@ -72,16 +72,14 @@ class Building(BaseDatasetModel, models.Model):
     @classmethod
     def pre_validation_filters(self, gen_rows):
         for row in gen_rows:
-            if is_null(row['bin']):
-                continue
-            if is_null(row['bin']):
-                continue
-            if is_null(row['lot']):
-                continue
-            if is_null(row['hhnd']):
-                continue
-            if is_null(row['lhnd']):
-                continue
+            # if is_null(row['bin']):
+            #     continue
+            # if is_null(row['lot']):
+            #     continue
+            # if is_null(row['hhnd']):
+            #     continue
+            # if is_null(row['lhnd']):
+            #     continue
             row['stname'] = clean_number_and_streets(row['stname'], False, clean_typos=False)
             yield row
 

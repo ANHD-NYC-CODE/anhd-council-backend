@@ -74,8 +74,8 @@ class BuildingTests(BaseTest, TestCase):
                                      file_name="mock_propertymap_bobaadr.csv")
 
         ds.Building.seed_or_update_self(file_path=update.file.file.path, update=update)
-        self.assertEqual(ds.Building.objects.count(), 9)
-        self.assertEqual(update.rows_created, 9)
+        self.assertEqual(ds.Building.objects.count(), 10)
+        self.assertEqual(update.rows_created, 10)
         self.assertEqual(update.total_rows, 10)
 
     def test_seed_building_after_update(self):

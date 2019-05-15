@@ -77,7 +77,9 @@ class AddressRecord(BaseDatasetModel, models.Model):
         return dict
 
     @classmethod
-    def generate_rangelist(self, low, high, prefix=None):
+    def generate_rangelist(self, low=0, high=0, prefix=None):
+        if not bool(low) and low != 0:
+            return []
         rangelist = []
         cursor = int(low)
         step = 2
@@ -96,7 +98,9 @@ class AddressRecord(BaseDatasetModel, models.Model):
         return rangelist
 
     @classmethod
-    def split_number_letter(self, house):
+    def split_number_letter(self, house=None):
+        if not house:
+            return []
         # This gets number and 1/2 lol
         # (^([^\s]* (1\/2|1\/3|1\/4))|^[^\s]*)
 
@@ -124,6 +128,9 @@ class AddressRecord(BaseDatasetModel, models.Model):
                 continue
             # Do not create addresses for special buildings
             if bool(re.search(r"(GAR|GARAGE|FRONT|REAR|BEACH|AIR|AIRRGTS|AIR RGTS|WBLDG|EBLDG)", building.hhnd.upper())):
+                continue
+            # Do not continue if missing a lhnd or hhnd
+            if not bool(building.lhnd) or not bool(building.hhnd):
                 continue
             lhnd_split = building.lhnd.split('-')
             hhnd_split = building.hhnd.split('-')
