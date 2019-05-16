@@ -25,6 +25,7 @@ logger = logging.getLogger('app')
 
 
 class AddressRecord(BaseDatasetModel, models.Model):
+    # TODO: add "canonical_address field comprised of <lhnd>-<hhnd> <stname>" if building, <address> if property"
     key = models.TextField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Property', on_delete=models.SET_NULL, null=True,
                             db_column='bbl', db_constraint=False)
@@ -116,6 +117,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
 
     @classmethod
     def build_building_gen(self):
+        # TODO: Switch this to use raw PAD csv
         # Do not create address record for buildings without bbls
         for building in ds.Building.objects.filter(bbl__isnull=False).all():
             try:

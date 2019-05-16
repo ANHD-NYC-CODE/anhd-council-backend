@@ -175,6 +175,27 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         )
         return factory
 
+    def padrecord_factory(self, bin=None, property=None, boro=1, block='0001', lot='00001', lhnd='1a', hhnd='1b', **kwargs):
+        name = 'PadRecord'
+        if not bin:
+            bin = random.randint(1, 1000000)
+        if not len(c_models.Dataset.objects.filter(name=name)):
+            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+        if not property:
+            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+
+        factory = d_models.PadRecord.objects.create(
+            bin=bin,
+            bbl=property,
+            boro=boro,
+            block=block,
+            lot=lot,
+            lhnd=lhnd,
+            hhnd=hhnd,
+            **kwargs
+        )
+        return factory
+
     def address_factory(self, building=None, property=None, **kwargs):
         name = 'AddressRecord'
         if not property:

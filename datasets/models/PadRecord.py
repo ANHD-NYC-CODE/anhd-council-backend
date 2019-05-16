@@ -22,7 +22,7 @@ logger = logging.getLogger('app')
 # Extract ZIP and upload bobaadr.csv file through admin, then update
 
 
-class Building(BaseDatasetModel, models.Model):
+class PadRecord(BaseDatasetModel, models.Model):
     bin = models.TextField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Property', on_delete=models.SET_NULL, null=True,
                             db_column='bbl', db_constraint=False)

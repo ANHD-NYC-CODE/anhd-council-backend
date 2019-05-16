@@ -74,8 +74,8 @@ class BuildingTests(BaseTest, TestCase):
                                      file_name="mock_propertymap_bobaadr.csv")
 
         ds.Building.seed_or_update_self(file_path=update.file.file.path, update=update)
-        self.assertEqual(ds.Building.objects.count(), 10)
-        self.assertEqual(update.rows_created, 10)
+        self.assertEqual(ds.Building.objects.count(), 9)
+        self.assertEqual(update.rows_created, 9)
         self.assertEqual(update.total_rows, 10)
 
     def test_seed_building_after_update(self):
@@ -91,6 +91,35 @@ class BuildingTests(BaseTest, TestCase):
         self.assertEqual(ds.Building.objects.get(
             bin="1086410").hhnd, "25")
         changed_record = ds.Building.objects.get(bin="1086412")
+        self.assertEqual(changed_record.hhnd, '104')
+
+
+class PadRecordTests(BaseTest, TestCase):
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_seed_padrecord(self):
+        update = self.update_factory(model_name="PadRecord",
+                                     file_name="mock_propertymap_bobaadr.csv")
+
+        ds.PadRecord.seed_or_update_self(file_path=update.file.file.path, update=update)
+        self.assertEqual(ds.PadRecord.objects.count(), 9)
+        self.assertEqual(update.rows_created, 9)
+        self.assertEqual(update.total_rows, 10)
+
+    def test_seed_padrecord_after_update(self):
+        update = self.update_factory(model_name="PadRecord",
+                                     file_name="mock_propertymap_bobaadr.csv")
+        ds.PadRecord.seed_or_update_self(file_path=update.file.file.path, update=update)
+
+        new_update = self.update_factory(dataset=update.dataset, model_name="PadRecord",
+                                         file_name="mock_propertymap_bobaadr_diff.csv", previous_file_name="mock_propertymap_bobaadr.csv")
+        ds.PadRecord.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
+        self.assertEqual(ds.PadRecord.objects.count(), 10)
+
+        self.assertEqual(ds.PadRecord.objects.get(
+            bin="1086410").hhnd, "25")
+        changed_record = ds.PadRecord.objects.get(bin="1086412")
         self.assertEqual(changed_record.hhnd, '104')
 
 

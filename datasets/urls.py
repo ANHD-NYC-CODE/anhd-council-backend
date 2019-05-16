@@ -64,6 +64,13 @@ properties_router.register(
 )
 
 properties_router.register(
+    'padrecords',
+    v.padrecord_views.PadRecordViewSet,
+    base_name='property-padrecords',
+    parents_query_lookups=['bbl']
+)
+
+properties_router.register(
     'hpdbuildings',
     v.hpdbuilding_views.HPDBuildingViewSet,
     base_name='property-hpdbuildings',

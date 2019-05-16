@@ -270,6 +270,7 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
 
 
 class BuildingSummarySerializer(serializers.ModelSerializer):
+    # TODO: add alternate addresses derived from AddressRecords' canonical fields
     class Meta:
         model = ds.Building
         fields = (
@@ -403,6 +404,13 @@ class BuildingSerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Building
         fields = '__all__'
+
+
+class PadRecordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.PadRecord
+        fields = '__all__'
+
 
 #
 # class BuildingSearchSerializer(serializers.BaseSerializer):
