@@ -400,6 +400,12 @@ class PropertySummarySerializer(serializers.ModelSerializer):
             return 0
 
 
+class AddressRecordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.AddressRecord
+        fields = '__all__'
+
+
 class BuildingSerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Building

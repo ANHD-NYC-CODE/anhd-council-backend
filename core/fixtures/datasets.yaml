@@ -223,3 +223,9 @@
     name: DOB Filed Permits (Joined)
     model_name: DOBFiledPermit
     automated: true
+- model: core.dataset
+  pk: 36
+  fields:
+    name: PAD Record
+    model_name: PadRecord
+    automated: false

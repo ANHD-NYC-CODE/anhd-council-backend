@@ -371,7 +371,8 @@ ACTIVE_MODELS = [
     'LisPenden',
     'LisPendenComment',
     'CONHRecord',
-    'PropertyAnnotation'
+    'PropertyAnnotation',
+    'PadRecord'
 
 ]
 

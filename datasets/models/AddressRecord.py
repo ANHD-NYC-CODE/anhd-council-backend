@@ -25,7 +25,7 @@ logger = logging.getLogger('app')
 
 
 class AddressRecord(BaseDatasetModel, models.Model):
-    # TODO: add "canonical_address field comprised of <lhnd>-<hhnd> <stname>" if building, <address> if property"
+    # TODO: add "pad_address field comprised of <lhnd>-<hhnd> <stname>" if building, <address> if property"
     key = models.TextField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Property', on_delete=models.SET_NULL, null=True,
                             db_column='bbl', db_constraint=False)
@@ -36,6 +36,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
     borough = models.TextField(blank=True, null=True)
     zipcode = models.TextField(blank=True, null=True)
     address = SearchVectorField(blank=True, null=True)
+    pad_address = models.TextField(blank=True, null=True)
 
     class Meta:
         indexes = [GinIndex(fields=['address'])]
