@@ -103,4 +103,4 @@ class PadRecord(BaseDatasetModel, models.Model):
         self.bulk_seed(**kwargs, overwrite=True)
 
     def __str__(self):
-        return str(self.bin)
+        return str(self.key)

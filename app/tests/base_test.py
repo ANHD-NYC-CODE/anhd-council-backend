@@ -185,6 +185,7 @@ class BaseTest(APITestCase, URLPatternsTestCase):
             property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
 
         factory = d_models.PadRecord.objects.create(
+            key=random.randint(1, 1000000),
             bin=bin,
             bbl=property,
             boro=boro,
