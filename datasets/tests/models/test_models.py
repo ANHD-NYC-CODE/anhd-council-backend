@@ -103,8 +103,8 @@ class PadRecordTests(BaseTest, TestCase):
                                      file_name="mock_propertymap_bobaadr.csv")
 
         ds.PadRecord.seed_or_update_self(file_path=update.file.file.path, update=update)
-        self.assertEqual(ds.PadRecord.objects.count(), 11)
-        self.assertEqual(update.rows_created, 11)
+        self.assertEqual(ds.PadRecord.objects.count(), 10)
+        self.assertEqual(update.rows_created, 10)
         self.assertEqual(update.total_rows, 11)
 
     def test_seed_padrecord_after_update(self):
