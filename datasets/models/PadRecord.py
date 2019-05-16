@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models import Q
 from core import models as c
+from datasets import models as ds
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from datasets.utils.validation_filters import is_null, exceeds_char_length
 from core.utils.transform import from_csv_file_to_gen, with_bbl
@@ -10,7 +11,6 @@ from core.utils.address import clean_number_and_streets
 
 
 import logging
-from datasets import models as ds
 
 logger = logging.getLogger('app')
 
@@ -19,7 +19,7 @@ logger = logging.getLogger('app')
 #
 # Download latest
 # https://data.cityofnewyork.us/City-Government/Property-Address-Directory/bc8t-ecyu
-# Extract ZIP and upload bobaadr.csv file through admin, then update
+# Extract ZIP and upload bobaadr.csv file through admin, then update using bobaadr AND settng dataset = PadRecord
 
 
 class PadRecord(BaseDatasetModel, models.Model):
@@ -90,6 +90,23 @@ class PadRecord(BaseDatasetModel, models.Model):
     # trims down new update files to preserve memory
     # uses original header values
     @classmethod
+    def annotate_buildings(self):
+        logger.debug('Annotating Buildings with PAD addresses')
+        count = 0
+        for record in self.objects.all():
+            try:
+                building = ds.Building.objects.get(bin=record.bin)
+                pad_address = "{}-{} {}".format(record.lhnd, record.hhnd, record.stname)
+                building.pad_addresses = ','.join(
+                    list(filter(lambda x: x, [*building.pad_addresses.split(','), pad_address])))
+                building.save()
+                count = count + 1
+                if count % settings.BATCH_SIZE:
+                    logger.debug('Annotated {} buildings'.format(count))
+            except Exception as e:
+                print(e)
+
+    @classmethod
     def update_set_filter(self, csv_reader, headers):
         return csv_reader
 
@@ -100,7 +117,8 @@ class PadRecord(BaseDatasetModel, models.Model):
     @classmethod
     def seed_or_update_self(self, **kwargs):
         logger.debug("Seeding/Updating {}", self.__name__)
-        self.bulk_seed(**kwargs, overwrite=True)
+        self.bulk_seed(**kwargs, no_conflict=True, overwrite=True)
+        self.annotate_buildings()  # add pad addresses to building model
 
     def __str__(self):
         return str(self.key)

@@ -101,11 +101,15 @@ class PadRecordTests(BaseTest, TestCase):
     def test_seed_padrecord(self):
         update = self.update_factory(model_name="PadRecord",
                                      file_name="mock_propertymap_bobaadr.csv")
-
+        building1 = self.building_factory(bin='1086331')
+        building2 = self.building_factory(bin='1086412')
         ds.PadRecord.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(ds.PadRecord.objects.count(), 10)
         self.assertEqual(update.rows_created, 10)
         self.assertEqual(update.total_rows, 11)
+        # Annotates building
+        self.assertEqual(ds.Building.objects.get(bin='1086331').pad_addresses, '111-111 Andesroad,111A-111D Bobsroad')
+        self.assertEqual(ds.Building.objects.get(bin='1086412').pad_addresses, '104-105 Helloroad')
 
     def test_seed_padrecord_after_update(self):
         update = self.update_factory(model_name="PadRecord",

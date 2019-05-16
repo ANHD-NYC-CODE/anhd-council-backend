@@ -51,6 +51,7 @@ class Building(BaseDatasetModel, models.Model):
     segid = models.IntegerField(blank=True, null=True)
     zipcode = models.IntegerField(blank=True, null=True)
     physicalid = models.IntegerField(blank=True, null=True)
+    pad_addresses = models.TextField(default="", blank=True, null=True)
 
     def get_house_number(self):
         if (self.lhnd == self.hhnd):

@@ -74,6 +74,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
             'borough': code_to_boro(building_boro),
             'zipcode': building_zip,
             'address': "",
+            'pad_address': "{}-{} {}".format(building.lhnd, building.hhnd, building.stname)
         }
 
         return dict
