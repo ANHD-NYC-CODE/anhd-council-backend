@@ -23,7 +23,8 @@ logger = logging.getLogger('app')
 
 
 class PadRecord(BaseDatasetModel, models.Model):
-    bin = models.TextField(primary_key=True, blank=False, null=False)
+    key = models.TextField(primary_key=True, blank=False, null=False)
+    bin = models.TextField(blank=True, null=True)
     bbl = models.ForeignKey('Property', on_delete=models.SET_NULL, null=True,
                             db_column='bbl', db_constraint=False)
     boro = models.TextField(blank=False, null=False)
@@ -83,6 +84,7 @@ class PadRecord(BaseDatasetModel, models.Model):
             if is_null(row['lhnd']):
                 continue
             row['stname'] = clean_number_and_streets(row['stname'], False, clean_typos=False)
+            row['key'] = "{}{}-{}{}".format(row['bin'], row['lhnd'], row['hhnd'], row['stname'])
             yield row
 
     # trims down new update files to preserve memory

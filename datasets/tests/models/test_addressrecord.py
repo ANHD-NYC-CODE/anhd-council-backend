@@ -25,41 +25,41 @@ class AddressRecordTests(BaseTest, TestCase):
         property3 = self.property_factory(bbl="1000010012", address="100a Fake Street", borough="MN", zipcode="99999")
 
         # adds 1
-        self.building_factory(property=property, bin='1', lhnd='1', hhnd='1', stname='Fake Street', zipcode='99999')
+        self.padrecord_factory(property=property, bin='1', lhnd='1', hhnd='1', stname='Fake Street', zipcode='99999')
 
         # adds 1
-        self.building_factory(property=property, bin='2', lhnd='2a', hhnd='2a', stname='Fake Street', zipcode='99999')
+        self.padrecord_factory(property=property, bin='2', lhnd='2a', hhnd='2a', stname='Fake Street', zipcode='99999')
 
         # adds 3
-        self.building_factory(property=property, bin='3', lhnd='1', hhnd='5', stname='Real Street', zipcode='99999')
+        self.padrecord_factory(property=property, bin='3', lhnd='1', hhnd='5', stname='Real Street', zipcode='99999')
 
         # adds 1
-        self.building_factory(property=property, bin='4', lhnd='1-10',
-                              hhnd='1-10', stname='Real Street', zipcode='99999')
+        self.padrecord_factory(property=property, bin='4', lhnd='1-10',
+                               hhnd='1-10', stname='Real Street', zipcode='99999')
 
         # adds 0 - letter removed so it turns into a duplicate
-        self.building_factory(property=property, bin='5', lhnd='1-10a',
-                              hhnd='1-10a', stname='Real Street', zipcode='99999')
+        self.padrecord_factory(property=property, bin='5', lhnd='1-10a',
+                               hhnd='1-10a', stname='Real Street', zipcode='99999')
 
         # adds 1 (does not add 1-20 due to existing property address)
-        self.building_factory(property=property2, bin='6', lhnd='1-20',
-                              hhnd='1-22', stname='Real Street', zipcode='99999')
+        self.padrecord_factory(property=property2, bin='6', lhnd='1-20',
+                               hhnd='1-22', stname='Real Street', zipcode='99999')
 
         # adds 1
-        self.building_factory(property=property, bin='7', lhnd='10 1/2',
-                              hhnd='10 1/2', stname='Half Street', zipcode='99999')
+        self.padrecord_factory(property=property, bin='7', lhnd='10 1/2',
+                               hhnd='10 1/2', stname='Half Street', zipcode='99999')
 
         # adds 1
-        self.building_factory(property=property, bin='8', lhnd='10-01',
-                              hhnd='10-01', stname='Fake Street', zipcode='99999')
+        self.padrecord_factory(property=property, bin='8', lhnd='10-01',
+                               hhnd='10-01', stname='Fake Street', zipcode='99999')
 
         # adds 2
-        self.building_factory(property=property, bin='9', lhnd='10-03',
-                              hhnd='10-05', stname='Fake Street', zipcode='99999')
+        self.padrecord_factory(property=property, bin='9', lhnd='10-03',
+                               hhnd='10-05', stname='Fake Street', zipcode='99999')
 
         # Does not add this address due to 'Garage'
-        self.building_factory(property=property, bin='10', lhnd='1 Garage',
-                              hhnd='1 Garage', stname='Fake Street', zipcode='99999')
+        self.padrecord_factory(property=property, bin='10', lhnd='1 Garage',
+                               hhnd='1 Garage', stname='Fake Street', zipcode='99999')
 
         ds.AddressRecord.build_table(overwrite=True)
 
