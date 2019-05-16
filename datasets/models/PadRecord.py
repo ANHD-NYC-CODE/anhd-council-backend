@@ -24,7 +24,7 @@ logger = logging.getLogger('app')
 
 class PadRecord(BaseDatasetModel, models.Model):
     key = models.TextField(primary_key=True, blank=False, null=False)
-    bin = models.TextField(blank=True, null=True)
+    bin = models.TextField(db_index=True, blank=True, null=True)
     bbl = models.ForeignKey('Property', on_delete=models.SET_NULL, null=True,
                             db_column='bbl', db_constraint=False)
     boro = models.TextField(blank=False, null=False)
