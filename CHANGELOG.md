@@ -42,3 +42,7 @@
 ### V1.0.0b1.0.28
 - speed up property table seeding - massive slowdown due to triple generator passes
 - split up address cleanup functions into standarization (for all) & typo cleanup (for evictions only)
+
+### V1.0.0b1.0.28
+5/16/2019
+- Fix missing addresses bug - creates a PadRecord table and generates AddressRecords from complete PAD. 
