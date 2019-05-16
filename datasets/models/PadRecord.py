@@ -8,8 +8,8 @@ from core.utils.transform import from_csv_file_to_gen, with_bbl
 from django.contrib.postgres.search import SearchVector, SearchVectorField
 from core.tasks import async_create_update
 from core.utils.address import clean_number_and_streets
-
-
+from django.conf import settings
+import re
 import logging
 
 logger = logging.getLogger('app')
@@ -84,7 +84,7 @@ class PadRecord(BaseDatasetModel, models.Model):
             if is_null(row['lhnd']):
                 continue
             row['stname'] = clean_number_and_streets(row['stname'], False, clean_typos=False)
-            row['key'] = "{}{}-{}{}".format(row['bin'], row['lhnd'], row['hhnd'], row['stname'])
+            row['key'] = re.sub(' ', '', "{}{}-{}{}".format(row['bin'], row['lhnd'], row['hhnd'], row['stname']))
             yield row
 
     # trims down new update files to preserve memory
@@ -93,18 +93,19 @@ class PadRecord(BaseDatasetModel, models.Model):
     def annotate_buildings(self):
         logger.debug('Annotating Buildings with PAD addresses')
         count = 0
-        for record in self.objects.all():
-            try:
-                building = ds.Building.objects.get(bin=record.bin)
-                pad_address = "{}-{} {}".format(record.lhnd, record.hhnd, record.stname)
-                building.pad_addresses = ','.join(
-                    list(filter(lambda x: x, [*building.pad_addresses.split(','), pad_address])))
+        for building in ds.Building.objects.all():
+            pad_records = self.objects.filter(bin=building.bin)
+            if len(pad_records):
+                pad_addresses = ','.join(["{}-{} {}".format(record.lhnd, record.hhnd, record.stname)
+                                          for record in pad_records])
+
+                building.pad_addresses = pad_addresses
                 building.save()
                 count = count + 1
-                if count % settings.BATCH_SIZE:
-                    logger.debug('Annotated {} buildings'.format(count))
-            except Exception as e:
-                print(e)
+                if count % (settings.BATCH_SIZE / 10) == 0:
+                    logger.debug('Processed {} pad addresses'.format(count))
+            else:
+                continue
 
     @classmethod
     def update_set_filter(self, csv_reader, headers):
