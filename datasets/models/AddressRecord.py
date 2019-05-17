@@ -50,7 +50,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
     @classmethod
     def address_row_from_building(self, number='', building=None):
         bbl = building.bbl_id
-        bin = building.bin
+        bin = building.bin_id
         number = re.sub(r"[a-zA-Z]", "", number).strip()  # removes all letters from number
         building_low = str(building.lhnd).strip()
         building_high = str(building.hhnd).strip()
@@ -125,7 +125,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
             try:
                 building.bbl
             except Exception as e:
-                logger.debug('no BBL record: {} for bin {}'.format(building.bbl_id, building.bin))
+                logger.debug('no BBL record: {} for bin {}'.format(building.bbl_id, building.bin_id))
                 continue
             # Do not create addresses for special buildings
             if bool(re.search(r"(GAR|GARAGE|FRONT|REAR|BEACH|AIR|AIRRGTS|AIR RGTS|WBLDG|EBLDG)", building.lhnd.upper())):
