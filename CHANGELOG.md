@@ -51,3 +51,4 @@
 5/17/2019
 - Fix PropertyAnnotation table latestsaleprice bug where wrong price was listed.
 - add latestsaledate column to PropertyAnnotation table
+- add newest CONH record fields
