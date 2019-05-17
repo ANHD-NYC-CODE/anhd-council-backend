@@ -108,7 +108,7 @@ class PadRecordTests(BaseTest, TestCase):
         self.assertEqual(update.rows_created, 10)
         self.assertEqual(update.total_rows, 11)
         # Annotates building
-        self.assertEqual(ds.Building.objects.get(bin='1086331').pad_addresses, '111-111 Andesroad,111A-111D Bobsroad')
+        self.assertEqual(ds.Building.objects.get(bin='1086331').pad_addresses, '111A-111D Bobsroad,111-111 Andesroad')
         self.assertEqual(ds.Building.objects.get(bin='1086412').pad_addresses, '104-105 Helloroad')
 
     def test_seed_padrecord_after_update(self):

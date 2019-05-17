@@ -25,7 +25,8 @@ class AddressRecordTests(BaseTest, TestCase):
         property3 = self.property_factory(bbl="1000010012", address="100a Fake Street", borough="MN", zipcode="99999")
 
         # adds 1
-        self.padrecord_factory(property=property, bin='1', lhnd='1', hhnd='1', stname='Fake Street', zipcode='99999')
+        b1 = self.building_factory(bin='1')
+        self.padrecord_factory(property=property, bin=b1, lhnd='1', hhnd='1', stname='Fake Street', zipcode='99999')
 
         # adds 1
         self.padrecord_factory(property=property, bin='2', lhnd='2a', hhnd='2a', stname='Fake Street', zipcode='99999')

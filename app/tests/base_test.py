@@ -178,7 +178,7 @@ class BaseTest(APITestCase, URLPatternsTestCase):
     def padrecord_factory(self, bin=None, property=None, boro=1, block='0001', lot='00001', lhnd='1a', hhnd='1b', **kwargs):
         name = 'PadRecord'
         if not bin:
-            bin = random.randint(1, 1000000)
+            bin = self.building_factory(bin=random.randint(1000000000, 5999999999))
         if not len(c_models.Dataset.objects.filter(name=name)):
             dataset = c_models.Dataset.objects.create(name=name, model_name=name)
         if not property:

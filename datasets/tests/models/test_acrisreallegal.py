@@ -3,7 +3,7 @@ from app.tests.base_test import BaseTest
 from django.db.models import Count, Q
 from datasets import models as ds
 from freezegun import freeze_time
-
+from datetime import datetime
 # Create your tests here.
 import uuid
 
@@ -19,7 +19,7 @@ class AcrisRealLegalTests(BaseTest, TestCase):
     def test_seed_legals(self):
         property = self.property_factory(bbl='1021351059')
         acrisrealmaster = self.acrismaster_factory(
-            documentid='2015060400639001', doctype='DEED', docdate='2015-07-31', docamount=1000)
+            documentid='2015060400639001', doctype='DEED', docdate='2015-07-31', docamount=250)
         acrisrealmaster = self.acrismaster_factory(
             documentid='2010020400763013', doctype='DEED', docdate='2015-05-31', docamount=500)
         acrisrealmaster2 = self.acrismaster_factory(
@@ -36,7 +36,9 @@ class AcrisRealLegalTests(BaseTest, TestCase):
         self.assertEqual(ds.Property.objects.get(bbl='1021351059').propertyannotation.acrisrealmasters_last30, 1)
         self.assertEqual(ds.Property.objects.get(bbl='1021351059').propertyannotation.acrisrealmasters_lastyear, 2)
         self.assertEqual(ds.Property.objects.get(bbl='1021351059').propertyannotation.acrisrealmasters_last3years, 2)
-        self.assertEqual(ds.Property.objects.get(bbl='1021351059').propertyannotation.latestsaleprice, 1000)
+        self.assertEqual(ds.Property.objects.get(bbl='1021351059').propertyannotation.latestsaleprice, 250)
+        self.assertEqual(ds.Property.objects.get(
+            bbl='1021351059').propertyannotation.latestsaledate.strftime('%Y-%m-%d'), '2015-07-31')
 
     def test_seed_legals_with_diff(self):
 
