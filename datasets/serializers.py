@@ -274,7 +274,7 @@ class BuildingSummarySerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Building
         fields = (
-            'bin', 'stname', 'house_number'
+            'bin', 'stname', 'house_number', 'pad_addresses'
         )
     house_number = serializers.SerializerMethodField()
 
