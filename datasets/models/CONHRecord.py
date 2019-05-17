@@ -30,11 +30,11 @@ class CONHRecord(BaseDatasetModel, models.Model):
     buildingid = models.TextField(blank=True, null=True)
     bin = models.ForeignKey('Building', db_column='bin', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=True)
+    housenumber = models.TextField(blank=True, null=True)
     communityboard = models.TextField(blank=True, null=True)
     councildistrict = models.TextField(blank=True, null=True)
     censustract = models.TextField(blank=True, null=True)
     ntaneighborhoodtabulationarea = models.TextField(blank=True, null=True)
-    housenumber = models.TextField(blank=True, null=True)
     streetname = models.TextField(blank=True, null=True)
     borough = models.TextField(blank=True, null=True)
     postcode = models.TextField(blank=True, null=True)

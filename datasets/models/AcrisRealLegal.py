@@ -105,8 +105,8 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
         lastyear = dates.get_last_year(string=False)
         last3years = dates.get_last3years(string=False)
 
-        last30_subquery = Subquery(self.objects.filter(bbl=OuterRef('bbl'), documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES, documentid__docdate__gte=last30).values(
-            'bbl').annotate(count=Count('bbl')).values('count'))
+        last30_subquery = Subquery(self.objects.filter(bbl=OuterRef('bbl'), documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES,
+                                                       documentid__docdate__gte=last30).values('bbl').annotate(count=Count('bbl')).values('count'))
 
         lastyear_subquery = Subquery(self.objects.filter(bbl=OuterRef(
             'bbl'), documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES, documentid__docdate__gte=lastyear).values('bbl').annotate(count=Count('bbl')).values('count'))
@@ -117,10 +117,12 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
                                        .values('count')
                                        )
         latestprice = Subquery(self.objects.filter(bbl=OuterRef('bbl'), documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES).order_by(
-            '-documentid__docamount').values('documentid__docamount')[:1])
+            '-documentid__docdate').values('documentid__docamount')[:1])
+        latestsaledate = Subquery(self.objects.filter(bbl=OuterRef('bbl'), documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES).order_by(
+            '-documentid__docdate').values('documentid__docdate')[:1])
 
         ds.PropertyAnnotation.objects.update(acrisrealmasters_last30=Coalesce(last30_subquery, 0), acrisrealmasters_lastyear=Coalesce(lastyear_subquery, 0),
-                                             acrisrealmasters_last3years=Coalesce(last3years_subquery, 0), latestsaleprice=latestprice, acrisrealmasters_lastupdated=datetime.now())
+                                             acrisrealmasters_last3years=Coalesce(last3years_subquery, 0), latestsaleprice=latestprice, latestsaledate=latestsaledate, acrisrealmasters_lastupdated=datetime.now())
 
     def __str__(self):
         return self.key

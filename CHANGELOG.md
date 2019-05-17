@@ -43,6 +43,11 @@
 - speed up property table seeding - massive slowdown due to triple generator passes
 - split up address cleanup functions into standarization (for all) & typo cleanup (for evictions only)
 
-### V1.0.0b1.0.28
+### V1.0.0b1.0.3
 5/16/2019
-- Fix missing addresses bug - creates a PadRecord table and generates AddressRecords from complete PAD. 
+- Fix missing addresses bug - creates a PadRecord table and generates AddressRecords from complete PAD.
+
+### V1.0.0b1.31
+5/17/2019
+- Fix PropertyAnnotation table latestsaleprice bug where wrong price was listed.
+- add latestsaledate column to PropertyAnnotation table

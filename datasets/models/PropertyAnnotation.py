@@ -15,6 +15,7 @@ class PropertyAnnotation(BaseDatasetModel, models.Model):
     unitsrentstabilized = models.IntegerField(
         db_index=True, default=0, blank=True, null=True)  # from last year of taxbills
     latestsaleprice = models.BigIntegerField(db_index=True, default=0, blank=True, null=True)
+    latestsaledate = models.DateTimeField(blank=True, null=True)
     # each field is dynamically updated with each dataset update.
     # last year = exactly 12 months from today (or day of last update for corresponding dataset)
     hpdviolations_last30 = models.IntegerField(db_index=True, default=0, blank=True, null=True)
