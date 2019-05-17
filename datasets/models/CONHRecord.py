@@ -31,15 +31,18 @@ class CONHRecord(BaseDatasetModel, models.Model):
     bin = models.ForeignKey('Building', db_column='bin', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=True)
     housenumber = models.TextField(blank=True, null=True)
-    communityboard = models.TextField(blank=True, null=True)
-    councildistrict = models.TextField(blank=True, null=True)
-    censustract = models.TextField(blank=True, null=True)
-    ntaneighborhoodtabulationarea = models.TextField(blank=True, null=True)
     streetname = models.TextField(blank=True, null=True)
+    block = models.TextField(blank=True, null=True)
+    lot = models.TextField(blank=True, null=True)
+    borocode = models.TextField(blank=True, null=True)
     borough = models.TextField(blank=True, null=True)
     postcode = models.TextField(blank=True, null=True)
     latitude = models.DecimalField(decimal_places=16, max_digits=32, blank=True, null=True)
     longitude = models.DecimalField(decimal_places=16, max_digits=32, blank=True, null=True)
+    communityboard = models.TextField(blank=True, null=True)
+    councildistrict = models.TextField(blank=True, null=True)
+    censustract = models.TextField(blank=True, null=True)
+    ntaneighborhoodtabulationarea = models.TextField(blank=True, null=True)
 
     slim_query_fields = ["id", 'bbl']
 
