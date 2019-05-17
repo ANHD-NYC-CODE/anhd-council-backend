@@ -318,7 +318,7 @@ LOGGING = {
         },
         'django.db.backends': {
             'handlers': ['sql'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': False,
         },
         'django.template': {
