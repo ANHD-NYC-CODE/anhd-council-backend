@@ -8,18 +8,6 @@ from datasets import models as ds
 
 
 class CouncilViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
-    """
-    council_housing:
-    Returns the counts of each housing type in the council district.
-
-    ### Query Params:
-
-    #### unitsres=`number`
-      - adjusts the small homes definition to correspond to less than or equal to the specified number. Blank defaults to lte 6
-
-    #### program=`name`
-      - filters the rent regulated results to only count properties with the specified program name. Defaults to all core data + j-51 + 421a properties
-    """
     queryset = ds.Council.objects.all().order_by('pk')
     serializer_class = serial.CouncilSerializer
 

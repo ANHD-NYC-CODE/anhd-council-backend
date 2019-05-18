@@ -8,18 +8,6 @@ from datasets import models as ds
 
 
 class CommunityViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
-    """
-    community_housing:
-    Returns the counts of each housing type in the community district.
-
-    ### Query Params:
-
-    #### unitsres=`number`
-      - adjusts the small homes definition to correspond to less than or equal to the specified number. Blank defaults to lte 6
-
-    #### program=`name`
-      - filters the rent regulated results to only count properties with the specified program name. Defaults to all core data + j-51 + 421a properties
-    """
     EXCLUDED_COMMUNITY_PKS = ('164', '226', '227', '228', '355', '356', '480', '481', '482', '483', '484', '595')
     queryset = ds.Community.objects.exclude(pk__in=EXCLUDED_COMMUNITY_PKS).all().order_by('pk')
     serializer_class = serial.CommunitySerializer

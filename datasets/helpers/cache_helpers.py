@@ -13,6 +13,14 @@ import logging
 logger = logging.getLogger('app')
 
 
+def has_cachable_format(request):
+    params = request.query_params
+
+    formatted_request = 'format' in params.keys() and ('json' in params['format'] or 'csv' in params['format'])
+
+    return formatted_request
+
+
 def scrub_pagination(cached_value):
     if 'results' in cached_value:
         cached_value = cached_value['results']
@@ -70,7 +78,7 @@ def cache_request_path():
             params = deepcopy(request.query_params)
             cache_key = construct_cache_key(request, params)
 
-            if cache_key in cache:
+            if cache_key in cache and has_cachable_format(request):
                 logger.debug('Serving cache: {}'.format(cache_key))
                 cached_value = cache.get(cache_key)
                 cached_value = decompress_cache(cached_value)
@@ -79,7 +87,7 @@ def cache_request_path():
             else:
                 response = function(*original_args, **original_kwargs)
 
-                if (response.status_code == 200):  # only cache good responses
+                if (response.status_code == 200) and has_cachable_format(request):  # only cache good responses and json/csv formats
                     value_to_cache = response.data
                     value_to_cache = scrub_pagination(value_to_cache)
                     value_to_cache = compress_cache(value_to_cache)

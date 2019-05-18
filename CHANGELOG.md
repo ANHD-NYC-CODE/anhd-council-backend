@@ -59,3 +59,9 @@
 - fix bug that was crashing `/docs` page
 - adds `padsrecords` resource route and `buildings/<bin>/padrecords` route
 - adds `properties/<bbl>/addressrecords` route
+
+### V1.0.0b1.33
+5/18/2019
+- only cache requests with `?format=json` or `?format=csv`
+- fix eviction resource date filters
+- Add more eviction filter fields

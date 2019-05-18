@@ -13,6 +13,10 @@ from datasets import models as ds
 
 
 class EvictionViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
+    """
+    <a href="https://api.displacementalert.org/docs/#evictions" target="_blank">View API Documentation for evictions</a>
+    """
+
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
     queryset = ds.Eviction.objects.all().order_by('pk')
     serializer_class = serial.EvictionSerializer
