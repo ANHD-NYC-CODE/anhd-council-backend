@@ -2,6 +2,7 @@ from django.core.cache import cache
 from django.conf import settings
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
+from django.db.models.functions import Coalesce
 
 from datasets import filter_helpers
 from rest_framework import viewsets
@@ -67,40 +68,44 @@ def prefetch_annotated_datasets(queryset, request):
 
     for model_name in settings.ANNOTATED_DATASETS:
         dataset = getattr(ds, model_name)
-        if dataset == ds.AcrisRealMaster:
-            dataset_prefix = 'acrisreallegal'
-            annotation_dict = annotated_fields_to_dict(dataset=dataset, start=get_annotation_start(
-                params, dataset, dataset.QUERY_DATE_KEY), end=get_annotation_end(params, dataset, dataset.QUERY_DATE_KEY))
+        plural_name = model_name.lower() + 's'
+        # only do a prefetch and annotation query if the model name is in the query params
+        # otherwise the values default to the last30 value in the property annotation using the serializer
+        if plural_name in params.keys() or 'q' in params.keys() and plural_name in params['q']:
+            if dataset == ds.AcrisRealMaster:
+                dataset_prefix = 'acrisreallegal'
+                annotation_dict = annotated_fields_to_dict(dataset=dataset, start=get_annotation_start(
+                    params, dataset, dataset.QUERY_DATE_KEY), end=get_annotation_end(params, dataset, dataset.QUERY_DATE_KEY))
 
-            field_path = 'documentid__' + dataset.QUERY_DATE_KEY
-            date_filters = filter_helpers.value_dict_to_date_filter_dict(field_path, annotation_dict)
-            count_subquery = Subquery(ds.AcrisRealLegal.objects.filter(bbl=OuterRef('bbl'), documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES, **date_filters).values(
-                'bbl').annotate(count=Count('bbl')).values('count'), output_field=IntegerField())
-            queryset = queryset.prefetch_related(dataset_prefix + '_set').annotate(**
-                                                                                   {'acrisrealmasters': count_subquery})
-        elif dataset == ds.LisPenden:
-            dataset_prefix = dataset.__name__.lower()
-            annotation_dict = annotated_fields_to_dict(dataset=dataset, start=get_annotation_start(
-                params, dataset, dataset.QUERY_DATE_KEY), end=get_annotation_end(params, dataset, dataset.QUERY_DATE_KEY))
+                field_path = 'documentid__' + dataset.QUERY_DATE_KEY
+                date_filters = filter_helpers.value_dict_to_date_filter_dict(field_path, annotation_dict)
+                count_subquery = Subquery(ds.AcrisRealLegal.objects.filter(bbl=OuterRef('bbl'), documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES, **date_filters).values(
+                    'bbl').annotate(count=Count('bbl')).values('count'), output_field=IntegerField())
+                queryset = queryset.prefetch_related(dataset_prefix + '_set').annotate(**
+                                                                                       {'acrisrealmasters': Coalesce(count_subquery, 0)})
+            elif dataset == ds.LisPenden:
+                dataset_prefix = dataset.__name__.lower()
+                annotation_dict = annotated_fields_to_dict(dataset=dataset, start=get_annotation_start(
+                    params, dataset, dataset.QUERY_DATE_KEY), end=get_annotation_end(params, dataset, dataset.QUERY_DATE_KEY))
 
-            field_path = dataset.QUERY_DATE_KEY
-            date_filters = filter_helpers.value_dict_to_date_filter_dict(field_path, annotation_dict)
-            count_subquery = Subquery(dataset.objects.filter(bbl=OuterRef('bbl'), type='foreclosure', **date_filters).values(
-                'bbl').annotate(count=Count('bbl')).values('count'), output_field=IntegerField())
-            queryset = queryset.prefetch_related(dataset_prefix + '_set').annotate(**
-                                                                                   {dataset_prefix + 's': count_subquery})
+                field_path = dataset.QUERY_DATE_KEY
+                date_filters = filter_helpers.value_dict_to_date_filter_dict(field_path, annotation_dict)
+                count_subquery = Subquery(dataset.objects.filter(bbl=OuterRef('bbl'), type='foreclosure', **date_filters).values(
+                    'bbl').annotate(count=Count('bbl')).values('count'), output_field=IntegerField())
+                queryset = queryset.prefetch_related(dataset_prefix + '_set').annotate(**
+                                                                                       {dataset_prefix + 's': Coalesce(count_subquery, 0)})
 
-        else:
-            dataset_prefix = dataset.__name__.lower()
-            annotation_dict = annotated_fields_to_dict(dataset=dataset, start=get_annotation_start(
-                params, dataset, dataset.QUERY_DATE_KEY), end=get_annotation_end(params, dataset, dataset.QUERY_DATE_KEY))
+            else:
+                dataset_prefix = dataset.__name__.lower()
+                annotation_dict = annotated_fields_to_dict(dataset=dataset, start=get_annotation_start(
+                    params, dataset, dataset.QUERY_DATE_KEY), end=get_annotation_end(params, dataset, dataset.QUERY_DATE_KEY))
 
-            field_path = dataset.QUERY_DATE_KEY
-            date_filters = filter_helpers.value_dict_to_date_filter_dict(field_path, annotation_dict)
-            count_subquery = Subquery(dataset.objects.filter(bbl=OuterRef('bbl'), **date_filters).values(
-                'bbl').annotate(count=Count('bbl')).values('count'), output_field=IntegerField())
-            queryset = queryset.prefetch_related(dataset_prefix + '_set').annotate(**
-                                                                                   {dataset_prefix + 's': count_subquery})
+                field_path = dataset.QUERY_DATE_KEY
+                date_filters = filter_helpers.value_dict_to_date_filter_dict(field_path, annotation_dict)
+                count_subquery = Subquery(dataset.objects.filter(bbl=OuterRef('bbl'), **date_filters).values(
+                    'bbl').annotate(count=Count('bbl')).values('count'), output_field=IntegerField())
+                queryset = queryset.prefetch_related(dataset_prefix + '_set').annotate(**
+                                                                                       {dataset_prefix + 's': Coalesce(count_subquery, 0)})
 
     return queryset
 

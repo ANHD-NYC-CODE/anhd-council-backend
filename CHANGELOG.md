@@ -52,3 +52,10 @@
 - Fix PropertyAnnotation table latestsaleprice bug where wrong price was listed.
 - add latestsaledate column to PropertyAnnotation table
 - add newest CONH record fields
+
+### V1.0.0b1.32
+5/18/2019
+- Improve custom search speed by eliminating annotation queries unless needed
+- fix bug that was crashing `/docs` page
+- adds `padsrecords` resource route and `buildings/<bin>/padrecords` route
+- adds `properties/<bbl>/addressrecords` route

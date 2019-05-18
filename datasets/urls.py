@@ -71,6 +71,13 @@ properties_router.register(
 )
 
 properties_router.register(
+    'addressrecords',
+    v.addressrecord_views.AddressRecordViewSet,
+    base_name='property-addressrecords',
+    parents_query_lookups=['bbl']
+)
+
+properties_router.register(
     'hpdbuildings',
     v.hpdbuilding_views.HPDBuildingViewSet,
     base_name='property-hpdbuildings',
@@ -255,7 +262,12 @@ properties_router.register(
 
 
 buildings_router = router.register(r'buildings', v.building_views.BuildingViewSet)
-
+buildings_router.register(
+    'padrecords',
+    v.padrecord_views.PadRecordViewSet,
+    base_name='building-padrecords',
+    parents_query_lookups=['bin']
+)
 buildings_router.register(
     'hpdviolations',
     v.hpdviolation_views.HPDViolationViewSet,
@@ -445,6 +457,8 @@ router.register(r'publichousingrecords', v.publichousingrecord_views.PublicHousi
 router.register(r'lispendens', v.lispenden_views.LisPendenViewSet)
 router.register(r'propertyannotations', v.propertyannotation_views.PropertyAnnotationViewSet)
 router.register(r'addressrecords', v.addressrecord_views.AddressRecordViewSet)
+router.register(r'padrecords', v.padrecord_views.PadRecordViewSet)
+
 
 custom_routes = format_suffix_patterns([
     path('councils/<int:pk>/summary/', council_summary, name='council-summary'),

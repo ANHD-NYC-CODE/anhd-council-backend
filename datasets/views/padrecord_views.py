@@ -14,7 +14,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 class PadRecordViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
-    queryset = ds.Building.objects.all().order_by('pk')
+    queryset = ds.PadRecord.objects.all().order_by('pk')
     serializer_class = serial.PadRecordSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = PadRecordFilter

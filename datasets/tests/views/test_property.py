@@ -497,12 +497,12 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(content[0]['bbl'], '1')
 
         self.assertEqual(content[0]['hpdviolations__01/01/2017-01/01/2019'], 5)
-        self.assertEqual(content[0]['hpdcomplaints__12/01/2018-12/31/2018'], None)
-        self.assertEqual(content[0]['dobviolations__12/02/2018-01/01/2019'], None)
-        self.assertEqual(content[0]['dobcomplaints__12/02/2018-01/01/2019'], None)
-        self.assertEqual(content[0]['ecbviolations__12/02/2018-01/01/2019'], None)
-        self.assertEqual(content[0]['dobfiledpermits__12/02/2018-01/01/2019'], None)
-        self.assertEqual(content[0]['evictions__12/02/2018-01/01/2019'], None)
+        self.assertEqual(content[0]['hpdcomplaints__12/01/2018-12/31/2018'], 0)
+        self.assertEqual(content[0]['dobviolations__12/02/2018-01/01/2019'], 0)
+        self.assertEqual(content[0]['dobcomplaints__12/02/2018-01/01/2019'], 0)
+        self.assertEqual(content[0]['ecbviolations__12/02/2018-01/01/2019'], 0)
+        self.assertEqual(content[0]['dobfiledpermits__12/02/2018-01/01/2019'], 0)
+        self.assertEqual(content[0]['evictions__12/02/2018-01/01/2019'], 0)
 
     # summary-annotated serializer
 
@@ -552,9 +552,9 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
         self.assertEqual(content[0]['bbl'], '1')
-        self.assertEqual(content[0]['hpdviolations__01/01/2017-{}'.format(now_date)], None)
+        self.assertEqual(content[0]['hpdviolations__01/01/2017-{}'.format(now_date)], 0)
         self.assertEqual(content[0]['dobviolations__01/01/2018-{}'.format(now_date)], 5)
-        self.assertEqual(content[0]['ecbviolations__12/02/2018-{}'.format(now_date)], None)
+        self.assertEqual(content[0]['ecbviolations__12/02/2018-{}'.format(now_date)], 0)
 
         self.assertEqual(content[1]['bbl'], '2')
         self.assertEqual(content[1]['hpdviolations__01/01/2017-{}'.format(now_date)], 5)

@@ -36,7 +36,8 @@ class PropertyViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyM
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-
+        if not self.request:
+            return context
         if 'summary' in self.request.query_params and self.request.query_params['summary'] == 'true':
             if 'summary-type' in self.request.query_params and self.request.query_params['summary-type'].lower() == 'short-annotated':
                 # calculate dynamic annotation fields here.

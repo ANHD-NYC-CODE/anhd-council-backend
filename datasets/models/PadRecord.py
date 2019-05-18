@@ -85,7 +85,7 @@ class PadRecord(BaseDatasetModel, models.Model):
             if is_null(row['lhnd']):
                 continue
             row['stname'] = clean_number_and_streets(row['stname'], False, clean_typos=False)
-            row['key'] = re.sub(' ', '', "{}{}-{}{}".format(row['bin_id'], row['lhnd'], row['hhnd'], row['stname']))
+            row['key'] = re.sub(' ', '', "{}{}-{}{}".format(row['bin'], row['lhnd'], row['hhnd'], row['stname']))
             yield row
 
     # trims down new update files to preserve memory
