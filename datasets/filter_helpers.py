@@ -7,7 +7,7 @@ from datasets.utils import advanced_filter as af
 
 
 def property_dataset_annotation_key(model_name):
-    if model_name == 'acrisrealmaster':
+    if model_name.lower() == 'acrisrealmaster':
         return 'acrisreallegals'
     else:
         return model_name.lower() + 's'

@@ -63,7 +63,6 @@ def prefetch_housingtype_sets(queryset):
 
 
 def prefetch_annotated_datasets(queryset, request):
-
     params = request.query_params
 
     for model_name in settings.ANNOTATED_DATASETS:
