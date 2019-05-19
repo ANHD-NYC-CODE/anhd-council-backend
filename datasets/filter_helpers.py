@@ -6,6 +6,13 @@ from django.db.models import Count, FilteredRelation, Q, Subquery, OuterRef, Int
 from datasets.utils import advanced_filter as af
 
 
+def property_dataset_annotation_key(model_name):
+    if model_name == 'acrisrealmaster':
+        return 'acrisreallegals'
+    else:
+        return model_name.lower() + 's'
+
+
 def value_dict_to_date_filter_dict(date_prefix, values):
     ####
     # Converts {dates: ({'__gte': 2018-01-01})}

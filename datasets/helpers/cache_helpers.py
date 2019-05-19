@@ -14,6 +14,9 @@ logger = logging.getLogger('app')
 
 
 def has_cachable_format(request):
+    if settings.TESTING:
+        return True
+
     params = request.query_params
 
     formatted_request = 'format' in params.keys() and ('json' in params['format'] or 'csv' in params['format'])

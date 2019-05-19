@@ -71,7 +71,7 @@ def prefetch_annotated_datasets(queryset, request):
         plural_name = model_name.lower() + 's'
         # only do a prefetch and annotation query if the model name is in the query params
         # otherwise the values default to the last30 value in the property annotation using the serializer
-        if plural_name in params.keys() or 'q' in params.keys() and plural_name in params['q']:
+        if filter_helpers.property_dataset_annotation_key(model_name) in params.keys() or ('q' in params.keys() and filter_helpers.property_dataset_annotation_key(model_name) in params['q']):
             if dataset == ds.AcrisRealMaster:
                 dataset_prefix = 'acrisreallegal'
                 annotation_dict = annotated_fields_to_dict(dataset=dataset, start=get_annotation_start(
