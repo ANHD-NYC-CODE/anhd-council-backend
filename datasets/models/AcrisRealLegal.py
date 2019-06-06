@@ -116,9 +116,10 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
                                        .annotate(count=Count('bbl'))
                                        .values('count')
                                        )
-        latestprice = Subquery(self.objects.filter(bbl=OuterRef('bbl'), documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES).order_by(
+        latestprice = Subquery(self.objects.filter(bbl=OuterRef('bbl'), documentid__docdate__isnull=False, documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES).order_by(
             '-documentid__docdate').values('documentid__docamount')[:1])
-        latestsaledate = Subquery(self.objects.filter(bbl=OuterRef('bbl'), documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES).order_by(
+        latestsaledate = Subquery(self.objects.filter(bbl=OuterRef('bbl'), documentid__docdate__isnull=False,
+                                                      documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES).order_by(
             '-documentid__docdate').values('documentid__docdate')[:1])
 
         ds.PropertyAnnotation.objects.update(acrisrealmasters_last30=Coalesce(last30_subquery, 0), acrisrealmasters_lastyear=Coalesce(lastyear_subquery, 0),
@@ -148,7 +149,7 @@ def annotate_property_on_save(sender, instance, created, **kwargs):
                 documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES, documentid__docdate__gte=last3years).count(), 0)
 
             annotation.latestsaleprice = ds.AcrisRealMaster.objects.filter(documentid__in=annotation.bbl.acrisreallegal_set.values(
-                'documentid'), doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES).latest('docdate').docamount
+                'documentid'), doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES, docdate__isnull=False).latest('docdate').docamount
 
             annotation.save()
         except Exception as e:
