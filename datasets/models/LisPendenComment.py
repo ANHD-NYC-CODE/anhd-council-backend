@@ -55,6 +55,8 @@ class LisPendenComment(BaseDatasetModel, models.Model):
 
             if comment.key_id in keys:
                 continue
+            if not comment.datecomments:
+                continue
             if comment.foreclosure_in_comment():
                 related_comments = self.objects.prefetch_related('key').filter(key=comment.key_id)
                 # search for word 'mortgage' in all comments related to the lispenden
