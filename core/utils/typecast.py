@@ -13,6 +13,7 @@ import re
 import datetime
 from decimal import Decimal, InvalidOperation
 import logging
+import pytz
 
 logger = logging.getLogger('app')
 
@@ -73,14 +74,14 @@ def numeric(x):
 def mm_dd_yyyy(date_str):
     try:
         month, day, year = map(int, date_str[0:10].split('/'))
-        return datetime.date(year, month, day)
+        return datetime.datetime(year, month, day, 0, 0, 0).replace(tzinfo=pytz.timezone('US/Eastern'))
     except ValueError:
         return None
 
 
 def yyyy_mm_dd(date_str):
     try:
-        return datetime.datetime.strptime(str(date_str), '%Y%m%d').date()
+        return datetime.datetime.strptime(str(date_str), '%Y%m%d').replace(tzinfo=pytz.timezone('US/Eastern')).date()
     except ValueError:
         logger.warning("* Unable to parse date string - {}".format(date_str))
         return None
@@ -101,7 +102,7 @@ def date(x):
     # checks for 20181231 date input
     if re.match(r'[0-9]{8}', x):
         try:
-            return datetime.datetime.strptime(x, '%Y%m%d').date()
+            return yyyy_mm_dd(x)
         except ValueError:
             logger.warning("* Unable to parse date string - {}".format(x))
             return None
@@ -121,8 +122,8 @@ def date(x):
         # checks for 12/31/2018 12:00:00 date input
         return mm_dd_yyyy(x)
     elif len(x.split('T')[0].replace('-', '')) == 8:
+        # checks for 2017-02-06T00:00:00000
         return yyyy_mm_dd(x.split('T')[0].replace('-', ''))
-        # 2017-02-06T00:00:00000
     else:
         logger.warning("* Unable to parse date string - {}".format(x))
         return None

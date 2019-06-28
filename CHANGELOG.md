@@ -65,3 +65,7 @@
 - only cache requests with `?format=json` or `?format=csv`
 - fix eviction resource date filters
 - Add more eviction filter fields
+
+### V1.0.0b1.34
+6/28/2019
+- Make all typecasted dates Timezone aware for EST.
