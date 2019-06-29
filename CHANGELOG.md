@@ -69,3 +69,7 @@
 ### V1.0.0b1.34
 6/28/2019
 - Make all typecasted dates Timezone aware for EST.
+
+### V1.0.0b1.35
+6/29/2019
+- Add api filters to all DOB permit join tables.
