@@ -4,6 +4,9 @@ from rest_framework.settings import api_settings
 from rest_framework_csv import renderers as rf_csv
 from datasets.helpers.cache_helpers import cache_request_path
 from datasets.helpers.api_helpers import ApplicationViewSet
+from datasets.filters import DOBFiledPermitFilter
+from django_filters.rest_framework import DjangoFilterBackend
+
 
 from datasets import serializers as serial
 from datasets import models as ds
@@ -13,6 +16,8 @@ class DOBFiledPermitViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.Rea
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
     queryset = ds.DOBFiledPermit.objects.all().order_by('pk')
     serializer_class = serial.DOBFiledPermitSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = DOBFiledPermitFilter
 
     @cache_request_path()
     def list(self, request, *args, **kwargs):
