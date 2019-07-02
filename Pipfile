@@ -39,6 +39,7 @@ markdown = "*"
 httpretty = "*"
 django-sendgrid-v5 = "*"
 freezegun = "*"
+gevent = "*"
 
 [requires]
 python_version = "3.5.6"
