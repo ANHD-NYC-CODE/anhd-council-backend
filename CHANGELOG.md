@@ -73,7 +73,3 @@
 ### V1.0.0b1.35
 6/29/2019
 - Add api filters to all DOB permit join tables.
-
-### V1.0.0b1.4
-7/02/2019
-- Boot gunicorn with GEvent to improve worker behavior.
