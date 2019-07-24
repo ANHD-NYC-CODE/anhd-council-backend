@@ -659,8 +659,8 @@ class DOBPermitFiledTests(BaseTest, TestCase):
                                      file_name="mock_dob_permit_filed_legacy.csv")
         ds.DOBLegacyFiledPermit.seed_or_update_self(file_path=update.file.file.path, update=update)
         self.assertEqual(update.total_rows, 5)
-        self.assertEqual(ds.DOBLegacyFiledPermit.objects.count(), 4)
-        self.assertEqual(update.rows_created, 4)
+        self.assertEqual(ds.DOBLegacyFiledPermit.objects.count(), 5)
+        self.assertEqual(update.rows_created, 5)
 
     def test_seed_record_after_update(self):
         update = self.update_factory(model_name="DOBLegacyFiledPermit",
@@ -670,7 +670,7 @@ class DOBPermitFiledTests(BaseTest, TestCase):
         new_update = self.update_factory(dataset=update.dataset, model_name="DOBLegacyFiledPermit",
                                          file_name="mock_dob_permit_filed_legacy_diff.csv", previous_file_name="mock_dob_permit_issued_now.csv")
         ds.DOBLegacyFiledPermit.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
-        self.assertEqual(ds.DOBLegacyFiledPermit.objects.count(), 5)
+        self.assertEqual(ds.DOBLegacyFiledPermit.objects.count(), 6)
 
         changed_record = ds.DOBLegacyFiledPermit.objects.filter(
             job='421677974')[0]
