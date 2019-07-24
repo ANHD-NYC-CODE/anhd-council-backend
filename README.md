@@ -23,7 +23,7 @@
   - councils
   - pluto properties
   - buildings
-  - padrecord 
+  - padrecord
   - hpdbuildings
   - tax liens
   - coredata
@@ -52,7 +52,7 @@
 
 
 
-**You can view logs with `docker-compose logs -f app`**
+**You can view logs in production with `docker-compose logs -f app`**
 
 **To add environmental variables into running workers, refer to https://stackoverflow.com/questions/27812548/how-to-set-an-environment-variable-in-a-running-docker-container**
 - `docker exec -i CONTAINER_ID /bin/bash -c "export VAR1=VAL1 && export VAR2=VAL2 && your_cmd"`
@@ -70,23 +70,71 @@
 2) Rebuild the cache by visiting the admin interface the running the periodic task titled "reset cache" - takes approx 30-45 min to complete.
 
 
-# Opening a live shell
+## Maintaining this App
+
+### Opening a live shell
 
 1) ssh into the server
 2) open a shell into the container - `sudo docker exec -it app /bin/bash`
 3) open a django shell - `python manage.py shell`
+4) close the shell when finished (important!!) with `exit`
+
+### Adding new async tasks
+
+You can load tasks with `python manage.py loaddata crontabs` and `python manage.py loaddata tasks` or add them manually in the `periodic tasks` section of the admin panel.
+
+I recommend going through the admin panel and adding it in manually because rewriting all the tasks with a new bulk upload using the `loaddata` command has run into problems.
 
 
-# Adding new async tasks
-
-You can load tasks with `python manage.py loaddata crontabs` and `python manage.py loaddata tasks` or add them manually in the `periodic tasks` section of the admin panel
-
-# Updating Pluto or PAD
+### Updating Pluto or PAD
 
 Updating either one of these will leave the old entries intact and overwrite any existing entries that conflict with the new entries. To update these records, create an update in the admin panel using the appropriate file containing the new data.
 
-# Building the address table
+### Building the address table
 
-Whenever you update Pluto or PAD, you'll need to update the address records to make the properties searchable. Updating the address records will delete all records and seed new ones from the existing property and building records. This runs within an atomic transaction, so there will be no interruption to the live address data while this is happening.
+Whenever you update Pluto or PAD, you'll need to update the address records to make the new properties searchable. Updating the address records will delete all records and seed new ones from the existing property and building records. This runs within an atomic transaction, so there will be no interruption to the live address data while this is happening.
 
 To do so, create an update within the admin panel with only the dataset attribute selected, and set to `AddressRecord`.
+
+### Maintaining the daily cache.
+
+Every night at around 1am (at the time of this writing) a task runs which caches ALL of the community and council district endpoints that serve the property data to District Dashboard in the frontend. The file which runs this task is in `cache.py`.
+
+This script uses a unique token for authentication to cache both the authenticated and unauthenticated responses.
+
+It mirrors the GET endpoint that the frontend calls when users visit this page, so if the client ever changes this endpoint, MAKE SURE TO UPDATE IT HERE TOO OR ELSE THE NIGHTLY CACHE WILL NOT WORK.
+
+### Understanding the Advanced Search URL query code
+
+Currently, a url based method exists to build an advanced query. A POST method is still a work in prorgess.
+
+Numerous examples of url queries live in `datasets/tests/filters/test_property.py` under the class `PropertyAdvancedFilterTests`
+
+The query code is written to allow someone to construct a query with nested conditions. For example, X AND (Y OR Z) needs to be differentiated from (X AND Y) OR Z.
+
+###### Here's an example:
+
+If you want `"All properties with 10 HPD violations after 2018/01/01 AND EITHER (10 DOB violations after 2018/01/01 OR 10 ECB violations after 2018/01/01)"`:
+
+The query string would look like this:
+
+`localhost:3000/properties?q=*condition_0=AND filter_0=condition_1 filter_1=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__count__gte=10 *condition_1=OR filter_0=dobviolations__issueddate__gte=2018-01-01,dobviolations__count__gte=10 filter_1=ecbviolations__issueddate__gte=2018-01-01,ecbviolations__count__gte=10
+`
+
+Let's break this down first.
+
+- This query has 2 `conditions`. An `AND` condition (HPD Violations AND...) and an `OR` condition (DOB violations OR ECB vioklations.)
+- Each `filter` ("10 HPD violations after 2018/01/01" is a `filter`) has 2 `parameters` (after 2018/01/01 is a parameter, and >= 10 is a parameter).
+- The first condition (the `AND`) condition has a single nested condition (the `OR` condition is nested inside it).
+
+With these in mind, this is how you start defining a new condition in the query string:
+- `*condition_0=AND` - define the TYPE and give it a unique id ("0")
+- The first condition MUST have a unique ID of "0", but all subsequent conditions can have any unique ID you want.
+- Next, each `filter` is separated with a `SPACE`
+- In this case, a `nested condition` is assigned as a `filter`. In this example, `filter_0=condition_1` references `condition_1` (the unique ID here is "1" but it can be anything as long as it's referenced correctly.)
+- Then, the last filter of this condition is added with each `parameter` separated by a `COMMA` like so: `filter_1=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__count__gte=10`
+- The parameters are `raw django query language`. [Reference](https://docs.djangoproject.com/en/2.2/topics/db/queries/)
+- When condition_0's expression is complete, you can begin the next condition's expression after a `SPACE` using the same format.
+
+
+Please view the test suite `PropertyAdvancedFilterTests` in `datasets/tests/filters/test_property.py`. There are numerous examples of this language that cover all of the special cases and advanced query types. This feature was very well tested!
