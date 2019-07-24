@@ -2,7 +2,7 @@
 
 ### V1.0.0b1.36
 7/24/19
-- Remove jobtype filter from DOB Permit Application seeding
+- Remove jobtype filter from DOBLegacyFiledPermit seeding (previously was only seeding A1, A2, DM, and NB )
 
 ### V1.0.0b1.35
 6/29/2019
