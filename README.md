@@ -123,9 +123,9 @@ The query string would look like this:
 
 Let's break this down first.
 
-- This query has 2 `conditions`. An `AND` condition (HPD Violations AND...) and an `OR` condition (DOB violations OR ECB vioklations.)
+- This query has 2 `conditions`. An `AND` condition (HPD Violations AND...) and an `OR` condition (DOB violations OR ECB violations.)
 - Each `filter` ("10 HPD violations after 2018/01/01" is a `filter`) has 2 `parameters` (after 2018/01/01 is a parameter, and >= 10 is a parameter).
-- The first condition (the `AND`) condition has a single nested condition (the `OR` condition is nested inside it).
+- The first condition (the `AND` condition) has a single nested condition (the `OR` condition is nested inside it).
 
 With these in mind, this is how you start defining a new condition in the query string:
 - `*condition_0=AND` - define the TYPE and give it a unique id ("0")
