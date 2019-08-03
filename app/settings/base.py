@@ -372,7 +372,10 @@ ACTIVE_MODELS = [
     'LisPendenComment',
     'CONHRecord',
     'PropertyAnnotation',
-    'PadRecord'
+    'PadRecord',
+    'PSForeclosure',
+    'PSPreForeclosure',
+    'Foreclosure',
 
 ]
 

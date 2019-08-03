@@ -43,6 +43,7 @@ class LisPenden(BaseDatasetModel, models.Model):
     disp = models.TextField(blank=True, null=True)
     type = models.TextField(blank=True, null=True)
     source = models.TextField(blank=True, null=True)
+
     LISPENDEN_TYPES = {
         'foreclosure': 'foreclosure'
     }
@@ -103,10 +104,14 @@ class LisPenden(BaseDatasetModel, models.Model):
         self.seed_with_upsert(**kwargs)
         logger.debug('marking foreclosures by creditor for {}', self.__name__)
         self.mark_foreclosure_with_creditor()
+        # TODO: Create a Foreclosure record for all lispendens marked with foreeclosures
+
+        # TODO: move this into a Dataset public class method
         dataset = self.get_dataset()
         dataset.api_last_updated = datetime.today()
         dataset.save()
 
+    # TODO: Redo this method for Foreclosure model
     @classmethod
     def annotate_properties(self):
         count = 0
