@@ -1,11 +1,13 @@
 from django.db import models
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
-from core.utils.transform import from_csv_file_to_gen, with_bbl
+from core.utils.transform import from_xlsx_file_to_gen
 from datasets.utils.validation_filters import is_null
 from datasets.utils import dates
 from django.db.models import Count, OuterRef, Q, Subquery
 from django.db.models.functions import Coalesce
 from datetime import datetime, timezone
+import uuid
+
 import logging
 from datasets import models as ds
 from django.db.models import Q
@@ -48,3 +50,19 @@ class PSPreForeclosure(BaseDatasetModel, models.Model):
     mortgagedate = models.DateTimeField(blank=True, null=True)  # mortgage_date
     mortgageamount = models.IntegerField(blank=True, null=True)  # mortgage_amount
     hasphoto = models.TextField(blank=True, null=True)
+
+    @classmethod
+    def pre_validation_filters(self, gen_rows):
+        for row in gen_rows:
+            row['key'] = "#{}-#{}-#{}".format(row['indexno'], row['bbl'], row['documenttype'])
+            row['bbl'] = row['bbl'].replace('-', '')
+            yield row
+
+    @classmethod
+    def transform_self(self, file_path, update=None):
+        return self.pre_validation_filters(from_xlsx_file_to_gen(file_path, 'Pre-Foreclosures Details', update, skip_rows=7))
+
+    @classmethod
+    def seed_or_update_self(self, **kwargs):
+        logger.debug("Seeding/Updating {}", self.__name__)
+        self.seed_with_upsert(**kwargs)

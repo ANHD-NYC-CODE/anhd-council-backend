@@ -203,11 +203,11 @@ def copy_insert_from_csv(table_name, temp_file_path, **kwargs):
         os.remove(temp_file_path)
 
 
-def upsert_query(table_name, row, primary_key, no_conflict=False):
+def upsert_query(table_name, row, primary_key, ignore_conflict=False):
     fields = ', '.join(row.keys())
     upsert_fields = ', '.join([k + "= EXCLUDED." + k for k in row.keys()])
     placeholders = ', '.join(["%s" for v in row.values()])
-    conflict_action = "DO NOTHING" if no_conflict else "DO UPDATE SET {}".format(upsert_fields)
+    conflict_action = "DO NOTHING" if ignore_conflict else "DO UPDATE SET {}".format(upsert_fields)
     sql = "INSERT INTO {table_name} ({fields}) VALUES ({values}) ON CONFLICT ({primary_key}) {conflict_action};"
 
     return sql.format(table_name=table_name, fields=fields, values=placeholders, primary_key=primary_key, conflict_action=conflict_action)
@@ -246,7 +246,7 @@ def build_pkey_tuple(row, pkey):
 def batch_upsert_from_gen(model, rows, batch_size, **kwargs):
     table_name = model._meta.db_table
     update = kwargs['update'] if 'update' in kwargs else None
-    no_conflict = kwargs['no_conflict'] if 'no_conflict' in kwargs else None
+    ignore_conflict = kwargs['ignore_conflict'] if 'ignore_conflict' in kwargs else None
 
     with connection.cursor() as curs:
         try:
@@ -261,7 +261,7 @@ def batch_upsert_from_gen(model, rows, batch_size, **kwargs):
                 else:
                     with transaction.atomic():
                         logger.debug("Seeding next batch for {}.".format(model.__name__))
-                        batch_upsert_rows(model, batch, batch_size, update=update, no_conflict=no_conflict)
+                        batch_upsert_rows(model, batch, batch_size, update=update, ignore_conflict=ignore_conflict)
                         count = count + batch_size
                         logger.debug("Rows touched: {}".format(count))
 
@@ -271,7 +271,7 @@ def batch_upsert_from_gen(model, rows, batch_size, **kwargs):
 
 
 # No Conflict = True means DO NOTHING on conflict. False means update on conflict.
-def batch_upsert_rows(model, rows, batch_size, update=None, no_conflict=False):
+def batch_upsert_rows(model, rows, batch_size, update=None, ignore_conflict=False):
     table_name = model._meta.db_table
     primary_key = model._meta.pk.name
     """ Inserts many row, all in the same transaction"""
@@ -281,7 +281,7 @@ def batch_upsert_rows(model, rows, batch_size, update=None, no_conflict=False):
         try:
             starting_count = model.objects.count()
             with transaction.atomic():
-                curs.executemany(upsert_query(table_name, rows[0], primary_key, no_conflict=no_conflict), tuple(
+                curs.executemany(upsert_query(table_name, rows[0], primary_key, ignore_conflict=ignore_conflict), tuple(
                     build_row_values(row) for row in rows))
 
             if update:
@@ -292,10 +292,10 @@ def batch_upsert_rows(model, rows, batch_size, update=None, no_conflict=False):
 
         except Exception as e:
             logger.info('Database - error upserting rows. Doing single row upsert. - Error: {}'.format(e))
-            upsert_single_rows(model, rows, update=update, no_conflict=no_conflict)
+            upsert_single_rows(model, rows, update=update, ignore_conflict=ignore_conflict)
 
 
-def upsert_single_rows(model, rows, update=None, no_conflict=False):
+def upsert_single_rows(model, rows, update=None, ignore_conflict=False):
     table_name = model._meta.db_table
     primary_key = model._meta.pk.name
     rows_created = 0
@@ -305,7 +305,7 @@ def upsert_single_rows(model, rows, update=None, no_conflict=False):
         try:
             with connection.cursor() as curs:
                 with transaction.atomic():
-                    curs.execute(upsert_query(table_name, row, primary_key, no_conflict=no_conflict),
+                    curs.execute(upsert_query(table_name, row, primary_key, ignore_conflict=ignore_conflict),
                                  build_row_values(row))
                     rows_updated = rows_updated + 1
                     rows_created = rows_created + 1

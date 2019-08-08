@@ -121,7 +121,7 @@ class PadRecord(BaseDatasetModel, models.Model):
     @classmethod
     def seed_or_update_self(self, **kwargs):
         logger.debug("Seeding/Updating {}", self.__name__)
-        self.bulk_seed(**kwargs, no_conflict=True, overwrite=True)
+        self.bulk_seed(**kwargs, ignore_conflict=True, overwrite=True)
         self.annotate_buildings()  # add pad addresses to building model
 
     def __str__(self):

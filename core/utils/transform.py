@@ -5,6 +5,7 @@ import io
 import re
 import types
 import pyproj
+import xlrd
 from zipfile import ZipFile
 from pyproj import *
 import copy
@@ -12,12 +13,16 @@ from django.conf import settings
 from .bbl import bbl
 from .utility import merge
 from core.utils.csv_helpers import count_csv_rows
+from openpyxl.workbook import Workbook
+from openpyxl.reader.excel import load_workbook, InvalidFileException
+
+
 import logging
 
 logger = logging.getLogger('app')
 
 
-invalid_header_chars = ["\n", "\r", ' ', '-', '#', '.', "'", '"', '_', '/', '(', ')', ':', "&", "’"]
+invalid_header_chars = ["\n", "\r", ' ', '-', '#', '.', "'", '"', '_', '/', '(', ')', ':', "&", "’", '?']
 replace_header_chars = [('%', 'pct')]
 invalid_header_names = ["class"]
 starts_with_numbers = re.compile(r'^(\d+)(.*)$')
@@ -107,10 +112,37 @@ def from_dict_list_to_gen(list_rows):
         yield dict((headers[i], values[i]) for i in range(0, len(headers)))
 
 
-def from_xlsx_file_to_gen(file_path, worksheet, update):
-    wb = openpyxl.load_workbook(file_path)
+def convert_xls_to_xlsx_workbook(file_path):
+    # https://stackoverflow.com/questions/9918646/how-to-convert-xls-to-xlsx
+    # first open using xlrd
+    book_xls = xlrd.open_workbook(file_path)
+    book_xlsx = Workbook()
+
+    sheet_names = book_xls.sheet_names()
+    for sheet_index in range(0, len(sheet_names)):
+        sheet_xls = book_xls.sheet_by_name(sheet_names[sheet_index])
+        if sheet_index == 0:
+            sheet_xlsx = book_xlsx.active
+            sheet_xlsx.title = sheet_names[sheet_index]
+        else:
+            sheet_xlsx = book_xlsx.create_sheet(title=sheet_names[sheet_index])
+
+        for row in range(0, sheet_xls.nrows):
+            for col in range(0, sheet_xls.ncols):
+                sheet_xlsx.cell(row=row + 1, column=col + 1).value = sheet_xls.cell_value(row, col)
+
+    return book_xlsx
+
+
+def from_xlsx_file_to_gen(file_path, worksheet, update, skip_rows=0):
+    if 'xlsx' in file_path.split('.')[-1]:
+        wb = openpyxl.load_workbook(file_path)
+    else:
+        wb = convert_xls_to_xlsx_workbook(file_path)
     worksheet = wb[worksheet]
     rows = worksheet.rows
+    for i in range(skip_rows):
+        next(rows)
     headers = clean_headers(','.join([c.value for c in next(rows)]))
 
     for row in rows:
