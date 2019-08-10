@@ -8,7 +8,7 @@ import logging
 logger = logging.getLogger('app')
 
 # Instructions:
-# 1) Login to PropertyShark on 1st of month & download last month's data
+# 1) Login to PropertyShark on 1st of month & download last month's data for "PreForeclosure"
 # 2) Upload via admin interface
 
 
@@ -31,9 +31,9 @@ class PSPreForeclosure(BaseDatasetModel, models.Model):
     zipcode = models.TextField(blank=True, null=True)
     creditor = models.TextField(blank=True, null=True)  # creditor
     neighborhood = models.TextField(blank=True, null=True)
-    documenttype = models.TextField(blank=True, null=True)
+    documenttype = models.TextField(blank=True, null=True)  # document_type
     schooldistrict = models.TextField(blank=True, null=True)
-    lientype = models.TextField(blank=True, null=True)
+    lientype = models.TextField(blank=True, null=True)  # lien_type
     buildingclass = models.TextField(blank=True, null=True)
     taxvalue = models.TextField(blank=True, null=True)
     dateadded = models.DateTimeField(blank=True, null=True)  # date_added

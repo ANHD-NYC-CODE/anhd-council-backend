@@ -12,7 +12,6 @@ class PSForeclosureTests(BaseTest, TestCase):
         self.clean_tests()
 
     def test_seed_psforeclosure_first(self):
-        property = self.property_factory(bbl='3046050019')
         update = self.update_factory(model_name="PSForeclosure",
                                      file_name="mock_ps_foreclosure.xls")
 
