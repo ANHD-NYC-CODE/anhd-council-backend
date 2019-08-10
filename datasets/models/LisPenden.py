@@ -6,6 +6,8 @@ from datasets.utils import dates
 from django.db.models import Count, OuterRef, Q, Subquery
 from django.db.models.functions import Coalesce
 from datetime import datetime, timezone
+from django.utils.timezone import make_aware
+
 import logging
 from datasets import models as ds
 from django.db.models import Q
@@ -135,7 +137,7 @@ class LisPenden(BaseDatasetModel, models.Model):
                                        )
 
         ds.PropertyAnnotation.objects.update(lispendens_last30=Coalesce(last30_subquery, 0), lispendens_lastyear=Coalesce(
-            lastyear_subquery, 0), lispendens_last3years=Coalesce(last3years_subquery, 0), lispendens_lastupdated=datetime.now())
+            lastyear_subquery, 0), lispendens_last3years=Coalesce(last3years_subquery, 0), lispendens_lastupdated=make_aware(datetime.now()))
 
     def __str__(self):
         return str(self.key)

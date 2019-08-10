@@ -4,6 +4,7 @@ from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from datasets.utils import dates
 from django.db.models import Count, OuterRef, Q, Subquery
 from django.db.models.functions import Coalesce
+from django.utils.timezone import make_aware
 
 from datetime import datetime
 from core.utils.database import execute
@@ -69,7 +70,7 @@ class Foreclosure(BaseDatasetModel, models.Model):
                                        )
 
         ds.PropertyAnnotation.objects.update(foreclosures_last30=Coalesce(last30_subquery, 0), foreclosures_lastyear=Coalesce(
-            lastyear_subquery, 0), foreclosures_last3years=Coalesce(last3years_subquery, 0), foreclosures_lastupdated=datetime.now())
+            lastyear_subquery, 0), foreclosures_last3years=Coalesce(last3years_subquery, 0), foreclosures_lastupdated=make_aware(datetime.now()))
 
     def __str__(self):
         return str(self.key)

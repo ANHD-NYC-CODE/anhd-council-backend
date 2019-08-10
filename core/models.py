@@ -13,6 +13,7 @@ import datetime
 import os
 import itertools
 import logging
+from django.utils.timezone import make_aware
 
 logger = logging.getLogger('app')
 
@@ -102,7 +103,7 @@ def construct_directory_path(instance, filename):
     split_filename = filename.split('.')
     name = split_filename[0]
     extension = split_filename[1]
-    return '{0}/{1}'.format(settings.MEDIA_ROOT, "{0}__{1}.{2}".format(name, timezone.now().strftime("%m%d%Y%H%M%S"), extension))
+    return '{0}/{1}'.format(settings.MEDIA_ROOT, "{0}__{1}.{2}".format(name, make_aware(datetime.datetime.now()).strftime("%m%d%Y%H%M%S"), extension))
 
 
 class DataFile(models.Model):
@@ -139,7 +140,7 @@ class Update(models.Model):
     rows_updated = models.IntegerField(blank=True, null=True, default=0)
     rows_created = models.IntegerField(blank=True, null=True, default=0)
     total_rows = models.IntegerField(blank=True, null=True)
-    created_date = models.DateTimeField(default=timezone.now)
+    created_date = models.DateTimeField(default=timezone.now)  # TODO: change to make_aware(datetime.now())
     completed_date = models.DateTimeField(blank=True, null=True)
     task_id = models.CharField(max_length=255, blank=True, null=True)
     task_result = models.ForeignKey(TaskResult, on_delete=models.SET_NULL, null=True, blank=True)

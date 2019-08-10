@@ -20,6 +20,7 @@ from django.db.models import Subquery, OuterRef, Count, IntegerField, F
 from django.db.models.functions import Coalesce
 
 from datetime import datetime, timezone
+from django.utils.timezone import make_aware
 
 from core.tasks import async_seed_split_file
 
@@ -35,7 +36,7 @@ class BaseDatasetModel():
                     'https://data.cityofnewyork.us/api/views/{}.json'.format(self.API_ID)).text)
                 return datetime.fromtimestamp(response['rowsUpdatedAt'], timezone.utc)
             else:
-                return datetime.datetime.now()
+                return make_aware(datetime.datetime.now())
         except Exception as e:
             logger.warning("Unable to retrieve last API update date", e)
             return None
@@ -171,7 +172,7 @@ class BaseDatasetModel():
                                        )
 
         ds.PropertyAnnotation.objects.update(**{self.__name__.lower() + 's_last30': Coalesce(last30_subquery, 0), self.__name__.lower(
-        ) + 's_lastyear': Coalesce(lastyear_subquery, 0), self.__name__.lower() + 's_last3years': Coalesce(last3years_subquery, 0), self.__name__.lower() + 's_lastupdated': datetime.now()})
+        ) + 's_lastyear': Coalesce(lastyear_subquery, 0), self.__name__.lower() + 's_last3years': Coalesce(last3years_subquery, 0), self.__name__.lower() + 's_lastupdated': make_aware(datetime.now())})
 
     @classmethod
     def annotate_property_standard(self, annotation):
@@ -215,7 +216,7 @@ class BaseDatasetModel():
                                        )
 
         ds.PropertyAnnotation.objects.update(**{self.__name__.lower() + 's_last30': Coalesce(last30_subquery, 0)}, **{self.__name__.lower(
-        ) + 's_lastyear': Coalesce(lastyear_subquery, 0)}, **{self.__name__.lower() + 's_last3years': Coalesce(last3years_subquery, 0), self.__name__.lower() + 's_lastupdated': datetime.now()})
+        ) + 's_lastyear': Coalesce(lastyear_subquery, 0)}, **{self.__name__.lower() + 's_last3years': Coalesce(last3years_subquery, 0), self.__name__.lower() + 's_lastupdated': make_aware(datetime.now())})
 
     @classmethod
     def annotate_property_month_offset(self, annotation):

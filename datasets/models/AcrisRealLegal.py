@@ -14,6 +14,8 @@ import csv
 import uuid
 import logging
 from datetime import datetime, timezone
+from django.utils.timezone import make_aware
+
 from datasets.utils import dates
 logger = logging.getLogger('app')
 
@@ -123,7 +125,7 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
             '-documentid__docdate').values('documentid__docdate')[:1])
 
         ds.PropertyAnnotation.objects.update(acrisrealmasters_last30=Coalesce(last30_subquery, 0), acrisrealmasters_lastyear=Coalesce(lastyear_subquery, 0),
-                                             acrisrealmasters_last3years=Coalesce(last3years_subquery, 0), latestsaleprice=latestprice, latestsaledate=latestsaledate, acrisrealmasters_lastupdated=datetime.now())
+                                             acrisrealmasters_last3years=Coalesce(last3years_subquery, 0), latestsaleprice=latestprice, latestsaledate=latestsaledate, acrisrealmasters_lastupdated=make_aware(datetime.now()))
 
     def __str__(self):
         return self.key
