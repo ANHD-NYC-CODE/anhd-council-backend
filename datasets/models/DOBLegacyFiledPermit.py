@@ -155,10 +155,10 @@ class DOBLegacyFiledPermit(BaseDatasetModel, models.Model):
     @classmethod
     def update_set_filter(self, csv_reader, headers):
         for row in csv_reader:
-            if is_older_than(row[headers.index('Latest Action Date')], 1):
-                continue
-            if does_not_contain_values(["a1", "a2", "dm", "nb"], row[headers.index('Job Type')]):
-                continue
+            # if is_older_than(row[headers.index('Latest Action Date')], 1):
+            #     continue
+            # if does_not_contain_values(["a1", "a2", "dm", "nb"], row[headers.index('Job Type')]):
+            #     continue
             yield row
 
     @classmethod
