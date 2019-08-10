@@ -74,6 +74,11 @@ class PropertyAnnotation(BaseDatasetModel, models.Model):
     lispendens_last3years = models.IntegerField(db_index=True, default=0, blank=True, null=True)
     lispendens_lastupdated = models.DateTimeField(blank=True, null=True)
 
+    foreclosures_last30 = models.IntegerField(db_index=True, default=0, blank=True, null=True)
+    foreclosures_lastyear = models.IntegerField(db_index=True, default=0, blank=True, null=True)
+    foreclosures_last3years = models.IntegerField(db_index=True, default=0, blank=True, null=True)
+    foreclosures_lastupdated = models.DateTimeField(blank=True, null=True)
+
     taxlien = models.BooleanField(db_index=True, default=False, blank=True, null=True)
     conhrecord = models.BooleanField(db_index=True, default=False, blank=True, null=True)
     nycha = models.BooleanField(db_index=True, default=False, blank=True, null=True)

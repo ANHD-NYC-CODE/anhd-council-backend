@@ -58,6 +58,21 @@ class PSForeclosure(BaseDatasetModel, models.Model):
         return self.pre_validation_filters(from_xlsx_file_to_gen(file_path, 'Foreclosure Auctions Details', update, skip_rows=7))
 
     @classmethod
+    def update_foreclosure_auction_dates(self, **kwargs):
+        updated_foreclosures = []
+        gen_rows = self.transform_self_from_file(kwargs['file_path'])
+        for row in gen_rows:
+            try:
+                foreclosure = ds.Foreclosure.objects.get(index=row['indexno'], bbl=row['bbl'])
+                foreclosure.auction = row['auction']
+                updated_foreclosures.append(foreclosure)
+            except Exception as e:
+                pass
+
+        ds.Foreclosure.objects.bulk_update(updated_foreclosures, ['auction'])
+
+    @classmethod
     def seed_or_update_self(self, **kwargs):
         logger.debug("Seeding/Updating {}", self.__name__)
         self.seed_with_upsert(**kwargs)
+        self.update_foreclosure_auction_dates(**kwargs)
