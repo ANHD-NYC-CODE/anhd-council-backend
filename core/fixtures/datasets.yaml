@@ -229,3 +229,21 @@
     name: PAD Record
     model_name: PadRecord
     automated: false
+- model: core.dataset
+  pk: 37
+  fields:
+    name: PropertyShark PreForeclosures
+    model_name: PSPreForeclosure
+    automated: false
+- model: core.dataset
+  pk: 38
+  fields:
+    name: PropertyShark Foreclosures
+    model_name: PSForeclosure
+    automated: false
+- model: core.dataset
+  pk: 39
+  fields:
+    name: Foreclosures
+    model_name: Foreclosure
+    automated: false

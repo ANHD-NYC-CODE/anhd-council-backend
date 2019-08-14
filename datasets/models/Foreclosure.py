@@ -85,24 +85,27 @@ class Foreclosure(BaseDatasetModel, models.Model):
                     return 'Foreclose Tax Lien'
             return 'Lis Pendens'
 
-        lispendens = ds.LisPenden.objects.filter(type='foreclosure', bbl__isnull=False)
+        lispendens = ds.LisPenden.objects.filter(type='foreclosure', bbl__isnull=False).distinct('index')
         foreclosures = []
 
         for lispenden in lispendens:
-            related_comments = ds.LisPendenComment.objects.prefetch_related('key').filter(key=lispenden.key)
-
-            foreclosures.append(
-                Foreclosure(
-                    key="{}-{}".format(lispenden.index, lispenden.bbl_id),
-                    bbl=lispenden.bbl,
-                    index=lispenden.index,
-                    document_type=get_document_type(related_comments),
-                    date_added=lispenden.fileddate,
-                    creditor=lispenden.cr,
-                    debtor=lispenden.debtor,
-                    foreign_key=lispenden.key,
-                    source='Public Data Corporation'
+            related_comments = ds.LisPendenComment.objects.prefetch_related(
+                'key').filter(key=lispenden.key)
+            try:
+                foreclosures.append(
+                    Foreclosure(
+                        key="{}-{}".format(lispenden.index, lispenden.bbl_id),
+                        bbl=lispenden.bbl,
+                        index=lispenden.index,
+                        document_type=get_document_type(related_comments),
+                        date_added=lispenden.fileddate,
+                        creditor=lispenden.cr,
+                        debtor=lispenden.debtor,
+                        foreign_key=lispenden.key,
+                        source='Public Data Corporation'
+                    )
                 )
-            )
+            except Exception as e:
+                print(e)
 
         ds.Foreclosure.objects.bulk_create(foreclosures)
