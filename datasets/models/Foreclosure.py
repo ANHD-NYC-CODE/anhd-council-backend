@@ -17,7 +17,7 @@ logger = logging.getLogger('app')
 # 1. Login to Property Shark on 1st of the month
 # 2. Download Foreclosures AND Preforeclosures from last month
 # 3. upload PSPreforeclosures first, PSForeclosures second
-# 4. create an update for Foreclosure
+# 4. No need to create an update for this model - all seeding + annotation done inside PSPreforeclosure and PSForeclosure
 
 
 class Foreclosure(BaseDatasetModel, models.Model):
@@ -37,7 +37,7 @@ class Foreclosure(BaseDatasetModel, models.Model):
     address = models.TextField(blank=True, null=True)
     document_type = models.TextField(blank=True, null=True)
     lien_type = models.TextField(blank=True, null=True)  # lispendens blank
-    # entereddate in LisPenden and date_added for PropertyShark
+    # fileddate in LisPenden and date_added for PropertyShark
     date_added = models.DateTimeField(blank=True, null=True)
     creditor = models.TextField(blank=True, null=True)
     debtor = models.TextField(blank=True, null=True)
@@ -75,12 +75,34 @@ class Foreclosure(BaseDatasetModel, models.Model):
     def __str__(self):
         return str(self.key)
 
+    @classmethod
+    def seed_lispendens(self):
+        def get_document_type(related_comments):
+            for rc in related_comments:
+                if 'mortgage' in rc.datecomments.lower():
+                    return 'Foreclose Mortgage'
+                elif 'tax lien' in rc.datecomments.lower():
+                    return 'Foreclose Tax Lien'
+            return 'Lis Pendens'
 
-@receiver(models.signals.post_save, sender=Foreclosure)
-def annotate_property_on_save(sender, instance, created, **kwargs):
-    if created == True:
-        try:
-            annotation = sender.annotate_property_standard(ds.PropertyAnnotation.objects.get(bbl=instance.bbl))
-            annotation.save()
-        except Exception as e:
-            print(e)
+        lispendens = ds.LisPenden.objects.filter(type='foreclosure', bbl__isnull=False)
+        foreclosures = []
+
+        for lispenden in lispendens:
+            related_comments = ds.LisPendenComment.objects.prefetch_related('key').filter(key=lispenden.key)
+
+            foreclosures.append(
+                Foreclosure(
+                    key="{}-{}".format(lispenden.index, lispenden.bbl_id),
+                    bbl=lispenden.bbl,
+                    index=lispenden.index,
+                    document_type=get_document_type(related_comments),
+                    date_added=lispenden.fileddate,
+                    creditor=lispenden.cr,
+                    debtor=lispenden.debtor,
+                    foreign_key=lispenden.key,
+                    source='Public Data Corporation'
+                )
+            )
+
+        ds.Foreclosure.objects.bulk_create(foreclosures)
