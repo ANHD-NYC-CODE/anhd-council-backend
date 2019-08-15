@@ -1,7 +1,8 @@
 from django.db import models
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.transform import from_xlsx_file_to_gen
-from core.utils.database import execute
+from core.utils.database import execute, upsert_single_rows
+from datasets.utils.validation_filters import is_null
 
 from datasets import models as ds
 
@@ -49,9 +50,18 @@ class PSPreForeclosure(BaseDatasetModel, models.Model):
     @classmethod
     def pre_validation_filters(self, gen_rows):
         for row in gen_rows:
-            row['key'] = "#{}-#{}-#{}".format(row['indexno'], row['bbl'], row['documenttype'])
-            row['bbl'] = row['bbl'].replace('-', '')
-            yield row
+            try:
+                if is_null(row['indexno']):
+                    continue
+                if is_null(row['bbl']):
+                    continue
+                row['key'] = "#{}-#{}".format(row['indexno'], row['bbl'])
+                row['bbl'] = row['bbl'].replace('-', '')
+                yield row
+            except Exception as e:
+                logger.warning(row)
+                logger.warning(e)
+                continue
 
     @classmethod
     def transform_self(self, file_path, update=None):
@@ -65,12 +75,12 @@ class PSPreForeclosure(BaseDatasetModel, models.Model):
         fields = ', '.join([k.name for k in ds.Foreclosure._meta.get_fields()])
         upsert_fields = ', '.join([k.name + "=EXCLUDED." + k.name for k in ds.Foreclosure._meta.get_fields()])
 
-        sql = "INSERT INTO {table_name} ({fields}) SELECT {cols} FROM {other_table_name} ON CONFLICT ({primary_key}) DO UPDATE SET {upsert_fields};"
+        sql = "INSERT INTO {table_name} ({fields}) SELECT {cols} FROM {other_table_name} ON CONFLICT ({primary_key}) DO NOTHING"
         return sql.format(table_name=table_name, fields=fields, cols=cols, other_table_name=other_table_name, primary_key=primary_key, upsert_fields=upsert_fields)
 
     @classmethod
     def update_foreclosure_table(self, **kwargs):
-        logger.debug("Seeding/Updating {}", ds.Foreclosure.__name__)
+        logger.info("Seeding/Updating {}", ds.Foreclosure.__name__)
         # Add records from both tables
         preforeclosure_table = ds.PSPreForeclosure
         preforeclosure_count = preforeclosure_table.objects.count()
@@ -78,14 +88,20 @@ class PSPreForeclosure(BaseDatasetModel, models.Model):
             other_table_name=preforeclosure_table._meta.db_table, other_model_name=preforeclosure_table._meta.model_name)
 
         execute(self.upsert_sql(preforeclosure_table, preforeclosure_cols))
-        logger.debug("Completed seed into {} for {}", ds.Foreclosure.__name__, preforeclosure_table._meta.db_table)
+
+        logger.info("Completed seed into {} for {}", ds.Foreclosure.__name__, preforeclosure_table._meta.db_table)
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        logger.debug("Seeding/Updating {}", self.__name__)
+        logger.info("Seeding/Updating {}", self.__name__)
         self.seed_with_upsert(**kwargs)
         self.update_foreclosure_table(**kwargs)
         ds.Foreclosure.annotate_properties()
+
+        # from core import models as cs
+        # file = cs.DataFile.objects[16]
+        # from datasets import models as ds
+        # ds.PSPreForeclosure.seed_or_update_self(file_path=file.file.path)
 
     @classmethod
     def annotate_properties(self):

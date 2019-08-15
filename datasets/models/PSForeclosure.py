@@ -49,8 +49,8 @@ class PSForeclosure(BaseDatasetModel, models.Model):
     @classmethod
     def pre_validation_filters(self, gen_rows):
         for row in gen_rows:
-            row['key'] = "#{}-#{}-#{}".format(row['indexno'], row['bbl'], row['foreclosuretype'])
-            row['bbl'] = row['bbl'].replace('-', '')
+            row['bbl'] = ''.join(row['bbl'].split('-')[0:3])
+            row['key'] = "#{}-#{}".format(row['indexno'], row['bbl'])
             yield row
 
     @classmethod

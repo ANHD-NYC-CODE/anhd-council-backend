@@ -143,7 +143,10 @@ def from_xlsx_file_to_gen(file_path, worksheet, update, skip_rows=0):
     rows = worksheet.rows
     for i in range(skip_rows):
         next(rows)
+
     headers = clean_headers(','.join([c.value for c in next(rows)]))
+    while not headers[0]:  # keeps going down if headers are blank
+        headers = clean_headers(','.join([c.value for c in next(rows)]))
 
     for row in rows:
         values = [c.value for c in row]

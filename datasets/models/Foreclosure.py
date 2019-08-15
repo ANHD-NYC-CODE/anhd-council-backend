@@ -33,7 +33,7 @@ class Foreclosure(BaseDatasetModel, models.Model):
     key = models.TextField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
-    index = models.TextField(unique=True, blank=False, null=False)
+    index = models.TextField(blank=False, null=False)
     address = models.TextField(blank=True, null=True)
     document_type = models.TextField(blank=True, null=True)
     lien_type = models.TextField(blank=True, null=True)  # lispendens blank
