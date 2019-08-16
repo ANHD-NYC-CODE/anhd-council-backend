@@ -1,5 +1,9 @@
 # API CHANGELOG
 
+### V1.0.0b1.4
+8/16/19
+- Add PropertyShark models, views, and automation
+
 ### V1.0.0b1.36
 7/24/19
 - Remove jobtype filter from DOBLegacyFiledPermit seeding (previously was only seeding A1, A2, DM, and NB )
