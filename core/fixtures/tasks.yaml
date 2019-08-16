@@ -223,3 +223,12 @@
     args: "[]"
     kwargs: "{}"
     date_changed: "2019-04-25"
+- model: django_celery_beat.periodictask
+  fields:
+    name: "Check Gmail for PropertyShark daily"
+    description: "Data task, 9pm"
+    task: "core.tasks.get_gmail_property_shark_links"
+    crontab: 12
+    args: "[]"
+    kwargs: "{}"
+    date_changed: "2019-08-16"
