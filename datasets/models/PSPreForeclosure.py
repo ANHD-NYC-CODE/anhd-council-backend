@@ -64,7 +64,7 @@ class PSPreForeclosure(BaseDatasetModel, models.Model):
                     continue
                 if is_null(row['bbl']):
                     continue
-                row['key'] = "#{}-#{}".format(row['indexno'], row['bbl'])
+                row['key'] = "{}-{}".format(row['indexno'], row['bbl'])
                 row['bbl'] = row['bbl'].replace('-', '')
                 yield row
             except Exception as e:
@@ -93,7 +93,7 @@ class PSPreForeclosure(BaseDatasetModel, models.Model):
         # Add records from both tables
         preforeclosure_table = ds.PSPreForeclosure
         preforeclosure_count = preforeclosure_table.objects.count()
-        preforeclosure_cols = "concat({other_table_name}.indexno, {other_table_name}.bbl), {other_table_name}.bbl, {other_table_name}.indexno, {other_table_name}.address, {other_table_name}.documenttype, {other_table_name}.lientype, {other_table_name}.dateadded, {other_table_name}.creditor, {other_table_name}.debtor, {other_table_name}.mortgagedate, {other_table_name}.mortgageamount, NULL, {other_table_name}.key, \'PropertyShark\'".format(
+        preforeclosure_cols = "concat({other_table_name}.indexno, '-', {other_table_name}.bbl), {other_table_name}.bbl, {other_table_name}.indexno, {other_table_name}.address, {other_table_name}.documenttype, {other_table_name}.lientype, {other_table_name}.dateadded, {other_table_name}.creditor, {other_table_name}.debtor, {other_table_name}.mortgagedate, {other_table_name}.mortgageamount, NULL, {other_table_name}.key, \'PropertyShark\'".format(
             other_table_name=preforeclosure_table._meta.db_table, other_model_name=preforeclosure_table._meta.model_name)
 
         execute(self.upsert_sql(preforeclosure_table, preforeclosure_cols))
