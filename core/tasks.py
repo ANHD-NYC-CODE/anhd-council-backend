@@ -6,8 +6,9 @@ from core import models as c
 from django.conf import settings
 from app.mailer import send_update_error_mail, send_update_success_mail, send_general_task_error_mail
 from core.utils.cache import cache_council_property_summaries_full, cache_community_property_summaries_full
-
+from datasets.utils.gmail_utils import get_property_shark_links
 import os
+import uuid
 
 import logging
 
@@ -167,19 +168,38 @@ def async_download_start(self, dataset_id):
 
 
 @app.task(bind=True, queue='celery', acks_late=True, max_retries=1)
-def async_download_and_update(self, dataset_id):
+def async_download_and_update(self, dataset_id, endpoint=None, file_name=None):
     try:
         dataset = c.Dataset.objects.filter(id=dataset_id).first()
         logger.info("Starting async download and update for dataset: {}".format(dataset.name))
         if dataset:
             previous_file = dataset.latest_file()
             previous_file_id = previous_file.id if previous_file else None
-            file = dataset.download()
+            file = dataset.download(endpoint=endpoint, file_name=file_name)
             async_update_from_file.delay(file.id, previous_file_id)
 
         else:
             logger.error("*ERROR* - Task Failure - No dataset found in async_download_start")
             raise Exception("No dataset.")
+    except Exception as e:
+        logger.error('Error during task: {}'.format(e))
+        async_send_general_task_error_mail.delay(str(e))
+        raise e
+
+
+@app.task(bind=True, queue='celery', acks_late=True, max_retries=1)
+def get_gmail_property_shark_links(self):
+    from datasets import models as ds
+
+    try:
+        links = get_property_shark_links()
+        for link in links:
+            if 'auction' in link:
+                file_name = 'ps_lispendens-' + str(uuid.uuid4()) + '.xls'
+                ds.PSForeclosure.create_async_update_worker(endpoint=link, file_name=file_name)
+            elif 'lispenden' in link:
+                file_name = 'ps_auctions-' + str(uuid.uuid4()) + '.xls'
+                ds.PSPreForeclosure.create_async_update_worker(endpoint=link, file_name=file_name)
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
         async_send_general_task_error_mail.delay(str(e))

@@ -55,7 +55,7 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
     slim_query_fields = ["id", "bbl", "datefiled"]
 
     @classmethod
-    def create_async_update_worker(self):
+    def create_async_update_worker(self, endpoint=None, file_name=None):
         async_create_update.delay(self.get_dataset().id)
 
     @classmethod

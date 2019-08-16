@@ -2,6 +2,7 @@ from django.db import models
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.transform import from_xlsx_file_to_gen
 from datasets import models as ds
+from core.tasks import async_download_and_update
 
 import logging
 logger = logging.getLogger('app')
@@ -45,6 +46,14 @@ class PSForeclosure(BaseDatasetModel, models.Model):
     foreclosuretype = models.TextField(blank=True, null=True)
     legalprocess = models.TextField(blank=True, null=True)
     hasphoto = models.TextField(blank=True, null=True)
+
+    @classmethod
+    def create_async_update_worker(self, endpoint=None, file_name=None):
+        async_download_and_update.delay(self.get_dataset().id, endpoint=endpoint, file_name=file_name)
+
+    @classmethod
+    def download(self, endpoint=None, file_name=None):
+        return self.download_file(endpoint, file_name=file_name, ps_requests=True)
 
     @classmethod
     def pre_validation_filters(self, gen_rows):

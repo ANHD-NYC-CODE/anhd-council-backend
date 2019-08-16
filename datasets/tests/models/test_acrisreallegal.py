@@ -5,7 +5,6 @@ from datasets import models as ds
 from freezegun import freeze_time
 from datetime import datetime
 # Create your tests here.
-import uuid
 
 import logging
 logging.disable(logging.CRITICAL)

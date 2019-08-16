@@ -23,7 +23,7 @@ from datetime import datetime, timezone
 from django.utils.timezone import make_aware
 
 from core.tasks import async_seed_split_file
-
+import uuid
 logger = logging.getLogger('app')
 
 
@@ -46,9 +46,28 @@ class BaseDatasetModel():
         return c_models.Dataset.objects.filter(model_name=self.__name__).first()
 
     @classmethod
-    def download_file(self, endpoint):
+    def get_ps_requests(self, endpoint):
+        random_uid = str(uuid.uuid4()).replace('-', '')
+        random_session = str(uuid.uuid4()).replace('-', '')
+        random_logon = str(uuid.uuid4()).replace('-', '')
+        random_logonflag = str(uuid.uuid4()).replace('-', '')
+        random_sid = str(uuid.uuid4()).replace('-', '')
+        headers = {
+            'cookie': 'screen.width=1920; screen.height=1080; search_type=area; uid={}; session=10.97.95.111.{}; logon=USrFhAwQOVnx97; PSA=1355bc5835a2a454d; SaveSearchForcs=Triggered; custom_popup=U2FsdGVkX18U9zBfBKNPutPFZ6pg%2FnDT; sid=U2FsdGVkX19T%2FzMdcMurnEY6sccBFgQxGRtnxL0FV8dh%2Fg83Uzmr3DD%2Bctf4sCySlbJYFOl%2BrHI%3D; laststate=U2FsdGVkX18jpdEMNJIM9xcOpCAacgPfk2jl2F4WTlU%3D; incap_ses_221_1731432=F3ugPscVSgg0DiPjaykRA+AAVl0AAAAABnXsSYz0jUAXt3UrrbOvpw==; visid_incap_1731432=M5LUKC5ZQ1S1nIDDq6xnllBPN10AAAAAQkIPAAAAAACABjyOAUJs6JH3a0RJUfTvA2nHLzCeT6KC'.format(random_uid, random_session)
+        }
+        return requests.get(endpoint, stream=True, headers=headers)
+
+    @classmethod
+    def download_file(self, endpoint, file_name=None, ps_requests=False):
         dataset = self.get_dataset()
-        file_request = requests.get(endpoint, stream=True)
+
+        if 'http' not in endpoint:
+            endpoint = 'http://' + endpoint
+
+        if ps_requests:
+            file_request = self.get_ps_requests(endpoint)
+        else:
+            file_request = requests.get(endpoint, stream=True)
         # Was the request OK?
         if file_request.status_code != requests.codes.ok:
             # Nope, error handling, skip file etc etc etc
@@ -56,10 +75,11 @@ class BaseDatasetModel():
             raise Exception("Request error: {}".format(file_request.status_code))
 
         # get filename
-        if 'content-disposition' in file_request.headers:
-            file_name = re.findall("filename=(.+)", file_request.headers['content-disposition'])[0]
-        else:
-            file_name = endpoint.split('/')[-1]
+        if not file_name:
+            try:
+                file_name = re.findall("filename=(.+)", file_request.headers['content-disposition'])[0]
+            except Exception as e:
+                file_name = endpoint.split('/')[-1][0:64]
 
         # Create a temporary file
         lf = tempfile.NamedTemporaryFile()

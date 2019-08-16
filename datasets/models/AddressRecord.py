@@ -12,7 +12,6 @@ import logging
 import re
 import os
 import csv
-import uuid
 
 logger = logging.getLogger('app')
 

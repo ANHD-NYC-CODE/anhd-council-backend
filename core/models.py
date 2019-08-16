@@ -12,8 +12,8 @@ import time
 import datetime
 import os
 import itertools
-import logging
 from django.utils.timezone import make_aware
+import logging
 
 logger = logging.getLogger('app')
 
@@ -29,8 +29,8 @@ class Dataset(models.Model):
     def model(self):
         return getattr(ds, self.model_name)
 
-    def download(self):
-        return getattr(ds, self.model_name).download()
+    def download(self, endpoint=None, file_name=None):
+        return getattr(ds, self.model_name).download(endpoint=endpoint, file_name=file_name)
 
     def update(self, file=None):
         return Update.objects.create(dataset=self, file=file)

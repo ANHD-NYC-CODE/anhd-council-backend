@@ -183,8 +183,8 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
             return 0
 
     @classmethod
-    def download(self):
-        return self.download_file(self.download_endpoint)
+    def download(self, endpoint=None, file_name=None):
+        return self.download_file(self.download_endpoint, file_name=file_name)
 
     @classmethod
     def pre_validation_filters(self, gen_rows):

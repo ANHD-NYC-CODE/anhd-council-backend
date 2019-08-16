@@ -41,6 +41,11 @@ django-sendgrid-v5 = "*"
 freezegun = "*"
 gevent = "*"
 xlrd = "*"
+httplib2 = "*"
+google-api-python-client = "==1.7.11"
+google-auth-httplib2 = "*"
+google-auth-oauthlib = "*"
+beautifulsoup4 = "*"
 
 [requires]
 python_version = "3.5.6"

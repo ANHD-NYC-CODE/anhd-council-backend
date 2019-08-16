@@ -83,6 +83,8 @@ celerybeat-schedule
 
 # Environments
 docker-compose.env.yml
+gmail_credentials.json
+gmail_token.pickle
 .env
 .env.docker
 .env.dev

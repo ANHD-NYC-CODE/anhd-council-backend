@@ -45,12 +45,12 @@ class DOBViolation(BaseDatasetModel, models.Model):
     slim_query_fields = ["isndobbisviol", "bbl", "issuedate"]
 
     @classmethod
-    def create_async_update_worker(self):
-        async_download_and_update.delay(self.get_dataset().id)
+    def create_async_update_worker(self, endpoint=None, file_name=None):
+        async_download_and_update.delay(self.get_dataset().id, endpoint=endpoint, file_name=file_name)
 
     @classmethod
-    def download(self):
-        return self.download_file(self.download_endpoint)
+    def download(self, endpoint=None, file_name=None):
+        return self.download_file(self.download_endpoint, file_name=file_name)
 
     @classmethod
     def pre_validation_filters(self, gen_rows):
