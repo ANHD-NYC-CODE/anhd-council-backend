@@ -11,7 +11,7 @@ class PSForeclosureTests(BaseTest, TestCase):
     def tearDown(self):
         self.clean_tests()
 
-    def test_seed_lispendens(self):
+    def test_seed_foreclosures(self):
         property = self.property_factory(bbl='1111111111')
         property2 = self.property_factory(bbl='1111111112')
 
@@ -29,5 +29,5 @@ class PSForeclosureTests(BaseTest, TestCase):
         ds.Foreclosure.seed_lispendens()
 
         self.assertEqual(ds.Foreclosure.objects.count(), 2)
-        self.assertEqual(ds.Foreclosure.objects.all()[0].document_type, 'Foreclose Tax Lien')
-        self.assertEqual(ds.Foreclosure.objects.all()[1].document_type, 'Foreclose Mortgage')
+        self.assertEqual(ds.Foreclosure.objects.all()[0].document_type, 'Foreclose Mortgage')
+        self.assertEqual(ds.Foreclosure.objects.all()[1].document_type, 'Foreclose Tax Lien')

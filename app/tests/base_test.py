@@ -686,7 +686,20 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         factory = d_models.LisPenden.objects.create(
             key=key,
             bbl=property,
-            # type="foreclosure",
+            **kwargs
+        )
+        return factory
+
+    def foreclosure_factory(self, key=None, property=None, **kwargs):
+        name = 'Foreclosure'
+        if not key:
+            key = random.randint(1, 1000000)
+        if not property:
+            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+
+        factory = d_models.Foreclosure.objects.create(
+            key=key,
+            bbl=property,
             **kwargs
         )
         return factory

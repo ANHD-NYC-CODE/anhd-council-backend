@@ -587,6 +587,14 @@ class LisPendenSerializer(serializers.ModelSerializer):
                   'attorney', 'thirdparty', 'satdate', 'sattype', 'disp', 'type', 'comments')
 
 
+class ForeclosureSerializer(serializers.ModelSerializer):
+    comments = LisPendenCommentSerializer(source='lispendencomment_set', many=True, read_only=True)
+
+    class Meta:
+        model = ds.Foreclosure
+        fields = ('__all__')
+
+
 def property_query_serializer(properties):
     return list({'foo': 'bar'} for property in properties)
 

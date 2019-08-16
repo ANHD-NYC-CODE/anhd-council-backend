@@ -254,6 +254,13 @@ properties_router.register(
 )
 
 properties_router.register(
+    'foreclosures',
+    v.foreclosure_views.ForeclosureViewSet,
+    base_name='property-foreclosures',
+    parents_query_lookups=['bbl']
+)
+
+properties_router.register(
     'propertyannotations',
     v.propertyannotation_views.PropertyAnnotationViewSet,
     base_name='property-propertyannotations',
@@ -455,6 +462,7 @@ router.register(r'doblegacyfiledpermits', v.doblegacyfiledpermit_views.DOBLegacy
 router.register(r'dobnowfiledpermits', v.dobnowfiledpermit_views.DOBNowFiledPermitViewSet)
 router.register(r'publichousingrecords', v.publichousingrecord_views.PublicHousingRecordViewSet)
 router.register(r'lispendens', v.lispenden_views.LisPendenViewSet)
+router.register(r'foreclosures', v.foreclosure_views.ForeclosureViewSet)
 router.register(r'propertyannotations', v.propertyannotation_views.PropertyAnnotationViewSet)
 router.register(r'addressrecords', v.addressrecord_views.AddressRecordViewSet)
 router.register(r'padrecords', v.padrecord_views.PadRecordViewSet)
