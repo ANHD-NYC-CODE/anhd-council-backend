@@ -1,5 +1,9 @@
 # API CHANGELOG
 
+### V1.0.0b1.41
+8/16/19
+- Update django to 2.2.4
+
 ### V1.0.0b1.4
 8/16/19
 - Add PropertyShark models, views, and automation

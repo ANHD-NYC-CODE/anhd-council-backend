@@ -6,7 +6,7 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-django = "==2.2"
+django = "==2.2.4"
 requests = "==2.21.0"
 clint = "==0.5.1"
 psycopg2 = "==2.8.2"
