@@ -1,5 +1,9 @@
 # API CHANGELOG
 
+### V1.0.0b1.42
+8/19/19
+- Fix bug with missing foreclosures from property annotations
+
 ### V1.0.0b1.41
 8/16/19
 - Update django to 2.2.4
