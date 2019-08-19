@@ -381,4 +381,4 @@ ACTIVE_MODELS = [
 
 
 ANNOTATED_DATASETS = ['HPDViolation', 'HPDComplaint', 'DOBViolation', 'DOBComplaint',
-                      'ECBViolation', 'DOBIssuedPermit', 'DOBFiledPermit', 'DOBIssuedPermit', 'Eviction', 'HousingLitigation', 'AcrisRealMaster', 'LisPenden']
+                      'ECBViolation', 'DOBIssuedPermit', 'DOBFiledPermit', 'DOBIssuedPermit', 'Eviction', 'HousingLitigation', 'AcrisRealMaster', 'Foreclosure']

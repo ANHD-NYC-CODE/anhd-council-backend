@@ -48,9 +48,11 @@ class PropertyAnnotationSerializer(serializers.ModelSerializer):
             del rep['lispendens_last30']
             del rep['lispendens_lastyear']
             del rep['lispendens_last3years']
+            del rep['lispendens_lastupdated']
             del rep['foreclosures_last30']
             del rep['foreclosures_lastyear']
             del rep['foreclosures_last3years']
+            del rep['foreclosures_lastupdated']
         return rep
 
 
