@@ -62,10 +62,14 @@ class Dataset(models.Model):
         getattr(ds, self.model_name).split_seed_or_update_self(**kwargs)
 
     def latest_update(self):
+        from core.models import Dataset
         # Make sure to prefetch_related('update_set')
         try:
-            latest = self.update_set.filter(task_result__status="SUCCESS").latest('created_date')
+            update_source = Dataset.objects.get(
+                model_name=self.model().UPDATE_SOURCE) if hasattr(self.model(), 'UPDATE_SOURCE') else self
+            latest = update_source.update_set.filter(task_result__status="SUCCESS").latest('created_date')
         except Exception as e:
+            logger.warning(e)
             latest = None
         return latest
 

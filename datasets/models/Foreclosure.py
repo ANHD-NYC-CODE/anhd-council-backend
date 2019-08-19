@@ -23,6 +23,7 @@ logger = logging.getLogger('app')
 class Foreclosure(BaseDatasetModel, models.Model):
     QUERY_DATE_KEY = 'date_added'
     RECENT_DATE_PINNED = True
+    UPDATE_SOURCE = "PSPreForeclosure"  # Tells dataset to get the last update timestamp from this model
 
     class Meta:
         indexes = [
