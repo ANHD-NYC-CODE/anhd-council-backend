@@ -1,5 +1,9 @@
 # API CHANGELOG
 
+### V1.0.0b1.43
+8/19/19
+- Change CONHRecord column name to match the new column name 'streetaddress'
+
 ### V1.0.0b1.42
 8/19/19
 - Fix bug with missing foreclosures from property annotations
