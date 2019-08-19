@@ -31,7 +31,7 @@ class CONHRecord(BaseDatasetModel, models.Model):
     bin = models.ForeignKey('Building', db_column='bin', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=True)
     housenumber = models.TextField(blank=True, null=True)
-    streetname = models.TextField(blank=True, null=True)
+    streetaddress = models.TextField(blank=True, null=True)
     block = models.TextField(blank=True, null=True)
     lot = models.TextField(blank=True, null=True)
     borocode = models.TextField(blank=True, null=True)
