@@ -77,13 +77,12 @@ class Foreclosure(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_lispendens(self):
-        def get_document_type(related_comments):
+        def get_lien_type(related_comments):
             for rc in related_comments:
                 if 'mortgage' in rc.datecomments.lower():
                     return 'Foreclose Mortgage'
                 elif 'tax lien' in rc.datecomments.lower():
                     return 'Foreclose Tax Lien'
-            return 'Lis Pendens'
 
         lispendens = ds.LisPenden.objects.filter(type='foreclosure', bbl__isnull=False).distinct('index')
         foreclosures = []
@@ -97,7 +96,8 @@ class Foreclosure(BaseDatasetModel, models.Model):
                         key="{}-{}".format(lispenden.index, lispenden.bbl_id),
                         bbl=lispenden.bbl,
                         index=lispenden.index,
-                        document_type=get_document_type(related_comments),
+                        document_type="Lis Pendens",
+                        lien_type=get_lien_type(related_comments),
                         date_added=lispenden.fileddate,
                         creditor=lispenden.cr,
                         debtor=lispenden.debtor,

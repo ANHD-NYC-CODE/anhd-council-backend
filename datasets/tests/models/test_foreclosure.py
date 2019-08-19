@@ -29,5 +29,5 @@ class PSForeclosureTests(BaseTest, TestCase):
         ds.Foreclosure.seed_lispendens()
 
         self.assertEqual(ds.Foreclosure.objects.count(), 2)
-        self.assertEqual(ds.Foreclosure.objects.all()[0].document_type, 'Foreclose Mortgage')
-        self.assertEqual(ds.Foreclosure.objects.all()[1].document_type, 'Foreclose Tax Lien')
+        self.assertEqual(ds.Foreclosure.objects.all()[0].lien_type, 'Foreclose Mortgage')
+        self.assertEqual(ds.Foreclosure.objects.all()[1].lien_type, 'Foreclose Tax Lien')

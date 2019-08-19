@@ -627,8 +627,8 @@ class PropertyViewTests(BaseTest, TestCase):
         property1 = self.property_factory(bbl='1', council=council)
 
         for i in range(5):
-            self.lispenden_factory(
-                property=property1, type=ds.LisPenden.LISPENDEN_TYPES['foreclosure'], fileddate="2018-01-01")
+            self.foreclosure_factory(
+                property=property1, date_added="2018-01-01")
 
         token = self.get_access_token()
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
@@ -644,7 +644,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(len(pre_cache_content), 1)
         self.assertEqual(pre_cache_content[0]['bbl'], '1')
 
-        self.assertEqual(pre_cache_content[0]['lispendens__01/01/2018-12/31/2018'], 5)
+        self.assertEqual(pre_cache_content[0]['foreclosures__01/01/2018-12/31/2018'], 5)
 
         post_cache_query = '/properties/?summary=true&summary-type=short-annotated&annotation__start=2018-01-01'
         post_cache_response = self.client.get(post_cache_query, format="json")
@@ -656,7 +656,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(post_cache_response.status_code, 200)
         self.assertEqual(len(post_cache_content), 1)
         self.assertEqual(post_cache_content[0]['bbl'], '1')
-        self.assertEqual(post_cache_content[0]['lispendens__01/01/2018-12/31/2018'], 5)
+        self.assertEqual(post_cache_content[0]['foreclosures__01/01/2018-12/31/2018'], 5)
 
     # summary-annotated serializer
     # with 'recent' annotation start
