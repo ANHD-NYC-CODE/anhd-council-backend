@@ -43,7 +43,6 @@ class PropertyAnnotationSerializer(serializers.ModelSerializer):
 
     def to_representation(self, obj):
         rep = super(serializers.ModelSerializer, self).to_representation(obj)
-
         if not self.context['request'].user.is_authenticated:
             del rep['lispendens_last30']
             del rep['lispendens_lastyear']
@@ -223,10 +222,8 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
 
     def to_representation(self, obj):
         rep = super(serializers.ModelSerializer, self).to_representation(obj)
-        params = self.context['request'].query_params
 
-        # if is_authenticated(self.context['request']):
-        #     DATASETS.append(ds.LisPenden)
+        params = self.context['request'].query_params
 
         def get_context_field(dataset_prefix, date_label=None):
             for field in self.context['fields']:
@@ -240,6 +237,10 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
 
         for model_name in settings.ANNOTATED_DATASETS:
             dataset = getattr(ds, model_name)
+
+            if hasattr(dataset, 'REQUIRES_AUTHENTICATION') and dataset.REQUIRES_AUTHENTICATION and not is_authenticated(self.context['request']):
+                continue
+
             dataset_prefix = dataset.__name__.lower()
             if hasattr(obj, dataset_prefix + 's'):
                 # annotated from advanced search
@@ -593,8 +594,6 @@ class LisPendenSerializer(serializers.ModelSerializer):
 
 
 class ForeclosureSerializer(serializers.ModelSerializer):
-    comments = LisPendenCommentSerializer(source='lispendencomment_set', many=True, read_only=True)
-
     class Meta:
         model = ds.Foreclosure
         fields = ('__all__')

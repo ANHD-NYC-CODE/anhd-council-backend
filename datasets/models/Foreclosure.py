@@ -23,6 +23,7 @@ logger = logging.getLogger('app')
 class Foreclosure(BaseDatasetModel, models.Model):
     QUERY_DATE_KEY = 'date_added'
     RECENT_DATE_PINNED = True
+    REQUIRES_AUTHENTICATION = True
     UPDATE_SOURCE = "PSPreForeclosure"  # Tells dataset to get the last update timestamp from this model
 
     class Meta:
@@ -110,3 +111,26 @@ class Foreclosure(BaseDatasetModel, models.Model):
                 print(e)
 
         ds.Foreclosure.objects.bulk_create(foreclosures)
+
+
+@receiver(models.signals.post_save, sender=Foreclosure)
+def annotate_property_on_save(sender, instance, created, **kwargs):
+    if created == True:
+        try:
+            last30 = dates.get_last_month(string=False)
+            lastyear = dates.get_last_year(string=False)
+            last3years = dates.get_last3years(string=False)
+
+            annotation = ds.PropertyAnnotation.objects.get(bbl=instance.bbl)
+            annotation.foreclosures_last30 = Coalesce(
+                annotation.bbl.foreclosure_set.filter(date_added__gte=last30).count(), 0)
+
+            annotation.foreclosures_lastyear = Coalesce(
+                annotation.bbl.foreclosure_set.filter(date_added__gte=lastyear).count(), 0)
+
+            annotation.foreclosures_last3years = Coalesce(
+                annotation.bbl.foreclosure_set.filter(date_added__gte=last3years).count(), 0)
+
+            annotation.save()
+        except Exception as e:
+            print(e)
