@@ -81,9 +81,9 @@ class Foreclosure(BaseDatasetModel, models.Model):
         def get_lien_type(related_comments):
             for rc in related_comments:
                 if 'mortgage' in rc.datecomments.lower():
-                    return 'Foreclose Mortgage'
+                    return 'Mortgage'
                 elif 'tax lien' in rc.datecomments.lower():
-                    return 'Foreclose Tax Lien'
+                    return 'Tax Lien'
 
         lispendens = ds.LisPenden.objects.filter(type='foreclosure', bbl__isnull=False).distinct('index')
         foreclosures = []
