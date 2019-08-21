@@ -32,7 +32,6 @@ class PropertyViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyM
     serializer_class = serial.PropertySerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = PropertyFilter
-    # permission_classes = (IsAuthenticated,)
 
     def get_serializer_context(self):
         context = super().get_serializer_context()

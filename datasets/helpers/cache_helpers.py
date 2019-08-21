@@ -31,11 +31,13 @@ def scrub_pagination(cached_value):
     return cached_value
 
 
-def scrub_lispendens(cached_value, request):
+def scrub_authenticated(cached_value, request):
     if not is_authenticated(request):
         if type(cached_value) is dict or isinstance(cached_value, ReturnDict):
             if 'lispendens' in cached_value:
                 del cached_value['lispendens']
+            if 'foreclosures' in cached_value:
+                del cached_value['foreclosures']
             pass
         else:  # TEMP: only lists have the sensitive data for now.
 
@@ -45,6 +47,12 @@ def scrub_lispendens(cached_value, request):
                 if len(lispendens_fields):
                     for value in cached_value:
                         for field in lispendens_fields:
+                            del value[field]
+
+                foreclosures_field = [key for key in cached_value[0].keys() if key and 'foreclosures' in key]
+                if len(foreclosures_field):
+                    for value in cached_value:
+                        for field in foreclosures_field:
                             del value[field]
     return cached_value
 
@@ -85,7 +93,7 @@ def cache_request_path():
                 logger.debug('Serving cache: {}'.format(cache_key))
                 cached_value = cache.get(cache_key)
                 cached_value = decompress_cache(cached_value)
-                cached_value = scrub_lispendens(cached_value, request)
+                cached_value = scrub_authenticated(cached_value, request)
                 return original_args[0].finalize_response(request, Response(cached_value))
             else:
                 response = function(*original_args, **original_kwargs)
@@ -103,7 +111,7 @@ def cache_request_path():
                         cache.set(cache_key, value_to_cache, timeout=settings.CACHE_TTL)
                     logger.debug('Serving response: {}'.format(cache_key))
                     scrubbed_response = scrub_pagination(response.data)  # TODO: remove pagination altogether
-                    scrubbed_response = scrub_lispendens(scrubbed_response, request)
+                    scrubbed_response = scrub_authenticated(scrubbed_response, request)
                     return original_args[0].finalize_response(request, Response(scrubbed_response))
                 else:
                     return response

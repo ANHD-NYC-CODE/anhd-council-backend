@@ -931,3 +931,16 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(len(post_cache_content), 1)
         self.assertEqual(post_cache_content[0]['bbl'], '1')
         self.assertEqual(post_cache_content[0]['foreclosures_lastyear__01/01/2018-12/31/2018'], 5)
+
+        # cached, unauthorized
+        self.client.credentials(HTTP_AUTHORIZATION=None)
+        post_cache_no_auth_query = '/properties/?summary=true&summary-type=short-annotated&annotation__start=full'
+        post_cache_no_auth_response = self.client.get(post_cache_no_auth_query, format="json")
+
+        post_cache_no_auth_content = post_cache_no_auth_response.data
+
+        now_date = datetime.datetime.now().strftime("%m/%d/%Y")
+
+        self.assertEqual(post_cache_no_auth_response.status_code, 200)
+        self.assertEqual(len(post_cache_no_auth_content), 1)
+        self.assertEqual('foreclosures_lastyear__01/01/2018-12/31/2018' not in post_cache_no_auth_content[0], True)
