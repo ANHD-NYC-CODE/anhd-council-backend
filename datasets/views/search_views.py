@@ -18,13 +18,31 @@ class SearchViewSet(ApplicationViewSet, viewsets.ReadOnlyModelViewSet):
     def building_search(self, request, *args, **kwargs):
         self.serializer_class = serial.BuildingSearchSerializer
         self.pagination_class = None
-
         search_term = None
+
+        def construct_search_terms(terms, token, add_star=False, add_ampersand=False):
+            def star(add_star=False):
+                if add_star:
+                    return ':*'
+                else:
+                    return ''
+
+            def ampersand(add_ampersand=False):
+                if add_ampersand:
+                    return ' & '
+                else:
+                    return ''
+
+            terms = terms + token + star(add_star) + ampersand(add_ampersand)
+
+            return terms
+
         if 'fts' in request.query_params:
             search_term = request.query_params['fts'].replace(',', '').strip()
 
             def construct_search_query(search_term, prefix_first=False):
                 tokens = search_term.strip().split(' ')
+                terms = ''
 
                 ##
                 # Transforms
@@ -34,13 +52,29 @@ class SearchViewSet(ApplicationViewSet, viewsets.ReadOnlyModelViewSet):
                 if len(tokens) <= 1:
                     terms = ':*'.join(tokens)
                 else:
-                    first_term = tokens.pop(0)
                     if prefix_first:
-                        terms = ':* & '.join([first_term] + tokens)
-                        terms = terms + ':*'
+                        for i in range(len(tokens)):
+                            if i == len(tokens) - 1 and len(tokens[i]) <= 1:
+                                # on last token if token is <= 1 chars, don't add star, don't add ampersand
+                                terms = construct_search_terms(terms, tokens[i], False, False)
+                            elif i == len(tokens) - 1:
+                                # on last token don't add ampersand
+                                terms = construct_search_terms(terms, tokens[i], True, False)
+                            else:
+                                terms = construct_search_terms(terms, tokens[i], True, True)
                     else:
-                        terms = first_term + ' & ' + ':* & '.join(tokens)
-                        terms = terms + ':*'
+                        for i in range(len(tokens)):
+                            if i == 0:
+                                # first token, don't use * star
+                                terms = construct_search_terms(terms, tokens[i], False, True)
+                            elif i == len(tokens) - 1 and len(tokens[i]) <= 1:
+                                # on last token if token is <= 1 chars, don't add star, don't add ampersand
+                                terms = construct_search_terms(terms, tokens[i], False, False)
+                            elif i == len(tokens) - 1:
+                                # on last token don't add ampersand
+                                terms = construct_search_terms(terms, tokens[i], True, False)
+                            else:
+                                terms = construct_search_terms(terms, tokens[i], True, True)
 
                 # https://czep.net/17/full-text-search.html
                 rank_normalization = 16 if prefix_first else 32

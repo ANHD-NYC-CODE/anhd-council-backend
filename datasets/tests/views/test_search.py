@@ -54,7 +54,7 @@ class SearchTests(BaseTest, TestCase):
 
         ds.AddressRecord.build_search()
 
-        response = self.client.get('/search/buildings/?fts=50 M', format="json")
+        response = self.client.get('/search/buildings/?fts=50 MA', format="json")
         content = response.data['results']
 
         self.assertEqual(response.status_code, 200)
