@@ -1,5 +1,9 @@
 # API CHANGELOG
 
+### V1.0.0b1.44
+9/12/2019
+- Bugfix: adjust search constructor to find avenue C or any 1 letter street name
+
 ### V1.0.0b1.43
 8/19/19
 - Change CONHRecord column name to match the new column name 'streetaddress'
