@@ -1,5 +1,10 @@
 # API CHANGELOG
 
+### V1.0.0b1.45
+9/13/2019
+- Locks django-rest-framework at 3.9.4 because upgrading will break `/docs` documentation
+- see issue: https://github.com/encode/django-rest-framework/issues/6809
+
 ### V1.0.0b1.44
 9/12/2019
 - Bugfix: adjust search constructor to find avenue C or any 1 letter street name
