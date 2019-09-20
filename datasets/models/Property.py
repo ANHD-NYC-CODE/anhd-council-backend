@@ -157,7 +157,7 @@ class PropertyManager(models.Manager):
 
 class Property(BaseDatasetModel, models.Model):
 
-    SHORT_SUMMARY_FIELDS = ('bbl', 'council', 'cd', 'yearbuilt', 'unitsres', 'unitstotal',
+    SHORT_SUMMARY_FIELDS = ('bbl', 'council', 'cd', 'yearbuilt', 'zipcode', 'unitsres', 'unitstotal',
                             'address', 'lat', 'lng',)
 
     current_version = '18V1'

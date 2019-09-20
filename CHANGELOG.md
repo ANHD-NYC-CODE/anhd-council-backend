@@ -1,5 +1,10 @@
 # API CHANGELOG
 
+#### V1.0.0b1.46
+9/20/19
+
+- Add Property table ZipCode to dashboard serializer response
+
 ### V1.0.0b1.45
 9/13/2019
 - Locks django-rest-framework at 3.9.4 because upgrading will break `/docs` documentation
