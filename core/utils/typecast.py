@@ -74,59 +74,69 @@ def numeric(x):
 def mm_dd_yyyy(date_str):
     try:
         month, day, year = map(int, date_str[0:10].split('/'))
-        return datetime.datetime(year, month, day, 0, 0, 0).replace(tzinfo=pytz.timezone('US/Eastern'))
+        return datetime.date(year, month, day, 0, 0, 0)
     except ValueError:
         return None
 
 
 def yyyy_mm_dd(date_str):
     try:
-        return datetime.datetime.strptime(str(date_str), '%Y%m%d').replace(tzinfo=pytz.timezone('US/Eastern')).date()
+        return datetime.datetime.strptime(str(date_str), '%Y%m%d').date()
     except ValueError:
         logger.warning("* Unable to parse date string - {}".format(date_str))
         return None
-
-# TODO: allow for different date inputs besides mm/dd/yyyy
-#  03/04/2015 12:00:00 AM
 
 
 def date(x):
     if not x or isinstance(x, (datetime.date, datetime.datetime)):
         return x
+
+    parsed_date = None
     # checks yyyymmdd format in integers
     if isinstance(x, int):
         if len(str(x)) == 8:
-            return yyyy_mm_dd(x)
+            parsed_date = yyyy_mm_dd(x)
+    elif isinstance(x, str):
+        # Filters bad string entries
+        if len(x.strip()) == 1:
+            parsed_date = None
+        # checks string dates
+        # checks for 20181231 date input
+        elif re.match(r'[0-9]{8}', x):
+            try:
+                parsed_date = yyyy_mm_dd(x)
+            except ValueError:
+                logger.warning("* Unable to parse date string - {}".format(x))
+                parsed_date = None
 
-    # checks string dates
-    # checks for 20181231 date input
-    if re.match(r'[0-9]{8}', x):
-        try:
-            return yyyy_mm_dd(x)
-        except ValueError:
+        elif (len(x.strip()) == 8 or len(x.strip()) == 9 or len(x.strip()) == 10) and len(x.split('/')) == 3:
+            # checks for 1/1/2018 date input
+            # checks for 1/01/2018 date input
+            # checks for 01/01/2018 date input
+            parsed_date = mm_dd_yyyy(x)
+        elif len(x.strip()) == 22 and len(x[0:10].split('/')) == 3:
+            # checks for 12/31/2018 12:00:00 AM date input
+            parsed_date = mm_dd_yyyy(x)
+        elif len(x.strip()) == 19 and len(x[0:10].split('/')) == 3:
+            # checks for 12/31/2018 12:00:00 date input
+            parsed_date = mm_dd_yyyy(x)
+        elif len(x.split('T')[0].replace('-', '')) == 8:
+            # checks for 2017-02-06T00:00:00000
+            parsed_date = yyyy_mm_dd(x.split('T')[0].replace('-', ''))
+        else:
             logger.warning("* Unable to parse date string - {}".format(x))
-            return None
+            parsed_date = None
 
-    # Filters bad string entries
-    elif len(x.strip()) == 1:
-        return None
-    elif (len(x.strip()) == 8 or len(x.strip()) == 9 or len(x.strip()) == 10) and len(x.split('/')) == 3:
-        # checks for 1/1/2018 date input
-        # checks for 1/01/2018 date input
-        # checks for 01/01/2018 date input
-        return mm_dd_yyyy(x)
-    elif len(x.strip()) == 22 and len(x[0:10].split('/')) == 3:
-        # checks for 12/31/2018 12:00:00 AM date input
-        return mm_dd_yyyy(x)
-    elif len(x.strip()) == 19 and len(x[0:10].split('/')) == 3:
-        # checks for 12/31/2018 12:00:00 date input
-        return mm_dd_yyyy(x)
-    elif len(x.split('T')[0].replace('-', '')) == 8:
-        # checks for 2017-02-06T00:00:00000
-        return yyyy_mm_dd(x.split('T')[0].replace('-', ''))
+    return parsed_date
+
+
+def datetime(x):
+    # Only use for naive datetime objects from NYC Open Databases
+    parsed_date = date(x)
+    if parsed_date:
+        return parsed_date.replace(tzinfo=pytz.timezone('US/Eastern'))
     else:
-        logger.warning("* Unable to parse date string - {}".format(x))
-        return None
+        return parsed_date
 
 
 def time(x):
@@ -214,7 +224,7 @@ class Typecast():
             elif isinstance(field, models.fields.DateField):
                 d[field.name] = lambda x: date(x)
             elif isinstance(field, models.fields.DateTimeField):
-                d[field.name] = lambda x: date(x)
+                d[field.name] = lambda x: datetime(x)
             elif isinstance(field, models.fields.TimeField):
                 d[field.name] = lambda x: time(x)
             elif isinstance(field, models.fields.DecimalField):
