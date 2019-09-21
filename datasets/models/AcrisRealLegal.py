@@ -48,7 +48,7 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
     streetnumber = models.TextField(blank=True, null=True)
     streetname = models.TextField(blank=True, null=True)
     unit = models.TextField(blank=True, null=True)
-    goodthroughdate = models.DateTimeField(blank=True, null=True)
+    goodthroughdate = models.DateField(blank=True, null=True)
 
     slim_query_fields = ["bbl", "documentid"]
 
