@@ -33,7 +33,7 @@ class DOBPermitIssuedTests(BaseTest, TestCase):
         self.assertEqual(update.total_rows, 18)
         self.assertEqual(update.rows_created, 18)
         self.assertEqual(update.rows_updated, 0)
-
+        self.assertEqual(ds.DOBFiledPermit.objects.all()[0].datefiled.year, 2018)
         self.assertEqual(ds.Property.objects.get(bbl='1').propertyannotation.dobfiledpermits_last30, 5)
         self.assertEqual(ds.Property.objects.get(bbl='1').propertyannotation.dobfiledpermits_lastyear, 8)
         self.assertEqual(ds.Property.objects.get(bbl='1').propertyannotation.dobfiledpermits_last3years, 9)
