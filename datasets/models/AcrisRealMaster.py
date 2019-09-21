@@ -35,15 +35,15 @@ class AcrisRealMaster(BaseDatasetModel, models.Model):
     crfn = models.TextField(blank=True, null=True)
     borough = models.TextField(blank=True, null=True)
     doctype = models.TextField(db_index=True, blank=True, null=True)
-    docdate = models.DateTimeField(db_index=True, blank=True, null=True)
+    docdate = models.DateField(db_index=True, blank=True, null=True)
     docamount = models.BigIntegerField(db_index=True, blank=True, null=True)
-    recordedfiled = models.DateTimeField(blank=True, null=True)
-    modifieddate = models.DateTimeField(blank=True, null=True)
+    recordedfiled = models.DateField(blank=True, null=True)
+    modifieddate = models.DateField(blank=True, null=True)
     reelyear = models.SmallIntegerField(blank=True, null=True)
     reelnbr = models.IntegerField(blank=True, null=True)
     reelpage = models.IntegerField(blank=True, null=True)
     pcttransferred = models.DecimalField(decimal_places=2, max_digits=8, blank=True, null=True)
-    goodthroughdate = models.DateTimeField(blank=True, null=True)
+    goodthroughdate = models.DateField(blank=True, null=True)
 
     # https://data.cityofnewyork.us/City-Government/ACRIS-Document-Control-Codes/7isb-wh4c
     # SALE_DOC_TYPES = ("DEED", "DEEDO", "DEED, LE", "DEED, RC", "DEED, TS", "DEEDP", "MTGE",
