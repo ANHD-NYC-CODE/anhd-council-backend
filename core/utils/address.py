@@ -244,6 +244,7 @@ def clean_those_typos(string):
     string = re.sub(r"\bWASHINGT ON\b", "WASHINGTON", string)
     string = re.sub(r"\bBA Y\b", "BAY", string)
     string = re.sub(r"\bCHANNE L\b", "CHANNEL", string)
+    string = re.sub(r"\bDOUGL ASS\b", "DOUGLAS", string)
 
     return string
 
