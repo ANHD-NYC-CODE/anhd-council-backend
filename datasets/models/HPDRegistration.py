@@ -31,8 +31,8 @@ class HPDRegistration(BaseDatasetModel, models.Model):
     block = models.SmallIntegerField(blank=True, null=True)
     lot = models.IntegerField(blank=True, null=True)
     communityboard = models.IntegerField(blank=True, null=True)
-    lastregistrationdate = models.DateTimeField(blank=True, null=True)
-    registrationenddate = models.DateTimeField(blank=True, null=True)
+    lastregistrationdate = models.DateField(blank=True, null=True)
+    registrationenddate = models.DateField(blank=True, null=True)
 
     @classmethod
     def create_async_update_worker(self, endpoint=None, file_name=None):

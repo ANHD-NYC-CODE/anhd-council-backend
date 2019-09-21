@@ -33,10 +33,10 @@ class PSForeclosure(BaseDatasetModel, models.Model):
     schooldistrict = models.TextField(blank=True, null=True)
     buildingclass = models.TextField(blank=True, null=True)
     bldgareasqft = models.IntegerField(blank=True, null=True)
-    auction = models.DateTimeField(blank=True, null=True)  # auction
+    auction = models.DateField(blank=True, null=True)  # auction
     auctiontime = models.TextField(blank=True, null=True)
     auctionlocation = models.TextField(blank=True, null=True)
-    dateadded = models.DateTimeField(blank=True, null=True)  # maybe only add if blank?
+    dateadded = models.DateField(blank=True, null=True)  # maybe only add if blank?
     plaintiff = models.TextField(blank=True, null=True)
     defendant = models.TextField(blank=True, null=True)
     lien = models.TextField(blank=True, null=True)

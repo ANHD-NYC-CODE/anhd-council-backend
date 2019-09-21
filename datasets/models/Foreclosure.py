@@ -40,12 +40,12 @@ class Foreclosure(BaseDatasetModel, models.Model):
     document_type = models.TextField(blank=True, null=True)
     lien_type = models.TextField(blank=True, null=True)  # lispendens blank
     # fileddate in LisPenden and date_added for PropertyShark
-    date_added = models.DateTimeField(blank=True, null=True)
+    date_added = models.DateField(blank=True, null=True)
     creditor = models.TextField(blank=True, null=True)
     debtor = models.TextField(blank=True, null=True)
     mortgage_date = models.TextField(blank=True, null=True)
     mortgage_amount = models.TextField(blank=True, null=True)
-    auction = models.DateTimeField(blank=True, null=True)  # only from PropertySharkForeclosure
+    auction = models.DateField(blank=True, null=True)  # only from PropertySharkForeclosure
     foreign_key = models.TextField(blank=True, null=True)
     source = models.TextField(blank=True, null=True)  # PDC or PropertyShark
 

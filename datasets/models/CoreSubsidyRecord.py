@@ -38,10 +38,10 @@ class CoreSubsidyRecord(BaseDatasetModel, models.Model):
     projectname = models.TextField(blank=True, null=True)
     preservation = models.TextField(blank=True, null=True)
     tenure = models.TextField(blank=True, null=True)
-    startdate = models.DateTimeField(blank=True, null=True)
-    enddate = models.DateTimeField(db_index=True, blank=True, null=True)
+    startdate = models.DateField(blank=True, null=True)
+    enddate = models.DateField(db_index=True, blank=True, null=True)
     reacscore = models.TextField(blank=True, null=True)
-    reacdate = models.DateTimeField(blank=True, null=True)
+    reacdate = models.DateField(blank=True, null=True)
     cdid = models.SmallIntegerField(blank=True, null=True)
     ccdid = models.SmallIntegerField(blank=True, null=True)
     pumaid = models.SmallIntegerField(blank=True, null=True)
@@ -58,7 +58,7 @@ class CoreSubsidyRecord(BaseDatasetModel, models.Model):
     buildings = models.SmallIntegerField(blank=True, null=True)
     serviolation2017 = models.SmallIntegerField(blank=True, null=True)
     taxdelinquency2016 = models.SmallIntegerField(blank=True, null=True)
-    dataoutputdate = models.DateTimeField(blank=True, null=True)
+    dataoutputdate = models.DateField(blank=True, null=True)
 
     slim_query_fields = ["id", "bbl", "programname", "enddate"]
 

@@ -40,11 +40,11 @@ class PSPreForeclosure(BaseDatasetModel, models.Model):
     lientype = models.TextField(blank=True, null=True)  # lien_type
     buildingclass = models.TextField(blank=True, null=True)
     taxvalue = models.TextField(blank=True, null=True)
-    dateadded = models.DateTimeField(blank=True, null=True)  # date_added
+    dateadded = models.DateField(blank=True, null=True)  # date_added
     bldgareasqft = models.IntegerField(blank=True, null=True)
     debtor = models.TextField(blank=True, null=True)  # debtor
     debtoraddress = models.TextField(blank=True, null=True)
-    mortgagedate = models.DateTimeField(blank=True, null=True)  # mortgage_date
+    mortgagedate = models.DateField(blank=True, null=True)  # mortgage_date
     mortgageamount = models.IntegerField(blank=True, null=True)  # mortgage_amount
     hasphoto = models.TextField(blank=True, null=True)
 
