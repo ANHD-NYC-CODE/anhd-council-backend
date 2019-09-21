@@ -29,7 +29,7 @@ class DOBComplaint(BaseDatasetModel, models.Model):
     bin = models.ForeignKey('Building', db_column='bin', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=True)
     status = models.TextField(db_index=True, blank=True, null=True)
-    dateentered = models.DateTimeField(blank=True, null=True)
+    dateentered = models.DateField(blank=True, null=True)
     housenumber = models.TextField(blank=True, null=True)
     zipcode = models.TextField(blank=True, null=True)
     housestreet = models.TextField(blank=True, null=True)
@@ -37,10 +37,10 @@ class DOBComplaint(BaseDatasetModel, models.Model):
     specialdistrict = models.TextField(blank=True, null=True)
     complaintcategory = models.TextField(blank=True, null=True)
     unit = models.TextField(blank=True, null=True)
-    dispositiondate = models.DateTimeField(blank=True, null=True)
+    dispositiondate = models.DateField(blank=True, null=True)
     dispositioncode = models.TextField(db_index=True, blank=True, null=True)
-    inspectiondate = models.DateTimeField(blank=True, null=True)
-    dobrundate = models.DateTimeField(blank=True, null=True)
+    inspectiondate = models.DateField(blank=True, null=True)
+    dobrundate = models.DateField(blank=True, null=True)
 
     slim_query_fields = ["complaintnumber", "bbl", "dateentered"]
 

@@ -1,5 +1,9 @@
 # API CHANGELOG
 
+#### V1.0.0b1.5.16
+9.21.19
+- Add DateField migration for DOBComplaint and ECBViolation
+
 #### V1.0.0b1.5.15
 9.21.19
 - Add DateField migration for CoreSubsidyRecord, LisPenden, HPDRegistration, Foreclosure, PSPreForeclosure, PSForeclosure

@@ -122,15 +122,15 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     taxlien__gte = django_filters.NumberFilter(field_name='taxlien__year', lookup_expr='gte')
 
     coresubsidyrecord__enddate__lte = django_filters.DateFilter(
-        field_name='coresubsidyrecord__enddate', lookup_expr='date__lte')
+        field_name='coresubsidyrecord__enddate', lookup_expr='lte')
     coresubsidyrecord__enddate__lt = django_filters.DateFilter(
-        field_name='coresubsidyrecord__enddate', lookup_expr='date__lt')
+        field_name='coresubsidyrecord__enddate', lookup_expr='lt')
     coresubsidyrecord__enddate = django_filters.DateFilter(
-        field_name='coresubsidyrecord__enddate', lookup_expr='date__exact')
+        field_name='coresubsidyrecord__enddate', lookup_expr='exact')
     coresubsidyrecord__enddate__gte = django_filters.DateFilter(
-        field_name='coresubsidyrecord__enddate', lookup_expr='date__gte')
+        field_name='coresubsidyrecord__enddate', lookup_expr='gte')
     coresubsidyrecord__enddate__gt = django_filters.DateFilter(
-        field_name='coresubsidyrecord__enddate', lookup_expr='date__gt')
+        field_name='coresubsidyrecord__enddate', lookup_expr='gt')
     subsidyprograms__programname = CommaSeparatedConditionFilter(method="filter_programnames")
 
     def filter_council_exact(self, queryset, name, value):
