@@ -1,5 +1,9 @@
 # API CHANGELOG
 
+#### V1.0.0b1.5.14
+9.21.19
+- Add DateField migration for HPDComplaint and HPDProblem
+
 #### V1.0.0b1.5.13
 9.21.19
 - Add DateField migration for DOBFiledPermit, DOBLegacyFiledPermit, DOBNOWFiledPermit
