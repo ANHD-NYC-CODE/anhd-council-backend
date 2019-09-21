@@ -1,5 +1,10 @@
 # API CHANGELOG
 
+#### V1.0.0b1.5.12
+9.21.19
+- Add DateField migration for DOBIssuedPermit, DOBLegacyIssuedPermit, DOBNOWIssuedPermit
+- Fix AcrisRealMaster date filter
+
 #### V1.0.0b1.5.11
 9.21.19
 - Add DateField migration for AcrisRealMaster
