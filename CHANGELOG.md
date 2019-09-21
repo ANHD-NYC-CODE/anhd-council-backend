@@ -1,5 +1,14 @@
 # API CHANGELOG
 
+#### V1.0.0b1.5.1
+9.21.19
+- Add DateField migration for HPDViolation and HousingLitigation
+
+#### V1.0.0b1.5.0
+9.21.19
+- Removed datetime parsing from NYC Open Data typecasting due to inability to correct for timezone.
+- Add first migration to correct this - DOBViolation
+
 #### V1.0.0b1.46
 9/20/19
 
