@@ -33,7 +33,7 @@ class HPDProblem(BaseDatasetModel, models.Model):
     code = models.TextField(blank=True, null=True)
     statusid = models.IntegerField(db_index=True, blank=True, null=True)
     status = models.TextField(db_index=True, blank=True, null=True)
-    statusdate = models.DateTimeField(db_index=True, blank=True, null=True)
+    statusdate = models.DateField(db_index=True, blank=True, null=True)
     statusdescription = models.TextField(blank=True, null=True)
 
     @classmethod
