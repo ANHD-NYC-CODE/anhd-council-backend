@@ -33,7 +33,7 @@ class AcrisRealParty(BaseDatasetModel, models.Model):
     city = models.TextField(blank=True, null=True)
     state = models.TextField(blank=True, null=True)
     zip = models.TextField(blank=True, null=True)
-    goodthroughdate = models.DateTimeField(blank=True, null=True)
+    goodthroughdate = models.DateField(blank=True, null=True)
 
     @classmethod
     def create_async_update_worker(self, endpoint=None, file_name=None):

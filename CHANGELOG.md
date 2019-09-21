@@ -1,5 +1,9 @@
 # API CHANGELOG
 
+#### V1.0.0b1.5.18
+9.21.19
+- Add DateField migration for AcrisRealParty
+
 #### V1.0.0b1.5.17
 9.21.19
 - Add DateField migration for AcrisRealLegal
