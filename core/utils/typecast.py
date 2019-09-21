@@ -74,7 +74,7 @@ def numeric(x):
 def mm_dd_yyyy(date_str):
     try:
         month, day, year = map(int, date_str[0:10].split('/'))
-        return datetime.date(year, month, day, 0, 0, 0)
+        return datetime.date(year, month, day)
     except ValueError:
         return None
 
@@ -128,15 +128,6 @@ def date(x):
             parsed_date = None
 
     return parsed_date
-
-
-def datetime(x):
-    # Only use for naive datetime objects from NYC Open Databases
-    parsed_date = date(x)
-    if parsed_date:
-        return parsed_date.replace(tzinfo=pytz.timezone('US/Eastern'))
-    else:
-        return parsed_date
 
 
 def time(x):
@@ -224,7 +215,7 @@ class Typecast():
             elif isinstance(field, models.fields.DateField):
                 d[field.name] = lambda x: date(x)
             elif isinstance(field, models.fields.DateTimeField):
-                d[field.name] = lambda x: datetime(x)
+                d[field.name] = lambda x: date(x)
             elif isinstance(field, models.fields.TimeField):
                 d[field.name] = lambda x: time(x)
             elif isinstance(field, models.fields.DecimalField):
