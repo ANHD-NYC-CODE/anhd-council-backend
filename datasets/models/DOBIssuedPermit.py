@@ -48,6 +48,8 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
     ownerbusinessname = models.TextField(blank=True, null=True)
     foreign_key = models.TextField(blank=True, null=True)
     type = models.TextField(blank=True, null=True)
+    permit_type = models.TextField(blank=True, null=True)
+    permit_subtype = models.TextField(blank=True, null=True)
 
     slim_query_fields = ["key", "bbl", "issuedate"]
 
@@ -83,11 +85,11 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
         # Add records from both tables
         legacy_table = ds.DOBPermitIssuedLegacy
         legacy_count = legacy_table.objects.count()
-        legacy_cols = "concat({other_table_name}.job, {other_table_name}.permitsino), {other_table_name}.job, {other_table_name}.permitsino, {other_table_name}.bbl, {other_table_name}.bin, {other_table_name}.borough, {other_table_name}.house, {other_table_name}.streetname, {other_table_name}.worktype, {other_table_name}.jobtype, {other_table_name}.issuancedate, {other_table_name}.expirationdate, concat_ws(' ', {other_table_name}.permitteesfirstname, {other_table_name}.permitteeslastname), {other_table_name}.permitteesbusinessname, concat_ws(' ', {other_table_name}.ownersfirstname, {other_table_name}.ownerslastname), {other_table_name}.ownersbusinessname, {other_table_name}.id, \'{other_model_name}\'".format(other_table_name=legacy_table._meta.db_table, other_model_name=legacy_table._meta.model_name)
+        legacy_cols = "concat({other_table_name}.job, {other_table_name}.permitsino), {other_table_name}.job, {other_table_name}.permitsino, {other_table_name}.bbl, {other_table_name}.bin, {other_table_name}.borough, {other_table_name}.house, {other_table_name}.streetname, {other_table_name}.worktype, {other_table_name}.jobtype, {other_table_name}.issuancedate, {other_table_name}.expirationdate, concat_ws(' ', {other_table_name}.permitteesfirstname, {other_table_name}.permitteeslastname), {other_table_name}.permitteesbusinessname, concat_ws(' ', {other_table_name}.ownersfirstname, {other_table_name}.ownerslastname), {other_table_name}.ownersbusinessname, {other_table_name}.id, \'{other_model_name}\', {other_table_name}.permittype, {other_table_name}.permitsubtype".format(other_table_name=legacy_table._meta.db_table, other_model_name=legacy_table._meta.model_name)
 
         now_table = ds.DOBPermitIssuedNow
         now_count = now_table.objects.count()
-        now_cols = "concat({other_table_name}.jobfilingnumber, {other_table_name}.workpermit), {other_table_name}.jobfilingnumber, {other_table_name}.workpermit, {other_table_name}.bbl, {other_table_name}.bin, {other_table_name}.borough, {other_table_name}.houseno, {other_table_name}.streetname, {other_table_name}.worktype, {other_table_name}.jobdescription, {other_table_name}.issueddate, {other_table_name}.expireddate, concat_ws(' ', {other_table_name}.applicantfirstname, {other_table_name}.applicantlastname), {other_table_name}.applicantbusinessname, ownername, {other_table_name}.ownerbusinessname, {other_table_name}.id, \'{other_model_name}\'".format(other_table_name=now_table._meta.db_table, other_model_name=now_table._meta.model_name)
+        now_cols = "concat({other_table_name}.jobfilingnumber, {other_table_name}.workpermit), {other_table_name}.jobfilingnumber, {other_table_name}.workpermit, {other_table_name}.bbl, {other_table_name}.bin, {other_table_name}.borough, {other_table_name}.houseno, {other_table_name}.streetname, {other_table_name}.worktype, {other_table_name}.jobdescription, {other_table_name}.issueddate, {other_table_name}.expireddate, concat_ws(' ', {other_table_name}.applicantfirstname, {other_table_name}.applicantlastname), {other_table_name}.applicantbusinessname, ownername, {other_table_name}.ownerbusinessname, {other_table_name}.id, \'{other_model_name}\', NULL, NULL".format(other_table_name=now_table._meta.db_table, other_model_name=now_table._meta.model_name)
 
         kwargs['update'].total_rows = legacy_count + now_count
         kwargs['update'].save()

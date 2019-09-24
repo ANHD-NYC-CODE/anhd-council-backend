@@ -51,8 +51,6 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
     initialcost = models.TextField(blank=True, null=True)
     foreign_key = models.TextField(blank=True, null=True)
     type = models.TextField(blank=True, null=True)
-    permit_type = models.TextField(blank=True, null=True)
-    permit_subtype = models.TextField(blank=True, null=True)
 
     slim_query_fields = ["id", "bbl", "datefiled"]
 
@@ -77,11 +75,11 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
         # Add records from both tables
         legacy_table = ds.DOBLegacyFiledPermit
         legacy_count = legacy_table.objects.count()
-        legacy_cols = "concat(\'{other_model_name}\', {other_table_name}.jobs1no, {other_table_name}.job), {other_table_name}.job, {other_table_name}.bbl, {other_table_name}.bin, {other_table_name}.house, {other_table_name}.streetname, {other_table_name}.borough, {other_table_name}.jobstatusdescrp, {other_table_name}.jobtype, {other_table_name}.jobdescription, {other_table_name}.prefilingdate, {other_table_name}.applicantsfirstname, {other_table_name}.applicantslastname, {other_table_name}.applicantprofessionaltitle, {other_table_name}.applicantlicense, {other_table_name}.ownersbusinessname, {other_table_name}.initialcost, CAST({other_table_name}.id AS text), \'{other_model_name}\', NULL, NULL".format(
+        legacy_cols = "concat(\'{other_model_name}\', {other_table_name}.jobs1no, {other_table_name}.job), {other_table_name}.job, {other_table_name}.bbl, {other_table_name}.bin, {other_table_name}.house, {other_table_name}.streetname, {other_table_name}.borough, {other_table_name}.jobstatusdescrp, {other_table_name}.jobtype, {other_table_name}.jobdescription, {other_table_name}.prefilingdate, {other_table_name}.applicantsfirstname, {other_table_name}.applicantslastname, {other_table_name}.applicantprofessionaltitle, {other_table_name}.applicantlicense, {other_table_name}.ownersbusinessname, {other_table_name}.initialcost, CAST({other_table_name}.id AS text), \'{other_model_name}\'".format(
             other_table_name=legacy_table._meta.db_table, other_model_name=legacy_table._meta.model_name)
         now_table = ds.DOBNowFiledPermit
         now_count = now_table.objects.count()
-        now_cols = "concat(\'{other_model_name}\', {other_table_name}.jobfilingnumber), {other_table_name}.jobfilingnumber, {other_table_name}.bbl, {other_table_name}.bin, {other_table_name}.houseno, {other_table_name}.streetname, {other_table_name}.borough, {other_table_name}.filingstatus, NULL, NULL, NULL, {other_table_name}.applicantfirstname, {other_table_name}.applicantlastname, {other_table_name}.applicantprofessionaltitle, {other_table_name}.applicantlicense, {other_table_name}.ownersbusinessname, {other_table_name}.initialcost, CAST({other_table_name}.id AS text), \'{other_model_name}\', NULL, NULL".format(
+        now_cols = "concat(\'{other_model_name}\', {other_table_name}.jobfilingnumber), {other_table_name}.jobfilingnumber, {other_table_name}.bbl, {other_table_name}.bin, {other_table_name}.houseno, {other_table_name}.streetname, {other_table_name}.borough, {other_table_name}.filingstatus, NULL, NULL, NULL, {other_table_name}.applicantfirstname, {other_table_name}.applicantlastname, {other_table_name}.applicantprofessionaltitle, {other_table_name}.applicantlicense, {other_table_name}.ownersbusinessname, {other_table_name}.initialcost, CAST({other_table_name}.id AS text), \'{other_model_name}\'".format(
             nil={None}, other_table_name=now_table._meta.db_table, other_model_name=now_table._meta.model_name)
 
         kwargs['update'].total_rows = legacy_count + now_count
