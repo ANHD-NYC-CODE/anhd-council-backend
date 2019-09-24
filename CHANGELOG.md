@@ -1,5 +1,9 @@
 # API CHANGELOG
 
+#### V1.0.0b1.5.2
+9/24/19
+- Add permit_type and permit_subtype fields to DOBIssuedPermit
+
 #### V1.0.0b1.5.19
 9.21.19
 - Add DateField migration for Property
