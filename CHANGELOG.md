@@ -1,5 +1,9 @@
 # API CHANGELOG
 
+#### V1.0.0b1.5.3
+9/24/19
+- Filter our Federal Public Housing and Section 8 from CoreSubsidyRecords
+
 #### V1.0.0b1.5.2
 9/24/19
 - Add permit_type and permit_subtype fields to DOBIssuedPermit
