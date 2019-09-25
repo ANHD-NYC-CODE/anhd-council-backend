@@ -49,8 +49,6 @@ class PropertyQuerySet(models.QuerySet):
         queryset = self.annotate(has_core=Exists(corerecords), has_subsidyj51=Exists(j51records), has_subsidy421a=Exists(
             subsidy421a)).filter(Q(has_core=True) | Q(has_subsidyj51=True) | Q(has_subsidy421a=True))
 
-        # queryset = self.annotate(corerecords=Count('coresubsidyrecord'), subsidyj51records=Count('subsidyj51'), subsidy421arecords=Count(
-        #     'subsidy421a')).filter(Q(corerecords__gte=1) | Q(subsidyj51records__gte=1) | Q(subsidy421arecords__gte=1))
         if program:
             return queryset.prefetch_related('coresubsidyrecord').filter(subsidyprograms__programname__icontains=program)
         else:
