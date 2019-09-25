@@ -102,7 +102,7 @@ class CoreSubsidyRecord(BaseDatasetModel, models.Model):
     def pre_validation_filters(self, gen_rows):
         # Clean and standardize the program names
         for row in gen_rows:
-            if row['programname'] == 'Section 8 - RAD' or row['programname'] == 'NYCHA - Mixed Financing' or row['programname'] == 'Federal Public Housing' or row['programname'] == 'Project-Based Section 8':
+            if row['programname'] == 'NYCHA - Mixed Financing' or row['programname'] == 'Federal Public Housing':
                 continue
 
             yield row

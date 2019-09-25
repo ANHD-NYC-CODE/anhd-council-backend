@@ -1,5 +1,9 @@
 # API CHANGELOG
 
+#### V1.0.0b1.5.31
+9/25/19
+- Add section 8 back
+
 #### V1.0.0b1.5.3
 9/24/19
 - Filter our Federal Public Housing and Section 8 from CoreSubsidyRecords
