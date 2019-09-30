@@ -1,5 +1,10 @@
 # API CHANGELOG
 
+#### V1.0.0b1.5.4
+9/30/19
+- Update schema for June, 2019 CoreData update
+- add celery shell scripts
+
 #### V1.0.0b1.5.31
 9/25/19
 - Add section 8 back

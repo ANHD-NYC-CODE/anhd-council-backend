@@ -58,6 +58,8 @@ class CoreSubsidyRecord(BaseDatasetModel, models.Model):
     buildings = models.SmallIntegerField(blank=True, null=True)
     serviolation2017 = models.SmallIntegerField(blank=True, null=True)
     taxdelinquency2016 = models.SmallIntegerField(blank=True, null=True)
+    serviolation2018 = models.SmallIntegerField(blank=True, null=True)
+    taxdelinquency2018 = models.SmallIntegerField(blank=True, null=True)
     dataoutputdate = models.DateField(blank=True, null=True)
 
     slim_query_fields = ["id", "bbl", "programname", "enddate"]
