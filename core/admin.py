@@ -48,7 +48,7 @@ class DatasetAdmin(admin.ModelAdmin):
         return False
 
     list_display = ['name', 'automated', 'update_instructions',
-                    'updates_count', 'updates_link', 'data_files_count', 'datafiles_link', 'api_last_updated']
+                    'updates_count', 'updates_link', 'data_files_count', 'datafiles_link', 'api_last_updated', 'records_start', 'records_end', 'update_schedule']
     Dataset.objects.prefetch_related('update')
     Dataset.objects.prefetch_related('datafile')
     ordering = ['name']

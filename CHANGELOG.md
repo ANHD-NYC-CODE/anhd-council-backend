@@ -1,5 +1,9 @@
 # API CHANGELOG
 
+#### V1.0.0b1.5.5
+9/30/19
+- Update Dataset model with records_start, records_end, and update_schedule
+
 #### V1.0.0b1.5.4
 9/30/19
 - Update schema for June, 2019 CoreData update

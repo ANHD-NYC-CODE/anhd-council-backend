@@ -19,12 +19,22 @@ logger = logging.getLogger('app')
 
 
 class Dataset(models.Model):
+    UPDATE_SCHEDULE_CHOICES = [
+        ('daily', 'Daily'),
+        ('weekly', 'Weekly'),
+        ('monthly', 'Monthly'),
+        ('when needed', 'When Needed'),
+    ]
+
     name = models.CharField(unique=True, max_length=255, blank=False, null=False)
     model_name = models.CharField(unique=True, max_length=255, blank=False, null=False)
     automated = models.BooleanField(blank=True, null=True)
     update_instructions = models.TextField(blank=True, null=True)
     download_endpoint = models.TextField(blank=True, null=True)
     api_last_updated = models.DateTimeField(blank=True, null=True)
+    records_start = models.DateField(blank=True, null=True)
+    records_end = models.DateField(blank=True, null=True)
+    update_schedule = models.CharField(max_length=255, choices=UPDATE_SCHEDULE_CHOICES, blank=True, null=True)
 
     def model(self):
         return getattr(ds, self.model_name)
@@ -37,6 +47,18 @@ class Dataset(models.Model):
 
     def needs_update(self):
         return self.api_last_updated != getattr(ds, self.model_name).fetch_last_updated()
+
+    def update_records_range(self):
+        dataset = getattr(ds, self.model_name)
+        if hasattr(dataset, 'QUERY_DATE_KEY'):
+            try:
+                self.records_start = getattr(dataset.objects.filter(
+                    **{"{}__isnull".format(dataset.QUERY_DATE_KEY): False}).earliest(dataset.QUERY_DATE_KEY), dataset.QUERY_DATE_KEY)
+                self.records_end = getattr(dataset.objects.filter(
+                    **{"{}__isnull".format(dataset.QUERY_DATE_KEY): False}).latest(dataset.QUERY_DATE_KEY), dataset.QUERY_DATE_KEY)
+                self.save()
+            except Exception as e:
+                logger.warning(e)
 
     def check_api_for_update(self):
         self.api_last_updated = getattr(ds, self.model_name).fetch_last_updated()
@@ -201,6 +223,7 @@ def add_task_result_to_update(sender, instance, created, **kwargs):
                 u.completed_date = instance.date_done
                 u.save()
                 u.dataset.check_api_for_update()  # update dataset update time after success
+                u.dataset.update_records_range()  # update records start / records end after success
                 async_send_update_success_mail.delay(u.id)
 
         except Exception as e:

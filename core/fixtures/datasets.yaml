@@ -4,6 +4,7 @@
     name: Council Districts
     model_name: Council
     automated: False
+    update_schedule: "when needed"
     update_instructions: "1) Visit http://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/nycc/FeatureServer/0/query?where=1=1&outFields=*&outSR=4326&f=geojson 2) Copy all of the data on the screen into a .geojson file. 3) Upload the file to the app. 4) Create an update with the file."
 - model: core.dataset
   pk: 2
@@ -11,6 +12,7 @@
     name: Properties
     model_name: Property
     automated: False
+    update_schedule: "when needed"
     update_instructions: "1) Visit https://www1.nyc.gov/site/planning/data-maps/open-data/dwn-pluto-mappluto.page 2) Download latest Pluto version in CSV format (comes in zipfile). 3) Upload zipfile to app. 4) Create an update. 5) Update the version number in the codebase."
 - model: core.dataset
   pk: 3
@@ -18,6 +20,7 @@
     name: Buildings
     model_name: Building
     automated: False
+    update_schedule: "when needed"
     update_instructions: "Visit https://data.cityofnewyork.us/City-Government/Property-Address-Directory/bc8t-ecyu 2) Download latest zipfile. 3) Extract zipfile and open bobaadr.csv. 4) Upload bobaadr.csv to app. 5) Update"
 - model: core.dataset
   pk: 4
@@ -25,24 +28,28 @@
     name: Acris Real Property Legals
     model_name: AcrisRealLegal
     automated: True
+    update_schedule: "monthly"
 - model: core.dataset
   pk: 5
   fields:
     name: Acris Real Property Masters
     model_name: AcrisRealMaster
     automated: True
+    update_schedule: "monthly"
 - model: core.dataset
   pk: 6
   fields:
     name: Acris Real Property Party
     model_name: AcrisRealParty
     automated: True
+    update_schedule: "monthly"
 - model: core.dataset
   pk: 7
   fields:
     name: CoreData Subsidy Records
     model_name: CoreSubsidyRecord
     automated: False
+    update_schedule: "when needed"
     update_instructions: "Consult developer when latest version is released."
 - model: core.dataset
   pk: 8
@@ -50,54 +57,63 @@
     name: DOB Complaints
     model_name: DOBComplaint
     automated: True
+    update_schedule: "daily"
 - model: core.dataset
   pk: 9
   fields:
     name: DOB Permits Filed (Legacy)
     model_name: DOBLegacyFiledPermit
     automated: True
+    update_schedule: "daily"
 - model: core.dataset
   pk: 10
   fields:
     name: DOB Permits Issued (Legacy)
     model_name: DOBPermitIssuedLegacy
     automated: True
+    update_schedule: "daily"
 - model: core.dataset
   pk: 11
   fields:
     name: DOB Permits Issued (NOW)
     model_name: DOBPermitIssuedNow
     automated: True
+    update_schedule: "daily"
 - model: core.dataset
   pk: 12
   fields:
     name: DOB Violations
     model_name: DOBViolation
     automated: True
+    update_schedule: "daily"
 - model: core.dataset
   pk: 13
   fields:
     name: ECB Violations
     model_name: ECBViolation
     automated: True
+    update_schedule: "daily"
 - model: core.dataset
   pk: 14
   fields:
     name: Evictions
     model_name: Eviction
     automated: True
+    update_schedule: "daily"
 - model: core.dataset
   pk: 15
   fields:
     name: Housing Litigations
     model_name: HousingLitigation
     automated: True
+    update_schedule: "monthly"
 - model: core.dataset
   pk: 16
   fields:
     name: HPD Building Records
     model_name: HPDBuildingRecord
     automated: false
+    update_schedule: "when needed"
     update_instructions: "1) https://data.cityofnewyork.us/api/views/kj4p-ruqc/rows.csv?accessType=DOWNLOAD 2) Add File 3) update"
 - model: core.dataset
   pk: 17
@@ -105,36 +121,42 @@
     name: HPD Complaints
     model_name: HPDComplaint
     automated: True
+    update_schedule: "monthly"
 - model: core.dataset
   pk: 18
   fields:
     name: HPD Problems
     model_name: HPDProblem
     automated: True
+    update_schedule: "monthly"
 - model: core.dataset
   pk: 19
   fields:
     name: HPD Registration Contacts
     model_name: HPDContact
     automated: True
+    update_schedule: "monthly"
 - model: core.dataset
   pk: 20
   fields:
     name: HPD Registrations
     model_name: HPDRegistration
     automated: True
+    update_schedule: "monthly"
 - model: core.dataset
   pk: 21
   fields:
     name: HPD Violations
     model_name: HPDViolation
     automated: True
+    update_schedule: "daily"
 - model: core.dataset
   pk: 22
   fields:
     name: TaxBills Rent Stabilization Records
     model_name: RentStabilizationRecord
     automated: False
+    update_schedule: "when needed"
     update_instructions: "1) Download joined.csv file http://taxbills.nyc/joined.csv 2) Upload file to app. 3) Create update. -- Current app supports new columns up to 2020"
 - model: core.dataset
   pk: 23
@@ -142,6 +164,7 @@
     name: J-51 Subsidy Records
     model_name: SubsidyJ51
     automated: False
+    update_schedule: "when needed"
     update_instructions: "1) Download all 5 borough .xlsx Excel files from https://www1.nyc.gov/site/finance/benefits/benefits-j51.page 2) Manually combine all files into single .csv file. 3) Upload file to app. 4) Create Update."
 - model: core.dataset
   pk: 24
@@ -149,6 +172,7 @@
     name: 421a Subsidy Records
     model_name: Subsidy421a
     automated: False
+    update_schedule: "when needed"
     update_instructions: "1) Download all 5 borough .xlsx Excel files from https://www1.nyc.gov/site/finance/benefits/benefits-421a.page 2) Manually combine all files into single .csv file. 3) Upload file to app. 4) Create Update."
 - model: core.dataset
   pk: 25
@@ -156,6 +180,7 @@
     name: Public Housing Records
     model_name: PublicHousingRecord
     automated: False
+    update_schedule: "when needed"
     update_instructions: "1) Download csv from https://github.com/JustFixNYC/nycha-scraper/blob/master/Block-and-Lot-Guide-08272018.csv 2) Upload file to app. 3) Create Update."
 - model: core.dataset
   pk: 26
@@ -163,12 +188,14 @@
     name: DOB Permits Issued (Joined)
     model_name: DOBIssuedPermit
     automated: True
+    update_schedule: "daily"
 - model: core.dataset
   pk: 27
   fields:
     name: Tax Liens
     model_name: TaxLien
     automated: False
+    update_schedule: "when needed"
     update_instructions: "1) Download every borough's .xlsx file for the current year from https://www1.nyc.gov/site/finance/taxes/property-lien-sales.page 2) Create a .csv file with all borough data. 3) Add a 'year' column to the file and provide the appropriate year value for each row. 4) Upload file to app. 5) Create Update."
 - model: core.dataset
   pk: 28
@@ -176,6 +203,7 @@
     name: LisPendens
     model_name: LisPenden
     automated: False
+    update_schedule: "monthly"
     update_instructions: "1) merge all boroughs into single file - lp_lispendens_<month><year>.csv - use these headers: KEY,BBL,ENTEREDDATE,ZIP,BC,FILEDDATE,INDEX,DEBTOR,CR,ATTORNEY,Third Party,SAT DATE,SAT TYPE,DISP 2) upload file to app 3) update"
 - model: core.dataset
   pk: 29
@@ -183,6 +211,7 @@
     name: LisPenden Comments
     model_name: LisPendenComment
     automated: False
+    update_schedule: "monthly"
     update_instructions: "1) merge all boroughs into single file - lp_lispendens_comments_<month><year>.csv - use these headers: KEY,DATE-COMMENTS 2) Clean extra columns out 3) upload file to app 4) update"
 - model: core.dataset
   pk: 30
@@ -190,12 +219,14 @@
     name: Address Record
     model_name: AddressRecord
     automated: False
+    update_schedule: "when needed"
 - model: core.dataset
   pk: 31
   fields:
     name: Tax Lots
     model_name: TaxLot
     automated: false
+    update_schedule: "when needed"
     update_instructions: "Visit https://data.cityofnewyork.us/City-Government/Property-Address-Directory/bc8t-ecyu 2) Download latest zipfile. 3) Extract zipfile and open bobabbl.csv. 4) Upload bobabbl.csv to app. 5) Update"
 - model: core.dataset
   pk: 32
@@ -203,13 +234,15 @@
     name: Community Districts
     model_name: Community
     automated: false
+    update_schedule: "when needed"
     update_instructions: "1) Visit http://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/nycd/FeatureServer/0/query?where=1=1&outFields=*&outSR=4326&f=geojson 2) Copy all of the data on the screen into a .geojson file. 3) Upload the file to the app. 4) Create an update with the file."
 - model: core.dataset
   pk: 33
   fields:
     name: Certificate of No Harassment Record
     model_name: CONHRecord
-    automated: false
+    automated: true
+    update_schedule: "when needed"
     update_instructions: "1) Visit https://data.cityofnewyork.us/api/views/bzxi-2tsw/rows.csv?accessType=DOWNLOAD 2) Upload the file to the app w/ Version year. 3) Create an update with the file."
 - model: core.dataset
   pk: 34
@@ -217,33 +250,39 @@
     name: DOB NOW Filed Permits
     model_name: DOBNowFiledPermit
     automated: true
+    update_schedule: "daily"
 - model: core.dataset
   pk: 35
   fields:
     name: DOB Filed Permits (Joined)
     model_name: DOBFiledPermit
     automated: true
+    update_schedule: "daily"
 - model: core.dataset
   pk: 36
   fields:
     name: PAD Record
     model_name: PadRecord
     automated: false
+    update_schedule: "when needed"
 - model: core.dataset
   pk: 37
   fields:
     name: PropertyShark PreForeclosures
     model_name: PSPreForeclosure
     automated: false
+    update_schedule: "weekly"
 - model: core.dataset
   pk: 38
   fields:
     name: PropertyShark Foreclosures
     model_name: PSForeclosure
     automated: false
+    update_schedule: "weekly"
 - model: core.dataset
   pk: 39
   fields:
     name: Foreclosures
     model_name: Foreclosure
     automated: false
+    update_schedule: "weekly"
