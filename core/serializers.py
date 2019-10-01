@@ -7,7 +7,8 @@ from core import models as c
 class DatasetSerializer(serializers.ModelSerializer):
     class Meta:
         model = c.Dataset
-        fields = ('name', 'model_name', 'version', 'last_update')
+        fields = ('name', 'model_name', 'version', 'last_update', 'automated',
+                  'update_schedule', 'records_start', 'records_end')
 
     last_update = serializers.SerializerMethodField()
     version = serializers.SerializerMethodField()
