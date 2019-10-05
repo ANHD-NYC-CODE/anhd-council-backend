@@ -12,6 +12,7 @@ import time
 import datetime
 import os
 import itertools
+import datetime
 from django.utils.timezone import make_aware
 import logging
 
@@ -50,14 +51,26 @@ class Dataset(models.Model):
 
     def update_records_range(self):
         dataset = getattr(ds, self.model_name)
+
+        def get_earliest_date():
+            if hasattr(dataset, 'EARLIEST_RECORD'):
+                return dataset.EARLIEST_RECORD
+            else:
+                return '1950-01-01'
+
         if hasattr(dataset, 'QUERY_DATE_KEY'):
             try:
-                self.records_start = getattr(dataset.objects.filter(
-                    **{"{}__isnull".format(dataset.QUERY_DATE_KEY): False}).earliest(dataset.QUERY_DATE_KEY), dataset.QUERY_DATE_KEY)
-                self.records_end = getattr(dataset.objects.filter(
-                    **{"{}__isnull".format(dataset.QUERY_DATE_KEY): False}).latest(dataset.QUERY_DATE_KEY), dataset.QUERY_DATE_KEY)
+                query = dataset.objects.filter(
+                    **{
+                        "{}__isnull".format(dataset.QUERY_DATE_KEY): False,
+                        "{}__gte".format(dataset.QUERY_DATE_KEY): get_earliest_date(),
+                        "{}__lte".format(dataset.QUERY_DATE_KEY): datetime.datetime.now()
+                    })
+                self.records_start = getattr(query.earliest(dataset.QUERY_DATE_KEY), dataset.QUERY_DATE_KEY)
+                self.records_end = getattr(query.latest(dataset.QUERY_DATE_KEY), dataset.QUERY_DATE_KEY)
                 self.save()
             except Exception as e:
+                print(e)
                 logger.warning(e)
 
     def check_api_for_update(self):
@@ -203,7 +216,7 @@ def auto_seed_on_create(sender, instance, created, **kwargs):
             logger.debug("Creating worker task for update {}".format(instance.id))
             if instance.file:
                 worker = async_seed_file.apply_async(args=[instance.file.file.path, instance.id], kwargs={
-                                                     'dataset_id': instance.dataset.id}, countdown=2)
+                    'dataset_id': instance.dataset.id}, countdown=2)
             else:
                 worker = async_seed_table.apply_async(args=[instance.id], countdown=2)
 

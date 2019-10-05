@@ -19,6 +19,7 @@ class DOBViolation(BaseDatasetModel, models.Model):
     API_ID = '3h2n-5cm9'
     download_endpoint = "https://data.cityofnewyork.us/api/views/3h2n-5cm9/rows.csv?accessType=DOWNLOAD"
     QUERY_DATE_KEY = 'issuedate'
+    EARLIEST_RECORD = '1901-01-01'
 
     isndobbisviol = models.TextField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,

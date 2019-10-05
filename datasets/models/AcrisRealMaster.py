@@ -19,6 +19,7 @@ class AcrisRealMaster(BaseDatasetModel, models.Model):
     QUERY_DATE_KEY = 'docdate'
     RECENT_DATE_PINNED = True
     QUERY_PROPERTY_KEY = 'acrisreallegal__documentid'
+    EARLIEST_RECORD = '1863-01-01'
 
     class Meta:
         indexes = [

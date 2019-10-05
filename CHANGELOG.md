@@ -1,5 +1,9 @@
 # API CHANGELOG
 
+#### V1.0.0b1.5.51
+10/05/19
+- add EARLIEST_RECORD attributes to some models, apply range clamps on dataset records_start and records_end
+
 #### V1.0.0b1.5.5
 9/30/19
 - Update Dataset model with records_start, records_end, and update_schedule

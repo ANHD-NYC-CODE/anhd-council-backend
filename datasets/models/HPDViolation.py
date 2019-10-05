@@ -18,6 +18,7 @@ class HPDViolation(BaseDatasetModel, models.Model):
 
     API_ID = 'wvxf-dwi5'
     QUERY_DATE_KEY = 'approveddate'
+    EARLIEST_RECORD = '1933-01-01'
 
     download_endpoint = "https://data.cityofnewyork.us/api/views/wvxf-dwi5/rows.csv?accessType=DOWNLOAD"
 
