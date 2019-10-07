@@ -38,6 +38,51 @@ class CommunityTests(BaseTest, TestCase):
         self.assertEqual(update.rows_created, 1)
 
 
+class StateAssemblyTests(BaseTest, TestCase):
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_seed_state_assemblies(self):
+        update = self.update_factory(model_name="StateAssembly",
+                                     file_name="mock_state_assemblies.geojson")
+
+        ds.StateAssembly.seed_or_update_self(file_path=update.file.file.path, update=update)
+
+        self.assertEqual(ds.StateAssembly.objects.count(), 1)
+        self.assertEqual(ds.StateAssembly.objects.first().id, 34)
+        self.assertEqual(update.rows_created, 1)
+
+
+class StateSenateTests(BaseTest, TestCase):
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_seed_state_senates(self):
+        update = self.update_factory(model_name="StateSenate",
+                                     file_name="mock_state_senates.geojson")
+
+        ds.StateSenate.seed_or_update_self(file_path=update.file.file.path, update=update)
+
+        self.assertEqual(ds.StateSenate.objects.count(), 1)
+        self.assertEqual(ds.StateSenate.objects.first().id, 17)
+        self.assertEqual(update.rows_created, 1)
+
+
+class ZipCodeTests(BaseTest, TestCase):
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_seed_zipcodes(self):
+        update = self.update_factory(model_name="ZipCode",
+                                     file_name="mock_zipcodes.geojson")
+
+        ds.ZipCode.seed_or_update_self(file_path=update.file.file.path, update=update)
+
+        self.assertEqual(ds.ZipCode.objects.count(), 1)
+        self.assertEqual(ds.ZipCode.objects.first().id, 11372)
+        self.assertEqual(update.rows_created, 1)
+
+
 class PropertyTests(BaseTest, TestCase):
     def tearDown(self):
         self.clean_tests()

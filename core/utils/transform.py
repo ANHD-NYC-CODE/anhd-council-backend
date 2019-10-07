@@ -82,7 +82,7 @@ def from_geojson(file_path, pk='CounDist'):
     if isinstance(file_path, str):
         f = open(file_path, mode='r', encoding='utf-8', errors='replace')
     else:
-        raise ValueError("from_csv_file_to_gen accepts Strings or Generators")
+        raise ValueError("from_geojson accepts Strings or Generators")
 
     with f:
         js = json.load(f)

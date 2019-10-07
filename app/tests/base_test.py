@@ -133,6 +133,45 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         )
         return factory
 
+    def state_assembly_factory(self, id=None, **kwargs):
+        name = 'StateAssembly'
+        if not id:
+            id = random.randint(1, 1000000)
+        if not len(c_models.Dataset.objects.filter(name=name)):
+            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+
+        factory = d_models.StateAssembly.objects.create(
+            id=id,
+            **kwargs
+        )
+        return factory
+
+    def state_senate_factory(self, id=None, **kwargs):
+        name = 'StateSenate'
+        if not id:
+            id = random.randint(1, 1000000)
+        if not len(c_models.Dataset.objects.filter(name=name)):
+            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+
+        factory = d_models.StateSenate.objects.create(
+            id=id,
+            **kwargs
+        )
+        return factory
+
+    def zipcode_factory(self, id=None, **kwargs):
+        name = 'ZipCode'
+        if not id:
+            id = random.randint(1, 1000000)
+        if not len(c_models.Dataset.objects.filter(name=name)):
+            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+
+        factory = d_models.ZipCode.objects.create(
+            id=id,
+            **kwargs
+        )
+        return factory
+
     def property_factory(self, bbl=None, council=None, unitsres=1, unitstotal=1, borough=1, block='0001', lot='00001', **kwargs):
         name = 'Property'
         if not bbl:
