@@ -1,5 +1,9 @@
 # API CHANGELOG
 
+#### V1.0.0b1.61
+10/06/19
+- add property filters on new models
+
 #### V1.0.0b1.6
 10/06/19
 - Add ZipCode, StateSenate, and StateAssembly models, seeding methods.
