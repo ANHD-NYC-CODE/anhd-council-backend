@@ -158,6 +158,9 @@ class PropertyManager(models.Manager):
     def statesenate(self, number):
         return self.get_queryset().statesenate(number)
 
+    def residential(self):
+        return self.get_queryset().residential()
+
     def rentstab(self):
         return self.get_queryset().rentstab().residential()
 

@@ -30,12 +30,51 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['bbl'], '1')
 
+    def test_community_field(self):
+        cd = self.community_factory(id=101)
+        property1 = self.property_factory(bbl=1, cd=cd)
+        property2 = self.property_factory(bbl=2)
+
+        query = '/properties/?cd=101'
+        response = self.client.get(query, format="json")
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+        self.assertEqual(content[0]['bbl'], '1')
+
     def test_zipcode_field(self):
         zipcode = self.zipcode_factory(id=11111)
         property1 = self.property_factory(bbl=1, zipcode=zipcode)
         property2 = self.property_factory(bbl=2)
 
         query = '/properties/?zipcode=11111'
+        response = self.client.get(query, format="json")
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+        self.assertEqual(content[0]['bbl'], '1')
+
+    def test_stateassembly_field(self):
+        stateassembly = self.state_assembly_factory(id=10)
+        property1 = self.property_factory(bbl=1, stateassembly=stateassembly)
+        property2 = self.property_factory(bbl=2)
+
+        query = '/properties/?stateassembly=10'
+        response = self.client.get(query, format="json")
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+        self.assertEqual(content[0]['bbl'], '1')
+
+    def test_statesenate_field(self):
+        statesenate = self.state_senate_factory(id=20)
+        property1 = self.property_factory(bbl=1, statesenate=statesenate)
+        property2 = self.property_factory(bbl=2)
+
+        query = '/properties/?statesenate=20'
         response = self.client.get(query, format="json")
         content = response.data
 
@@ -1360,6 +1399,129 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
         self.assertEqual(any(d['bbl'] == '1' for d in content), True)
+
+    def test_zipcode_with_housingtype_with_q_1(self):
+        zipcode = self.zipcode_factory(id=1)
+        zipcode2 = self.zipcode_factory(id=2)
+        # full match
+        property1 = self.property_factory(bbl=1, zipcode=zipcode, unitsres=4)
+        # full match
+        property2 = self.property_factory(bbl=2, zipcode=zipcode, unitsres=4)
+        # correct zipcode, correct housing type, not filter match
+        property3 = self.property_factory(bbl=3, zipcode=zipcode, unitsres=4)
+        # correct zipcode, wrong housing type, filter match
+        property4 = self.property_factory(bbl=4, zipcode=zipcode, unitsres=6)
+        # wrong zipcode, otherwise complete match
+        property5 = self.property_factory(bbl=5, zipcode=zipcode2, unitsres=4)
+        # wrong zipcode, housing type only match
+        property6 = self.property_factory(bbl=6, zipcode=zipcode2, unitsres=4)
+
+        for i in range(5):
+            self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
+            self.dobviolation_factory(property=property1, issuedate="2018-01-01")
+            self.hpdviolation_factory(property=property2, approveddate="2018-01-01")
+            self.ecbviolation_factory(property=property2, issuedate="2018-01-01")
+            self.hpdviolation_factory(property=property3, approveddate="2018-01-01")
+            self.dobviolation_factory(property=property3, issuedate="2016-01-01")
+            self.hpdviolation_factory(property=property4, approveddate="2018-01-01")
+            self.dobviolation_factory(property=property4, issuedate="2018-01-01")
+            self.hpdviolation_factory(property=property5, approveddate="2018-01-01")
+            self.dobviolation_factory(property=property5, issuedate="2018-01-01")
+            self.ecbviolation_factory(property=property6, issuedate="2018-01-01")
+
+        # properties in zipcode 1 with small homes and with 5 HPD violations b/t 2018- 2019 AND (5 DOB violations b/t 2018-2019 OR 5 ECB violations b/t 2018-2019)
+        query = '/properties/?format=json&zipcode=1&housingtype=sh&unitsres__lte=4&q=*condition_0=AND+filter_0=condition_1+filter_0=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5+*condition_1=OR+filter_1=dobviolations__issuedate__gte=2018-01-01,dobviolations__issuedate__lte=2019-01-01,dobviolations__count__gte=5+filter_1=ecbviolations__issuedate__gte=2018-01-01,ecbviolations__issuedate__lte=2019-01-01,ecbviolations__count__gte=5'
+
+        response = self.client.get(query, format="json")
+        # json response
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+        self.assertEqual(any(d['bbl'] == '1' for d in content), True)
+        self.assertEqual(any(d['bbl'] == '2' for d in content), True)
+
+    def test_stateassembly_with_housingtype_with_q_1(self):
+        stateassembly = self.state_assembly_factory(id=1)
+        stateassembly2 = self.state_assembly_factory(id=2)
+        # full match
+        property1 = self.property_factory(bbl=1, stateassembly=stateassembly, unitsres=4)
+        # full match
+        property2 = self.property_factory(bbl=2, stateassembly=stateassembly, unitsres=4)
+        # correct stateassembly, correct housing type, not filter match
+        property3 = self.property_factory(bbl=3, stateassembly=stateassembly, unitsres=4)
+        # correct stateassembly, wrong housing type, filter match
+        property4 = self.property_factory(bbl=4, stateassembly=stateassembly, unitsres=6)
+        # wrong stateassembly, otherwise complete match
+        property5 = self.property_factory(bbl=5, stateassembly=stateassembly2, unitsres=4)
+        # wrong stateassembly, housing type only match
+        property6 = self.property_factory(bbl=6, stateassembly=stateassembly2, unitsres=4)
+
+        for i in range(5):
+            self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
+            self.dobviolation_factory(property=property1, issuedate="2018-01-01")
+            self.hpdviolation_factory(property=property2, approveddate="2018-01-01")
+            self.ecbviolation_factory(property=property2, issuedate="2018-01-01")
+            self.hpdviolation_factory(property=property3, approveddate="2018-01-01")
+            self.dobviolation_factory(property=property3, issuedate="2016-01-01")
+            self.hpdviolation_factory(property=property4, approveddate="2018-01-01")
+            self.dobviolation_factory(property=property4, issuedate="2018-01-01")
+            self.hpdviolation_factory(property=property5, approveddate="2018-01-01")
+            self.dobviolation_factory(property=property5, issuedate="2018-01-01")
+            self.ecbviolation_factory(property=property6, issuedate="2018-01-01")
+
+        # properties in stateassembly 1 with small homes and with 5 HPD violations b/t 2018- 2019 AND (5 DOB violations b/t 2018-2019 OR 5 ECB violations b/t 2018-2019)
+        query = '/properties/?format=json&stateassembly=1&housingtype=sh&unitsres__lte=4&q=*condition_0=AND+filter_0=condition_1+filter_0=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5+*condition_1=OR+filter_1=dobviolations__issuedate__gte=2018-01-01,dobviolations__issuedate__lte=2019-01-01,dobviolations__count__gte=5+filter_1=ecbviolations__issuedate__gte=2018-01-01,ecbviolations__issuedate__lte=2019-01-01,ecbviolations__count__gte=5'
+
+        response = self.client.get(query, format="json")
+        # json response
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+        self.assertEqual(any(d['bbl'] == '1' for d in content), True)
+        self.assertEqual(any(d['bbl'] == '2' for d in content), True)
+
+    def test_statesenate_with_housingtype_with_q_1(self):
+        statesenate = self.state_senate_factory(id=1)
+        statesenate2 = self.state_senate_factory(id=2)
+        # full match
+        property1 = self.property_factory(bbl=1, statesenate=statesenate, unitsres=4)
+        # full match
+        property2 = self.property_factory(bbl=2, statesenate=statesenate, unitsres=4)
+        # correct statesenate, correct housing type, not filter match
+        property3 = self.property_factory(bbl=3, statesenate=statesenate, unitsres=4)
+        # correct statesenate, wrong housing type, filter match
+        property4 = self.property_factory(bbl=4, statesenate=statesenate, unitsres=6)
+        # wrong statesenate, otherwise complete match
+        property5 = self.property_factory(bbl=5, statesenate=statesenate2, unitsres=4)
+        # wrong statesenate, housing type only match
+        property6 = self.property_factory(bbl=6, statesenate=statesenate2, unitsres=4)
+
+        for i in range(5):
+            self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
+            self.dobviolation_factory(property=property1, issuedate="2018-01-01")
+            self.hpdviolation_factory(property=property2, approveddate="2018-01-01")
+            self.ecbviolation_factory(property=property2, issuedate="2018-01-01")
+            self.hpdviolation_factory(property=property3, approveddate="2018-01-01")
+            self.dobviolation_factory(property=property3, issuedate="2016-01-01")
+            self.hpdviolation_factory(property=property4, approveddate="2018-01-01")
+            self.dobviolation_factory(property=property4, issuedate="2018-01-01")
+            self.hpdviolation_factory(property=property5, approveddate="2018-01-01")
+            self.dobviolation_factory(property=property5, issuedate="2018-01-01")
+            self.ecbviolation_factory(property=property6, issuedate="2018-01-01")
+
+        # properties in statesenate 1 with small homes and with 5 HPD violations b/t 2018- 2019 AND (5 DOB violations b/t 2018-2019 OR 5 ECB violations b/t 2018-2019)
+        query = '/properties/?format=json&statesenate=1&housingtype=sh&unitsres__lte=4&q=*condition_0=AND+filter_0=condition_1+filter_0=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5+*condition_1=OR+filter_1=dobviolations__issuedate__gte=2018-01-01,dobviolations__issuedate__lte=2019-01-01,dobviolations__count__gte=5+filter_1=ecbviolations__issuedate__gte=2018-01-01,ecbviolations__issuedate__lte=2019-01-01,ecbviolations__count__gte=5'
+
+        response = self.client.get(query, format="json")
+        # json response
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+        self.assertEqual(any(d['bbl'] == '1' for d in content), True)
+        self.assertEqual(any(d['bbl'] == '2' for d in content), True)
 
     def test_validations_1(self):
         # Unknown / misspelled datasets

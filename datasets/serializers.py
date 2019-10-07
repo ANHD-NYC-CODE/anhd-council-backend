@@ -24,6 +24,24 @@ class CouncilSummarySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class ZipCodeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.ZipCode
+        fields = '__all__'
+
+
+class StateAssemblySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.StateAssembly
+        fields = '__all__'
+
+
+class StateSenateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.StateSenate
+        fields = '__all__'
+
+
 class CommunitySerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Community

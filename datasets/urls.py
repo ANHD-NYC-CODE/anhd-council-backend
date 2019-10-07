@@ -14,7 +14,6 @@ community_summary = v.community_views.CommunityViewSet.as_view({
     'get': 'community_summary',
 })
 
-
 property_buildings_summary = v.property_views.PropertyViewSet.as_view({
     'get': 'buildings_summary',
 })
@@ -53,6 +52,33 @@ communities_router.register(
     v.property_views.PropertyViewSet,
     base_name='community-properties',
     parents_query_lookups=['cd']
+)
+
+zipcodes_router = router.register(r'zipcode', v.zipcode_views.ZipCodeViewSet)
+
+zipcodes_router.register(
+    'properties',
+    v.property_views.PropertyViewSet,
+    base_name='zipcode-properties',
+    parents_query_lookups=['zipcode']
+)
+
+stateassembly_router = router.register(r'state-assembly', v.stateassembly_views.StateAssemblyViewSet)
+
+stateassembly_router.register(
+    'properties',
+    v.property_views.PropertyViewSet,
+    base_name='stateassembly-properties',
+    parents_query_lookups=['stateassembly']
+)
+
+statesenate_router = router.register(r'state-senate', v.statesenate_views.StateSenateViewSet)
+
+statesenate_router.register(
+    'properties',
+    v.property_views.PropertyViewSet,
+    base_name='statesenate-properties',
+    parents_query_lookups=['statesenate']
 )
 
 properties_router = router.register(r'properties', v.property_views.PropertyViewSet)
