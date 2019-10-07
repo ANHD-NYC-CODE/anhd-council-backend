@@ -74,12 +74,24 @@ class PropertyQuerySet(models.QuerySet):
         return self.annotate(publichousingrecords=Count('publichousingrecord')).filter(publichousingrecords__gte=1)
 
     def council(self, number):
-        council_bbls = ds.Property.objects.filter(council=number).only('bbl')
-        return self.filter(bbl__in=council_bbls)
+        bbls = ds.Property.objects.filter(council=number).only('bbl')
+        return self.filter(bbl__in=bbls)
 
     def community(self, number):
-        community_bbls = ds.Property.objects.filter(cd=number).only('bbl')
-        return self.filter(bbl__in=community_bbls)
+        bbls = ds.Property.objects.filter(cd=number).only('bbl')
+        return self.filter(bbl__in=bbls)
+
+    def zipcode(self, number):
+        bbls = ds.Property.objects.filter(zipcode=number).only('bbl')
+        return self.filter(bbl__in=bbls)
+
+    def stateassembly(self, number):
+        bbls = ds.Property.objects.filter(stateassembly=number).only('bbl')
+        return self.filter(bbl__in=bbls)
+
+    def statesenate(self, number):
+        bbls = ds.Property.objects.filter(statesenate=number).only('bbl')
+        return self.filter(bbl__in=bbls)
 
     def residential(self):
         return self.filter(unitsres__gte=1)
@@ -134,8 +146,17 @@ class PropertyManager(models.Manager):
     def community(self, number):
         return self.get_queryset().community(number)
 
-    def residential(self):
-        return self.get_queryset().residential()
+    def council(self, number):
+        return self.get_queryset().council(number)
+
+    def zipcode(self, number):
+        return self.get_queryset().zipcode(number)
+
+    def stateassembly(self, number):
+        return self.get_queryset().stateassembly(number)
+
+    def statesenate(self, number):
+        return self.get_queryset().statesenate(number)
 
     def rentstab(self):
         return self.get_queryset().rentstab().residential()

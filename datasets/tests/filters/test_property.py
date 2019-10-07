@@ -30,6 +30,19 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['bbl'], '1')
 
+    def test_zipcode_field(self):
+        zipcode = self.zipcode_factory(id=11111)
+        property1 = self.property_factory(bbl=1, zipcode=zipcode)
+        property2 = self.property_factory(bbl=2)
+
+        query = '/properties/?zipcode=11111'
+        response = self.client.get(query, format="json")
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+        self.assertEqual(content[0]['bbl'], '1')
+
     def test_bbls_field(self):
         property1 = self.property_factory(bbl=1)
         property2 = self.property_factory(bbl=2)

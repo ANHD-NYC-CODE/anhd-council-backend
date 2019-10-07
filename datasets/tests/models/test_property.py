@@ -59,3 +59,16 @@ class PropertyManagerTest(BaseTest, TestCase):
 
         self.assertEqual(ds.Property.objects.council(1).count(), 5)
         self.assertEqual(ds.Property.objects.council(2).count(), 3)
+
+    def test_zipcode_method(self):
+        zipcode1 = BaseTest.zipcode_factory(self, id=11111)
+        zipcode2 = BaseTest.zipcode_factory(self, id=22222)
+
+        for i in range(5):
+            BaseTest.property_factory(self, bbl=str(i) + 'a', zipcode=zipcode1)
+
+        for i in range(3):
+            BaseTest.property_factory(self, bbl=str(i) + 'b', zipcode=zipcode2)
+
+        self.assertEqual(ds.Property.objects.zipcode(11111).count(), 5)
+        self.assertEqual(ds.Property.objects.zipcode(22222).count(), 3)

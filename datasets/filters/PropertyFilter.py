@@ -68,6 +68,9 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
     council = django_filters.NumberFilter(method='filter_council_exact')
     cd = django_filters.NumberFilter(method='filter_community_exact')
+    zipcode = django_filters.NumberFilter(method='filter_zipcode_exact')
+    stateassembly = django_filters.NumberFilter(method='filter_stateassembly_exact')
+    statesenate = django_filters.NumberFilter(method='filter_statesenate_exact')
 
     housingtype = filters.CharFilter(method='filter_housingtype')
     bbls = CommaSeparatedConditionFilter(method="filter_bbls")
@@ -138,6 +141,15 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
 
     def filter_community_exact(self, queryset, name, value):
         return queryset.community(value)
+
+    def filter_zipcode_exact(self, queryset, name, value):
+        return queryset.zipcode(value)
+
+    def filter_stateassembly_exact(self, queryset, name, value):
+        return queryset.stateassembly(value)
+
+    def filter_statesenate_exact(self, queryset, name, value):
+        return queryset.statesenate(value)
 
     def parse_totaldate_field_values(self, date_prefix, totals_prefix, values):
         date_filters = value_dict_to_date_filter_dict(date_prefix, values)
