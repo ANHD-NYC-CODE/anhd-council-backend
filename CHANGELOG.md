@@ -1,5 +1,10 @@
 # API CHANGELOG
 
+#### V1.0.0b1.6
+10/06/19
+- Add ZipCode, StateSenate, and StateAssembly models, seeding methods.
+- Update Property model with foreign key associations
+
 #### V1.0.0b1.5.51
 10/05/19
 - add EARLIEST_RECORD attributes to some models, apply range clamps on dataset records_start and records_end
