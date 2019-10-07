@@ -286,3 +286,24 @@
     model_name: Foreclosure
     automated: false
     update_schedule: "weekly"
+- model: core.dataset
+  pk: 40
+  fields:
+    name: ZipCodes
+    model_name: ZipCode
+    automated: false
+    update_schedule: "when needed"
+- model: core.dataset
+  pk: 41
+  fields:
+    name: State Assemblies
+    model_name: StateAssembly
+    automated: false
+    update_schedule: "when needed"
+- model: core.dataset
+  pk: 42
+  fields:
+    name: State Senates
+    model_name: StateSenate
+    automated: false
+    update_schedule: "when needed"

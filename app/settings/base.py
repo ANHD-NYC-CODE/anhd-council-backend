@@ -337,7 +337,10 @@ LOGGING = {
 # Use exact model names from datasets/models
 ACTIVE_MODELS = [
     'Council',
-    'Community,'
+    'Community',
+    'ZipCode',
+    'StateAssembly',
+    'StateSenate',
     'Property',
     'Building',
     'TaxLot'

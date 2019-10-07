@@ -155,7 +155,7 @@ class PropertyManager(models.Manager):
 
 class Property(BaseDatasetModel, models.Model):
 
-    SHORT_SUMMARY_FIELDS = ('bbl', 'council', 'cd', 'yearbuilt', 'zipcode', 'unitsres', 'unitstotal',
+    SHORT_SUMMARY_FIELDS = ('bbl', 'council', 'cd', 'zipcode', 'yearbuilt', 'unitsres', 'unitstotal',
                             'address', 'lat', 'lng',)
 
     current_version = '18V1'
@@ -172,10 +172,15 @@ class Property(BaseDatasetModel, models.Model):
     lot = models.TextField(blank=True, null=True)
     cd = models.ForeignKey('Community', on_delete=models.SET_NULL, null=True,
                            db_column='cd', db_constraint=False)
+    zipcode = models.ForeignKey('ZipCode', on_delete=models.SET_NULL, null=True,
+                                db_column='zipcode', db_constraint=False)
+    stateassembly = models.ForeignKey('StateAssembly', on_delete=models.SET_NULL, null=True,
+                                      db_column='stateassembly', db_constraint=False)
+    statesenate = models.ForeignKey('StateSenate', on_delete=models.SET_NULL, null=True,
+                                    db_column='statesenate', db_constraint=False)
     ct2010 = models.TextField(blank=True, null=True)
     cb2010 = models.TextField(blank=True, null=True)
     schooldist = models.SmallIntegerField(blank=True, null=True)
-    zipcode = models.TextField(blank=True, null=True)
     firecomp = models.TextField(blank=True, null=True)
     policeprct = models.TextField(blank=True, null=True)
     healthcenterdistrict = models.SmallIntegerField(blank=True, null=True)
