@@ -1,5 +1,8 @@
 # API CHANGELOG
 
+#### V1.0.0b1.63
+- fix custom search authentication response
+
 #### V1.0.0b1.62
 - add TaxLien to PropertySummarySerializer as `taxliens`
 - add all SpDist, ZoneDist, overlay, FAR, and original_address fields to PropertySummarySerializer

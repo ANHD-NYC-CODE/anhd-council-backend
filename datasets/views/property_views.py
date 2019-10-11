@@ -45,9 +45,6 @@ class PropertyViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyM
 
     @cache_request_path()
     def list(self, request, *args, **kwargs):
-        if not request.user.is_authenticated and 'q' in request.query_params and ('lispenden' in request.query_params['q'] or 'foreclosure' in request.query_params['q']):
-            return Response({'detail': 'Please login to view foreclosure results'}, status=status.HTTP_401_UNAUTHORIZED)
-
         if 'q' in request.query_params:
             self.filterset_class = AdvancedPropertyFilter
 

@@ -8,6 +8,8 @@ from copy import deepcopy
 import urllib
 from functools import wraps
 import base64
+from rest_framework import status
+
 import logging
 
 logger = logging.getLogger('app')
@@ -88,6 +90,9 @@ def cache_request_path():
             request = original_args[1]
             params = deepcopy(request.query_params)
             cache_key = construct_cache_key(request, params)
+
+            if not request.user.is_authenticated and 'q' in params and ('lispenden' in params['q'] or 'foreclosure' in params['q']):
+                return original_args[0].finalize_response(request, Response({'detail': 'Please login to view foreclosure results'}, status=status.HTTP_401_UNAUTHORIZED))
 
             if cache_key in cache and has_cachable_format(request):
                 logger.debug('Serving cache: {}'.format(cache_key))
