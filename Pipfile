@@ -46,6 +46,7 @@ google-api-python-client = "==1.7.11"
 google-auth-httplib2 = "*"
 google-auth-oauthlib = "*"
 beautifulsoup4 = "*"
+shapely = "*"
 
 [requires]
 python_version = "3.5.6"

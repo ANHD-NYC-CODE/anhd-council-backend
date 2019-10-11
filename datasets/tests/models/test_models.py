@@ -49,7 +49,7 @@ class StateAssemblyTests(BaseTest, TestCase):
         ds.StateAssembly.seed_or_update_self(file_path=update.file.file.path, update=update)
 
         self.assertEqual(ds.StateAssembly.objects.count(), 1)
-        self.assertEqual(ds.StateAssembly.objects.first().id, 34)
+        self.assertEqual(ds.StateAssembly.objects.first().id, 84)
         self.assertEqual(update.rows_created, 1)
 
 
@@ -64,7 +64,7 @@ class StateSenateTests(BaseTest, TestCase):
         ds.StateSenate.seed_or_update_self(file_path=update.file.file.path, update=update)
 
         self.assertEqual(ds.StateSenate.objects.count(), 1)
-        self.assertEqual(ds.StateSenate.objects.first().id, 17)
+        self.assertEqual(ds.StateSenate.objects.first().id, 29)
         self.assertEqual(update.rows_created, 1)
 
 

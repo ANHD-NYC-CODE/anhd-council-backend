@@ -1,5 +1,11 @@
 # API CHANGELOG
 
+#### V1.0.0b1.62
+- add TaxLien to PropertySummarySerializer as `taxliens`
+- add all SpDist, ZoneDist, overlay, FAR, and original_address fields to PropertySummarySerializer
+- Add geo seeding methods to property model for stateassembly and statesenate
+
+
 #### V1.0.0b1.61
 10/06/19
 - add property filters on new models

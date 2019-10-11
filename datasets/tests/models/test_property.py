@@ -20,6 +20,32 @@ class PropertyTests(BaseTest, TestCase):
         self.assertEqual(ds.Property.objects.count(), 2)
         self.assertEqual(update.rows_created, 2)
 
+    def test_seed_properties_with_state_geo(self):
+        # senate 29
+        # assembly 84
+        # council 8
+
+        updateSenate = self.update_factory(model_name="StateSenate",
+                                           file_name="mock_state_senates.geojson")
+
+        ds.StateSenate.seed_or_update_self(file_path=updateSenate.file.file.path, update=updateSenate)
+
+        updateAssembly = self.update_factory(model_name="StateAssembly",
+                                             file_name="mock_state_assemblies.geojson")
+
+        ds.StateAssembly.seed_or_update_self(file_path=updateAssembly.file.file.path, update=updateAssembly)
+
+        update = self.update_factory(model_name="Property",
+                                     file_name="mock_pluto_17v1.zip")
+
+        ds.Property.seed_or_update_self(file_path=update.file.file.path, update=update)
+
+        self.assertEqual(ds.Property.objects.count(), 2)
+
+        self.assertEqual(ds.Property.objects.get(bbl='2022600001').stateassembly.pk, 84)
+        self.assertEqual(ds.Property.objects.get(bbl='2022600001').statesenate.pk, 29)
+        self.assertEqual(update.rows_created, 2)
+
     def test_seed_properties_update(self):
         update = self.update_factory(model_name="Property",
                                      file_name="mock_pluto_17v1.zip")

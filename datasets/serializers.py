@@ -355,9 +355,10 @@ class PropertySummarySerializer(serializers.ModelSerializer):
     hpdregistrations = HPDRegistrationSerializer(source='hpdregistration_set', many=True, read_only=True)
     buildings = BuildingSummarySerializer(source='building_set', many=True, read_only=True)
     rentstabilizationrecord = RentStabilizationRecordSerializer(many=False, read_only=True)
+    taxliens = TaxLienSerializer(source='taxlien_set', many=True, read_only=True)
+    taxlien = serializers.SerializerMethodField()
 
     conhrecord = serializers.SerializerMethodField()
-    taxlien = serializers.SerializerMethodField()
 
     subsidyprograms = serializers.SerializerMethodField()
     subsidyj51 = serializers.SerializerMethodField()
@@ -412,7 +413,10 @@ class PropertySummarySerializer(serializers.ModelSerializer):
         fields = (
             'bbl', 'zipcode', 'council', 'cd', 'borough', 'yearbuilt', 'unitsres', 'unitstotal',
             'bldgclass', 'zonedist1', 'numbldgs', 'numfloors', 'address', 'lat', 'lng', 'ownertype',
-            'ownername', 'taxlien', 'buildings', 'rsunits_percent_lost', 'nycha', 'hpdregistrations', 'subsidyprograms', 'rentstabilizationrecord', 'unitsrentstabilized', 'subsidyj51', 'subsidy421a', 'conhrecord'
+            'ownername', 'taxlien', 'taxliens', 'buildings', 'rsunits_percent_lost', 'nycha', 'hpdregistrations',
+            'subsidyprograms', 'rentstabilizationrecord', 'unitsrentstabilized', 'subsidyj51', 'subsidy421a', 'conhrecord',
+            'zonedist1', 'zonedist2', 'zonedist3', 'zonedist4', 'overlay1', 'overlay2', 'spdist1', 'spdist2', 'spdist3',
+            'builtfar', 'residfar', 'commfar', 'facilfar', 'original_address'
         )
 
     rsunits_percent_lost = serializers.SerializerMethodField()

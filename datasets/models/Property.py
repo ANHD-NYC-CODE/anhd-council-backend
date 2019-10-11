@@ -1,3 +1,6 @@
+import json
+from shapely.geometry import shape, Point
+
 from django.db import models
 from django.db.models import Q, F, Count, Sum, Exists, OuterRef, Prefetch, FilteredRelation
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
@@ -355,10 +358,12 @@ class Property(BaseDatasetModel, models.Model):
     @classmethod
     def seed_or_update_self(self, **kwargs):
         self.seed_with_upsert(**kwargs)
-        # logger.debug('adding geometry')
-        # self.add_geometry()
+        logger.debug('adding geometry')
+        self.add_geometry()
         logger.debug('adding property annotations')
         self.create_property_annotations()
+        self.create_state_assembly_association()
+        self.create_state_senate_association()
 
     @classmethod
     def create_property_annotations(self):
@@ -368,6 +373,36 @@ class Property(BaseDatasetModel, models.Model):
             if count % 10000 == 0:
                 logger.debug('property annotations created: {}'.format(count))
             count = count + 1
+
+    @classmethod
+    def create_state_assembly_association(self):
+        logger.debug('Adding State Assembly associations via geoshape')
+        count = 0
+        for property in self.objects.filter(stateassembly__isnull=True, lat__isnull=False, lng__isnull=False).all():
+            point = Point(property.lng, property.lat)
+            for stateassembly in ds.StateAssembly.objects.all():
+                polygon = shape(stateassembly.data['geometry'])
+                if polygon.contains(point):
+                    property.stateassembly = stateassembly
+                    property.save()
+            count += 1
+            if count % 1000:
+                logger.debug('StateAssembly - properties processed: {}'.format(count))
+
+    @classmethod
+    def create_state_senate_association(self):
+        logger.debug('Adding State Senate associations via geoshape')
+        count = 0
+        for property in self.objects.filter(statesenate__isnull=True, lat__isnull=False, lng__isnull=False):
+            point = Point(property.lng, property.lat)
+            for statesenate in ds.StateSenate.objects.all():
+                polygon = shape(statesenate.data['geometry'])
+                if polygon.contains(point):
+                    property.statesenate = statesenate
+                    property.save()
+            count += 1
+            if count % 1000:
+                logger.debug('StateSenate - properties processed: {}'.format(count))
 
 
 @receiver(models.signals.post_save, sender=Property)
