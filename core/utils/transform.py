@@ -216,19 +216,17 @@ def with_bbl(table, borough='borough', block='block', lot='lot', allow_blank=Fal
                 raise Exception(e)
 
 
-p4j = '+proj=lcc +lat_1=40.66666666666666 +lat_2=41.03333333333333 +lat_0=40.16666666666666 +lon_0=-74 +x_0=300000 +y_0=0 +datum=NAD83 +units=us-ft +no_defs '
-ny_state_plane = pyproj.Proj(p4j, preserve_units=True)
-wgs84 = pyproj.Proj(init="epsg:4326")
-
-
 def ny_state_coords_to_lat_lng(xcoord=0, ycoord=0):
+    p4j = '+proj=lcc +lat_1=40.66666666666666 +lat_2=41.03333333333333 +lat_0=40.16666666666666 +lon_0=-74 +x_0=300000 +y_0=0 +datum=NAD83 +units=us-ft +no_defs '
+    ny_state_plane = pyproj.Proj(p4j, preserve_units=True)
+    wgs84 = pyproj.Proj(init="epsg:4326", preserve_units=True)
     # returns (LNG, LAT)
     return pyproj.transform(ny_state_plane, wgs84, xcoord, ycoord)
 
 
 def get_geo(row):
     try:
-        if 'xcoord' in row and 'ycoord' in row:
+        if hasattr(row, '__iter__') and 'xcoord' in row and 'ycoord' in row:
             x = float(row['xcoord'])
             y = float(row['ycoord'])
         else:

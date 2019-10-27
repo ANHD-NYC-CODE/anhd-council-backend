@@ -331,9 +331,9 @@ class Property(BaseDatasetModel, models.Model):
             row['address'] = clean_number_and_streets(row['address'], True, clean_typos=False)
 
             # GEO
-            lng, lat = get_geo(row)
-            row['lat'] = lat
-            row['lng'] = lng
+            # lng, lat = get_geo(row)
+            # row['lat'] = lat
+            # row['lng'] = lng
             # Count
             count = count + 1
             if count % 10000 == 0:
