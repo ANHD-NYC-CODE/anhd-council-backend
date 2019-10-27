@@ -221,15 +221,23 @@ ny_state_plane = pyproj.Proj(p4j, preserve_units=True)
 wgs84 = pyproj.Proj(init="epsg:4326")
 
 
-def ny_state_coords_to_lat_lng(xcoord, ycoord):
+def ny_state_coords_to_lat_lng(xcoord=0, ycoord=0):
+    # returns (LNG, LAT)
     return pyproj.transform(ny_state_plane, wgs84, xcoord, ycoord)
 
 
 def get_geo(row):
     try:
-        coords = (float(row.xcoord), float(row.ycoord))
-        return ny_state_coords_to_lat_lng(*coords)
-    except:
+        if 'xcoord' in row and 'ycoord' in row:
+            x = float(row['xcoord'])
+            y = float(row['ycoord'])
+        else:
+            x = float(row.xcoord)
+            y = float(row.ycoord)
+        return ny_state_coords_to_lat_lng(xcoord=x, ycoord=y)
+    except Exception as e:
+        print('Geo error: {}'.format(e))
+        logger.debug('Geo error: {}'.format(e))
         return (None, None)
 
 
@@ -238,8 +246,7 @@ def with_geo(table):
     count = 0
     for row in table:
         try:
-            coords = (float(row['xcoord']), float(row['ycoord']))
-            lng, lat = ny_state_coords_to_lat_lng(*coords)
+            lng, lat = get_geo(row)
             count = count + 1
             if count % 10000 == 0:
                 logger.debug('Processed {} geos'.format(count))

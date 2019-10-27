@@ -331,10 +331,9 @@ class Property(BaseDatasetModel, models.Model):
             row['address'] = clean_number_and_streets(row['address'], True, clean_typos=False)
 
             # GEO
-            lat, lng = get_geo(row)
+            lng, lat = get_geo(row)
             row['lat'] = lat
             row['lng'] = lng
-
             # Count
             count = count + 1
             if count % 10000 == 0:
@@ -349,11 +348,16 @@ class Property(BaseDatasetModel, models.Model):
     # SLOW
     @classmethod
     def add_geometry(self):
+        count = 0
         for record in self.objects.filter(lng__isnull=True, lat__isnull=True).all():
             lng, lat = get_geo(record)
             record.lat = lat
             record.lng = lng
             record.save()
+            count = count = 1
+
+            if count % 10000 == 0:
+                logger.debug("attached geos to {} properties".format(count))
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
