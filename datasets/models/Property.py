@@ -375,13 +375,13 @@ class Property(BaseDatasetModel, models.Model):
     def add_state_geographies(self):
         logger.debug('Adding State Assembly associations via geoshape')
         status1 = self.queryset_foreach(self.objects.filter(stateassembly__isnull=True, lat__isnull=False,
-                                                            lng__isnull=False), self.create_state_assembly_association, 'stateassembly', batch_size=100)
+                                                            lng__isnull=False).order_by('pk'), self.create_state_assembly_association, 'stateassembly', batch_size=1000)
 
         logger.debug(status1)
 
         logger.debug('Adding State Senate associations via geoshape')
         status2 = self.queryset_foreach(self.objects.filter(statesenate__isnull=True, lat__isnull=False,
-                                                            lng__isnull=False), self.create_state_senate_association, 'statesenate', batch_size=100)
+                                                            lng__isnull=False).order_by('pk'), self.create_state_senate_association, 'statesenate', batch_size=1000)
         logger.debug(status2)
 
     @classmethod
