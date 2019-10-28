@@ -394,8 +394,9 @@ class Property(BaseDatasetModel, models.Model):
                 if polygon.contains(point):
                     property.stateassembly = stateassembly
                     property.save()
-            count += 1
-            if count % 1000:
+                    count += 1
+                    break
+            if count % 10 == 0:
                 logger.debug('StateAssembly - properties processed: {}'.format(count))
 
     @classmethod
@@ -409,8 +410,9 @@ class Property(BaseDatasetModel, models.Model):
                 if polygon.contains(point):
                     property.statesenate = statesenate
                     property.save()
-            count += 1
-            if count % 1000:
+                    count += 1
+                    break
+            if count % 10 == 0:
                 logger.debug('StateSenate - properties processed: {}'.format(count))
 
 
