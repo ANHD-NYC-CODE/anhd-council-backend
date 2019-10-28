@@ -378,11 +378,16 @@ class Status(object):
 
 
 def progress_callback(status):
-    sys.stderr.write('%d/%d failed=%d, rate~%.2f per second, left~%.2f sec    \r' % (
-        status.cur_idx, status.total, status.num_failed, status.rate, status.time_left))
+    message = '%d/%d failed=%d, rate~%.2f per second, left~%.2f sec    \r' % (
+        status.cur_idx, status.total, status.num_failed, status.rate, status.time_left)
     if status.done:
-        sys.stderr.write('\n')
-    sys.stderr.flush()
+        message = "DONE! - {}".format(message)
+        print(message)
+        logger.debug(message)
+    else:
+        message = "Progress - {}".format(message)
+        print(message)
+        logger.debug(message)
 
 
 def queryset_foreach(queryset, f, batch_size=1000,
@@ -415,7 +420,7 @@ def queryset_foreach(queryset, f, batch_size=1000,
     queryset = _get_queryset(queryset)
 
     # Get a snapshot of all the ids that match the query
-    logging.info('qs4e: Getting list of objects')
+    logger.debug('qs4e: Getting list of objects')
     ids = list(queryset.values_list(queryset.model._meta.pk.name, flat=True))
 
     # Initialize status

@@ -373,12 +373,15 @@ class Property(BaseDatasetModel, models.Model):
     @classmethod
     def add_state_geographies(self):
         logger.debug('Adding State Assembly associations via geoshape')
-        queryset_foreach(self.objects.filter(stateassembly__isnull=True, lat__isnull=False,
-                                             lng__isnull=False), self.create_state_assembly_association, batch_size=10)
+        status1 = queryset_foreach(self.objects.filter(stateassembly__isnull=True, lat__isnull=False,
+                                                       lng__isnull=False), self.create_state_assembly_association, batch_size=100)
+
+        logger.debug(status1)
 
         logger.debug('Adding State Senate associations via geoshape')
-        queryset_foreach(self.objects.filter(statesenate__isnull=True, lat__isnull=False,
-                                             lng__isnull=False), self.create_state_senate_association, batch_size=10)
+        status2 = queryset_foreach(self.objects.filter(statesenate__isnull=True, lat__isnull=False,
+                                                       lng__isnull=False), self.create_state_senate_association, batch_size=100)
+        logger.debug(status2)
 
     @classmethod
     def create_property_annotations(self):
