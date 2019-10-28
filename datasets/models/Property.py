@@ -348,6 +348,7 @@ class Property(BaseDatasetModel, models.Model):
     # SLOW
     @classmethod
     def add_geometry(self):
+        logger.debug("Attaching geos to properties")
         count = 0
         for record in self.objects.filter(lng__isnull=True, lat__isnull=True).all():
             lng, lat = get_geo(record)
@@ -366,6 +367,10 @@ class Property(BaseDatasetModel, models.Model):
         self.add_geometry()
         logger.debug('adding property annotations')
         self.create_property_annotations()
+        self.add_state_geographies()
+
+    @classmethod
+    def add_state_geographies(self):
         self.create_state_assembly_association()
         self.create_state_senate_association()
 

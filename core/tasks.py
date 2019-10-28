@@ -50,8 +50,14 @@ def async_annotate_properties_with_dataset(self, dataset_id):
 
 @app.task(bind=True, queue='update', acks_late=True, max_retries=1)
 def async_add_property_geometry(self, dataset_id):
-    dataset = c.Dataset.objects.get(id=dataset_id)
-    dataset.model().add_geometry()
+    from datasets import models as ds
+    ds.Property.add_geometry()
+
+
+@app.task(bind=True, queue='update', acks_late=True, max_retries=1)
+def async_add_property_geometry(self, dataset_id):
+    from datasets import models as ds
+    ds.Property.add_state_geographies()
 
 
 @app.task(bind=True, queue='celery', acks_late=True, max_retries=1)
