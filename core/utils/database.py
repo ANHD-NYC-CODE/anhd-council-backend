@@ -434,8 +434,8 @@ def queryset_foreach(queryset, f, batch_size=1000,
                 try:
                     f(obj)
                     status.num_successful += 1
-                except Exception:  # python 2.5+: doesn't catch KeyboardInterrupt or SystemExit
-                    traceback.print_exc()
+                except Exception as e:  # python 2.5+: doesn't catch KeyboardInterrupt or SystemExit
+                    logger.error(e)
                     status.failed_ids.append(id)
 
     # if transaction:

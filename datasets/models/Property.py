@@ -10,6 +10,7 @@ from core.utils.csv_helpers import extract_csvs_from_zip
 from core.utils.address import clean_number_and_streets
 from django.dispatch import receiver
 from core.utils.database import queryset_foreach
+from core.utils.database import Status, progress_callback
 
 from datasets import models as ds
 
@@ -373,14 +374,14 @@ class Property(BaseDatasetModel, models.Model):
     @classmethod
     def add_state_geographies(self):
         logger.debug('Adding State Assembly associations via geoshape')
-        status1 = queryset_foreach(self.objects.filter(stateassembly__isnull=True, lat__isnull=False,
-                                                       lng__isnull=False), self.create_state_assembly_association, batch_size=100)
+        status1 = self.queryset_foreach(self.objects.filter(stateassembly__isnull=True, lat__isnull=False,
+                                                            lng__isnull=False), self.create_state_assembly_association, 'stateassembly', batch_size=100)
 
         logger.debug(status1)
 
         logger.debug('Adding State Senate associations via geoshape')
-        status2 = queryset_foreach(self.objects.filter(statesenate__isnull=True, lat__isnull=False,
-                                                       lng__isnull=False), self.create_state_senate_association, batch_size=100)
+        status2 = self.queryset_foreach(self.objects.filter(statesenate__isnull=True, lat__isnull=False,
+                                                            lng__isnull=False), self.create_state_senate_association, 'statesenate', batch_size=100)
         logger.debug(status2)
 
     @classmethod
@@ -393,20 +394,19 @@ class Property(BaseDatasetModel, models.Model):
             count = count + 1
 
     @classmethod
-    def create_state_assembly_association(self, property):
+    def create_state_assembly_association(self, property, objects_to_update):
         point = Point(property.lng, property.lat)
         for stateassembly in ds.StateAssembly.objects.order_by('pk'):
             polygon = shape(stateassembly.data['geometry'])
             if polygon.contains(point):
                 property.stateassembly = stateassembly
-                property.save()
-                # count += 1
+                objects_to_update.append(property)
                 break
-        # if count % 10 == 0:
-        #     logger.debug('StateAssembly - properties processed: {}'.format(count))
+
+        return objects_to_update
 
     @classmethod
-    def create_state_senate_association(self, property):
+    def create_state_senate_association(self, property, objects_to_update):
         # count = 0
         # for property in self.objects.filter(statesenate__isnull=True, lat__isnull=False, lng__isnull=False):
         point = Point(property.lng, property.lat)
@@ -414,11 +414,51 @@ class Property(BaseDatasetModel, models.Model):
             polygon = shape(statesenate.data['geometry'])
             if polygon.contains(point):
                 property.statesenate = statesenate
-                property.save()
-                # count += 1
+                objects_to_update.append(property)
                 break
-        # if count % 10 == 0:
-        #     logger.debug('StateSenate - properties processed: {}'.format(count))
+
+        return objects_to_update
+
+    @classmethod
+    def queryset_foreach(self, queryset, f, field, batch_size=1000,
+                         progress_callback=progress_callback):
+
+        from django.shortcuts import _get_queryset
+        queryset = _get_queryset(queryset)
+        ids = list(queryset.values_list(queryset.model._meta.pk.name, flat=True))
+        status = Status()
+        status.total = len(ids)
+
+        def do_all_objects(objects, field):
+            from django.db import transaction
+            with transaction.atomic():
+                objects_to_update = []
+                for id, obj in objects.items():
+                    try:
+                        objects_to_update = f(obj, objects_to_update)
+                        status.num_successful += 1
+                    except Exception as e:
+                        logger.error(e)
+                        status.failed_ids.append(id)
+
+                self.objects.bulk_update(objects_to_update, [field])
+
+        from django.core.paginator import Paginator
+        paginator = Paginator(ids, batch_size)
+
+        status.start()
+        progress_callback(status)
+        for page_num in paginator.page_range:
+            status.page = page = paginator.page(page_num)
+            status.cur_idx = page.start_index() - 1
+            progress_callback(status)
+            objects = queryset.in_bulk(page.object_list)
+            do_all_objects(objects, field)
+        status.finished()
+
+        progress_callback(status)
+
+        return status
 
 
 @receiver(models.signals.post_save, sender=Property)
