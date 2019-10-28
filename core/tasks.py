@@ -49,13 +49,13 @@ def async_annotate_properties_with_dataset(self, dataset_id):
 
 
 @app.task(bind=True, queue='update', acks_late=True, max_retries=1)
-def async_add_property_geometry(self, dataset_id):
+def async_add_property_geometry(self):
     from datasets import models as ds
     ds.Property.add_geometry()
 
 
 @app.task(bind=True, queue='update', acks_late=True, max_retries=1)
-def async_add_state_geo_links(self, dataset_id):
+def async_add_state_geo_links(self):
     from datasets import models as ds
     ds.Property.add_state_geographies()
 
