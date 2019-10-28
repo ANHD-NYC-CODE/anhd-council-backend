@@ -9,6 +9,7 @@ from core.utils.transform import from_csv_file_to_gen, with_geo, get_geo
 from core.utils.csv_helpers import extract_csvs_from_zip
 from core.utils.address import clean_number_and_streets
 from django.dispatch import receiver
+from core.utils.database import queryset_foreach
 
 from datasets import models as ds
 
@@ -371,8 +372,13 @@ class Property(BaseDatasetModel, models.Model):
 
     @classmethod
     def add_state_geographies(self):
-        self.create_state_assembly_association()
-        self.create_state_senate_association()
+        logger.debug('Adding State Assembly associations via geoshape')
+        queryset_foreach(self.objects.filter(stateassembly__isnull=True, lat__isnull=False,
+                                             lng__isnull=False), self.create_state_assembly_association, batch_size=10)
+
+        logger.debug('Adding State Senate associations via geoshape')
+        queryset_foreach(self.objects.filter(statesenate__isnull=True, lat__isnull=False,
+                                             lng__isnull=False), self.create_state_senate_association, batch_size=10)
 
     @classmethod
     def create_property_annotations(self):
@@ -384,36 +390,32 @@ class Property(BaseDatasetModel, models.Model):
             count = count + 1
 
     @classmethod
-    def create_state_assembly_association(self):
-        logger.debug('Adding State Assembly associations via geoshape')
-        count = 0
-        for property in self.objects.filter(stateassembly__isnull=True, lat__isnull=False, lng__isnull=False).all():
-            point = Point(property.lng, property.lat)
-            for stateassembly in ds.StateAssembly.objects.all():
-                polygon = shape(stateassembly.data['geometry'])
-                if polygon.contains(point):
-                    property.stateassembly = stateassembly
-                    property.save()
-                    count += 1
-                    break
-            if count % 10 == 0:
-                logger.debug('StateAssembly - properties processed: {}'.format(count))
+    def create_state_assembly_association(self, property):
+        point = Point(property.lng, property.lat)
+        for stateassembly in ds.StateAssembly.objects.all():
+            polygon = shape(stateassembly.data['geometry'])
+            if polygon.contains(point):
+                property.stateassembly = stateassembly
+                property.save()
+                # count += 1
+                break
+        # if count % 10 == 0:
+        #     logger.debug('StateAssembly - properties processed: {}'.format(count))
 
     @classmethod
-    def create_state_senate_association(self):
-        logger.debug('Adding State Senate associations via geoshape')
-        count = 0
-        for property in self.objects.filter(statesenate__isnull=True, lat__isnull=False, lng__isnull=False):
-            point = Point(property.lng, property.lat)
-            for statesenate in ds.StateSenate.objects.all():
-                polygon = shape(statesenate.data['geometry'])
-                if polygon.contains(point):
-                    property.statesenate = statesenate
-                    property.save()
-                    count += 1
-                    break
-            if count % 10 == 0:
-                logger.debug('StateSenate - properties processed: {}'.format(count))
+    def create_state_senate_association(self, property):
+        # count = 0
+        # for property in self.objects.filter(statesenate__isnull=True, lat__isnull=False, lng__isnull=False):
+        point = Point(property.lng, property.lat)
+        for statesenate in ds.StateSenate.objects.all():
+            polygon = shape(statesenate.data['geometry'])
+            if polygon.contains(point):
+                property.statesenate = statesenate
+                property.save()
+                # count += 1
+                break
+        # if count % 10 == 0:
+        #     logger.debug('StateSenate - properties processed: {}'.format(count))
 
 
 @receiver(models.signals.post_save, sender=Property)
