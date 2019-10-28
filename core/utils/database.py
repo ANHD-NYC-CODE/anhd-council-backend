@@ -413,7 +413,7 @@ def queryset_foreach(queryset, f, batch_size=1000,
 
     from django.conf import settings
     if settings.DEBUG:
-        print >> sys.stderr, 'Warning: DEBUG is on. django.db.connection.queries may use up a lot of memory.'
+        logger.debug('Warning: DEBUG is on. django.db.connection.queries may use up a lot of memory.')
 
     # Get querysets corresponding to managers
     from django.shortcuts import _get_queryset

@@ -395,7 +395,7 @@ class Property(BaseDatasetModel, models.Model):
     @classmethod
     def create_state_assembly_association(self, property):
         point = Point(property.lng, property.lat)
-        for stateassembly in ds.StateAssembly.objects.all():
+        for stateassembly in ds.StateAssembly.objects.order_by('pk'):
             polygon = shape(stateassembly.data['geometry'])
             if polygon.contains(point):
                 property.stateassembly = stateassembly
@@ -410,7 +410,7 @@ class Property(BaseDatasetModel, models.Model):
         # count = 0
         # for property in self.objects.filter(statesenate__isnull=True, lat__isnull=False, lng__isnull=False):
         point = Point(property.lng, property.lat)
-        for statesenate in ds.StateSenate.objects.all():
+        for statesenate in ds.StateSenate.objects.order_by('pk'):
             polygon = shape(statesenate.data['geometry'])
             if polygon.contains(point):
                 property.statesenate = statesenate
