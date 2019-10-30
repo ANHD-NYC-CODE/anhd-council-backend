@@ -307,7 +307,6 @@ LOGGING = {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'standard',
-            'filters': ['require_debug_false']
         },
     },
     'loggers': {
@@ -317,8 +316,8 @@ LOGGING = {
             'propagate': False,
         },
         'django.db.backends': {
-            'handlers': ['sql'],
-            'level': 'INFO',
+            'handlers': ['console'],
+            'level': 'DEBUG',
             'propagate': False,
         },
         'django.template': {
@@ -326,9 +325,14 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False,
         },
+        'django.utils.autoreload': {
+            'level': 'INFO',
+            'propagate': False,
+        },
         'app': {
             'handlers': ['console', 'sql', 'logfile', 'errorfile'],
             'level': 'DEBUG',
+            'propagate': False
         },
     }
 }
