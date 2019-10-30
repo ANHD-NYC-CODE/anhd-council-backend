@@ -655,12 +655,18 @@ class DOBPermitIssuedTests(BaseTest, TestCase):
         property = self.property_factory(bbl='1')
         update = self.update_factory(model_name="DOBIssuedPermit")
         for i in range(5):
-            self.permitissuedlegacy_factory(property=property, issuancedate='2018-01-01')
+            self.permitissuedlegacy_factory(property=property, issuancedate='2018-01-01',
+                                            filingstatus="INITIAL", permitstatus="ISSUED")
             self.permitissuednow_factory(property=property, issueddate='2017-01-01')
 
         ds.DOBIssuedPermit.seed_or_update_self(update=update)
         self.assertEqual(ds.DOBIssuedPermit.objects.count(), 10)
         self.assertEqual(update.total_rows, 10)
+
+        self.assertEqual(ds.DOBIssuedPermit.objects.filter(
+            type='dobpermitissuedlegacy').first().filing_status, "INITIAL")
+        self.assertEqual(ds.DOBIssuedPermit.objects.filter(
+            type='dobpermitissuedlegacy').first().permit_status, "ISSUED")
 
         self.assertEqual(ds.Property.objects.get(bbl='1').propertyannotation.dobissuedpermits_last30, 5)
         self.assertEqual(ds.Property.objects.get(bbl='1').propertyannotation.dobissuedpermits_lastyear, 10)
