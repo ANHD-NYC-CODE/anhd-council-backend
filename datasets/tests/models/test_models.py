@@ -79,7 +79,7 @@ class ZipCodeTests(BaseTest, TestCase):
         ds.ZipCode.seed_or_update_self(file_path=update.file.file.path, update=update)
 
         self.assertEqual(ds.ZipCode.objects.count(), 1)
-        self.assertEqual(ds.ZipCode.objects.first().id, 11372)
+        self.assertEqual(ds.ZipCode.objects.first().id, '11372')
         self.assertEqual(update.rows_created, 1)
 
 

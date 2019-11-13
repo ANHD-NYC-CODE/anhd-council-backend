@@ -12,7 +12,7 @@ from core.utils.transform import from_geojson
 # Paste into a .geojson file, upload file through admin, update
 
 class ZipCode(BaseDatasetModel, models.Model):
-    id = models.IntegerField(primary_key=True, blank=False, null=False)
+    id = models.CharField(primary_key=True, max_length=5, blank=False, null=False)
     data = JSONField(blank=True, null=True)
 
     @classmethod

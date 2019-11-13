@@ -14,10 +14,10 @@ class ZipCodeViewTests(BaseTest, TestCase):
         self.clean_tests()
 
     def test_list(self):
-        self.zipcode_factory()
-        self.zipcode_factory()
+        self.zipcode_factory(id=1)
+        self.zipcode_factory(id=2)
 
-        response = self.client.get('/zipcode/', format="json")
+        response = self.client.get('/zipcodes/', format="json")
         content = response.data
 
         self.assertEqual(response.status_code, 200)
@@ -26,18 +26,18 @@ class ZipCodeViewTests(BaseTest, TestCase):
     def test_retrieve(self):
         self.zipcode_factory(id=1)
 
-        response = self.client.get('/zipcode/1/')
+        response = self.client.get('/zipcodes/1/')
         content = response.data
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(content["id"], 1)
+        self.assertEqual(content["id"], '1')
 
     def test_zipcode_properties(self):
         zipcode = self.zipcode_factory(id=1)
         self.property_factory(zipcode=zipcode, bbl="1")
         self.property_factory(zipcode=zipcode, bbl="2")
 
-        response = self.client.get('/zipcode/1/properties/')
+        response = self.client.get('/zipcodes/1/properties/')
         content = response.data
 
         self.assertEqual(response.status_code, 200)

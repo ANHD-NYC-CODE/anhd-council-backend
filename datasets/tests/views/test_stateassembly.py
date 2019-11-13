@@ -17,7 +17,7 @@ class StateAssemblyViewTests(BaseTest, TestCase):
         self.state_assembly_factory()
         self.state_assembly_factory()
 
-        response = self.client.get('/state-assembly/', format="json")
+        response = self.client.get('/stateassemblies/', format="json")
         content = response.data
 
         self.assertEqual(response.status_code, 200)
@@ -26,7 +26,7 @@ class StateAssemblyViewTests(BaseTest, TestCase):
     def test_retrieve(self):
         self.state_assembly_factory(id=1)
 
-        response = self.client.get('/state-assembly/1/')
+        response = self.client.get('/stateassemblies/1/')
         content = response.data
 
         self.assertEqual(response.status_code, 200)
@@ -37,7 +37,7 @@ class StateAssemblyViewTests(BaseTest, TestCase):
         self.property_factory(stateassembly=stateassembly, bbl="1")
         self.property_factory(stateassembly=stateassembly, bbl="2")
 
-        response = self.client.get('/state-assembly/1/properties/')
+        response = self.client.get('/stateassemblies/1/properties/')
         content = response.data
 
         self.assertEqual(response.status_code, 200)

@@ -54,7 +54,7 @@ communities_router.register(
     parents_query_lookups=['cd']
 )
 
-zipcodes_router = router.register(r'zipcode', v.zipcode_views.ZipCodeViewSet)
+zipcodes_router = router.register(r'zipcodes', v.zipcode_views.ZipCodeViewSet)
 
 zipcodes_router.register(
     'properties',
@@ -63,7 +63,7 @@ zipcodes_router.register(
     parents_query_lookups=['zipcode']
 )
 
-stateassembly_router = router.register(r'state-assembly', v.stateassembly_views.StateAssemblyViewSet)
+stateassembly_router = router.register(r'stateassemblies', v.stateassembly_views.StateAssemblyViewSet)
 
 stateassembly_router.register(
     'properties',
@@ -72,7 +72,7 @@ stateassembly_router.register(
     parents_query_lookups=['stateassembly']
 )
 
-statesenate_router = router.register(r'state-senate', v.statesenate_views.StateSenateViewSet)
+statesenate_router = router.register(r'statesenates', v.statesenate_views.StateSenateViewSet)
 
 statesenate_router.register(
     'properties',

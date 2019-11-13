@@ -17,7 +17,7 @@ class StateSenateViewTests(BaseTest, TestCase):
         self.state_senate_factory()
         self.state_senate_factory()
 
-        response = self.client.get('/state-senate/', format="json")
+        response = self.client.get('/statesenates/', format="json")
         content = response.data
 
         self.assertEqual(response.status_code, 200)
@@ -26,7 +26,7 @@ class StateSenateViewTests(BaseTest, TestCase):
     def test_retrieve(self):
         self.state_senate_factory(id=1)
 
-        response = self.client.get('/state-senate/1/')
+        response = self.client.get('/statesenates/1/')
         content = response.data
 
         self.assertEqual(response.status_code, 200)
@@ -37,7 +37,7 @@ class StateSenateViewTests(BaseTest, TestCase):
         self.property_factory(statesenate=statesenate, bbl="1")
         self.property_factory(statesenate=statesenate, bbl="2")
 
-        response = self.client.get('/state-senate/1/properties/')
+        response = self.client.get('/statesenates/1/properties/')
         content = response.data
 
         self.assertEqual(response.status_code, 200)
