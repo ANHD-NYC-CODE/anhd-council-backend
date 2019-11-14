@@ -5,7 +5,7 @@ from app.celery import app
 from core import models as c
 from django.conf import settings
 from app.mailer import send_update_error_mail, send_update_success_mail, send_general_task_error_mail
-from core.utils.cache import cache_council_property_summaries_full, cache_community_property_summaries_full
+from core.utils.cache import cache_council_property_summaries_full, cache_community_property_summaries_full, cache_stateassembly_property_summaries_full, cache_statesenate_property_summaries_full, cache_zipcode_property_summaries_full
 from datasets.utils.gmail_utils import get_property_shark_links
 import os
 import uuid
@@ -23,6 +23,21 @@ def async_cache_council_property_summaries_full(self, token):
 @app.task(bind=True, queue='celery', autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 5})
 def async_cache_community_property_summaries_full(self, token):
     return cache_community_property_summaries_full(token)
+
+
+@app.task(bind=True, queue='celery', autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 5})
+def async_cache_stateassembly_property_summaries_full(self, token):
+    return cache_stateassembly_property_summaries_full(token)
+
+
+@app.task(bind=True, queue='celery', autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 5})
+def async_cache_statesenate_property_summaries_full(self, token):
+    return cache_statesenate_property_summaries_full(token)
+
+
+@app.task(bind=True, queue='celery', autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 5})
+def async_cache_zipcode_property_summaries_full(self, token):
+    return cache_zipcode_property_summaries_full(token)
 
 
 @app.task(bind=True, queue='celery', default_retry_delay=30, max_retries=3)
