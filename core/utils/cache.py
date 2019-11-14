@@ -121,7 +121,7 @@ def cache_statesenate_property_summaries_full(token, sleep=2, start=0):
     logger.debug("Authenticated StateSenate month Pre-Caching complete!")
 
 
-def cache_zipcode_property_summaries_full(token, sleep=2, start=0):
+def cache_zipcode_property_summaries_full(token, sleep=1, start=0):
     from datasets.models import ZipCode
     # token = settings.CACHE_REQUEST_KEY
 
