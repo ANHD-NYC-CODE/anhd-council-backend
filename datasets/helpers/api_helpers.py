@@ -192,7 +192,7 @@ def build_annotated_fields(request, datasets):
         dataset_class = getattr(ds, model_name)
         dataset_prefix = dataset_class.__name__.lower()
         dataset_query_date_key = dataset_class.QUERY_DATE_KEY
-        dataset = datasets.get(model_name=model_name)
+        dataset = next(x for x in datasets if x.model_name == model_name)
 
         if 'annotation__start' in params and params['annotation__start'] == 'recent':
             fields_list.append(generate_date_key(params, dataset, dataset_prefix + 's_recent', dataset_query_date_key, dataset_prefix, dataset_class)

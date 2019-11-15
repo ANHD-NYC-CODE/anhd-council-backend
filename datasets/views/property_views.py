@@ -22,7 +22,7 @@ from rest_framework.permissions import IsAuthenticated
 import json
 
 from datasets import models as ds
-from core import models as c
+from core import models as c_models
 import logging
 logger = logging.getLogger('app')
 
@@ -41,8 +41,9 @@ class PropertyViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyM
         if 'summary' in self.request.query_params and self.request.query_params['summary'] == 'true':
             if 'summary-type' in self.request.query_params and self.request.query_params['summary-type'].lower() == 'short-annotated':
                 # calculate dynamic annotation fields here.
-                datasets = c.Dataset.objects.all()
-                context['fields'] = build_annotated_fields(self.request, datasets)
+                datasets = c_models.Dataset.objects.all()
+                context['datasets'] = list(datasets)
+                context['fields'] = build_annotated_fields(self.request, list(datasets))
         return context
 
     @cache_request_path()

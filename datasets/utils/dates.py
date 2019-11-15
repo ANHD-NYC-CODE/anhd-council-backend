@@ -17,8 +17,6 @@ def parse_date_string(string):
 
 
 def get_recent_dataset_start(dataset, dataset_class, string=False):
-    if 'get_dataset' in dir(dataset):
-        dataset = dataset.get_dataset()
     if hasattr(dataset_class, 'RECENT_DATE_PINNED') and dataset_class.RECENT_DATE_PINNED:
         return get_last_month_since_api_update(dataset, string=string)
     else:
@@ -26,8 +24,6 @@ def get_recent_dataset_start(dataset, dataset_class, string=False):
 
 
 def get_dataset_end_date(dataset, dataset_class, string=False):
-    if 'get_dataset' in dir(dataset):
-        dataset = dataset.get_dataset()
     try:
         if hasattr(dataset_class, 'RECENT_DATE_PINNED') and dataset_class.RECENT_DATE_PINNED:
             recent_date = get_recent_dataset_start(dataset, dataset_class, string=False)
@@ -49,8 +45,6 @@ def get_dataset_end_date(dataset, dataset_class, string=False):
 
 
 def get_default_annotation_date(dataset, dataset_class, string=False):
-    if 'get_dataset' in dir(dataset):
-        dataset = dataset.get_dataset()
 
     if hasattr(dataset_class, 'RECENT_DATE_PINNED') and dataset_class.RECENT_DATE_PINNED:
         return get_last_month_since_api_update(dataset, string=string)

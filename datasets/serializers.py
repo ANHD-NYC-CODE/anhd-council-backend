@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from datasets import models as ds
+from core import models as c
 from django.forms.models import model_to_dict
 from core.utils.bbl import code_to_boro, abrv_to_borough
 from django.conf import settings
@@ -259,7 +260,7 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
 
         for model_name in settings.ANNOTATED_DATASETS:
             dataset_class = getattr(ds, model_name)  # results in query
-
+            dataset = next(x for x in self.context['datasets'] if x.model_name == model_name)
             if hasattr(dataset_class, 'REQUIRES_AUTHENTICATION') and dataset_class.REQUIRES_AUTHENTICATION and not is_authenticated(self.context['request']):
                 continue
 
@@ -286,10 +287,10 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
             elif 'annotation__start' in params:
                 if dataset_class == ds.AcrisRealMaster:
                     rep[get_context_field(dataset_prefix)] = getattr(obj, 'acrisreallegal_set').filter(documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES).filter(**{'documentid__' + dataset_class.QUERY_DATE_KEY + '__gte': get_annotation_start(
-                        params, dataset_class, dataset_class.QUERY_DATE_KEY, dataset_class), 'documentid__' + dataset_class.QUERY_DATE_KEY + '__lte': get_annotation_end(params, dataset_class, dataset_class.QUERY_DATE_KEY, dataset_class)}).count()
+                        params, dataset, dataset_class.QUERY_DATE_KEY, dataset_class), 'documentid__' + dataset_class.QUERY_DATE_KEY + '__lte': get_annotation_end(params, dataset, dataset_class.QUERY_DATE_KEY, dataset_class)}).count()
                 else:
                     rep[get_context_field(dataset_prefix)] = getattr(obj, dataset_prefix + '_set').filter(**{dataset_class.QUERY_DATE_KEY + '__gte': get_annotation_start(
-                        params, dataset_class, dataset_class.QUERY_DATE_KEY, dataset_class), dataset_class.QUERY_DATE_KEY + '__lte': get_annotation_end(params, dataset_class, dataset_class.QUERY_DATE_KEY,  dataset_class)}).count()
+                        params, dataset, dataset_class.QUERY_DATE_KEY, dataset_class), dataset_class.QUERY_DATE_KEY + '__lte': get_annotation_end(params, dataset, dataset_class.QUERY_DATE_KEY,  dataset_class)}).count()
             else:
                 # defaults to recent if no annotation start
                 rep[get_context_field(dataset_prefix)] = getattr(
