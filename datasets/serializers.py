@@ -11,6 +11,9 @@ from datasets.utils import dates
 from datasets.helpers.cache_helpers import is_authenticated
 from datasets.helpers.api_helpers import get_annotation_start, get_annotation_end
 
+import logging
+logger = logging.getLogger('app')
+
 
 class CouncilSerializer(serializers.ModelSerializer):
     class Meta:
@@ -244,6 +247,7 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
         params = self.context['request'].query_params
 
         def get_context_field(dataset_prefix, date_label=None):
+            # uses singular dataset_prefix
             for field in self.context['fields']:
                 if date_label:
                     if dataset_prefix in field and date_label in field:
@@ -254,12 +258,12 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
             return None
 
         for model_name in settings.ANNOTATED_DATASETS:
-            dataset = getattr(ds, model_name)
+            dataset_class = getattr(ds, model_name)  # results in query
 
-            if hasattr(dataset, 'REQUIRES_AUTHENTICATION') and dataset.REQUIRES_AUTHENTICATION and not is_authenticated(self.context['request']):
+            if hasattr(dataset_class, 'REQUIRES_AUTHENTICATION') and dataset_class.REQUIRES_AUTHENTICATION and not is_authenticated(self.context['request']):
                 continue
 
-            dataset_prefix = dataset.__name__.lower()
+            dataset_prefix = dataset_class.__name__.lower()
             if hasattr(obj, dataset_prefix + 's'):
                 # annotated from advanced search
                 rep[get_context_field(dataset_prefix)] = getattr(obj, dataset_prefix + 's')
@@ -280,12 +284,12 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
                 rep[get_context_field(dataset_prefix, 'last3years')] = getattr(
                     obj.propertyannotation, dataset_prefix + 's_last3years')
             elif 'annotation__start' in params:
-                if dataset == ds.AcrisRealMaster:
-                    rep[get_context_field(dataset_prefix)] = getattr(obj, 'acrisreallegal_set').filter(documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES).filter(**{'documentid__' + dataset.QUERY_DATE_KEY + '__gte': get_annotation_start(
-                        params, dataset, dataset.QUERY_DATE_KEY), 'documentid__' + dataset.QUERY_DATE_KEY + '__lte': get_annotation_end(params, dataset, dataset.QUERY_DATE_KEY)}).count()
+                if dataset_class == ds.AcrisRealMaster:
+                    rep[get_context_field(dataset_prefix)] = getattr(obj, 'acrisreallegal_set').filter(documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES).filter(**{'documentid__' + dataset_class.QUERY_DATE_KEY + '__gte': get_annotation_start(
+                        params, dataset_class, dataset_class.QUERY_DATE_KEY, dataset_class), 'documentid__' + dataset_class.QUERY_DATE_KEY + '__lte': get_annotation_end(params, dataset_class, dataset_class.QUERY_DATE_KEY, dataset_class)}).count()
                 else:
-                    rep[get_context_field(dataset_prefix)] = getattr(obj, dataset_prefix + '_set').filter(**{dataset.QUERY_DATE_KEY + '__gte': get_annotation_start(
-                        params, dataset, dataset.QUERY_DATE_KEY), dataset.QUERY_DATE_KEY + '__lte': get_annotation_end(params, dataset, dataset.QUERY_DATE_KEY)}).count()
+                    rep[get_context_field(dataset_prefix)] = getattr(obj, dataset_prefix + '_set').filter(**{dataset_class.QUERY_DATE_KEY + '__gte': get_annotation_start(
+                        params, dataset_class, dataset_class.QUERY_DATE_KEY, dataset_class), dataset_class.QUERY_DATE_KEY + '__lte': get_annotation_end(params, dataset_class, dataset_class.QUERY_DATE_KEY,  dataset_class)}).count()
             else:
                 # defaults to recent if no annotation start
                 rep[get_context_field(dataset_prefix)] = getattr(

@@ -16,23 +16,25 @@ def parse_date_string(string):
     return datestring
 
 
-def get_recent_dataset_start(dataset, string=False):
-
-    if hasattr(dataset, 'RECENT_DATE_PINNED') and dataset.RECENT_DATE_PINNED:
-        return get_last_month_since_api_update(dataset.get_dataset(), string=string)
+def get_recent_dataset_start(dataset, dataset_class, string=False):
+    if 'get_dataset' in dir(dataset):
+        dataset = dataset.get_dataset()
+    if hasattr(dataset_class, 'RECENT_DATE_PINNED') and dataset_class.RECENT_DATE_PINNED:
+        return get_last_month_since_api_update(dataset, string=string)
     else:
         return get_last_30(string)
 
 
-def get_dataset_end_date(dataset, string=False):
+def get_dataset_end_date(dataset, dataset_class, string=False):
+    if 'get_dataset' in dir(dataset):
+        dataset = dataset.get_dataset()
     try:
-        if hasattr(dataset, 'RECENT_DATE_PINNED') and dataset.RECENT_DATE_PINNED:
-
-            recent_date = get_recent_dataset_start(dataset, string=False)
+        if hasattr(dataset_class, 'RECENT_DATE_PINNED') and dataset_class.RECENT_DATE_PINNED:
+            recent_date = get_recent_dataset_start(dataset, dataset_class, string=False)
             last_day_of_month = calendar.monthrange(recent_date.year, recent_date.month)[1]
             date = recent_date.replace(day=last_day_of_month)
         else:
-            date = dataset.get_dataset().api_last_updated
+            date = dataset.api_last_updated
     except Exception as e:
         date = datetime.today()
         logger.debug(e)
@@ -46,9 +48,12 @@ def get_dataset_end_date(dataset, string=False):
         return date
 
 
-def get_default_annotation_date(dataset, string=False):
-    if hasattr(dataset, 'RECENT_DATE_PINNED') and dataset.RECENT_DATE_PINNED:
-        return get_last_month_since_api_update(dataset.get_dataset(), string=string)
+def get_default_annotation_date(dataset, dataset_class, string=False):
+    if 'get_dataset' in dir(dataset):
+        dataset = dataset.get_dataset()
+
+    if hasattr(dataset_class, 'RECENT_DATE_PINNED') and dataset_class.RECENT_DATE_PINNED:
+        return get_last_month_since_api_update(dataset, string=string)
     else:
         return get_last_30(string)
 

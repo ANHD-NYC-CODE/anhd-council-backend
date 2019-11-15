@@ -13,6 +13,7 @@ import zipfile
 from django.utils import timezone
 import random
 from django.core.cache import cache
+import datetime
 
 
 class BaseTest(APITestCase, URLPatternsTestCase):
@@ -62,6 +63,12 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         file = File(open(file_path, 'rb'))
         file.name = name
         return file
+
+    def create_annotated_datasets(self, start_date=None):
+        if not start_date:
+            start_date = datetime.datetime.today()
+        for dataset_name in settings.ANNOTATED_DATASETS:
+            self.dataset_factory(name=dataset_name, api_last_updated=start_date)
 
     def user_factory(self, username=None, password=None, **kwargs):
         if not username:

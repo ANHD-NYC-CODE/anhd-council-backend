@@ -2,10 +2,10 @@ from django.db import models
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.transform import from_csv_file_to_gen
 from datasets.utils.validation_filters import is_null, is_older_than
-import logging
 from django.dispatch import receiver
 from core.tasks import async_download_and_update
 from datasets import models as ds
+import logging
 logger = logging.getLogger('app')
 
 

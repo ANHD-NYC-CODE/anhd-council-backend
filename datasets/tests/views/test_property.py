@@ -337,17 +337,7 @@ class PropertyViewTests(BaseTest, TestCase):
     # summary-annotated serializer
     @freeze_time("2019-01-01")
     def test_results_with_annotate_datasets_1(self):
-        self.dataset_factory(name='HPDViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HPDComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='ECBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBFiledPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBIssuedPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='Eviction', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HousingLitigation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealMaster', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealLegal', api_last_updated=datetime.datetime.today())
+        self.create_annotated_datasets(datetime.datetime.now())
         # kitchen sink
         council = self.council_factory(id=1)
         property1 = self.property_factory(bbl='1', council=council)
@@ -402,17 +392,7 @@ class PropertyViewTests(BaseTest, TestCase):
     # summary-annotated serializer
     @freeze_time("2019-01-01")
     def test_results_with_annotate_datasets_2(self):
-        self.dataset_factory(name='HPDViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HPDComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='ECBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBFiledPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBIssuedPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='Eviction', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HousingLitigation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealMaster', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealLegal', api_last_updated=datetime.datetime.today())
+        self.create_annotated_datasets(datetime.datetime.now())
 
         # advanced query params
         council = self.council_factory(id=1)
@@ -454,17 +434,7 @@ class PropertyViewTests(BaseTest, TestCase):
     # summary-annotated serializer
     @freeze_time("2019-01-01")
     def test_results_with_annotate_datasets_3(self):
-        self.dataset_factory(name='HPDViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HPDComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='ECBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBFiledPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBIssuedPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='Eviction', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HousingLitigation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealMaster', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealLegal', api_last_updated=datetime.datetime.today())
+        self.create_annotated_datasets(datetime.datetime.now())
 
         # advanced query params
         council = self.council_factory(id=1)
@@ -508,17 +478,7 @@ class PropertyViewTests(BaseTest, TestCase):
 
     @freeze_time("2019-01-01")
     def test_results_with_annotate_datasets_4(self):
-        self.dataset_factory(name='HPDViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HPDComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='ECBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBFiledPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBIssuedPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='Eviction', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HousingLitigation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealMaster', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealLegal', api_last_updated=datetime.datetime.today())
+        self.create_annotated_datasets(datetime.datetime.now())
 
         # advanced query params
         council = self.council_factory(id=1)
@@ -563,17 +523,7 @@ class PropertyViewTests(BaseTest, TestCase):
 
     @freeze_time("2019-01-01")
     def test_results_with_annotate_datasets_5(self):
-        self.dataset_factory(name='HPDViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HPDComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='ECBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBFiledPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBIssuedPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='Eviction', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HousingLitigation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealMaster', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealLegal', api_last_updated=datetime.datetime.today())
+        self.create_annotated_datasets(datetime.datetime.now())
 
         # Cached, unauthorized
         council = self.council_factory(id=1)
@@ -610,17 +560,7 @@ class PropertyViewTests(BaseTest, TestCase):
 
     @freeze_time("2019-01-01")
     def test_results_with_annotate_datasets_6(self):
-        self.dataset_factory(name='HPDViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HPDComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='ECBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBFiledPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBIssuedPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='Eviction', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HousingLitigation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealMaster', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealLegal', api_last_updated=datetime.datetime.today())
+        self.create_annotated_datasets(datetime.datetime.now())
 
         # Cached, authorized
         council = self.council_factory(id=1)
@@ -675,6 +615,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.dataset_factory(name='HousingLitigation', api_last_updated=datetime.datetime.today())
         self.dataset_factory(name='AcrisRealMaster', api_last_updated=datetime.datetime.today())
         self.dataset_factory(name='AcrisRealLegal', api_last_updated=datetime.datetime.today())
+        self.dataset_factory(name='Foreclosure', api_last_updated=datetime.datetime.today())
 
         # advanced query params
         council = self.council_factory(id=1)
@@ -734,17 +675,7 @@ class PropertyViewTests(BaseTest, TestCase):
     # with 'lastyear' annotation start
     @freeze_time("2019-01-05")
     def test_results_with_annotate_datasets_8(self):
-        self.dataset_factory(name='HPDViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HPDComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='ECBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBFiledPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBIssuedPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='Eviction', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HousingLitigation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealMaster', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealLegal', api_last_updated=datetime.datetime.today())
+        self.create_annotated_datasets(datetime.datetime.now())
 
         # advanced query params
         council = self.council_factory(id=1)
@@ -772,18 +703,7 @@ class PropertyViewTests(BaseTest, TestCase):
     # with 'last3years' annotation start
     @freeze_time("2019-01-05")
     def test_results_with_annotate_datasets_9(self):
-
-        self.dataset_factory(name='HPDViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HPDComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='ECBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBFiledPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBIssuedPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='Eviction', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HousingLitigation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealMaster', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealLegal', api_last_updated=datetime.datetime.today())
+        self.create_annotated_datasets(datetime.datetime.now())
 
         # advanced query params
         council = self.council_factory(id=1)
@@ -812,17 +732,7 @@ class PropertyViewTests(BaseTest, TestCase):
     # annotation_start=full - sending all 3 annotation fields
     @freeze_time("2019-01-01")
     def test_results_with_annotate_datasets_10(self):
-        self.dataset_factory(name='HPDViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HPDComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='ECBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBFiledPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBIssuedPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='Eviction', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HousingLitigation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealMaster', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealLegal', api_last_updated=datetime.datetime.today())
+        self.create_annotated_datasets(datetime.datetime.now())
 
         # kitchen sink
         council = self.council_factory(id=1)
@@ -869,17 +779,7 @@ class PropertyViewTests(BaseTest, TestCase):
     # with cache & authorized
     @freeze_time("2019-01-01")
     def test_results_with_annotate_datasets_11(self):
-        self.dataset_factory(name='HPDViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HPDComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBComplaint', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='ECBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBFiledPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBIssuedPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='Eviction', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HousingLitigation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealMaster', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealLegal', api_last_updated=datetime.datetime.today())
+        self.create_annotated_datasets(datetime.datetime.now())
 
         council = self.council_factory(id=1)
         property1 = self.property_factory(bbl='1', council=council)

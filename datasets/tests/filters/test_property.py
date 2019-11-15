@@ -949,6 +949,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.assertEqual(content[0]['bbl'], '1')
 
     def test_acrissales_rules_with_annotation(self):
+        self.create_annotated_datasets(datetime.datetime.now())
         council = self.council_factory(id=1)
 
         # sold 5 times in date range
