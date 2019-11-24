@@ -416,7 +416,7 @@ class PropertySummarySerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Property
         fields = (
-            'bbl', 'zipcode', 'council', 'cd', 'borough', 'yearbuilt', 'unitsres', 'unitstotal',
+            'bbl', 'zipcode', 'council', 'cd', 'stateassembly', 'statesenate', 'borough', 'yearbuilt', 'unitsres', 'unitstotal',
             'bldgclass', 'zonedist1', 'numbldgs', 'numfloors', 'address', 'lat', 'lng', 'ownertype',
             'ownername', 'taxlien', 'taxliens', 'buildings', 'rsunits_percent_lost', 'nycha', 'hpdregistrations',
             'subsidyprograms', 'rentstabilizationrecord', 'unitsrentstabilized', 'subsidyj51', 'subsidy421a', 'conhrecord',
