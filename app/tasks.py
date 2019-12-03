@@ -9,9 +9,10 @@ import celery
 from app.mailer import send_new_user_email, send_new_user_request_email, send_bug_report_email
 from users.models import CustomUser, UserRequest
 from core.models import BugReport
-from django.db import connection
+from django.db import connection, transaction
 from core import models as c
 from django.conf import settings
+from django_celery_results.models import TaskResult
 import logging
 import os
 
@@ -88,14 +89,16 @@ def recache(self, token):
 @app.task(bind=True, queue='celery', default_retry_delay=60, max_retries=1)
 def clean_database(self):
     try:
-        force_proxy = connection.cursor()
-        realconn = connection.connection
-        old_isolation_level = realconn.isolation_level
-        realconn.set_isolation_level(0)
-        cursor = realconn.cursor()
-        cursor.execute('VACUUM ANALYZE')
-        cursor.execute('REINDEX DATABASE anhd')
-        realconn.set_isolation_level(old_isolation_level)
+        with transaction.atomic():
+            force_proxy = connection.cursor()
+            realconn = connection.connection
+            old_isolation_level = realconn.isolation_level
+            realconn.set_isolation_level(0)
+            cursor = realconn.cursor()
+            cursor.execute('VACUUM ANALYZE')
+            cursor.execute('REINDEX DATABASE anhd')
+            realconn.set_isolation_level(old_isolation_level)
+            connection.close()
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
         async_send_general_task_error_mail.delay(str(e))

@@ -1,4 +1,4 @@
-version: '2'
+version: "2"
 services:
   app:
     restart: always
@@ -16,7 +16,7 @@ services:
       - redis
       - celerybeat
     ports:
-      - '8000:8000'
+      - "8000:8000"
     networks:
       - network1
       - nginx_network
@@ -98,7 +98,7 @@ services:
     image: mher/flower
     container_name: "flower"
     expose:
-      - '8888'
+      - "8888"
     environment:
       - CELERY_BROKER_URL=redis://redis
       - FLOWER_PORT=8888
@@ -125,8 +125,64 @@ services:
     container_name: "postgres"
     # https://blog.2ndquadrant.com/basics-of-tuning-checkpoints/
     # linux OOM overcommit https://www.postgresql.org/docs/current/kernel-resources.html#LINUX-MEMORY-OVERCOMMIT
-    command: ["-c", "autovacuum_vacuum_scale_factor=0.05","-c", "vacuum_cost_page_hit=1","-c", "vacuum_cost_page_miss=10","-c", "vacuum_cost_page_dirty=20", "-c", "autovacuum_vacuum_cost_delay=20ms","-c", "autovacuum_vacuum_cost_limit=1000", "-c", "enable_seqscan=ON", "-c","huge_pages=try", "-c","effective_io_concurrency=1", "-c", "max_parallel_workers_per_gather=4", "-c", "max_stack_depth=6MB", "-c", "maintenance_work_mem=2GB", "-c", "temp_buffers=128MB", "-c", "shared_buffers=2GB", "-c", "default_statistics_target=1000", "-c", "checkpoint_timeout=240min", "-c", "checkpoint_completion_target=0.93", "-c", "max_wal_size=10GB", "-c", "effective_cache_size=8GB", "-c", "work_mem=800MB", "-c", "max_connections=200", "-c", "random_page_cost=1", "-c", "seq_page_cost=1"]
-    shm_size: '2GB'
+    command:
+      [
+        "-c",
+        "autovacuum_vacuum_scale_factor=0.05",
+        "-c",
+        "vacuum_cost_page_hit=1",
+        "-c",
+        "vacuum_cost_page_miss=10",
+        "-c",
+        "vacuum_cost_page_dirty=20",
+        "-c",
+        "autovacuum_vacuum_cost_delay=20ms",
+        "-c",
+        "autovacuum_vacuum_cost_limit=1000",
+        "-c",
+        "enable_seqscan=ON",
+        "-c",
+        "huge_pages=try",
+        "-c",
+        "effective_io_concurrency=1",
+        "-c",
+        "max_parallel_workers_per_gather=4",
+        "-c",
+        "dynamic_shared_memory_type=posix",
+        "-c",
+        "max_stack_depth=6MB",
+        "-c",
+        "maintenance_work_mem=2GB",
+        "-c",
+        "temp_buffers=128MB",
+        "-c",
+        "shared_buffers=2GB",
+        "-c",
+        "default_statistics_target=1000",
+        "-c",
+        "checkpoint_timeout=240min",
+        "-c",
+        "checkpoint_completion_target=0.93",
+        "-c",
+        "max_wal_size=10GB",
+        "-c",
+        "effective_cache_size=8GB",
+        "-c",
+        "work_mem=800MB",
+        "-c",
+        "max_connections=200",
+        "-c",
+        "random_page_cost=1.05",
+        "-c",
+        "seq_page_cost=2",
+        "-c",
+        "log_min_duration_statement=10000",
+        "-c",
+        "log_temp_files=1",
+        "-c",
+        "enable_nestloop=off",
+      ]
+    shm_size: "2GB"
     environment:
       - POSTGRES_DB=anhd
       - POSTGRES_USER=anhd

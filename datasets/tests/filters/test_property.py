@@ -563,6 +563,7 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
     def tearDown(self):
         self.clean_tests()
 
+    
     def test_single_all_condition(self):
         council = self.council_factory(id=1)
         property1 = self.property_factory(bbl=1, council=council, yearbuilt=2000)

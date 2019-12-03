@@ -38,11 +38,25 @@ class AdvancedPropertyFilter(django_filters.rest_framework.FilterSet):
         if 'format' in params:
             del params['format']
         if 'council' in params:
-            bbl_queryset = bbl_queryset.filter(bbl__in=bbl_queryset.council(params['council'][0]).values('bbl'))
+            bbl_queryset = bbl_queryset.filter(
+                bbl__in=bbl_queryset.council(params['council'][0]).values('bbl'))
             del params['council']
         elif 'community' in params:
-            bbl_queryset = bbl_queryset.filter(bbl__in=bbl_queryset.community(params['community'][0]).values('bbl'))
+            bbl_queryset = bbl_queryset.filter(
+                bbl__in=bbl_queryset.community(params['community'][0]).values('bbl'))
             del params['community']
+        elif 'stateassembly' in params:
+            bbl_queryset = bbl_queryset.filter(bbl__in=bbl_queryset.stateassembly(
+                params['stateassembly'][0]).values('bbl'))
+            del params['stateassembly']
+        elif 'statesenate' in params:
+            bbl_queryset = bbl_queryset.filter(
+                bbl__in=bbl_queryset.statesenate(params['statesenate'][0]).values('bbl'))
+            del params['statesenate']
+        elif 'zipcode' in params:
+            bbl_queryset = bbl_queryset.filter(
+                bbl__in=bbl_queryset.zipcode(params['zipcode'][0]).values('bbl'))
+            del params['zipcode']
         if 'housingtype' in params:
             bbl_queryset = bbl_queryset.filter(bbl__in=housingtype_filter(
                 self, bbl_queryset, name, params['housingtype'][0]).values('bbl'))
@@ -88,13 +102,17 @@ class AdvancedPropertyFilter(django_filters.rest_framework.FilterSet):
 
         if 'subsidyprograms__programname' in ''.join(params.keys()):
             if 'subsidyprograms__programname__any' in params:
-                programname_params = (params['subsidyprograms__programname__any'][0], None, None, None)
+                programname_params = (
+                    params['subsidyprograms__programname__any'][0], None, None, None)
             elif 'subsidyprograms__programname__all' in params:
-                programname_params = (None, params['subsidyprograms__programname__all'][0], None, None)
+                programname_params = (
+                    None, params['subsidyprograms__programname__all'][0], None, None)
             elif 'subsidyprograms__programname__icontains' in params:
-                programname_params = (None, None, None, params['subsidyprograms__programname__icontains'][0])
+                programname_params = (
+                    None, None, None, params['subsidyprograms__programname__icontains'][0])
             else:
-                programname_params = (None, None, params['subsidyprograms__programname'][0], None)
+                programname_params = (
+                    None, None, params['subsidyprograms__programname'][0], None)
             bbl_queryset = bbl_queryset.filter(bbl__in=programnames_filter(
                 self, bbl_queryset, 'propertyannotation__subsidyprograms', CommaSeparatedConditionField.compress(self, programname_params)))
         # add all the other params
@@ -103,12 +121,12 @@ class AdvancedPropertyFilter(django_filters.rest_framework.FilterSet):
                 bbl_queryset = bbl_queryset.filter(**{key: value[0]})
             except Exception as e:
                 print("AdvancedFilter processed a non-property field: {}".format(e))
-                logger.debug("AdvancedFilter processed a non-property field: {}".format(e))
+                logger.debug(
+                    "AdvancedFilter processed a non-property field: {}".format(e))
 
         # finally, construct subquery
 
         bbl_queryset = bbl_queryset.filter(bbl__in=queryset.only('bbl'))
-
         # NOW parse the q advanced query
         mapping = af.convert_query_string_to_mapping(values)
 
@@ -123,10 +141,12 @@ class AdvancedPropertyFilter(django_filters.rest_framework.FilterSet):
                 if c_filter['model'] == 'rentstabilizationrecord':
                     queryset = af.annotate_rentstabilized(queryset, c_filter)
                 elif c_filter['model'].lower() == 'acrisreallegal':
-                    queryset = af.annotate_acrislegals(queryset, c_filter, bbl_queryset.values('bbl'))
+                    queryset = af.annotate_acrislegals(
+                        queryset, c_filter, bbl_queryset.values('bbl'))
 
                 else:
-                    queryset = af.annotate_dataset(queryset, c_filter, bbl_queryset.values('bbl'))
+                    queryset = af.annotate_dataset(
+                        queryset, c_filter, bbl_queryset.values('bbl'))
 
         # q1 = af.convert_condition_to_q(next(iter(mapping)), mapping, 'query1_filters')
         # q1_queryset = queryset.filter(q1)
@@ -134,11 +154,101 @@ class AdvancedPropertyFilter(django_filters.rest_framework.FilterSet):
         # filter on annotating filters (like counts)
 
         # q1 = af.convert_condition_to_q(next(iter(mapping)), mapping, 'query1_filters')
-        q2 = af.convert_condition_to_q(next(iter(mapping)), mapping, 'query2_filters')
+
+        q2 = af.convert_condition_to_q(
+            next(iter(mapping)), mapping, 'query2_filters')
 
         queryset = queryset.filter(q2, bbl__in=bbl_queryset.values('bbl'))
         # q2_queryset = q1_queryset.filter(q2)
         #
         # final_bbls = q2_queryset.values('bbl')
+
+        queryset = queryset.defer("ct2010",
+                                  "cb2010",
+                                  "schooldist",
+                                  "firecomp",
+                                  "policeprct",
+                                  "healthcenterdistrict",
+                                  "healtharea",
+                                  "sanitboro",
+                                  "sanitdistrict",
+                                  "sanitsub",
+                                  "ltdheight",
+                                  "splitzone",
+                                  "landuse",
+                                  "easements",
+                                  "lotarea",
+                                  "bldgarea",
+                                  "comarea",
+                                  "resarea",
+                                  "officearea",
+                                  "retailarea",
+                                  "garagearea",
+                                  "strgearea",
+                                  "factryarea",
+                                  "otherarea",
+                                  "areasource",
+                                  "lotfront",
+                                  "lotdepth",
+                                  "bldgfront",
+                                  "bldgdepth",
+                                  "ext",
+                                  "proxcode",
+                                  "irrlotcode",
+                                  "lottype",
+                                  "bsmtcode",
+                                  "assessland",
+                                  "assesstot",
+                                  "exemptland",
+                                  "exempttot",
+                                  "yearalter1",
+                                  "yearalter2",
+                                  "histdist",
+                                  "landmark",
+                                  "builtfar",
+                                  "residfar",
+                                  "commfar",
+                                  "facilfar",
+                                  "condono",
+                                  "tract2010",
+                                  "zonemap",
+                                  "zmcode",
+                                  "sanborn",
+                                  "taxmap",
+                                  "edesignum",
+                                  "appbbl",
+                                  "appdate",
+                                  "mapplutof",
+                                  "plutomapid",
+                                  "firm07flag",
+                                  "pfirm15flag",
+                                  "rpaddate",
+                                  "dcasdate",
+                                  "zoningdate",
+                                  "landmkdate",
+                                  "basempdate",
+                                  "masdate",
+                                  "polidate",
+                                  "edesigdate",
+                                  "geom",
+                                  "zonedist1",
+                                  "zonedist2",
+                                  "zonedist3",
+                                  "zonedist4",
+                                  "overlay1",
+                                  "overlay2",
+                                  "spdist1",
+                                  "spdist2",
+                                  "spdist3",
+                                  "ownertype",
+                                  "ownername",
+                                  "numbldgs",
+                                  "numfloors",
+                                  "xcoord",
+                                  "ycoord",
+                                  "version",
+                                  "borocode",
+                                  "bldgclass",
+                                  "original_address")
 
         return queryset

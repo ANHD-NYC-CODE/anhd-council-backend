@@ -28,7 +28,8 @@ logger = logging.getLogger('app')
 
 
 class PropertyViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
-    renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
+    renderer_classes = tuple(
+        api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
     queryset = ds.Property.objects
     serializer_class = serial.PropertySerializer
     filter_backends = (DjangoFilterBackend,)
@@ -43,7 +44,8 @@ class PropertyViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyM
                 # calculate dynamic annotation fields here.
                 datasets = c_models.Dataset.objects.all()
                 context['datasets'] = list(datasets)
-                context['fields'] = build_annotated_fields(self.request, list(datasets))
+                context['fields'] = build_annotated_fields(
+                    self.request, list(datasets))
         return context
 
     @cache_request_path()
