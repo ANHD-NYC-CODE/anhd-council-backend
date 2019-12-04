@@ -10,15 +10,16 @@ import collections
 
 
 def annotate_dataset(queryset, c_filter, bbl_values):
-    model_name = list(filter(lambda x: c_filter['model'].lower() == x.lower(), settings.ACTIVE_MODELS))
+    model_name = list(filter(
+        lambda x: c_filter['model'].lower() == x.lower(), settings.ACTIVE_MODELS))
     model = getattr(ds, model_name[0])
 
     queryset = queryset.annotate(
-        **{c_filter['related_annotation_key']: FilteredRelation(c_filter['model'], condition=Q(construct_and_q(c_filter['query1_filters']), Q(**{c_filter['model'] + '__bbl__in': bbl_values})))})
+        **{c_filter['related_annotation_key']: FilteredRelation(c_filter['model'], condition=Q(construct_and_q(c_filter['query1_filters'])))})
 
     if c_filter['count_annotation_key']:
-        queryset = queryset.annotate(**{c_filter['count_annotation_key']
-                                     : Count(c_filter['related_annotation_key'], distinct=True)})
+        queryset = queryset.annotate(
+            **{c_filter['count_annotation_key']: Count(c_filter['related_annotation_key'], distinct=True)})
 
     return queryset
 
@@ -30,14 +31,17 @@ def annotate_acrislegals(queryset, c_filter, bbl_values):
     cleaned_filters = []
     for f in c_filter['query1_filters']:
         for key in f.keys():
-            cleaned_filters.append({key.replace('acrisreallegal__documentid__', ''): f[key]})
+            cleaned_filters.append(
+                {key.replace('acrisreallegal__documentid__', ''): f[key]})
 
-    masterdocid_values = ds.AcrisRealMaster.construct_sales_query('acrisreallegal__documentid').only('documentid')
-    masterdocid_values = masterdocid_values.filter(construct_and_q(cleaned_filters)).values('documentid')
+    masterdocid_values = ds.AcrisRealMaster.construct_sales_query(
+        'acrisreallegal__documentid').only('documentid')
+    masterdocid_values = masterdocid_values.filter(
+        construct_and_q(cleaned_filters)).values('documentid')
 
     # filteredRelation for acrislegals where master conditions and bbl conditions match
     queryset = queryset.annotate(
-        **{c_filter['related_annotation_key']: FilteredRelation(c_filter['model'], condition=Q(Q(**{c_filter['model'] + '__documentid__in': masterdocid_values}), Q(**{c_filter['model'] + '__bbl__in': bbl_values})))})
+        **{c_filter['related_annotation_key']: FilteredRelation(c_filter['model'], condition=Q(Q(**{c_filter['model'] + '__documentid__in': masterdocid_values})))})
 
     if c_filter['count_annotation_key']:
 
@@ -49,7 +53,8 @@ def annotate_acrislegals(queryset, c_filter, bbl_values):
         else:
             # annotate on count of acris records
 
-            queryset = queryset.annotate(**{c_filter['count_annotation_key']                                            : Count(c_filter['related_annotation_key'], distinct=True)})
+            queryset = queryset.annotate(
+                **{c_filter['count_annotation_key']: Count(c_filter['related_annotation_key'], distinct=True)})
     return queryset
 
 
@@ -59,8 +64,10 @@ def annotate_rentstabilized(queryset, c_filter):
     start_year = [*rsvalues[0].keys()][0].split('__', 2)[1].split('uc', 1)[1]
     end_year = [*rsvalues[1].keys()][0].split('__', 2)[1].split('uc', 1)[1]
 
-    start_annotation = '{}_rentstabilizationrecord{}'.format(c_filter['filter_id'], start_year)
-    end_annotation = '{}_rentstabilizationrecord{}'.format(c_filter['filter_id'], end_year)
+    start_annotation = '{}_rentstabilizationrecord{}'.format(
+        c_filter['filter_id'], start_year)
+    end_annotation = '{}_rentstabilizationrecord{}'.format(
+        c_filter['filter_id'], end_year)
 
     queryset = queryset.annotate(**{start_annotation: F('rentstabilizationrecord__uc' + start_year)}).annotate(**{
         '{}_rentstabilizationrecord{}'.format(c_filter['filter_id'], end_year): F('rentstabilizationrecord__uc' + end_year)})
@@ -84,7 +91,8 @@ def get_count_annotation_key(string, filter_id):
     # returns entire ,.*__count filter string minus the comparison
     for filter in new_string.split(','):
         if bool(re.search(r"(count|percent)", filter.lower())):
-            filter = re.sub(r"(__gte\b|__gt\b|__exact\b|__lt\b|__lte\b|)", '', filter.split('=')[0])
+            filter = re.sub(
+                r"(__gte\b|__gt\b|__exact\b|__lt\b|__lte\b|)", '', filter.split('=')[0])
             return "{}_{}".format(filter_id, filter)
 
 
@@ -159,10 +167,12 @@ def validate_mapping(request, mapping):
             raise APIException("\"{}\" is not a valid condition type. use only AND or OR".format(
                 mapping[condition_key]['type']))
         if not len(mapping[condition_key]['filters']):
-            raise APIException("Condition {} has no filters".format(condition_key))
+            raise APIException(
+                "Condition {} has no filters".format(condition_key))
         for c_filter in mapping[condition_key]['filters']:
             if 'model' in c_filter:
-                model_name = list(filter(lambda x: c_filter['model'].lower() == x.lower(), settings.ACTIVE_MODELS))
+                model_name = list(filter(
+                    lambda x: c_filter['model'].lower() == x.lower(), settings.ACTIVE_MODELS))
                 if not model_name:
                     # Validate model names
                     raise APIException(
@@ -261,7 +271,8 @@ def convert_condition_to_q(condition_key, mapping, filter_pass='query1_filters')
         for c_filter in mapping[condition_key]['filters']:
             if 'condition' in c_filter:
 
-                q &= convert_condition_to_q(c_filter['condition'], mapping, filter_pass)
+                q &= convert_condition_to_q(
+                    c_filter['condition'], mapping, filter_pass)
             else:
                 if filter_pass == 'query2_filters' and c_filter['count_annotation_key']:
                     q &= construct_and_q(c_filter[filter_pass])
@@ -270,7 +281,8 @@ def convert_condition_to_q(condition_key, mapping, filter_pass='query1_filters')
     elif mapping[condition_key]['type'].upper() == 'OR':
         for c_filter in mapping[condition_key]['filters']:
             if 'condition' in c_filter:
-                q |= convert_condition_to_q(c_filter['condition'], mapping, filter_pass)
+                q |= convert_condition_to_q(
+                    c_filter['condition'], mapping, filter_pass)
             else:
                 if filter_pass == 'query2_filters' and c_filter['count_annotation_key']:
                     q |= construct_and_q(c_filter[filter_pass])
