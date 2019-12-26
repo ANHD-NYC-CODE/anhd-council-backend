@@ -1,3 +1,6 @@
+from django.dispatch import receiver
+from core.tasks import async_download_and_update
+from datasets import models as ds
 from django.db import models
 from django.utils import timezone
 
@@ -7,12 +10,6 @@ from datasets.utils.validation_filters import is_null
 import datetime
 import logging
 logger = logging.getLogger('app')
-from datasets import models as ds
-from core.tasks import async_download_and_update
-from core.tasks import async_download_and_update
-
-
-from django.dispatch import receiver
 
 
 # Update process: Manual
@@ -30,15 +27,22 @@ class CONHRecord(BaseDatasetModel, models.Model):
     buildingid = models.TextField(blank=True, null=True)
     bin = models.ForeignKey('Building', db_column='bin', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=True)
-    housenumber = models.TextField(blank=True, null=True)
     streetaddress = models.TextField(blank=True, null=True)
     block = models.TextField(blank=True, null=True)
     lot = models.TextField(blank=True, null=True)
+    bqi = models.TextField(blank=True, null=True)
+    aeporder = models.TextField(blank=True, null=True)
+    hpdvacateorder = models.TextField(blank=True, null=True)
+    dobvacateorder = models.TextField(blank=True, null=True)
+    harassmentfinding = models.TextField(blank=True, null=True)
+    dateadded = models.DateField(blank=True, null=True)
     borocode = models.TextField(blank=True, null=True)
     borough = models.TextField(blank=True, null=True)
     postcode = models.TextField(blank=True, null=True)
-    latitude = models.DecimalField(decimal_places=16, max_digits=32, blank=True, null=True)
-    longitude = models.DecimalField(decimal_places=16, max_digits=32, blank=True, null=True)
+    latitude = models.DecimalField(
+        decimal_places=16, max_digits=32, blank=True, null=True)
+    longitude = models.DecimalField(
+        decimal_places=16, max_digits=32, blank=True, null=True)
     communityboard = models.TextField(blank=True, null=True)
     councildistrict = models.TextField(blank=True, null=True)
     censustract = models.TextField(blank=True, null=True)
@@ -52,11 +56,13 @@ class CONHRecord(BaseDatasetModel, models.Model):
 
     @classmethod
     def create_async_update_worker(self, endpoint=None, file_name=None):
-        async_download_and_update.delay(self.get_dataset().id, endpoint=endpoint, file_name=file_name)
+        async_download_and_update.delay(
+            self.get_dataset().id, endpoint=endpoint, file_name=file_name)
 
     @classmethod
     def create_async_update_worker(self, endpoint=None, file_name=None):
-        async_download_and_update.delay(self.get_dataset().id, endpoint=endpoint, file_name=file_name)
+        async_download_and_update.delay(
+            self.get_dataset().id, endpoint=endpoint, file_name=file_name)
 
     @classmethod
     def pre_validation_filters(self, gen_rows):
