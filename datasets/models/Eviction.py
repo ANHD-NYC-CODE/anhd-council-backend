@@ -125,12 +125,10 @@ class Eviction(BaseDatasetModel, models.Model):
                     else:
                         # logger.debug(
                         #     "no eviction match - multiple matches found on generic address: {}".format(eviction.evictionaddress))
-                        self.get_geosearch_address("{}, {}".format(
-                            cleaned_address, eviction.borough), eviction)
+                        self.get_geosearch_address(cleaned_address, eviction)
                 else:
                     # logger.debug("no eviction match - no address matches: {}".format(eviction.evictionaddress))
-                    self.get_geosearch_address("{}, {}".format(
-                        cleaned_address, eviction.borough), eviction)
+                    self.get_geosearch_address(cleaned_address, eviction)
 
             else:
                 logger.debug(

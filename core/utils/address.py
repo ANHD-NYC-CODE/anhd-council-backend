@@ -257,6 +257,7 @@ def clean_those_typos(string):
     string = re.sub(r"\bBURGEN\b", "BURDEN", string)
     string = re.sub(r"\bPAULDIN\b", "PAULDING", string)
     string = re.sub(r"\bPLAI NS\b", "PLAINS", string)
+    string = re.sub(r"\bPA RK\b", "PARK", string)
 
 
 
@@ -400,10 +401,10 @@ def clean_number_and_streets(string, include_house_number, clean_typos=False):
 def match_address_within_string(string):
     # tries to find an address from within a string
     # matches a number with a street designator (street, avenue, etc)
-    # and allows for variations with cardinal directions (street east, east street, etc)
+    # and allows for variations with cardinal directions (street east, east street, etc) or AVENUE for PARK AVENUE, or A-Z for AVENUE A
 
     string = string.upper()
-    pattern = r'[0-9].*?(\bLANE\b|\bHIGHWAY\b|\bSQUARE\b|\bEXPRESSWAY\b|\bPARKWAY\b|\bPARK\b|\bSTREET\b|\bAVENUE\b|\bPLACE\b|\bBOULEVARD\b|\bDRIVE\b|\bROAD\b|\bCONCOURSE\b|\bPLAZA\b|\bTERRACE\b|\bCOURT\b|\bLOOP\b|\bCIRCLE\b|\bCRESCENT\b|\bOVAL\b|\bTURNPIKE\b|\bSLIP\b|\bWALK\b|\bBROADWAY\b)(\sNORTH|\sSOUTH|\sEAST|\sWEST|\s[A-Z]\b)?'
+    pattern = r'[0-9].*?(\bLANE\b|\bHIGHWAY\b|\bSQUARE\b|\bEXPRESSWAY\b|\bPARKWAY\b|\bPARK\b|\bSTREET\b|\bAVENUE\b|\bPLACE\b|\bBOULEVARD\b|\bDRIVE\b|\bROAD\b|\bCONCOURSE\b|\bPLAZA\b|\bTERRACE\b|\bCOURT\b|\bLOOP\b|\bCIRCLE\b|\bCRESCENT\b|\bOVAL\b|\bTURNPIKE\b|\bSLIP\b|\bWALK\b|\bBROADWAY\b)(\sNORTH|\sSOUTH|\sEAST|\sWEST|\sAVENUE|\s[A-Z]\b)?'
     match = re.search(pattern, string)
     return match
 
