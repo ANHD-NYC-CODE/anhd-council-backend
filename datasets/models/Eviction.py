@@ -101,8 +101,7 @@ class Eviction(BaseDatasetModel, models.Model):
     @classmethod
     def link_eviction_to_pluto_by_address(self):
 
-        evictions = self.objects.filter(
-            bbl__isnull=True, geosearch_address__isnull=True)
+        evictions = self.objects.filter(bbl__isnull=True)
         for eviction in evictions:
             # matches STREET or STREET EAST / WEST etc
             match = match_address_within_string(eviction.evictionaddress)
