@@ -244,7 +244,7 @@ class Eviction(BaseDatasetModel, models.Model):
                 cursor = int(low)
                 step = 2
                 while(cursor <= int(high)):
-                    if int(geo_street) == cursor:
+                    if int(geo_house) == cursor:
                         return True
                     cursor = cursor + step
             else:
