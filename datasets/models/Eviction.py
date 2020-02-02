@@ -183,31 +183,55 @@ class Eviction(BaseDatasetModel, models.Model):
             return None
 
 # from datasets import models as ds
-# letter = ds.Eviction.objects.filter(geosearch_address__icontains="NICHOLASS")[0]
-# ds.Eviction.get_geosearch_address(letter.cleaned_address, letter)
+# addr = ds.Eviction.objects.filter(evictionaddress__icontains="2000-2010 PROSPECT AVENUE")[0]
+# ds.Eviction.get_geosearch_address(addr.cleaned_address, addr)
 
     @classmethod
-    def validate_geosearch_match(self, geosearch_match, cleaned_address):
+    def validate_geosearch_match(self, geosearch_match, cleaned_address_with_borough):
         if not geosearch_match:
             return False
+
+        cleaned_house_number = get_house_number(
+            cleaned_address_with_borough)
+
+        cleaned_street = cleaned_address_with_borough.split(' ', 1)[1]
 
         # remove apostrophes
         geosearch_match['label'] = re.sub(r"\'", '', geosearch_match['label'])
         # without borough, New York, NY, USA tokens
         geosearch_house_street = remove_building_terms(
             geosearch_match['label'].split(', ')[0].upper())
+
         geosearch_borough = geosearch_match['label'].split(', ')[1].upper()
 
-        geosearch = ', '.join([clean_number_and_streets(
+        geosearch_street_with_borough = ', '.join([clean_number_and_streets(
             geosearch_house_street, True, clean_typos=True), geosearch_borough]).upper()
-        if remove_apartment_letter(geosearch) == remove_apartment_letter(cleaned_address):
+
+        geosearch_house_number = get_house_number(geosearch_house_street)
+        geosearch_street = geosearch_street_with_borough.split(' ', 1)[1]
+
+        if remove_apartment_letter(geosearch_street_with_borough) == remove_apartment_letter(cleaned_address_with_borough):
             # First naive match against house + street + borough
             # This match scrubs the apartment letters from both addresses for comparison, but preserves them in database record for later
             return True
-        elif get_street(geosearch_house_street) == get_street(cleaned_address) and geosearch_borough == get_borough(cleaned_address):
+        elif get_borough(cleaned_address_with_borough) != "QUEENS" and geosearch_borough != "QUEENS" and geosearch_street == cleaned_street and "-" in get_house_number(cleaned_address_with_borough):
+            # Hyphens in non-queens address typically represent a range of buildings.
+            # >> check if the FIRST number in the cleaned hyphen group equals the geosearch house #
+            # >> check if geosearch house # is WITHIN the cleaned house # range
+            cleaned_house_number = remove_apartment_letter(
+                cleaned_house_number)
+            geosearch_house_number = remove_apartment_letter(
+                geosearch_house_number)
+
+            if cleaned_house_number.split('-')[0] == geosearch_house_number:
+                return True
+            elif int(geosearch_house_number) in range(int(cleaned_house_number.split('-')[0]), int(cleaned_house_number.split('-')[1])):
+                return True
+
+        elif get_street(geosearch_house_street) == get_street(cleaned_address_with_borough) and geosearch_borough == get_borough(cleaned_address_with_borough):
             # if street and borough match, check for number range matches
             geo_house = get_house_number(geosearch_house_street)
-            cleaned_house = get_house_number(cleaned_address)
+            cleaned_house = get_house_number(cleaned_address_with_borough)
             if geo_house == cleaned_house:
                 # try explicit match against house without apartment number + street + borough
                 return True

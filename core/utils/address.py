@@ -8,8 +8,16 @@ def get_house_number(string):
     # Pass in complete address "123 Fake Street"
     # Removes apartment letters
     # Returns number (123)
-    first_token = string.split(' ', 1)
-    return ''.join(i for i in first_token if i.isdigit())
+    # also returns hyphen number 123-123 Fake Street == 123-123
+
+    pattern = r"([0-9]+(-[0-9]+)+|^\d+)"
+
+    first_token = string.split(' ', 1)[0]
+    match = re.search(pattern, first_token)
+    if (match):
+        return match.group(0)
+    else:
+        return ''
 
 
 def get_street(string):
