@@ -138,8 +138,10 @@ class Eviction(BaseDatasetModel, models.Model):
 
     @classmethod
     def get_geosearch_address(self, cleaned_address, eviction):
+        cleaned_address_with_borough = "{}, {}".format(
+            cleaned_address, eviction.borough)
         response = requests.get(
-            "https://geosearch.planninglabs.nyc/v1/search?text={}".format("{}, {}".format(cleaned_address, eviction.borough)))
+            "https://geosearch.planninglabs.nyc/v1/search?text={}".format(cleaned_address_with_borough))
         try:
             parsed = json.loads(response.text)
         except Exception as e:
@@ -158,7 +160,7 @@ class Eviction(BaseDatasetModel, models.Model):
                 match = feature['properties']
 
         # next compare the house and street numbers
-        if match and self.validate_geosearch_match(match, cleaned_address):
+        if match and self.validate_geosearch_match(match, cleaned_address_with_borough):
             try:
                 bbl = ds.Property.objects.get(bbl=match['pad_bbl'])
 
@@ -183,7 +185,7 @@ class Eviction(BaseDatasetModel, models.Model):
             return None
 
 # from datasets import models as ds
-# letter = ds.Eviction.objects.filter(evictionaddress__icontains="2311a pacific")[0]
+# letter = ds.Eviction.objects.filter(geosearch_address__icontains="NICHOLASS")[0]
 # ds.Eviction.get_geosearch_address(letter.cleaned_address, letter)
 
     @classmethod
@@ -198,8 +200,8 @@ class Eviction(BaseDatasetModel, models.Model):
             geosearch_match['label'].split(', ')[0].upper())
         geosearch_borough = geosearch_match['label'].split(', ')[1].upper()
 
-        geosearch = ', '.join([clean_number_and_streets(geosearch_house_street,
-                                                        True, clean_typos=True), geosearch_borough]).upper()
+        geosearch = ', '.join([clean_number_and_streets(
+            geosearch_house_street, True, clean_typos=True), geosearch_borough]).upper()
         if remove_apartment_letter(geosearch) == remove_apartment_letter(cleaned_address):
             # First naive match against house + street + borough
             # This match scrubs the apartment letters from both addresses for comparison, but preserves them in database record for later
