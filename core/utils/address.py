@@ -188,7 +188,6 @@ def clean_those_typos(string):
     string = re.sub(r"\bMOGEHAN\b", "MOHEGAN", string)
     string = re.sub(r"\bAVEU\b", "AVENUE", string)
     string = re.sub(r"\bMOGEHAN\b", "MOHEGAN", string)
-    string = re.sub(r"\bSTJAMES\b", "SAINT JAMES", string)
     string = re.sub(r"\bWMSBDG\b", "WILLIAMSBRIDGE", string)
     string = re.sub(r"\bWILLIAMSBRI DGE\b", "WILLIAMSBRIDGE", string)
     string = re.sub(r"\bWMSBRIDGE\b", "WILLIAMSBRIDGE", string)
@@ -203,6 +202,7 @@ def clean_those_typos(string):
     string = re.sub(r"\bBAYRIDGE\b", "BAY RIDGE", string)
     string = re.sub(r"\bAVESOUTH\b", "AVE SOUTH", string)
     string = re.sub(r"\bPARKHILL\b", "PARK HILL", string)
+    string = re.sub(r"\bSTJAMES\b", "SAINT JAMES", string)
     string = re.sub(r"\bSTJOHNS\b", "SAINT JOHNS", string)
     string = re.sub(r"\bSTMARKS\b", "SAINT MARKS", string)
     string = re.sub(r"\bSTNICHOLAS\b", "SAINT NICHOLAS", string)
@@ -288,8 +288,10 @@ def clean_number_and_streets(string, include_house_number, clean_typos=False):
                    'NICHOLAS', 'HOLLIS', 'JOHNS', "JOHN'S", "EDWARDS", "GEORGES", "GEORGE", "OUEN", "MARYS", "THERESA", "LUKES", "JUDE", "ANN", "ANNS"]
 
     # replace ST MARKS etc with SAINT MARKS
+    # also replaces typos like STMARKS with SAINT MARKS
     for saint in HOLY_SAINTS:
         string = re.sub(r"(?=.*ST {})(\bST {}\b)".format(saint, saint), "SAINT {}".format(saint), string)
+        string = re.sub(r"(?=.*ST{})(\bST{}\b)".format(saint, saint), "SAINT {}".format(saint), string)
 
     # Abbreviations
     string = re.sub(r"\bIS\b", "ISLAND", string)
@@ -376,3 +378,15 @@ def clean_number_and_streets(string, include_house_number, clean_typos=False):
 
     string = string.replace("  ", " ")
     return string
+
+
+def match_address_within_string(string):
+    # tries to find an address from within a string
+    # matches a number with a street designator (street, avenue, etc)
+    # and allows for variations with cardinal directions (street east, east street, etc)
+
+    string = string.upper()
+    pattern = r'[0-9].*?(\bLANE\b|\bHIGHWAY\b|\bSQUARE\b|\bEXPRESSWAY\b|\bPARKWAY\b|\bPARK\b|\bSTREET\b|\bAVENUE\b|\bPLACE\b|\bBOULEVARD\b|\bDRIVE\b|\bROAD\b|\bCONCOURSE\b|\bPLAZA\b|\bTERRACE\b|\bCOURT\b|\bLOOP\b|\bCIRCLE\b|\bCRESCENT\b|\bOVAL\b|\bTURNPIKE\b|\bSLIP\b|\bWALK\b)(\sNORTH|\sSOUTH|\sEAST|\sWEST)?'
+    match = re.search(pattern, string)
+    return match
+

@@ -106,3 +106,50 @@ class CleanNumberAndStreetsTest(BaseTest, TestCase):
         expected = "111th Street"
         cleaned = address.clean_number_and_streets(string, False)
         self.assertEqual(cleaned, expected)
+
+    def saints(self):
+        string = "100 ST JOHNS STREET"
+        expected = "100 Saint Johns Street"
+        cleaned = address.clean_number_and_streets(string, True)
+        self.assertEqual(cleaned, expected)
+
+        string = "100 ST JOHN'S STREET"
+        expected = "100 Saint Johns Street"
+        cleaned = address.clean_number_and_streets(string, True)
+
+        self.assertEqual(cleaned, expected)
+
+        string = "100 STJOHNS PLACE"
+        expected = "100 Saint Johns Place"
+        cleaned = address.clean_number_and_streets(string, True)
+        self.assertEqual(cleaned, expected)
+
+
+class MatchAddressWithinStringTest(BaseTest, TestCase):
+    def tearDown(self):
+        self.clean_tests()
+
+    def match_address_within_string(self):
+        string = "123 Fake street"
+        match = address.match_address_within_string(string)
+
+        self.assertTrue(match)
+        self.assertEqual(match.group(0), string.upper())
+
+        string = "123 Fake street South"
+        match = address.match_address_within_string(string)
+
+        self.assertTrue(match)
+        self.assertEqual(match.group(0), string.upper())
+
+        string = "123 East Fake Street South"
+        match = address.match_address_within_string(string)
+
+        self.assertTrue(match)
+        self.assertEqual(match.group(0), string.upper())
+
+        string = "123 East Street South"
+        match = address.match_address_within_string(string)
+
+        self.assertTrue(match)
+        self.assertEqual(match.group(0), string.upper())

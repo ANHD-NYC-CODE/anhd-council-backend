@@ -4,7 +4,7 @@ from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.utils.validation_filters import is_null
 from datasets import models as ds
 from core.utils.bbl import boro_to_abrv
-from core.utils.address import clean_number_and_streets, get_house_number, get_street, get_borough, remove_building_terms
+from core.utils.address import match_address_within_string, clean_number_and_streets, get_house_number, get_street, get_borough, remove_building_terms
 import requests
 import json
 import re
@@ -23,13 +23,15 @@ class Eviction(BaseDatasetModel, models.Model):
             models.Index(fields=['-executeddate']),
 
         ]
-        unique_together = ('evictionaddress', 'evictionaptnum', 'executeddate', 'marshallastname')
+        unique_together = ('evictionaddress', 'evictionaptnum',
+                           'executeddate', 'marshallastname')
 
     download_endpoint = "https://data.cityofnewyork.us/api/views/6z8x-wfk4/rows.csv?accessType=DOWNLOAD"
     API_ID = '6z8x-wfk4'
     QUERY_DATE_KEY = 'executeddate'
 
-    courtindexnumber = models.TextField(primary_key=True, blank=False, null=False)
+    courtindexnumber = models.TextField(
+        primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=True)
     borough = models.TextField(blank=True, null=True)
@@ -50,7 +52,8 @@ class Eviction(BaseDatasetModel, models.Model):
 
     @classmethod
     def create_async_update_worker(self, endpoint=None, file_name=None):
-        async_download_and_update.delay(self.get_dataset().id, endpoint=endpoint, file_name=file_name)
+        async_download_and_update.delay(
+            self.get_dataset().id, endpoint=endpoint, file_name=file_name)
 
     @classmethod
     def download(self, endpoint=None, file_name=None):
@@ -98,35 +101,41 @@ class Eviction(BaseDatasetModel, models.Model):
     @classmethod
     def link_eviction_to_pluto_by_address(self):
 
-        evictions = self.objects.filter(bbl__isnull=True, geosearch_address__isnull=True)
+        evictions = self.objects.filter(
+            bbl__isnull=True, geosearch_address__isnull=True)
         for eviction in evictions:
             # matches STREET or STREET EAST / WEST etc
-            pattern = r'[0-9].*?(\bLANE|\bHIGHWAY|\bSQUARE|\bEXPRESSWAY|\bPARKWAY|\bPARK|\bSTREET|\bAVENUE|\bPLACE|\bBOULEVARD|\bDRIVE|\bROAD|\bCONCOURSE|\bPLAZA|\bTERRACE|\bCOURT|\bLOOP|\bCIRCLE)(\sNORTH|\sSOUTH|\sEAST|\sWEST)?'
+            match = match_address_within_string(eviction.evictionaddress)
 
-            match = re.search(pattern, eviction.evictionaddress.upper())
             if match:
                 cleaned_address = match.group(0)
                 # TODO: remove house letter from cleaned address
-                self.save_eviction(eviction=eviction, cleaned_address=cleaned_address)
+                self.save_eviction(eviction=eviction,
+                                   cleaned_address=cleaned_address)
                 address_match = ds.AddressRecord.objects.filter(
                     address=cleaned_address + ' {}'.format(eviction.borough))
                 if len(address_match) == 1:
-                    self.save_eviction(eviction=eviction, bbl=address_match[0].bbl)
+                    self.save_eviction(eviction=eviction,
+                                       bbl=address_match[0].bbl)
 
                 elif len(address_match) > 1:
                     # not a super generic query like 123 STREET or 45 AVENUE
-                    if not re.match(r"(\d+ (\bSTREET|\bAVENUE))", cleaned_address):
-                        self.save_eviction(eviction=eviction, bbl=address_match[0].bbl)
+                    if not re.match(r"(\d+ (\bSTREET\b|\bAVENUE))", cleaned_address):
+                        self.save_eviction(
+                            eviction=eviction, bbl=address_match[0].bbl)
                     else:
                         # logger.debug(
                         #     "no eviction match - multiple matches found on generic address: {}".format(eviction.evictionaddress))
-                        self.get_geosearch_address("{}, {}".format(cleaned_address, eviction.borough), eviction)
+                        self.get_geosearch_address("{}, {}".format(
+                            cleaned_address, eviction.borough), eviction)
                 else:
                     # logger.debug("no eviction match - no address matches: {}".format(eviction.evictionaddress))
-                    self.get_geosearch_address("{}, {}".format(cleaned_address, eviction.borough), eviction)
+                    self.get_geosearch_address("{}, {}".format(
+                        cleaned_address, eviction.borough), eviction)
 
             else:
-                logger.debug("no eviction match - no regex matches: {}".format(eviction.evictionaddress))
+                logger.debug(
+                    "no eviction match - no regex matches: {}".format(eviction.evictionaddress))
 
     @classmethod
     def get_geosearch_address(self, cleaned_address, eviction):
@@ -135,7 +144,8 @@ class Eviction(BaseDatasetModel, models.Model):
         try:
             parsed = json.loads(response.text)
         except Exception as e:
-            logger.debug('Unable to parse response from query: {}'.format(address_search_query))
+            logger.debug('Unable to parse response from query: {}'.format(
+                address_search_query))
             return None
 
         match = None
@@ -153,17 +163,23 @@ class Eviction(BaseDatasetModel, models.Model):
             try:
                 bbl = ds.Property.objects.get(bbl=match['pad_bbl'])
 
-                self.save_eviction(eviction=eviction, bbl=bbl, geosearch_address=match['label'])
+                self.save_eviction(eviction=eviction, bbl=bbl,
+                                   geosearch_address=match['label'])
             except Exception as e:
-                self.save_eviction(eviction=eviction, geosearch_address=match['label'])
-                logger.warning('unable to match response bbl {} to a db record'.format(match['pad_bbl']))
+                self.save_eviction(eviction=eviction,
+                                   geosearch_address=match['label'])
+                logger.warning(
+                    'unable to match response bbl {} to a db record'.format(match['pad_bbl']))
                 return None
         else:
             if match:
-                logger.debug('Match invalid - geosearch: {} vs. cleaned: {}'.format(match['label'], cleaned_address))
-                self.save_eviction(eviction=eviction, geosearch_address=match['label'])
+                logger.debug(
+                    'Match invalid - geosearch: {} vs. cleaned: {}'.format(match['label'], cleaned_address))
+                self.save_eviction(eviction=eviction,
+                                   geosearch_address=match['label'])
             else:
-                logger.debug('No Match found for cleaned_address: {}', cleaned_address)
+                logger.debug(
+                    'No Match found for cleaned_address: {}', cleaned_address)
 
             return None
 
@@ -175,7 +191,8 @@ class Eviction(BaseDatasetModel, models.Model):
         # remove apostrophes
         geosearch_match['label'] = re.sub(r"\'", '', geosearch_match['label'])
         # without borough, New York, NY, USA tokens
-        geosearch_house_street = remove_building_terms(geosearch_match['label'].split(', ')[0].upper())
+        geosearch_house_street = remove_building_terms(
+            geosearch_match['label'].split(', ')[0].upper())
         geosearch_borough = geosearch_match['label'].split(', ')[1].upper()
 
         geosearch = ', '.join([clean_number_and_streets(geosearch_house_street,
@@ -233,7 +250,8 @@ def annotate_property_on_save(sender, instance, created, **kwargs):
     if created == True:
         try:
 
-            annotation = sender.annotate_property_standard(ds.PropertyAnnotation.objects.get(bbl=instance.bbl))
+            annotation = sender.annotate_property_standard(
+                ds.PropertyAnnotation.objects.get(bbl=instance.bbl))
             annotation.save()
         except Exception as e:
             logger.warning(e)
