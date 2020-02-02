@@ -256,6 +256,7 @@ def clean_those_typos(string):
     string = re.sub(r"\bNEPTUEN\b", "NEPTUNE", string)
     string = re.sub(r"\bBURGEN\b", "BURDEN", string)
     string = re.sub(r"\bPAULDIN\b", "PAULDING", string)
+    string = re.sub(r"\bPLAI NS\b", "PLAINS", string)
 
 
 
@@ -402,7 +403,7 @@ def match_address_within_string(string):
     # and allows for variations with cardinal directions (street east, east street, etc)
 
     string = string.upper()
-    pattern = r'[0-9].*?(\bLANE\b|\bHIGHWAY\b|\bSQUARE\b|\bEXPRESSWAY\b|\bPARKWAY\b|\bPARK\b|\bSTREET\b|\bAVENUE\b|\bPLACE\b|\bBOULEVARD\b|\bDRIVE\b|\bROAD\b|\bCONCOURSE\b|\bPLAZA\b|\bTERRACE\b|\bCOURT\b|\bLOOP\b|\bCIRCLE\b|\bCRESCENT\b|\bOVAL\b|\bTURNPIKE\b|\bSLIP\b|\bWALK\b|\bBROADWAY\b)(\sNORTH|\sSOUTH|\sEAST|\sWEST)?'
+    pattern = r'[0-9].*?(\bLANE\b|\bHIGHWAY\b|\bSQUARE\b|\bEXPRESSWAY\b|\bPARKWAY\b|\bPARK\b|\bSTREET\b|\bAVENUE\b|\bPLACE\b|\bBOULEVARD\b|\bDRIVE\b|\bROAD\b|\bCONCOURSE\b|\bPLAZA\b|\bTERRACE\b|\bCOURT\b|\bLOOP\b|\bCIRCLE\b|\bCRESCENT\b|\bOVAL\b|\bTURNPIKE\b|\bSLIP\b|\bWALK\b|\bBROADWAY\b)(\sNORTH|\sSOUTH|\sEAST|\sWEST|\s[A-Z]\b)?'
     match = re.search(pattern, string)
     return match
 
