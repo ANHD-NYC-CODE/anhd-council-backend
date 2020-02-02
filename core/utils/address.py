@@ -63,6 +63,13 @@ def number_to_text(number):
 
     return number + suffix
 
+def remove_apartment_letter(string):
+  # matches a letter if it follows a number like: 123A matches "A"
+  string = re.sub(r"[a-zA-Z](?<=\d[a-zA-Z])", "", string)
+
+  return string
+
+
 
 def remove_building_terms(string):
     string = re.sub(

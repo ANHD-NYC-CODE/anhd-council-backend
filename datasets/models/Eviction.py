@@ -4,7 +4,7 @@ from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.utils.validation_filters import is_null
 from datasets import models as ds
 from core.utils.bbl import boro_to_abrv
-from core.utils.address import match_address_within_string, clean_number_and_streets, get_house_number, get_street, get_borough, remove_building_terms
+from core.utils.address import remove_apartment_letter, match_address_within_string, clean_number_and_streets, get_house_number, get_street, get_borough, remove_building_terms
 import requests
 import json
 import re
@@ -182,6 +182,10 @@ class Eviction(BaseDatasetModel, models.Model):
 
             return None
 
+# from datasets import models as ds
+# letter = ds.Eviction.objects.filter(evictionaddress__icontains="2311a pacific")[0]
+# ds.Eviction.get_geosearch_address(letter.cleaned_address, letter)
+
     @classmethod
     def validate_geosearch_match(self, geosearch_match, cleaned_address):
         if not geosearch_match:
@@ -196,8 +200,9 @@ class Eviction(BaseDatasetModel, models.Model):
 
         geosearch = ', '.join([clean_number_and_streets(geosearch_house_street,
                                                         True, clean_typos=True), geosearch_borough]).upper()
-        if geosearch == cleaned_address:
+        if remove_apartment_letter(geosearch) == remove_apartment_letter(cleaned_address):
             # First naive match against house + street + borough
+            # This match scrubs the apartment letters from both addresses for comparison, but preserves them in database record for later
             return True
         elif get_street(geosearch_house_street) == get_street(cleaned_address) and geosearch_borough == get_borough(cleaned_address):
             # if street and borough match, check for number range matches

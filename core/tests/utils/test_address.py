@@ -125,9 +125,28 @@ class CleanNumberAndStreetsTest(BaseTest, TestCase):
         self.assertEqual(cleaned, expected)
 
 
-class MatchAddressWithinStringTest(BaseTest, TestCase):
+class Utilities(BaseTest, TestCase):
     def tearDown(self):
         self.clean_tests()
+
+    def remove_apartment_letter(self):
+        string = "123 Fake Street"
+        expected = "123 Fake Street"
+        cleaned = address.remove_apartment_letter(string)
+
+        self.assertEqual(cleaned, expected)
+
+        string = "123a Fake Street"
+        expected = "123 Fake Street"
+        cleaned = address.remove_apartment_letter(string)
+
+        self.assertEqual(cleaned, expected)
+
+        string = "123a A Fake Street"
+        expected = "123 A Fake Street"
+        cleaned = address.remove_apartment_letter(string)
+
+        self.assertEqual(cleaned, expected)
 
     def match_address_within_string(self):
         string = "123 Fake street"
@@ -153,3 +172,17 @@ class MatchAddressWithinStringTest(BaseTest, TestCase):
 
         self.assertTrue(match)
         self.assertEqual(match.group(0), string.upper())
+
+        string = "123 AVENUE C"
+        expected_match = "123 AVENUE C"
+        match = address.match_address_within_string(string)
+
+        self.assertTrue(match)
+        self.assertEqual(match.group(0), expected_match)
+
+        string = "123 AVENUE Z with cruft"
+        expected_match = "123 AVENUE Z"
+        match = address.match_address_within_string(string)
+
+        self.assertTrue(match)
+        self.assertEqual(match.group(0), expected_match)
