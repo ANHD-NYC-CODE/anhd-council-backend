@@ -230,6 +230,7 @@ class Eviction(BaseDatasetModel, models.Model):
 
         elif re.search(r"(\d+[ST|ND|RD|TH]+)", cleaned_street) or re.search(r"(\d+[ST|ND|RD|TH]+)", geosearch_street):
             # Replace 1ST, 2ND, 3RD etc with 1, 2, 3 in cleaned street because geosearch doesn't include these suffixes in streets
+
             match_cleaned = re.search(
                 r"(\d+[ST|ND|RD|TH]+)", cleaned_street).group(0)
             scrubbed_cleaned_street_number = re.search(
@@ -240,17 +241,18 @@ class Eviction(BaseDatasetModel, models.Model):
             repaired_cleaned_address = " ".join(
                 [cleaned_house_number, scrubbed_cleaned_street])
 
+            # repeat for geosearch
             match_geosearch = re.search(
                 r"(\d+[ST|ND|RD|TH]+)", geosearch_street)
 
             scrubbed_geosearch_street_number = re.search(
-                r"\d", match_geosearch.group(0)) if (match_geosearch) else NULL
+                r"\d", match_geosearch.group(0)) if match_geosearch else None
 
             scrubbed_geosearch_street = re.sub(
-                r"(\d+[ST|ND|RD|TH]+)",  scrubbed_geosearch_street_number.match(0), geosearch_street) if scrubbed_geosearch_street_number else NULL
+                r"(\d+[ST|ND|RD|TH]+)",  scrubbed_geosearch_street_number.group(0), geosearch_street) if scrubbed_geosearch_street_number else None
 
             repaired_geosearch_address = " ".join(
-                [geosearch_house_number, scrubbed_geosearch_street]) if scrubbed_geosearch_street else NULL
+                [geosearch_house_number, scrubbed_geosearch_street]) if scrubbed_geosearch_street else None
 
             if (repaired_geosearch_address and repaired_cleaned_address == repaired_geosearch_address):
                 return True
