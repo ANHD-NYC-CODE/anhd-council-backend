@@ -228,7 +228,7 @@ class Eviction(BaseDatasetModel, models.Model):
             elif int(geosearch_house_number) in range(int(cleaned_house_number.split('-')[0]), int(cleaned_house_number.split('-')[1])):
                 return True
 
-        elif re.search(r"(\d+[ST|ND|RD|TH]+)", cleaned_street) or re.search(r"(\d+[ST|ND|RD|TH]+)", geosearch_street):
+        elif re.search(r"(\d+[ST|ND|RD|TH]+)", cleaned_street):
             # Replace 1ST, 2ND, 3RD etc with 1, 2, 3 in cleaned street because geosearch doesn't include these suffixes in streets
 
             match_cleaned = re.search(
