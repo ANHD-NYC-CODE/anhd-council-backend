@@ -183,7 +183,7 @@ class Eviction(BaseDatasetModel, models.Model):
             return None
 
 # from datasets import models as ds
-# addr = ds.Eviction.objects.filter(evictionaddress__icontains="206A BEACH 32ND STREET")[0]
+# addr = ds.Eviction.objects.filter(evictionaddress__icontains="2540-42 FREDERICK DOUGLAS BOULEVARD")[0]
 # ds.Eviction.get_geosearch_address(addr.cleaned_address, addr)
 
     @classmethod
@@ -241,16 +241,20 @@ class Eviction(BaseDatasetModel, models.Model):
                 [cleaned_house_number, scrubbed_cleaned_street])
 
             match_geosearch = re.search(
-                r"(\d+[ST|ND|RD|TH]+)", geosearch_street).group(0)
+                r"(\d+[ST|ND|RD|TH]+)", geosearch_street)
+
             scrubbed_geosearch_street_number = re.search(
-                r"\d", match_geosearch).group(0)
+                r"\d", match_geosearch.group(0)) if (match_geosearch) else NULL
+
             scrubbed_geosearch_street = re.sub(
-                r"(\d+[ST|ND|RD|TH]+)",  scrubbed_geosearch_street_number, geosearch_street)
+                r"(\d+[ST|ND|RD|TH]+)",  scrubbed_geosearch_street_number.match(0), geosearch_street) if scrubbed_geosearch_street_number else NULL
 
             repaired_geosearch_address = " ".join(
-                [geosearch_house_number, scrubbed_geosearch_street])
+                [geosearch_house_number, scrubbed_geosearch_street]) if scrubbed_geosearch_street else NULL
 
-            if (repaired_cleaned_address == repaired_geosearch_address):
+            if (repaired_geosearch_address and repaired_cleaned_address == repaired_geosearch_address):
+                return True
+            elif (repaired_cleaned_address == geosearch_street_with_borough):
                 return True
 
         elif get_street(geosearch_house_street) == get_street(cleaned_address_with_borough) and geosearch_borough == get_borough(cleaned_address_with_borough):
