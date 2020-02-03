@@ -273,6 +273,7 @@ def clean_those_typos(string):
     string = re.sub(r"\bPAULDIN\b", "PAULDING", string)
     string = re.sub(r"\bPLAI NS\b", "PLAINS", string)
     string = re.sub(r"\bPA RK\b", "PARK", string)
+    string = re.sub(r"\bNAMKOKE\b", "NAMEOKE", string)
 
 
 
