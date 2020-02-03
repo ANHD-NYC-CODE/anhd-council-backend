@@ -170,7 +170,7 @@ class Eviction(BaseDatasetModel, models.Model):
                 logger.warning(
                     'unable to match response bbl {} to a db record'.format(match['pad_bbl']))
                 return None
-        elif "-" in eviction.borough != "QUEENS" and get_house_number(cleaned_address):
+        elif eviction.borough != "QUEENS" and  "-" in get_house_number(cleaned_address):
           # try entirely new geosearch with the range of hyphenated numbers
             cleaned_house_number = get_house_number(
                 cleaned_address)
@@ -180,7 +180,7 @@ class Eviction(BaseDatasetModel, models.Model):
             cleaned_street = cleaned_address.split(' ', 1)[1]
 
             cleaned_address = " ".join([low, cleaned_street])
-
+            
             self.get_geosearch_address(cleaned_address, eviction)
         elif " AND " in cleaned_address:
           # ex: 123 and 125 FAKE STREET
