@@ -220,6 +220,7 @@ def clean_those_typos(string):
     string = re.sub(r"\bPO WELL\b", "POWELL", string)
     string = re.sub(r"\bP OLITE\b", "POLITE", string)
     string = re.sub(r"\bPOLI TE\b", "POLITE", string)
+    string = re.sub(r"\bREVJAMES\b", "REV JAMES", string) # official streets use REV
     string = re.sub(r"\bDEREIMER\b", "DE REIMER", string)
     string = re.sub(r"\bBAYRIDGE\b", "BAY RIDGE", string)
     string = re.sub(r"\bAVESOUTH\b", "AVE SOUTH", string)
@@ -233,7 +234,8 @@ def clean_those_typos(string):
     string = re.sub(r"\bWILLIAMSBRID GE\b", "WILLIAMSBRIDGE", string)
     string = re.sub(r"\bATLANT IC\b", "ATLANTIC", string)
     string = re.sub(r"\bWTREMONT\b", "WEST TREMONT", string)
-    string = re.sub(r"\bREVERAND\b", "REV", string)  # not a typo, but official street records use abbreviation "rev"
+    string = re.sub(r"\bREVEREND\b", "REV", string)  # official street records use abbreviation "rev"
+    string = re.sub(r"\bREVERAND\b", "REV", string)  # official street records use abbreviation "rev"
     string = re.sub(r"\bPENNSYLVAN IA\b", "PENNSYLVANIA", string)
     string = re.sub(r"\bPENNSYLVANI A\b", "PENNSYLVANIA", string)
     string = re.sub(r"\bRID GE\b", "RIDGE", string)

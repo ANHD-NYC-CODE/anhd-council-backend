@@ -225,7 +225,7 @@ class Eviction(BaseDatasetModel, models.Model):
 
             if cleaned_house_number.split('-')[0] == geosearch_house_number:
                 return True
-            elif int(geosearch_house_number) in range(int(cleaned_house_number.split('-')[0]), int(cleaned_house_number.split('-')[1])):
+            elif int(geosearch_house_number) in range(int(cleaned_house_number.split('-')[0]), int(cleaned_house_number.split('-')[1]) + 1):
                 return True
 
         elif re.search(r"(\d+[ST|ND|RD|TH]+)", cleaned_street):
