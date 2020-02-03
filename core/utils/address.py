@@ -165,6 +165,12 @@ def clean_those_typos(string):
     string = re.sub(r"\bSOUT H\b", 'SOUTH', string)
     string = re.sub(r"\bS OUTH\b", 'SOUTH', string)
     string = re.sub(r"\bSOU TH\b", 'SOUTH', string)
+
+    # EAST
+
+    string = re.sub(r"\bEAS T\b", 'EAST', string)
+    
+
     # BOULEVARD
     string = re.sub(r"\bBOULEVAR D\b", 'BOULEVARD', string)
     string = re.sub(r"\bBOULEVA RD\b", 'BOULEVARD', string)
@@ -220,6 +226,7 @@ def clean_those_typos(string):
     string = re.sub(r"\bPO WELL\b", "POWELL", string)
     string = re.sub(r"\bP OLITE\b", "POLITE", string)
     string = re.sub(r"\bPOLI TE\b", "POLITE", string)
+    string = re.sub(r"\bPOL ITE\b", "POLITE", string)
     string = re.sub(r"\bREVJAMES\b", "REV JAMES", string) # official streets use REV
     string = re.sub(r"\bDEREIMER\b", "DE REIMER", string)
     string = re.sub(r"\bBAYRIDGE\b", "BAY RIDGE", string)
@@ -269,6 +276,7 @@ def clean_those_typos(string):
     string = re.sub(r"\bBA Y\b", "BAY", string)
     string = re.sub(r"\bCHANNE L\b", "CHANNEL", string)
     string = re.sub(r"\bDOUGL ASS\b", "DOUGLAS", string)
+    string = re.sub(r"\bDOUGL AS\b", "DOUGLAS", string)
     string = re.sub(r"\bCHESTNU T\b", "CHESTNUT", string)
     string = re.sub(r"\bNEPTUEN\b", "NEPTUNE", string)
     string = re.sub(r"\bBURGEN\b", "BURDEN", string)
@@ -276,6 +284,13 @@ def clean_those_typos(string):
     string = re.sub(r"\bPLAI NS\b", "PLAINS", string)
     string = re.sub(r"\bPA RK\b", "PARK", string)
     string = re.sub(r"\bNAMKOKE\b", "NAMEOKE", string)
+    string = re.sub(r"\bMTHOPE\b", "MOUNT HOPE", string)
+    string = re.sub(r"\bTHR UWAY\b", "THRUWAY", string)
+    string = re.sub(r"\bFTGREENE\b", "FORT GREENE", string)
+    string = re.sub(r"\bCLYTN PWLL BOULEVARD\b", "CLAYTON POWELL JR BOULEVARD", string)
+    string = re.sub(r"\bACPOWELL\b", "ADAM CLAYTON POWELL", string)
+    string = re.sub(r"\bSTNICHOLA\b", "SAINT NICHOLAS", string)
+
 
 
 
@@ -356,6 +371,7 @@ def clean_number_and_streets(string, include_house_number, clean_typos=False):
     string = re.sub(r"\bNY\b", "NEW YORK", string)
     string = re.sub(r"\bADAM C POWELL\b", "ADAM CLAYTON POWELL", string)
 
+
     string = re.sub(r"(?!{})(?=\bST\b)(\bST\b)".format(
         ".*" + saint + "|" for saint in HOLY_SAINTS), "STREET", string)
 
@@ -383,6 +399,15 @@ def clean_number_and_streets(string, include_house_number, clean_typos=False):
     string = re.sub(r"\bE\b", "EAST", string)
     string = re.sub(r"\bS\b", "SOUTH", string)
     string = re.sub(r"\bW\b", "WEST", string)
+
+
+    # keep specific letters in some streets
+    string = re.sub(r"\bTHOMAS SBOYLAND\b", "THOMAS S BOYLAND", string)
+    string = re.sub(r"\bTHOMAS SOUTH BOYLAND\b", "THOMAS S BOYLAND", string)
+
+
+    
+
 
     if (include_house_number):
         # replace 143 street with 143rd st
