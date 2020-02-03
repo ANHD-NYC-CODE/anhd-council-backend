@@ -183,7 +183,7 @@ class Eviction(BaseDatasetModel, models.Model):
             return None
 
 # from datasets import models as ds
-# addr = ds.Eviction.objects.filter(evictionaddress__icontains="720 KINGSBOROUGH 7TH WALK")[0]
+# addr = ds.Eviction.objects.filter(evictionaddress__icontains="206A BEACH 32ND STREET")[0]
 # ds.Eviction.get_geosearch_address(addr.cleaned_address, addr)
 
     @classmethod
@@ -228,17 +228,29 @@ class Eviction(BaseDatasetModel, models.Model):
             elif int(geosearch_house_number) in range(int(cleaned_house_number.split('-')[0]), int(cleaned_house_number.split('-')[1])):
                 return True
 
-        elif re.search(r"(\d+[ST|ND|RD|TH]+)", cleaned_street):
+        elif re.search(r"(\d+[ST|ND|RD|TH]+)", cleaned_street) or re.search(r"(\d+[ST|ND|RD|TH]+)", geosearch_street):
             # Replace 1ST, 2ND, 3RD etc with 1, 2, 3 in cleaned street because geosearch doesn't include these suffixes in streets
-            match = re.search(r"(\d+[ST|ND|RD|TH]+)", cleaned_street).group(0)
-            scrubbed_street_number = re.search(r"\d", match).group(0)
+            match_cleaned = re.search(
+                r"(\d+[ST|ND|RD|TH]+)", cleaned_street).group(0)
+            scrubbed_cleaned_street_number = re.search(
+                r"\d", match_cleaned).group(0)
             scrubbed_cleaned_street = re.sub(
-                r"(\d+[ST|ND|RD|TH]+)",  scrubbed_street_number, cleaned_street)
+                r"(\d+[ST|ND|RD|TH]+)",  scrubbed_cleaned_street_number, cleaned_street)
 
             repaired_cleaned_address = " ".join(
                 [cleaned_house_number, scrubbed_cleaned_street])
 
-            if (repaired_cleaned_address == geosearch_street_with_borough):
+            match_geosearch = re.search(
+                r"(\d+[ST|ND|RD|TH]+)", geosearch_street).group(0)
+            scrubbed_geosearch_street_number = re.search(
+                r"\d", match_geosearch).group(0)
+            scrubbed_geosearch_street = re.sub(
+                r"(\d+[ST|ND|RD|TH]+)",  scrubbed_geosearch_street_number, geosearch_street)
+
+            repaired_geosearch_address = " ".join(
+                [geosearch_house_number, scrubbed_geosearch_street])
+
+            if (repaired_cleaned_address == repaired_geosearch_address):
                 return True
 
         elif get_street(geosearch_house_street) == get_street(cleaned_address_with_borough) and geosearch_borough == get_borough(cleaned_address_with_borough):

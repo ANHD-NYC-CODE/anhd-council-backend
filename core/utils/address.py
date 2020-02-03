@@ -80,8 +80,10 @@ def remove_apartment_letter(string):
 
 
 def remove_building_terms(string):
+
+  # keeping \bBEACH\b in for now
     string = re.sub(
-        r"(\bGAR\b|\bGARAGE\b|\bFRONT\b|\bREAR\b|\bBEACH\b|\bAIR\b|\bAIRRGTS\b|\bAIR RGTS\b|\bWBLDG\b|\bEBLDG\b)", '', string)
+        r"(\bGAR\b|\bGARAGE\b|\bFRONT\b|\bREAR\b|\bAIR\b|\bAIRRGTS\b|\bAIR RGTS\b|\bWBLDG\b|\bEBLDG\b)", '', string)
     return string
 
 
@@ -174,11 +176,16 @@ def clean_those_typos(string):
     string = re.sub(r"\bBOUELEVARD\b", 'BOULEVARD', string)
     string = re.sub(r"\bBOULEV\b", 'BOULEVARD', string)
 
+
+
     # BLVD
     string = re.sub(r"\bBLVD\b", 'BOULEVARD', string)
     string = re.sub(r"\bBLV D\b", 'BOULEVARD', string)
     string = re.sub(r"\bBL VD\b", 'BOULEVARD', string)
     string = re.sub(r"\bB LVD\b", 'BOULEVARD', string)
+    string = re.sub(r"\bBLV\b", 'BOULEVARD', string)
+
+    
 
     # TERRACE
     string = re.sub(r"\bTERRAC E\b", 'TERRACE', string)
@@ -335,6 +342,7 @@ def clean_number_and_streets(string, include_house_number, clean_typos=False):
     string = re.sub(r"\bBLVD\b", "BOULEVARD", string)
     string = re.sub(r"\bBDWAY\b", "BROADWAY", string)
     string = re.sub(r"\bBDWY\b", "BROADWAY", string)
+    string = re.sub(r"\bBRAODWAY\b", "BROADWAY", string)
     string = re.sub(r"\bPKWY\b", "PARKWAY", string)
     string = re.sub(r"\bPKWAY\b", "PARKWAY", string)
     string = re.sub(r"\bEXPWY\b", "EXPRESSWAY", string)
@@ -412,7 +420,7 @@ def match_address_within_string(string):
     # and allows for variations with cardinal directions (street east, east street, etc) or AVENUE for PARK AVENUE, or A-Z for AVENUE A
 
     string = string.upper()
-    pattern = r'[0-9].*?(\bLANE\b|\bHIGHWAY\b|\bSQUARE\b|\bEXPRESSWAY\b|\bPARKWAY\b|\bPARK\b|\bSTREET\b|\bAVENUE\b|\bPLACE\b|\bBOULEVARD\b|\bDRIVE\b|\bROAD\b|\bCONCOURSE\b|\bPLAZA\b|\bTERRACE\b|\bCOURT\b|\bLOOP\b|\bCIRCLE\b|\bCRESCENT\b|\bOVAL\b|\bTURNPIKE\b|\bSLIP\b|\bWALK\b|\bBROADWAY\b)(\sNORTH|\sSOUTH|\sEAST|\sWEST|\sAVENUE|\s[A-Z]\b)?'
+    pattern = r'[0-9].*?(\bLANE\b|\bHIGHWAY\b|\bSQUARE\b|\bEXPRESSWAY\b|\bPARKWAY\b|\bPARK\b|\bSTREET\b|\bAVENUE\b|\bPLACE\b|\bBOULEVARD\b|\bDRIVE\b|\bROAD\b|\bCONCOURSE\b|\bPLAZA\b|\bTERRACE\b|\bCOURT\b|\bLOOP\b|\bCIRCLE\b|\bCRESCENT\b|\bOVAL\b|\bTURNPIKE\b|\bSLIP\b|\bWALK\b|\bBROADWAY\b)(\sNORTH\b|\sSOUTH\b|\sEAST\b|\sWEST\b|\sAVENUE\b|\s[A-Z]\b)?'
     match = re.search(pattern, string)
     return match
 
