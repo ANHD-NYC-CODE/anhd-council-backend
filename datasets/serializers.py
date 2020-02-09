@@ -267,37 +267,40 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
                 continue
 
             dataset_prefix = dataset_class.__name__.lower()
-            if hasattr(obj, dataset_prefix + 's'):
-                # annotated from advanced search
-                rep[get_context_field(dataset_prefix)] = getattr(
-                    obj, dataset_prefix + 's')
-            elif 'annotation__start' in params and params['annotation__start'] == 'recent':
-                rep[get_context_field(dataset_prefix, 'recent')] = getattr(
-                    obj.propertyannotation, dataset_prefix + 's_last30')
-            elif 'annotation__start' in params and params['annotation__start'] == 'lastyear':
-                rep[get_context_field(dataset_prefix, 'lastyear')] = getattr(
-                    obj.propertyannotation, dataset_prefix + 's_lastyear')
-            elif 'annotation__start' in params and params['annotation__start'] == 'last3years':
-                rep[get_context_field(dataset_prefix, 'last3years')] = getattr(
-                    obj.propertyannotation, dataset_prefix + 's_last3years')
-            elif 'annotation__start' in params and params['annotation__start'] == 'full':
-                rep[get_context_field(dataset_prefix, 'recent')] = getattr(
-                    obj.propertyannotation, dataset_prefix + 's_last30')
-                rep[get_context_field(dataset_prefix, 'lastyear')] = getattr(
-                    obj.propertyannotation, dataset_prefix + 's_lastyear')
-                rep[get_context_field(dataset_prefix, 'last3years')] = getattr(
-                    obj.propertyannotation, dataset_prefix + 's_last3years')
-            elif 'annotation__start' in params:
-                if dataset_class == ds.AcrisRealMaster:
-                    rep[get_context_field(dataset_prefix)] = getattr(obj, 'acrisreallegal_set').filter(documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES).filter(**{'documentid__' + dataset_class.QUERY_DATE_KEY + '__gte': get_annotation_start(
-                        params, dataset, dataset_class.QUERY_DATE_KEY, dataset_class), 'documentid__' + dataset_class.QUERY_DATE_KEY + '__lte': get_annotation_end(params, dataset, dataset_class.QUERY_DATE_KEY, dataset_class)}).count()
+            try:
+                if hasattr(obj, dataset_prefix + 's'):
+                    # annotated from advanced search
+                    rep[get_context_field(dataset_prefix)] = getattr(
+                        obj, dataset_prefix + 's')
+                elif 'annotation__start' in params and params['annotation__start'] == 'recent':
+                    rep[get_context_field(dataset_prefix, 'recent')] = getattr(
+                        obj.propertyannotation, dataset_prefix + 's_last30')
+                elif 'annotation__start' in params and params['annotation__start'] == 'lastyear':
+                    rep[get_context_field(dataset_prefix, 'lastyear')] = getattr(
+                        obj.propertyannotation, dataset_prefix + 's_lastyear')
+                elif 'annotation__start' in params and params['annotation__start'] == 'last3years':
+                    rep[get_context_field(dataset_prefix, 'last3years')] = getattr(
+                        obj.propertyannotation, dataset_prefix + 's_last3years')
+                elif 'annotation__start' in params and params['annotation__start'] == 'full':
+                    rep[get_context_field(dataset_prefix, 'recent')] = getattr(
+                        obj.propertyannotation, dataset_prefix + 's_last30')
+                    rep[get_context_field(dataset_prefix, 'lastyear')] = getattr(
+                        obj.propertyannotation, dataset_prefix + 's_lastyear')
+                    rep[get_context_field(dataset_prefix, 'last3years')] = getattr(
+                        obj.propertyannotation, dataset_prefix + 's_last3years')
+                elif 'annotation__start' in params:
+                    if dataset_class == ds.AcrisRealMaster:
+                        rep[get_context_field(dataset_prefix)] = getattr(obj, 'acrisreallegal_set').filter(documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES).filter(**{'documentid__' + dataset_class.QUERY_DATE_KEY + '__gte': get_annotation_start(
+                            params, dataset, dataset_class.QUERY_DATE_KEY, dataset_class), 'documentid__' + dataset_class.QUERY_DATE_KEY + '__lte': get_annotation_end(params, dataset, dataset_class.QUERY_DATE_KEY, dataset_class)}).count()
+                    else:
+                        rep[get_context_field(dataset_prefix)] = getattr(obj, dataset_prefix + '_set').filter(**{dataset_class.QUERY_DATE_KEY + '__gte': get_annotation_start(
+                            params, dataset, dataset_class.QUERY_DATE_KEY, dataset_class), dataset_class.QUERY_DATE_KEY + '__lte': get_annotation_end(params, dataset, dataset_class.QUERY_DATE_KEY,  dataset_class)}).count()
                 else:
-                    rep[get_context_field(dataset_prefix)] = getattr(obj, dataset_prefix + '_set').filter(**{dataset_class.QUERY_DATE_KEY + '__gte': get_annotation_start(
-                        params, dataset, dataset_class.QUERY_DATE_KEY, dataset_class), dataset_class.QUERY_DATE_KEY + '__lte': get_annotation_end(params, dataset, dataset_class.QUERY_DATE_KEY,  dataset_class)}).count()
-            else:
-                # defaults to recent if no annotation start
-                rep[get_context_field(dataset_prefix)] = getattr(
-                    obj.propertyannotation, dataset_prefix + 's_last30')
+                    # defaults to recent if no annotation start
+                    rep[get_context_field(dataset_prefix)] = getattr(
+                        obj.propertyannotation, dataset_prefix + 's_last30')
+            except RelatedObjectDoesNotExist:
+                logger.warning('No property annotation for {}'.format(obj.bbl))
         return rep
 
 
