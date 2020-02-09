@@ -36,7 +36,8 @@ def get_street(string):
 def get_borough(string):
     # Pass in complete address "123 Fake Street, Manhattan"
     # returns borough (Manhattan)
-    match = re.search(r"(MANHATTAN|BROOKLYN|QUEENS|STATEN ISLAND|BRONX)", string.upper())
+    match = re.search(
+        r"(MANHATTAN|BROOKLYN|QUEENS|STATEN ISLAND|BRONX)", string.upper())
     if match:
         return match.group().upper()
     else:
@@ -71,17 +72,17 @@ def number_to_text(number):
 
     return number + suffix
 
+
 def remove_apartment_letter(string):
-  # matches a letter if it follows a number like: 123A matches "A"
-  string = re.sub(r"[a-zA-Z](?<=\d[a-zA-Z])", "", string)
+    # matches a letter if it follows a number like: 123A matches "A"
+    string = re.sub(r"[a-zA-Z](?<=\d[a-zA-Z])", "", string)
 
-  return string
-
+    return string
 
 
 def remove_building_terms(string):
 
-  # keeping \bBEACH\b in for now
+    # keeping \bBEACH\b in for now
     string = re.sub(
         r"(\bGAR\b|\bGARAGE\b|\bFRONT\b|\bREAR\b|\bAIR\b|\bAIRRGTS\b|\bAIR RGTS\b|\bWBLDG\b|\bEBLDG\b)", '', string)
     return string
@@ -169,7 +170,6 @@ def clean_those_typos(string):
     # EAST
 
     string = re.sub(r"\bEAS T\b", 'EAST', string)
-    
 
     # BOULEVARD
     string = re.sub(r"\bBOULEVAR D\b", 'BOULEVARD', string)
@@ -182,16 +182,12 @@ def clean_those_typos(string):
     string = re.sub(r"\bBOUELEVARD\b", 'BOULEVARD', string)
     string = re.sub(r"\bBOULEV\b", 'BOULEVARD', string)
 
-
-
     # BLVD
     string = re.sub(r"\bBLVD\b", 'BOULEVARD', string)
     string = re.sub(r"\bBLV D\b", 'BOULEVARD', string)
     string = re.sub(r"\bBL VD\b", 'BOULEVARD', string)
     string = re.sub(r"\bB LVD\b", 'BOULEVARD', string)
     string = re.sub(r"\bBLV\b", 'BOULEVARD', string)
-
-    
 
     # TERRACE
     string = re.sub(r"\bTERRAC E\b", 'TERRACE', string)
@@ -227,7 +223,8 @@ def clean_those_typos(string):
     string = re.sub(r"\bP OLITE\b", "POLITE", string)
     string = re.sub(r"\bPOLI TE\b", "POLITE", string)
     string = re.sub(r"\bPOL ITE\b", "POLITE", string)
-    string = re.sub(r"\bREVJAMES\b", "REV JAMES", string) # official streets use REV
+    string = re.sub(r"\bREVJAMES\b", "REV JAMES",
+                    string)  # official streets use REV
     string = re.sub(r"\bDEREIMER\b", "DE REIMER", string)
     string = re.sub(r"\bBAYRIDGE\b", "BAY RIDGE", string)
     string = re.sub(r"\bAVESOUTH\b", "AVE SOUTH", string)
@@ -241,8 +238,10 @@ def clean_those_typos(string):
     string = re.sub(r"\bWILLIAMSBRID GE\b", "WILLIAMSBRIDGE", string)
     string = re.sub(r"\bATLANT IC\b", "ATLANTIC", string)
     string = re.sub(r"\bWTREMONT\b", "WEST TREMONT", string)
-    string = re.sub(r"\bREVEREND\b", "REV", string)  # official street records use abbreviation "rev"
-    string = re.sub(r"\bREVERAND\b", "REV", string)  # official street records use abbreviation "rev"
+    # official street records use abbreviation "rev"
+    string = re.sub(r"\bREVEREND\b", "REV", string)
+    # official street records use abbreviation "rev"
+    string = re.sub(r"\bREVERAND\b", "REV", string)
     string = re.sub(r"\bPENNSYLVAN IA\b", "PENNSYLVANIA", string)
     string = re.sub(r"\bPENNSYLVANI A\b", "PENNSYLVANIA", string)
     string = re.sub(r"\bRID GE\b", "RIDGE", string)
@@ -287,21 +286,17 @@ def clean_those_typos(string):
     string = re.sub(r"\bMTHOPE\b", "MOUNT HOPE", string)
     string = re.sub(r"\bTHR UWAY\b", "THRUWAY", string)
     string = re.sub(r"\bFTGREENE\b", "FORT GREENE", string)
-    string = re.sub(r"\bCLYTN PWLL BOULEVARD\b", "CLAYTON POWELL JR BOULEVARD", string)
+    string = re.sub(r"\bCLYTN PWLL BOULEVARD\b",
+                    "CLAYTON POWELL JR BOULEVARD", string)
     string = re.sub(r"\bACPOWELL\b", "ADAM CLAYTON POWELL", string)
     string = re.sub(r"\bSTNICHOLA\b", "SAINT NICHOLAS", string)
-
-
-
-
-
-
 
     return string
 
 
 def clean_number_and_streets(string, include_house_number, clean_typos=False):
-    string = string.upper()
+    if string:
+        string = string.upper()
     if clean_typos:
         string = clean_those_typos(string)
 
@@ -341,8 +336,10 @@ def clean_number_and_streets(string, include_house_number, clean_typos=False):
     # replace ST MARKS etc with SAINT MARKS
     # also replaces typos like STMARKS with SAINT MARKS
     for saint in HOLY_SAINTS:
-        string = re.sub(r"(?=.*ST {})(\bST {}\b)".format(saint, saint), "SAINT {}".format(saint), string)
-        string = re.sub(r"(?=.*ST{})(\bST{}\b)".format(saint, saint), "SAINT {}".format(saint), string)
+        string = re.sub(r"(?=.*ST {})(\bST {}\b)".format(saint,
+                                                         saint), "SAINT {}".format(saint), string)
+        string = re.sub(r"(?=.*ST{})(\bST{}\b)".format(saint,
+                                                       saint), "SAINT {}".format(saint), string)
 
     # Abbreviations
     string = re.sub(r"\bIS\b", "ISLAND", string)
@@ -370,7 +367,6 @@ def clean_number_and_streets(string, include_house_number, clean_typos=False):
     string = re.sub(r"\bTERR\b", 'TERRACE', string)
     string = re.sub(r"\bNY\b", "NEW YORK", string)
     string = re.sub(r"\bADAM C POWELL\b", "ADAM CLAYTON POWELL", string)
-
 
     string = re.sub(r"(?!{})(?=\bST\b)(\bST\b)".format(
         ".*" + saint + "|" for saint in HOLY_SAINTS), "STREET", string)
@@ -400,14 +396,9 @@ def clean_number_and_streets(string, include_house_number, clean_typos=False):
     string = re.sub(r"\bS\b", "SOUTH", string)
     string = re.sub(r"\bW\b", "WEST", string)
 
-
     # keep specific letters in some streets
     string = re.sub(r"\bTHOMAS SBOYLAND\b", "THOMAS S BOYLAND", string)
     string = re.sub(r"\bTHOMAS SOUTH BOYLAND\b", "THOMAS S BOYLAND", string)
-
-
-    
-
 
     if (include_house_number):
         # replace 143 street with 143rd st
@@ -420,7 +411,8 @@ def clean_number_and_streets(string, include_house_number, clean_typos=False):
             string = string.replace(original, match)
 
     else:
-        match = re.search(r"(?=\d* (DRIVE|ROAD|PLACE|STREET|AVENUE))(\d+ (DRIVE|ROAD|PLACE|STREET|AVENUE))", string)
+        match = re.search(
+            r"(?=\d* (DRIVE|ROAD|PLACE|STREET|AVENUE))(\d+ (DRIVE|ROAD|PLACE|STREET|AVENUE))", string)
         if match:
             original = match.group().strip()
             number, rest = original.split(' ', 1)
@@ -447,8 +439,8 @@ def match_address_within_string(string):
     # matches a number with a street designator (street, avenue, etc)
     # and allows for variations with cardinal directions (street east, east street, etc) or AVENUE for PARK AVENUE, or A-Z for AVENUE A
 
-    string = string.upper()
+    if string:
+        string = string.upper()
     pattern = r'[0-9].*?(\bLANE\b|\bHIGHWAY\b|\bSQUARE\b|\bEXPRESSWAY\b|\bPARKWAY\b|\bPARK\b|\bSTREET\b|\bAVENUE\b|\bPLACE\b|\bBOULEVARD\b|\bDRIVE\b|\bROAD\b|\bCONCOURSE\b|\bPLAZA\b|\bTERRACE\b|\bCOURT\b|\bLOOP\b|\bCIRCLE\b|\bCRESCENT\b|\bOVAL\b|\bTURNPIKE\b|\bSLIP\b|\bWALK\b|\bBROADWAY\b)(\sNORTH\b|\sSOUTH\b|\sEAST\b|\sWEST\b|\sAVENUE\b|\s[A-Z]\b)?'
     match = re.search(pattern, string)
     return match
-
