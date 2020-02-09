@@ -22,7 +22,8 @@ import logging
 logger = logging.getLogger('app')
 
 
-invalid_header_chars = ["\n", "\r", ' ', '-', '#', '.', "'", '"', '_', '/', '(', ')', ':', "&", "’", '?']
+invalid_header_chars = ["\n", "\r", ' ', '-', '#', '.',
+                        "'", '"', '_', '/', '(', ')', ':', "&", "’", '?']
 replace_header_chars = [('%', 'pct')]
 invalid_header_names = ["class"]
 starts_with_numbers = re.compile(r'^(\d+)(.*)$')
@@ -80,7 +81,7 @@ def clean_headers(headers):
 
 def from_geojson(file_path, pk='CounDist'):
     if isinstance(file_path, str):
-        f = open(file_path, mode='r', encoding='utf-8', errors='replace')
+        f = open(file_path, mode='r', encoding='utf-16', errors='replace')
     else:
         raise ValueError("from_geojson accepts Strings or Generators")
 
@@ -129,7 +130,8 @@ def convert_xls_to_xlsx_workbook(file_path):
 
         for row in range(0, sheet_xls.nrows):
             for col in range(0, sheet_xls.ncols):
-                sheet_xlsx.cell(row=row + 1, column=col + 1).value = sheet_xls.cell_value(row, col)
+                sheet_xlsx.cell(row=row + 1, column=col +
+                                1).value = sheet_xls.cell_value(row, col)
 
     return book_xlsx
 
@@ -175,9 +177,11 @@ def from_csv_file_to_gen(file_path_or_generator, update=None, cleaner=None):
 
         f = io.StringIO('\n'.join(gen_list))
     elif isinstance(file_path_or_generator, str):
-        f = open(file_path_or_generator, mode='r', encoding='utf-8', errors='replace')
+        f = open(file_path_or_generator, mode='r',
+                 encoding='utf-16', errors='replace')
         if update:
-            c = open(file_path_or_generator, mode='r', encoding='utf-8', errors='replace')
+            c = open(file_path_or_generator, mode='r',
+                     encoding='utf-16', errors='replace')
     else:
         raise ValueError("from_csv_file_to_gen accepts Strings or Generators")
 
