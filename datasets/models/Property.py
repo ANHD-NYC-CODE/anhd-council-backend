@@ -192,7 +192,7 @@ class Property(BaseDatasetModel, models.Model):
     SHORT_SUMMARY_FIELDS = ('bbl', 'council', 'cd', 'zipcode', 'yearbuilt', 'unitsres', 'unitstotal',
                             'address', 'lat', 'lng', 'stateassembly', 'statesenate')
 
-    current_version = '18V1'
+    current_version = '20v1'
     objects = PropertyManager()
     current = CurrentPropertyManager()
     obsolete = ObsoletePropertyManager()

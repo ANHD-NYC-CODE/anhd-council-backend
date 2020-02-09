@@ -50,7 +50,8 @@ class AddressRecord(BaseDatasetModel, models.Model):
     def address_row_from_building(self, number='', building=None):
         bbl = building.bbl_id
         bin = building.bin_id
-        number = re.sub(r"[a-zA-Z]", "", number).strip()  # removes all letters from number
+        # removes all letters from number
+        number = re.sub(r"[a-zA-Z]", "", number).strip()
         building_low = str(building.lhnd).strip()
         building_high = str(building.hhnd).strip()
         building_street = str(building.stname).strip()
@@ -124,7 +125,8 @@ class AddressRecord(BaseDatasetModel, models.Model):
             try:
                 building.bbl
             except Exception as e:
-                logger.debug('no BBL record: {} for bin {}'.format(building.bbl_id, building.bin_id))
+                logger.debug('no BBL record: {} for bin {}'.format(
+                    building.bbl_id, building.bin_id))
                 continue
             # Do not create addresses for special buildings
             if bool(re.search(r"(GAR|GARAGE|FRONT|REAR|BEACH|AIR|AIRRGTS|AIR RGTS|WBLDG|EBLDG)", building.lhnd.upper())):
@@ -140,8 +142,10 @@ class AddressRecord(BaseDatasetModel, models.Model):
 
             # numbers formatted: 50
             if len(lhnd_split) <= 1:
-                low_number, low_letter = self.split_number_letter(building.lhnd)
-                high_number, high_letter = self.split_number_letter(building.hhnd)
+                low_number, low_letter = self.split_number_letter(
+                    building.lhnd)
+                high_number, high_letter = self.split_number_letter(
+                    building.hhnd)
                 # if lhnd is equal to hhnd, number = lhnd
                 if building.lhnd.strip() == building.hhnd.strip():
                     address_row = self.address_row_from_building(number=building.lhnd.strip(),
@@ -156,7 +160,8 @@ class AddressRecord(BaseDatasetModel, models.Model):
                         low_number = low_number.split(' ')[0]
                     if re.search(r'(1/2|1/3|1/4)', high_number):
                         high_number = low_number.split(' ')[0]
-                    house_numbers = self.generate_rangelist(int(low_number), int(high_number))
+                    house_numbers = self.generate_rangelist(
+                        int(low_number), int(high_number))
                     for number in house_numbers:
                         address_row = self.address_row_from_building(number=number,
                                                                      building=building)
@@ -183,7 +188,8 @@ class AddressRecord(BaseDatasetModel, models.Model):
                         if address_row:
                             yield address_row
                 else:
-                    combined_number = low_numbers[0][0] + "-" + low_numbers[1][0]
+                    combined_number = low_numbers[0][0] + \
+                        "-" + low_numbers[1][0]
                     combined_number = combined_number.strip().replace(' ', '')
                     address_row = self.address_row_from_building(
                         number=combined_number, building=building)
@@ -203,8 +209,10 @@ class AddressRecord(BaseDatasetModel, models.Model):
             zipcode = property.zipcode
             borough = abrv_to_borough(property.borough)
 
-            number_letter = re.sub(r"[a-zA-Z]", "", number_letter)  # removes letter
-            key = self.create_key(number_letter, street, borough, zipcode, property.bbl)
+            number_letter = re.sub(
+                r"[a-zA-Z]", "", number_letter)  # removes letter
+            key = self.create_key(number_letter, street,
+                                  borough, zipcode, property.bbl)
 
             dict = {
                 'key': key,
@@ -213,7 +221,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
                 'number': number_letter.strip() if number_letter else None,
                 'street': street.strip() if street else None,
                 'borough': borough.strip() if borough else None,
-                'zipcode': zipcode.strip() if zipcode else None,
+                'zipcode': zipcode.pk if zipcode else None,
                 'address': "",
             }
 
@@ -243,12 +251,14 @@ class AddressRecord(BaseDatasetModel, models.Model):
             property_gen = self.build_property_gen()
 
             logger.debug('bulk inserting property addresses...')
-            batch_upsert_from_gen(self, property_gen, settings.BATCH_SIZE, ignore_conflict=False, **kwargs)
+            batch_upsert_from_gen(
+                self, property_gen, settings.BATCH_SIZE, ignore_conflict=False, **kwargs)
 
             building_gen = self.build_building_gen()
 
             logger.debug('bulk inserting building addresses...')
-            batch_upsert_from_gen(self, building_gen, settings.BATCH_SIZE, ignore_conflict=True, **kwargs)
+            batch_upsert_from_gen(
+                self, building_gen, settings.BATCH_SIZE, ignore_conflict=True, **kwargs)
 
             logger.debug('Building search index...')
             self.build_search()
@@ -256,7 +266,8 @@ class AddressRecord(BaseDatasetModel, models.Model):
 
     @classmethod
     def build_search(self):
-        logger.debug("Updating address search vector: {}".format(self.__name__))
+        logger.debug(
+            "Updating address search vector: {}".format(self.__name__))
         address_vector = SearchVector('number', weight='A') + SearchVector(
             'street', weight='B') + SearchVector('borough', rank='C') + SearchVector('zipcode', rank='C')
         self.objects.update(address=address_vector)
