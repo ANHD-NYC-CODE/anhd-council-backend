@@ -206,7 +206,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
         if number_letter:
             number_letter = number_letter.group()
             street = property.address.split(number_letter)[1].strip()
-            zipcode = property.zipcode
+            zipcode = property.zipcode_id
             borough = abrv_to_borough(property.borough)
 
             number_letter = re.sub(
@@ -221,7 +221,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
                 'number': number_letter.strip() if number_letter else None,
                 'street': street.strip() if street else None,
                 'borough': borough.strip() if borough else None,
-                'zipcode': zipcode.pk if zipcode else None,
+                'zipcode': zipcode.strip() if zipcode else None,
                 'address': "",
             }
 
