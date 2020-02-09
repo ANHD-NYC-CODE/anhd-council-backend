@@ -81,7 +81,7 @@ def clean_headers(headers):
 
 def from_geojson(file_path, pk='CounDist'):
     if isinstance(file_path, str):
-        f = open(file_path, mode='r', encoding='utf-16', errors='replace')
+        f = open(file_path, mode='r', encoding='utf-8', errors='replace')
     else:
         raise ValueError("from_geojson accepts Strings or Generators")
 
@@ -178,10 +178,10 @@ def from_csv_file_to_gen(file_path_or_generator, update=None):
         f = io.StringIO('\n'.join(gen_list))
     elif isinstance(file_path_or_generator, str):
         f = open(file_path_or_generator, mode='r',
-                 encoding='utf-16', errors='replace')
+                 encoding='utf-8', errors='replace')
         if update:
             c = open(file_path_or_generator, mode='r',
-                     encoding='utf-16', errors='replace')
+                     encoding='utf-8', errors='replace')
     else:
         raise ValueError("from_csv_file_to_gen accepts Strings or Generators")
 
