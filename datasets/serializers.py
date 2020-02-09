@@ -299,7 +299,7 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
                     # defaults to recent if no annotation start
                     rep[get_context_field(dataset_prefix)] = getattr(
                         obj.propertyannotation, dataset_prefix + 's_last30')
-            except RelatedObjectDoesNotExist:
+            except ds.PropertyAnnotation.DoesNotExist:
                 logger.warning('No property annotation for {}'.format(obj.bbl))
         return rep
 
