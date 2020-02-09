@@ -47,9 +47,12 @@ class PropertyQuerySet(models.QuerySet):
         return self.filter(yearbuilt__lte=1974, yearbuilt__gte=1).annotate(rs_units=Sum('propertyannotation__unitsrentstabilized')).filter(rs_units__gte=1)
 
     def rentreg_filter(self, program=None):
-        corerecords = ds.CoreSubsidyRecord.objects.only('bbl').filter(bbl=OuterRef('bbl'))
-        j51records = ds.SubsidyJ51.objects.only('bbl').filter(bbl=OuterRef('bbl'))
-        subsidy421a = ds.Subsidy421a.objects.only('bbl').filter(bbl=OuterRef('bbl'))
+        corerecords = ds.CoreSubsidyRecord.objects.only(
+            'bbl').filter(bbl=OuterRef('bbl'))
+        j51records = ds.SubsidyJ51.objects.only(
+            'bbl').filter(bbl=OuterRef('bbl'))
+        subsidy421a = ds.Subsidy421a.objects.only(
+            'bbl').filter(bbl=OuterRef('bbl'))
 
         queryset = self.annotate(has_core=Exists(corerecords), has_subsidyj51=Exists(j51records), has_subsidy421a=Exists(
             subsidy421a)).filter(Q(has_core=True) | Q(has_subsidyj51=True) | Q(has_subsidy421a=True))
@@ -63,9 +66,12 @@ class PropertyQuerySet(models.QuerySet):
         return self.filter(unitsres__gte=1, unitsres__lte=units)
 
     def marketrate_filter(self):
-        rentstab_records = ds.RentStabilizationRecord.objects.only('ucbbl').filter(ucbbl=OuterRef('bbl'))
-        corerecords = ds.CoreSubsidyRecord.objects.only('bbl').filter(bbl=OuterRef('bbl'))
-        publichousingrecords = ds.PublicHousingRecord.objects.only('bbl').filter(bbl=OuterRef('bbl'))
+        rentstab_records = ds.RentStabilizationRecord.objects.only(
+            'ucbbl').filter(ucbbl=OuterRef('bbl'))
+        corerecords = ds.CoreSubsidyRecord.objects.only(
+            'bbl').filter(bbl=OuterRef('bbl'))
+        publichousingrecords = ds.PublicHousingRecord.objects.only(
+            'bbl').filter(bbl=OuterRef('bbl'))
         return self.annotate(
             has_rentstab=Exists(rentstab_records),
             has_core=Exists(corerecords),
@@ -192,7 +198,8 @@ class Property(BaseDatasetModel, models.Model):
     obsolete = ObsoletePropertyManager()
 
     # https://www1.nyc.gov/assets/planning/download/pdf/data-maps/open-data/pluto_datadictionary.pdf?r=18v1
-    bbl = models.CharField(primary_key=True, max_length=10, blank=False, null=False)
+    bbl = models.CharField(
+        primary_key=True, max_length=10, blank=False, null=False)
     council = models.ForeignKey('Council', on_delete=models.SET_NULL, null=True,
                                 db_column='council', db_constraint=False)
     borough = models.TextField(blank=True, null=True)
@@ -245,13 +252,18 @@ class Property(BaseDatasetModel, models.Model):
     otherarea = models.BigIntegerField(blank=True, null=True)
     areasource = models.TextField(blank=True, null=True)
     numbldgs = models.IntegerField(db_index=True, blank=True, null=True)
-    numfloors = models.DecimalField(db_index=True, decimal_places=2, max_digits=8, blank=True, null=True)
+    numfloors = models.DecimalField(
+        db_index=True, decimal_places=2, max_digits=8, blank=True, null=True)
     unitsres = models.IntegerField(db_index=True, blank=True, null=True)
     unitstotal = models.IntegerField(db_index=True, blank=True, null=True)
-    lotfront = models.DecimalField(decimal_places=3, max_digits=32, blank=True, null=True)
-    lotdepth = models.DecimalField(decimal_places=3, max_digits=32, blank=True, null=True)
-    bldgfront = models.DecimalField(decimal_places=3, max_digits=32, blank=True, null=True)
-    bldgdepth = models.DecimalField(decimal_places=3, max_digits=32, blank=True, null=True)
+    lotfront = models.DecimalField(
+        decimal_places=3, max_digits=32, blank=True, null=True)
+    lotdepth = models.DecimalField(
+        decimal_places=3, max_digits=32, blank=True, null=True)
+    bldgfront = models.DecimalField(
+        decimal_places=3, max_digits=32, blank=True, null=True)
+    bldgdepth = models.DecimalField(
+        decimal_places=3, max_digits=32, blank=True, null=True)
     ext = models.TextField(blank=True, null=True)
     proxcode = models.TextField(blank=True, null=True)
     irrlotcode = models.BooleanField(blank=True, null=True)
@@ -266,10 +278,14 @@ class Property(BaseDatasetModel, models.Model):
     yearalter2 = models.SmallIntegerField(blank=True, null=True)
     histdist = models.TextField(blank=True, null=True)
     landmark = models.TextField(blank=True, null=True)
-    builtfar = models.DecimalField(decimal_places=2, max_digits=8, blank=True, null=True)
-    residfar = models.DecimalField(decimal_places=2, max_digits=8, blank=True, null=True)
-    commfar = models.DecimalField(decimal_places=2, max_digits=8, blank=True, null=True)
-    facilfar = models.DecimalField(decimal_places=2, max_digits=8, blank=True, null=True)
+    builtfar = models.DecimalField(
+        decimal_places=2, max_digits=8, blank=True, null=True)
+    residfar = models.DecimalField(
+        decimal_places=2, max_digits=8, blank=True, null=True)
+    commfar = models.DecimalField(
+        decimal_places=2, max_digits=8, blank=True, null=True)
+    facilfar = models.DecimalField(
+        decimal_places=2, max_digits=8, blank=True, null=True)
     borocode = models.TextField(blank=True, null=True)
     condono = models.TextField(blank=True, null=True)
     tract2010 = models.TextField(blank=True, null=True)
@@ -296,9 +312,18 @@ class Property(BaseDatasetModel, models.Model):
     edesigdate = models.DateField(blank=True, null=True)
     geom = models.TextField(blank=True, null=True)
     version = models.TextField(db_index=True, blank=True, null=True)
+    dcpedited = models.TextField(blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)
+    latitude = models.DecimalField(
+        max_digits=16, decimal_places=14, blank=True, null=True)
+    longitude = models.DecimalField(
+        max_digits=16, decimal_places=14, blank=True, null=True)
+
     # Custom fields
-    lng = models.DecimalField(decimal_places=16, max_digits=32, blank=True, null=True)
-    lat = models.DecimalField(decimal_places=16, max_digits=32, blank=True, null=True)
+    lng = models.DecimalField(
+        decimal_places=16, max_digits=32, blank=True, null=True)
+    lat = models.DecimalField(
+        decimal_places=16, max_digits=32, blank=True, null=True)
     original_address = models.TextField(blank=True, null=True)
 
     def get_rentstabilized_units(self):
@@ -316,7 +341,8 @@ class Property(BaseDatasetModel, models.Model):
                 property.cd = ds.Community.objects.get(id=property.cd_id)
                 property.save()
             except Exception as e:
-                logger.debug('Unable to find community for {}'.format(property))
+                logger.debug(
+                    'Unable to find community for {}'.format(property))
 
     @classmethod
     def update_set_filter(self, csv_reader, headers):
@@ -329,7 +355,8 @@ class Property(BaseDatasetModel, models.Model):
         for row in gen_rows:
             # Address Standardizing
             row['original_address'] = row['address']
-            row['address'] = clean_number_and_streets(row['address'], True, clean_typos=False)
+            row['address'] = clean_number_and_streets(
+                row['address'], True, clean_typos=False)
 
             # GEO
             # lng, lat = get_geo(row)
@@ -424,7 +451,8 @@ class Property(BaseDatasetModel, models.Model):
 
         from django.shortcuts import _get_queryset
         queryset = _get_queryset(queryset)
-        ids = list(queryset.values_list(queryset.model._meta.pk.name, flat=True))
+        ids = list(queryset.values_list(
+            queryset.model._meta.pk.name, flat=True))
         status = Status()
         status.total = len(ids)
 
