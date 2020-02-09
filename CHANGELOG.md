@@ -1,5 +1,9 @@
 # API CHANGELOG
 
+#### V1.0.2
+
+- Construct /foreclosure-auctions/ views
+
 #### V1.0.1
 
 - Update to Pluto 20V1

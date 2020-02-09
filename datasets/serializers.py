@@ -90,7 +90,8 @@ class HPDRegistrationCsvSerializer(serializers.ModelSerializer):
 
 
 class HPDRegistrationSerializer(serializers.ModelSerializer):
-    contacts = HPDContactSerializer(source='hpdcontact_set', many=True, read_only=True)
+    contacts = HPDContactSerializer(
+        source='hpdcontact_set', many=True, read_only=True)
 
     class Meta:
         model = ds.HPDRegistration
@@ -260,14 +261,16 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
 
         for model_name in settings.ANNOTATED_DATASETS:
             dataset_class = getattr(ds, model_name)  # results in query
-            dataset = next(x for x in self.context['datasets'] if x.model_name == model_name)
+            dataset = next(
+                x for x in self.context['datasets'] if x.model_name == model_name)
             if hasattr(dataset_class, 'REQUIRES_AUTHENTICATION') and dataset_class.REQUIRES_AUTHENTICATION and not is_authenticated(self.context['request']):
                 continue
 
             dataset_prefix = dataset_class.__name__.lower()
             if hasattr(obj, dataset_prefix + 's'):
                 # annotated from advanced search
-                rep[get_context_field(dataset_prefix)] = getattr(obj, dataset_prefix + 's')
+                rep[get_context_field(dataset_prefix)] = getattr(
+                    obj, dataset_prefix + 's')
             elif 'annotation__start' in params and params['annotation__start'] == 'recent':
                 rep[get_context_field(dataset_prefix, 'recent')] = getattr(
                     obj.propertyannotation, dataset_prefix + 's_last30')
@@ -318,7 +321,8 @@ class PropertyShortSummarySerializer(serializers.ModelSerializer):
     unitsrentstabilized = serializers.SerializerMethodField()
 
     nycha = serializers.SerializerMethodField()
-    rentstabilizationrecord = RentStabilizationIdSerializer(many=False, read_only=True)
+    rentstabilizationrecord = RentStabilizationIdSerializer(
+        many=False, read_only=True)
 
     class Meta:
         model = ds.Property
@@ -357,10 +361,14 @@ class PropertyShortSummarySerializer(serializers.ModelSerializer):
 
 
 class PropertySummarySerializer(serializers.ModelSerializer):
-    hpdregistrations = HPDRegistrationSerializer(source='hpdregistration_set', many=True, read_only=True)
-    buildings = BuildingSummarySerializer(source='building_set', many=True, read_only=True)
-    rentstabilizationrecord = RentStabilizationRecordSerializer(many=False, read_only=True)
-    taxliens = TaxLienSerializer(source='taxlien_set', many=True, read_only=True)
+    hpdregistrations = HPDRegistrationSerializer(
+        source='hpdregistration_set', many=True, read_only=True)
+    buildings = BuildingSummarySerializer(
+        source='building_set', many=True, read_only=True)
+    rentstabilizationrecord = RentStabilizationRecordSerializer(
+        many=False, read_only=True)
+    taxliens = TaxLienSerializer(
+        source='taxlien_set', many=True, read_only=True)
     taxlien = serializers.SerializerMethodField()
 
     conhrecord = serializers.SerializerMethodField()
@@ -497,11 +505,13 @@ class HPDComplaintCsvSerializer(serializers.ModelSerializer):
 
 
 class HPDComplaintSerializer(serializers.ModelSerializer):
-    hpdproblems = HPDProblemSerializer(source='hpdproblem_set', many=True, read_only=True)
+    hpdproblems = HPDProblemSerializer(
+        source='hpdproblem_set', many=True, read_only=True)
 
     class Meta:
         model = ds.HPDComplaint
-        fields = ('complaintid', 'hpdproblems', 'status', 'statusid', 'statusdate', 'apartment', 'receiveddate')
+        fields = ('complaintid', 'hpdproblems', 'status', 'statusid',
+                  'statusdate', 'apartment', 'receiveddate')
 
 
 class DOBViolationSerializer(serializers.ModelSerializer):
@@ -550,7 +560,8 @@ class AcrisRealMasterCsvSerializer(serializers.ModelSerializer):
 
 
 class AcrisRealMasterSerializer(serializers.ModelSerializer):
-    acrisrealparties = AcrisRealPartySerializer(source='acrisrealparty_set', many=True, read_only=True)
+    acrisrealparties = AcrisRealPartySerializer(
+        source='acrisrealparty_set', many=True, read_only=True)
 
     class Meta:
         model = ds.AcrisRealMaster
@@ -612,7 +623,8 @@ class LisPendenCommentSerializer(serializers.ModelSerializer):
 
 
 class LisPendenSerializer(serializers.ModelSerializer):
-    comments = LisPendenCommentSerializer(source='lispendencomment_set', many=True, read_only=True)
+    comments = LisPendenCommentSerializer(
+        source='lispendencomment_set', many=True, read_only=True)
 
     class Meta:
         model = ds.LisPenden
@@ -623,6 +635,12 @@ class LisPendenSerializer(serializers.ModelSerializer):
 class ForeclosureSerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Foreclosure
+        fields = ('__all__')
+
+
+class ForeclosureAuctionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.PSForeclosure
         fields = ('__all__')
 
 

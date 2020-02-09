@@ -45,7 +45,8 @@ councils_router.register(
     parents_query_lookups=['council']
 )
 
-communities_router = router.register(r'communities', v.community_views.CommunityViewSet)
+communities_router = router.register(
+    r'communities', v.community_views.CommunityViewSet)
 
 communities_router.register(
     'properties',
@@ -63,7 +64,8 @@ zipcodes_router.register(
     parents_query_lookups=['zipcode']
 )
 
-stateassembly_router = router.register(r'stateassemblies', v.stateassembly_views.StateAssemblyViewSet)
+stateassembly_router = router.register(
+    r'stateassemblies', v.stateassembly_views.StateAssemblyViewSet)
 
 stateassembly_router.register(
     'properties',
@@ -72,7 +74,8 @@ stateassembly_router.register(
     parents_query_lookups=['stateassembly']
 )
 
-statesenate_router = router.register(r'statesenates', v.statesenate_views.StateSenateViewSet)
+statesenate_router = router.register(
+    r'statesenates', v.statesenate_views.StateSenateViewSet)
 
 statesenate_router.register(
     'properties',
@@ -81,7 +84,8 @@ statesenate_router.register(
     parents_query_lookups=['statesenate']
 )
 
-properties_router = router.register(r'properties', v.property_views.PropertyViewSet)
+properties_router = router.register(
+    r'properties', v.property_views.PropertyViewSet)
 properties_router.register(
     'buildings',
     v.building_views.BuildingViewSet,
@@ -287,6 +291,13 @@ properties_router.register(
 )
 
 properties_router.register(
+    'foreclosure-auctions',
+    v.foreclosureauction_views.ForeclosureAuctionViewSet,
+    base_name='property-foreclosure-auctions',
+    parents_query_lookups=['bbl']
+)
+
+properties_router.register(
     'propertyannotations',
     v.propertyannotation_views.PropertyAnnotationViewSet,
     base_name='property-propertyannotations',
@@ -294,7 +305,8 @@ properties_router.register(
 )
 
 
-buildings_router = router.register(r'buildings', v.building_views.BuildingViewSet)
+buildings_router = router.register(
+    r'buildings', v.building_views.BuildingViewSet)
 buildings_router.register(
     'padrecords',
     v.padrecord_views.PadRecordViewSet,
@@ -402,7 +414,8 @@ buildings_router.register(
 )
 
 
-hpdbuildings_router = router.register(r'hpdbuildings', v.hpdbuilding_views.HPDBuildingViewSet)
+hpdbuildings_router = router.register(
+    r'hpdbuildings', v.hpdbuilding_views.HPDBuildingViewSet)
 
 hpdbuildings_router.register(
     'hpdviolations',
@@ -433,7 +446,8 @@ hpdbuildings_router.register(
 )
 
 router.register(r'hpdviolations', v.hpdviolation_views.HPDViolationViewSet)
-hpdcomplaints_router = router.register(r'hpdcomplaints', v.hpdcomplaint_views.HPDComplaintViewSet)
+hpdcomplaints_router = router.register(
+    r'hpdcomplaints', v.hpdcomplaint_views.HPDComplaintViewSet)
 hpdcomplaints_router.register(
     'hpdproblems',
     v.hpdproblem_views.HPDProblemViewSet,
@@ -445,7 +459,8 @@ router.register(r'hpdproblems', v.hpdproblem_views.HPDProblemViewSet)
 router.register(r'dobviolations', v.dobviolation_views.DOBViolationViewSet)
 router.register(r'dobcomplaints', v.dobcomplaint_views.DOBComplaintViewSet)
 router.register(r'ecbviolations', v.ecbviolation_views.ECBViolationViewSet)
-acrisrealmasters_router = router.register(r'acrisrealmasters', v.acrisrealmaster_views.AcrisRealMasterViewSet)
+acrisrealmasters_router = router.register(
+    r'acrisrealmasters', v.acrisrealmaster_views.AcrisRealMasterViewSet)
 
 acrisrealmasters_router.register(
     'acrisreallegals',
@@ -462,11 +477,15 @@ acrisrealmasters_router.register(
     parents_query_lookups=['documentid']
 )
 
-router.register(r'acrisreallegals', v.acrisreallegal_views.AcrisRealLegalViewSet)
-router.register(r'acrisrealparties', v.acrisrealparty_views.AcrisRealPartyViewSet)
+router.register(r'acrisreallegals',
+                v.acrisreallegal_views.AcrisRealLegalViewSet)
+router.register(r'acrisrealparties',
+                v.acrisrealparty_views.AcrisRealPartyViewSet)
 router.register(r'evictions', v.eviction_views.EvictionViewSet)
-router.register(r'housinglitigations', v.housinglitigation_views.HousingLitigationViewSet)
-hpdregistrations_router = router.register(r'hpdregistrations', v.hpdregistration_views.HPDRegistrationViewSet)
+router.register(r'housinglitigations',
+                v.housinglitigation_views.HousingLitigationViewSet)
+hpdregistrations_router = router.register(
+    r'hpdregistrations', v.hpdregistration_views.HPDRegistrationViewSet)
 hpdregistrations_router.register(
     'hpdcontacts',
     v.hpdcontact_views.HPDContactViewSet,
@@ -476,27 +495,40 @@ hpdregistrations_router.register(
 router.register(r'hpdcontacts', v.hpdcontact_views.HPDContactViewSet)
 router.register(r'taxliens', v.taxlien_views.TaxLienViewSet)
 router.register(r'conhrecords', v.conhrecord_views.CONHRecordViewSet)
-router.register(r'taxbills', v.rentstabilizationrecord_views.RentStabilizationRecordViewSet)
+router.register(
+    r'taxbills', v.rentstabilizationrecord_views.RentStabilizationRecordViewSet)
 router.register(r'subsidyj51', v.subsidyj51_views.SubsidyJ51ViewSet)
 router.register(r'subsidy421a', v.subsidy421a_views.Subsidy421aViewSet)
-router.register(r'coredata', v.coresubsidyrecord_views.CoreSubsidyRecordViewSet)
-router.register(r'dobpermitissuedlegacy', v.dobpermitissuedlegacy_views.DOBPermitIssuedLegacyViewSet)
-router.register(r'dobpermitissuednow', v.dobpermitissuednow_views.DOBPermitIssuedNowViewSet)
-router.register(r'dobissuedpermits', v.dobissuedpermit_view.DOBIssuedPermitViewSet)
-router.register(r'dobfiledpermits', v.dobfiledpermit_view.DOBFiledPermitViewSet)
-router.register(r'doblegacyfiledpermits', v.doblegacyfiledpermit_views.DOBLegacyFiledPermitViewSet)
-router.register(r'dobnowfiledpermits', v.dobnowfiledpermit_views.DOBNowFiledPermitViewSet)
-router.register(r'publichousingrecords', v.publichousingrecord_views.PublicHousingRecordViewSet)
+router.register(
+    r'coredata', v.coresubsidyrecord_views.CoreSubsidyRecordViewSet)
+router.register(r'dobpermitissuedlegacy',
+                v.dobpermitissuedlegacy_views.DOBPermitIssuedLegacyViewSet)
+router.register(r'dobpermitissuednow',
+                v.dobpermitissuednow_views.DOBPermitIssuedNowViewSet)
+router.register(r'dobissuedpermits',
+                v.dobissuedpermit_view.DOBIssuedPermitViewSet)
+router.register(r'dobfiledpermits',
+                v.dobfiledpermit_view.DOBFiledPermitViewSet)
+router.register(r'doblegacyfiledpermits',
+                v.doblegacyfiledpermit_views.DOBLegacyFiledPermitViewSet)
+router.register(r'dobnowfiledpermits',
+                v.dobnowfiledpermit_views.DOBNowFiledPermitViewSet)
+router.register(r'publichousingrecords',
+                v.publichousingrecord_views.PublicHousingRecordViewSet)
 router.register(r'lispendens', v.lispenden_views.LisPendenViewSet)
 router.register(r'foreclosures', v.foreclosure_views.ForeclosureViewSet)
-router.register(r'propertyannotations', v.propertyannotation_views.PropertyAnnotationViewSet)
+router.register(r'foreclosure-auctions',
+                v.foreclosureauction_views.ForeclosureAuctionViewSet)
+router.register(r'propertyannotations',
+                v.propertyannotation_views.PropertyAnnotationViewSet)
 router.register(r'addressrecords', v.addressrecord_views.AddressRecordViewSet)
 router.register(r'padrecords', v.padrecord_views.PadRecordViewSet)
 
 
 custom_routes = format_suffix_patterns([
     path('councils/<int:pk>/summary/', council_summary, name='council-summary'),
-    path('communities/<int:pk>/summary/', community_summary, name='community-summary'),
+    path('communities/<int:pk>/summary/',
+         community_summary, name='community-summary'),
     path('search/buildings/', building_search, name='buildings-search'),
     path('bbls', property_bbls, name='property-bbls')
 ])

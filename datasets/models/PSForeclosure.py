@@ -36,7 +36,8 @@ class PSForeclosure(BaseDatasetModel, models.Model):
     auction = models.DateField(blank=True, null=True)  # auction
     auctiontime = models.TextField(blank=True, null=True)
     auctionlocation = models.TextField(blank=True, null=True)
-    dateadded = models.DateField(blank=True, null=True)  # maybe only add if blank?
+    # maybe only add if blank?
+    dateadded = models.DateField(blank=True, null=True)
     plaintiff = models.TextField(blank=True, null=True)
     defendant = models.TextField(blank=True, null=True)
     lien = models.TextField(blank=True, null=True)
@@ -49,7 +50,8 @@ class PSForeclosure(BaseDatasetModel, models.Model):
 
     @classmethod
     def create_async_update_worker(self, endpoint=None, file_name=None):
-        async_download_and_update.delay(self.get_dataset().id, endpoint=endpoint, file_name=file_name)
+        async_download_and_update.delay(
+            self.get_dataset().id, endpoint=endpoint, file_name=file_name)
 
     @classmethod
     def download(self, endpoint=None, file_name=None):
@@ -72,7 +74,8 @@ class PSForeclosure(BaseDatasetModel, models.Model):
         gen_rows = self.transform_self_from_file(kwargs['file_path'])
         for row in gen_rows:
             try:
-                foreclosure = ds.Foreclosure.objects.get(index=row['indexno'], bbl=row['bbl'])
+                foreclosure = ds.Foreclosure.objects.get(
+                    index=row['indexno'], bbl=row['bbl'])
                 foreclosure.auction = row['auction']
                 updated_foreclosures.append(foreclosure)
             except Exception as e:

@@ -21,8 +21,10 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         path('', include('users.urls')),
         path('', include('datasets.urls')),
         path('', include('core.urls')),
-        path('api/token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
-        path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
+        path('api/token/', jwt_views.TokenObtainPairView.as_view(),
+             name='token_obtain_pair'),
+        path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(),
+             name='token_refresh'),
     ]
 
     def clean_tests(self):
@@ -49,9 +51,11 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         if not username or not password:
             username = "test"
             password = "test1234!"
-            user = self.user_factory(email="test@test.com",  username=username, password=password)
+            user = self.user_factory(
+                email="test@test.com",  username=username, password=password)
 
-        response = self.client.post('/api/token/', {'username': username, 'password': password}, format="json")
+        response = self.client.post(
+            '/api/token/', {'username': username, 'password': password}, format="json")
 
         return response.data['access']
 
@@ -68,7 +72,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         if not start_date:
             start_date = datetime.datetime.today()
         for dataset_name in settings.ANNOTATED_DATASETS:
-            self.dataset_factory(name=dataset_name, api_last_updated=start_date)
+            self.dataset_factory(
+                name=dataset_name, api_last_updated=start_date)
 
     def user_factory(self, username=None, password=None, **kwargs):
         if not username:
@@ -105,9 +110,11 @@ class BaseTest(APITestCase, URLPatternsTestCase):
 
     def update_factory(self, dataset=None, model_name=None, file_name=None, previous_file_name=None, **kwargs):
         if not dataset:
-            dataset = c_models.Dataset.objects.create(name=model_name, model_name=model_name)
+            dataset = c_models.Dataset.objects.create(
+                name=model_name, model_name=model_name)
 
-        file = c_models.DataFile.objects.create(file=self.get_file(file_name), dataset=dataset) if file_name else None
+        file = c_models.DataFile.objects.create(file=self.get_file(
+            file_name), dataset=dataset) if file_name else None
         previous_file = c_models.DataFile.objects.create(file=self.get_file(
             previous_file_name), dataset=dataset) if previous_file_name else None
         update = c_models.Update.objects.create(
@@ -119,7 +126,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         if not id:
             id = random.randint(1, 1000000)
         if not len(c_models.Dataset.objects.filter(name=name)):
-            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+            dataset = c_models.Dataset.objects.create(
+                name=name, model_name=name)
 
         factory = d_models.Council.objects.create(
             id=id,
@@ -132,7 +140,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         if not id:
             id = random.randint(1, 1000000)
         if not len(c_models.Dataset.objects.filter(name=name)):
-            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+            dataset = c_models.Dataset.objects.create(
+                name=name, model_name=name)
 
         factory = d_models.Community.objects.create(
             id=id,
@@ -145,7 +154,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         if not id:
             id = random.randint(1, 1000000)
         if not len(c_models.Dataset.objects.filter(name=name)):
-            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+            dataset = c_models.Dataset.objects.create(
+                name=name, model_name=name)
 
         factory = d_models.StateAssembly.objects.create(
             id=id,
@@ -158,7 +168,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         if not id:
             id = random.randint(1, 1000000)
         if not len(c_models.Dataset.objects.filter(name=name)):
-            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+            dataset = c_models.Dataset.objects.create(
+                name=name, model_name=name)
 
         factory = d_models.StateSenate.objects.create(
             id=id,
@@ -171,7 +182,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         if not id:
             id = random.randint(1, 1000000)
         if not len(c_models.Dataset.objects.filter(name=name)):
-            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+            dataset = c_models.Dataset.objects.create(
+                name=name, model_name=name)
 
         factory = d_models.ZipCode.objects.create(
             id=id,
@@ -184,7 +196,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         if not bbl:
             bbl = random.randint(1000000000, 5999999999)
         if not len(c_models.Dataset.objects.filter(name=name)):
-            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+            dataset = c_models.Dataset.objects.create(
+                name=name, model_name=name)
         if not council:
             council = self.council_factory(id=random.randint(1, 1000000))
 
@@ -205,9 +218,11 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         if not bin:
             bin = random.randint(1, 1000000)
         if not len(c_models.Dataset.objects.filter(name=name)):
-            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+            dataset = c_models.Dataset.objects.create(
+                name=name, model_name=name)
         if not property:
-            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+            property = self.property_factory(
+                bbl=random.randint(1000000000, 5999999999))
 
         factory = d_models.Building.objects.create(
             bin=bin,
@@ -224,11 +239,14 @@ class BaseTest(APITestCase, URLPatternsTestCase):
     def padrecord_factory(self, bin=None, property=None, building=None, boro=1, block='0001', lot='00001', lhnd='1a', hhnd='1b', **kwargs):
         name = 'PadRecord'
         if not building:
-            bin = self.building_factory(bin=random.randint(1000000000, 5999999999))
+            bin = self.building_factory(
+                bin=random.randint(1000000000, 5999999999))
         if not len(c_models.Dataset.objects.filter(name=name)):
-            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+            dataset = c_models.Dataset.objects.create(
+                name=name, model_name=name)
         if not property:
-            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+            property = self.property_factory(
+                bbl=random.randint(1000000000, 5999999999))
 
         factory = d_models.PadRecord.objects.create(
             key=random.randint(1, 1000000),
@@ -246,7 +264,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
     def address_factory(self, building=None, property=None, **kwargs):
         name = 'AddressRecord'
         if not property:
-            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+            property = self.property_factory(
+                bbl=random.randint(1000000000, 5999999999))
         if not building:
             building = self.building_factory(bin=random.randint(1, 1000000), property=property, boro=property.borough,
                                              block=property.block, lot=property.lot)
@@ -264,9 +283,11 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         if not buildingid:
             buildingid = random.randint(1, 1000000)
         if not len(c_models.Dataset.objects.filter(name=name)):
-            dataset = c_models.Dataset.objects.create(name=name, model_name=name)
+            dataset = c_models.Dataset.objects.create(
+                name=name, model_name=name)
         if not property:
-            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+            property = self.property_factory(
+                bbl=random.randint(1000000000, 5999999999))
         if not building:
             building = self.building_factory(bin=random.randint(1, 1000000), property=property, boro=property.borough,
                                              block=property.block, lot=property.lot)
@@ -285,7 +306,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
             complaintid = random.randint(1, 1000000)
 
         if not property:
-            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+            property = self.property_factory(
+                bbl=random.randint(1000000000, 5999999999))
         if not building:
             building = self.building_factory(bin=random.randint(1, 1000000), property=property, boro=property.borough,
                                              block=property.block, lot=property.lot)
@@ -307,7 +329,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         if not problemid:
             problemid = random.randint(1, 1000000)
         if not complaint:
-            complaint = self.hpdcomplaint_factory(property=property, hpdbuilding=hpdbuilding)
+            complaint = self.hpdcomplaint_factory(
+                property=property, hpdbuilding=hpdbuilding)
 
         factory = d_models.HPDProblem.objects.create(
             problemid=problemid,
@@ -318,7 +341,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
 
     def propertyannotation_factory(self, property, **kwargs):
         if not property:
-            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+            property = self.property_factory(
+                bbl=random.randint(1000000000, 5999999999))
 
         factory = d_models.PropertyAnnotation.objects.create(
             bbl=property
@@ -330,7 +354,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
             violationid = random.randint(1, 1000000)
 
         if not property:
-            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+            property = self.property_factory(
+                bbl=random.randint(1000000000, 5999999999))
         if not building:
             building = self.building_factory(bin=random.randint(1, 1000000), property=property, boro=property.borough,
                                              block=property.block, lot=property.lot)
@@ -352,7 +377,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
             registrationid = random.randint(1, 1000000)
 
         if not property:
-            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+            property = self.property_factory(
+                bbl=random.randint(1000000000, 5999999999))
         if not building:
             building = self.building_factory(bin=random.randint(1, 1000000), property=property, boro=property.borough,
                                              block=property.block, lot=property.lot)
@@ -373,7 +399,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
             registrationcontactid = random.randint(1, 1000000)
 
         if not registration:
-            registration = self.hpdregistration_factory(registrationid=random.randint(1, 1000000))
+            registration = self.hpdregistration_factory(
+                registrationid=random.randint(1, 1000000))
 
         factory = d_models.HPDContact.objects.create(
             registrationcontactid=registrationcontactid,
@@ -388,7 +415,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
             complaintnumber = random.randint(1, 1000000)
 
         if not property:
-            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+            property = self.property_factory(
+                bbl=random.randint(1000000000, 5999999999))
         if not building:
             building = self.building_factory(bin=random.randint(1, 1000000), property=property, boro=property.borough,
                                              block=property.block, lot=property.lot)
@@ -407,7 +435,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
             isndobbisviol = random.randint(1, 1000000)
 
         if not property:
-            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+            property = self.property_factory(
+                bbl=random.randint(1000000000, 5999999999))
         if not building:
             building = self.building_factory(bin=random.randint(1, 1000000), property=property, boro=property.borough,
                                              block=property.block, lot=property.lot)
@@ -426,7 +455,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
             ecbviolationnumber = random.randint(1, 1000000)
 
         if not property:
-            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+            property = self.property_factory(
+                bbl=random.randint(1000000000, 5999999999))
         if not building:
             building = self.building_factory(bin=random.randint(1, 1000000), property=property, boro=property.borough,
                                              block=property.block, lot=property.lot)
@@ -453,7 +483,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
     def acrisparty_factory(self, master=None, **kwargs):
         name = 'AcrisRealParty'
         if not master:
-            master = self.acrismaster_factory(documentid=random.randint(1, 1000000))
+            master = self.acrismaster_factory(
+                documentid=random.randint(1, 1000000))
 
         factory = d_models.AcrisRealParty.objects.create(
             key=random.randint(1000000000, 5999999999),
@@ -465,10 +496,12 @@ class BaseTest(APITestCase, URLPatternsTestCase):
     def acrislegal_factory(self, master=None, property=None, **kwargs):
         name = 'AcrisRealLegal'
         if not master:
-            master = self.acrismaster_factory(documentid=random.randint(1, 1000000))
+            master = self.acrismaster_factory(
+                documentid=random.randint(1, 1000000))
 
         if not property:
-            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+            property = self.property_factory(
+                bbl=random.randint(1000000000, 5999999999))
 
         factory = d_models.AcrisRealLegal.objects.create(
             key=random.randint(1000000000, 5999999999),
@@ -485,7 +518,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         if not jobs1no:
             jobs1no = random.randint(1, 1000000)
         if not property:
-            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+            property = self.property_factory(
+                bbl=random.randint(1000000000, 5999999999))
         if not building:
             building = self.building_factory(bin=random.randint(1, 1000000), property=property, boro=property.borough,
                                              block=property.block, lot=property.lot)
@@ -505,7 +539,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
             jobfilingnumber = random.randint(1, 1000000)
 
         if not property:
-            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+            property = self.property_factory(
+                bbl=random.randint(1000000000, 5999999999))
 
         factory = d_models.DOBNowFiledPermit.objects.create(
             jobfilingnumber=jobfilingnumber,
@@ -523,7 +558,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
             jobfilingnumber = random.randint(1, 1000000)
 
         if not property:
-            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+            property = self.property_factory(
+                bbl=random.randint(1000000000, 5999999999))
         if not building:
             building = self.building_factory(bin=random.randint(1, 1000000), property=property, boro=property.borough,
                                              block=property.block, lot=property.lot)
@@ -550,7 +586,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         key = "{}{}".format(workpermit, jobfilingnumber)
 
         if not property:
-            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+            property = self.property_factory(
+                bbl=random.randint(1000000000, 5999999999))
         if not building:
             building = self.building_factory(bin=random.randint(1, 1000000), property=property, boro=property.borough,
                                              block=property.block, lot=property.lot)
@@ -573,7 +610,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         key = "{}{}".format(random.randint(1, 1000000), jobfilingnumber)
 
         if not property:
-            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+            property = self.property_factory(
+                bbl=random.randint(1000000000, 5999999999))
         if not building:
             building = self.building_factory(bin=random.randint(1, 1000000), property=property, boro=property.borough,
                                              block=property.block, lot=property.lot)
@@ -593,7 +631,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         if not permitsino:
             permitsino = random.randint(1, 1000000)
         if not property:
-            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+            property = self.property_factory(
+                bbl=random.randint(1000000000, 5999999999))
         if not building:
             building = self.building_factory(bin=random.randint(1, 1000000), property=property, boro=property.borough,
                                              block=property.block, lot=property.lot)
@@ -610,7 +649,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
     def taxbill_factory(self, property=None, **kwargs):
         name = 'RentStabilizationRecord'
         if not property:
-            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+            property = self.property_factory(
+                bbl=random.randint(1000000000, 5999999999))
 
         factory = d_models.RentStabilizationRecord.objects.create(
             ucbbl=property,
@@ -623,7 +663,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         if not id:
             id = random.randint(1, 1000000)
         if not property:
-            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+            property = self.property_factory(
+                bbl=random.randint(1000000000, 5999999999))
 
         factory = d_models.Eviction.objects.create(
             courtindexnumber=id,
@@ -637,7 +678,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         if not litigationid:
             litigationid = random.randint(1, 1000000)
         if not property:
-            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+            property = self.property_factory(
+                bbl=random.randint(1000000000, 5999999999))
         if not building:
             building = self.building_factory(bin=random.randint(1, 1000000), property=property, boro=property.borough,
                                              block=property.block, lot=property.lot)
@@ -654,7 +696,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         name = 'TaxLien'
 
         if not property:
-            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+            property = self.property_factory(
+                bbl=random.randint(1000000000, 5999999999))
 
         factory = d_models.TaxLien.objects.create(
             bbl=property,
@@ -666,7 +709,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         name = 'CONHRecord'
 
         if not property:
-            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+            property = self.property_factory(
+                bbl=random.randint(1000000000, 5999999999))
 
         factory = d_models.CONHRecord.objects.create(
             bbl=property,
@@ -678,7 +722,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         name = 'SubsidyJ51'
 
         if not property:
-            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+            property = self.property_factory(
+                bbl=random.randint(1000000000, 5999999999))
 
         factory = d_models.SubsidyJ51.objects.create(
             bbl=property,
@@ -690,7 +735,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         name = 'Subsidy421a'
 
         if not property:
-            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+            property = self.property_factory(
+                bbl=random.randint(1000000000, 5999999999))
 
         factory = d_models.Subsidy421a.objects.create(
             bbl=property,
@@ -702,7 +748,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         name = 'CoreData'
 
         if not property:
-            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+            property = self.property_factory(
+                bbl=random.randint(1000000000, 5999999999))
 
         factory = d_models.CoreSubsidyRecord.objects.create(
             bbl=property,
@@ -714,7 +761,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         name = 'PublicHousingRecord'
 
         if not property:
-            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+            property = self.property_factory(
+                bbl=random.randint(1000000000, 5999999999))
 
         factory = d_models.PublicHousingRecord.objects.create(
             bbl=property,
@@ -727,7 +775,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         if not key:
             key = random.randint(1, 1000000)
         if not property:
-            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+            property = self.property_factory(
+                bbl=random.randint(1000000000, 5999999999))
 
         factory = d_models.LisPenden.objects.create(
             key=key,
@@ -741,9 +790,25 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         if not key:
             key = random.randint(1, 1000000)
         if not property:
-            property = self.property_factory(bbl=random.randint(1000000000, 5999999999))
+            property = self.property_factory(
+                bbl=random.randint(1000000000, 5999999999))
 
         factory = d_models.Foreclosure.objects.create(
+            key=key,
+            bbl=property,
+            **kwargs
+        )
+        return factory
+
+    def foreclosure_auction_factory(self, key=None, property=None, **kwargs):
+        name = 'PSForeclosure'
+        if not key:
+            key = random.randint(1, 1000000)
+        if not property:
+            property = self.property_factory(
+                bbl=random.randint(1000000000, 5999999999))
+
+        factory = d_models.PSForeclosure.objects.create(
             key=key,
             bbl=property,
             **kwargs

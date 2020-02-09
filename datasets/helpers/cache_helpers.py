@@ -21,7 +21,8 @@ def has_cachable_format(request):
 
     params = request.query_params
 
-    formatted_request = 'format' in params.keys() and ('json' in params['format'] or 'csv' in params['format'])
+    formatted_request = 'format' in params.keys() and (
+        'json' in params['format'] or 'csv' in params['format'])
 
     return formatted_request
 
@@ -40,18 +41,22 @@ def scrub_authenticated(cached_value, request):
                 del cached_value['lispendens']
             if 'foreclosures' in cached_value:
                 del cached_value['foreclosures']
+            if 'foreclosure-auctions' in cached_value:
+                del cached_value['foreclosure-auctions']
             pass
         else:  # TEMP: only lists have the sensitive data for now.
 
             # filter out lispendens in annotated fields for unauthorized users
             if len(cached_value):
-                lispendens_fields = [key for key in cached_value[0].keys() if key and 'lispendens' in key]
+                lispendens_fields = [
+                    key for key in cached_value[0].keys() if key and 'lispendens' in key]
                 if len(lispendens_fields):
                     for value in cached_value:
                         for field in lispendens_fields:
                             del value[field]
 
-                foreclosures_field = [key for key in cached_value[0].keys() if key and 'foreclosures' in key]
+                foreclosures_field = [
+                    key for key in cached_value[0].keys() if key and 'foreclosures' in key]
                 if len(foreclosures_field):
                     for value in cached_value:
                         for field in foreclosures_field:
@@ -66,7 +71,8 @@ def decompress_cache(cached_value):
 
 def compress_cache(cached_value):
     # convert datetimes to be json serializable
-    json_value = json.dumps(cached_value, default=lambda o: o.isoformat() if hasattr(o, 'isoformat') else o)
+    json_value = json.dumps(
+        cached_value, default=lambda o: o.isoformat() if hasattr(o, 'isoformat') else o)
     return gzip.compress(json_value.encode('utf-8'))
 
 
@@ -103,20 +109,26 @@ def cache_request_path():
             else:
                 response = function(*original_args, **original_kwargs)
 
-                if (response.status_code == 200) and has_cachable_format(request):  # only cache good responses and json/csv formats
+                # only cache good responses and json/csv formats
+                if (response.status_code == 200) and has_cachable_format(request):
                     value_to_cache = response.data
                     value_to_cache = scrub_pagination(value_to_cache)
                     value_to_cache = compress_cache(value_to_cache)
                     logger.debug('Caching: {}'.format(cache_key))
 
-                    cache.set(cache_key, value_to_cache, timeout=settings.CACHE_TTL)
+                    cache.set(cache_key, value_to_cache,
+                              timeout=settings.CACHE_TTL)
                     if '__authenticated' in cache_key:  # also cache the scrubbed response for unauthenticated requests
                         cache_key = cache_key.replace('__authenticated', '')
-                        logger.debug('Caching scrubbed varient: {}'.format(cache_key))
-                        cache.set(cache_key, value_to_cache, timeout=settings.CACHE_TTL)
+                        logger.debug(
+                            'Caching scrubbed varient: {}'.format(cache_key))
+                        cache.set(cache_key, value_to_cache,
+                                  timeout=settings.CACHE_TTL)
                     logger.debug('Serving response: {}'.format(cache_key))
-                    scrubbed_response = scrub_pagination(response.data)  # TODO: remove pagination altogether
-                    scrubbed_response = scrub_authenticated(scrubbed_response, request)
+                    # TODO: remove pagination altogether
+                    scrubbed_response = scrub_pagination(response.data)
+                    scrubbed_response = scrub_authenticated(
+                        scrubbed_response, request)
                     return original_args[0].finalize_response(request, Response(scrubbed_response))
                 else:
                     return response
