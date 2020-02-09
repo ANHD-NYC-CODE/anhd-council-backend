@@ -163,7 +163,7 @@ def from_xlsx_file_to_gen(file_path, worksheet, update, skip_rows=0):
         update.save()
 
 
-def from_csv_file_to_gen(file_path_or_generator, update=None, cleaner=None):
+def from_csv_file_to_gen(file_path_or_generator, update=None):
     logger.debug("Converting csv file to gen...")
     """
     input: String | Generator
@@ -193,18 +193,20 @@ def from_csv_file_to_gen(file_path_or_generator, update=None, cleaner=None):
         update.save()
 
     with f:
-        if cleaner:
-            lines = cleaner([*f])
-            headers = clean_headers(next(lines))
-            reader = csv.DictReader(lines, fieldnames=headers)
-        else:
-            headers = clean_headers(f.readline())
-            reader = csv.DictReader(f, fieldnames=headers)
+
+        headers = clean_headers(f.readline())
+
+        logger.debug('Clearing NULL bytes')
+        data = f.read()
+        data = data.replace("\0", "")      # get rid of null-bytes
+        data = io.StringIO(data)   # new pseudo file object
+        reader = csv.DictReader(data, fieldnames=headers)
         count = 0
         for row in reader:
             count = count + 1
             if count % settings.BATCH_SIZE == 0:
                 logger.debug('processed {} csv rows'.format(count))
+
             yield row
 
 
