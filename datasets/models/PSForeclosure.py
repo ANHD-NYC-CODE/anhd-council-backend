@@ -41,6 +41,7 @@ class PSForeclosure(BaseDatasetModel, models.Model):
     plaintiff = models.TextField(blank=True, null=True)
     defendant = models.TextField(blank=True, null=True)
     lien = models.TextField(blank=True, null=True)
+    # justgment IS A DATETIME FIELD!
     judgment = models.TextField(blank=True, null=True)
     referee = models.TextField(blank=True, null=True)
     plaintiffsattorney = models.TextField(blank=True, null=True)
