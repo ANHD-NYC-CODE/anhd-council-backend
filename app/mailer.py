@@ -19,7 +19,8 @@ def send_mail(to_email, subject, content_string):
                    subject=subject,
                    html_content=content_string)
     response = sg.send(message)
-    logger.info('Mail sent from {} to {} subject {}'.format(from_email, to_email, subject))
+    logger.info('Mail sent from {} to {} subject {}'.format(
+        from_email, to_email, subject))
     return response
 
 
@@ -42,9 +43,9 @@ def send_new_user_email(user=None):
     send_mail(to, subject, content)
 
 
-def send_bug_report_email(bug_report=None):
-    subject = "DAP Portal - * New bug report received."
-    content = "<p>Hello!</p><p>We've received a bug report from {}</p><p>Please <a href='https://api.displacementalert.org/admin/core/bugreport/{}/change' target='_blank'>visit this link</a> and update its status.</p><p>Have a nice day!</p><p>- DAP Portal Admin</p><hr><p><b>Details</b></p><p><b>From:</b> {}</p><p><b>Description:</b> {}</p><p><b>Status:</b> {}</p><p><b>Date created:</b> {}</p>".format(
+def send_user_message_email(bug_report=None):
+    subject = "DAP Portal - * New DAP message received."
+    content = "<p>Hello!</p><p>We've received a new message from {}</p><p>Please <a href='https://api.displacementalert.org/admin/core/usermessage/{}/change' target='_blank'>visit this link</a> and update its status.</p><p>Have a nice day!</p><p>- DAP Portal Admin</p><hr><p><b>Details</b></p><p><b>From:</b> {}</p><p><b>Description:</b> {}</p><p><b>Status:</b> {}</p><p><b>Date created:</b> {}</p>".format(
         bug_report.from_email, bug_report.id, bug_report.from_email, bug_report.description, bug_report.status, bug_report.date_created)
 
     for user in us.CustomUser.objects.filter(is_staff=True):
@@ -64,7 +65,8 @@ def send_new_user_request_email(user_request):
 
 def send_general_task_error_mail(error):
     subject = "DAP Portal - * Error * During Council Portal Update"
-    content = "A task error occurred: \n\n{} \n\n Please visit the task manager to investigate.".format(error)
+    content = "A task error occurred: \n\n{} \n\n Please visit the task manager to investigate.".format(
+        error)
 
     for admin in settings.ADMINS:
         to = admin[1]
@@ -73,7 +75,8 @@ def send_general_task_error_mail(error):
 
 def send_update_error_mail(update, error):
     subject = "DAP Portal - * Error * During Council Portal Update"
-    content = "Update {} for {} failed with error: \n\n{}".format(update.id, update.dataset, error)
+    content = "Update {} for {} failed with error: \n\n{}".format(
+        update.id, update.dataset, error)
 
     for admin in settings.ADMINS:
         to = admin[1]

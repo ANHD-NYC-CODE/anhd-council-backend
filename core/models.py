@@ -27,15 +27,18 @@ class Dataset(models.Model):
         ('when needed', 'When Needed'),
     ]
 
-    name = models.CharField(unique=True, max_length=255, blank=False, null=False)
-    model_name = models.CharField(unique=True, max_length=255, blank=False, null=False)
+    name = models.CharField(unique=True, max_length=255,
+                            blank=False, null=False)
+    model_name = models.CharField(
+        unique=True, max_length=255, blank=False, null=False)
     automated = models.BooleanField(blank=True, null=True)
     update_instructions = models.TextField(blank=True, null=True)
     download_endpoint = models.TextField(blank=True, null=True)
     api_last_updated = models.DateTimeField(blank=True, null=True)
     records_start = models.DateField(blank=True, null=True)
     records_end = models.DateField(blank=True, null=True)
-    update_schedule = models.CharField(max_length=255, choices=UPDATE_SCHEDULE_CHOICES, blank=True, null=True)
+    update_schedule = models.CharField(
+        max_length=255, choices=UPDATE_SCHEDULE_CHOICES, blank=True, null=True)
 
     def model(self):
         return getattr(ds, self.model_name)
@@ -66,21 +69,25 @@ class Dataset(models.Model):
                         "{}__gte".format(dataset.QUERY_DATE_KEY): get_earliest_date(),
                         "{}__lte".format(dataset.QUERY_DATE_KEY): datetime.datetime.now()
                     })
-                self.records_start = getattr(query.earliest(dataset.QUERY_DATE_KEY), dataset.QUERY_DATE_KEY)
-                self.records_end = getattr(query.latest(dataset.QUERY_DATE_KEY), dataset.QUERY_DATE_KEY)
+                self.records_start = getattr(query.earliest(
+                    dataset.QUERY_DATE_KEY), dataset.QUERY_DATE_KEY)
+                self.records_end = getattr(query.latest(
+                    dataset.QUERY_DATE_KEY), dataset.QUERY_DATE_KEY)
                 self.save()
             except Exception as e:
                 print(e)
                 logger.warning(e)
 
     def check_api_for_update(self):
-        self.api_last_updated = getattr(ds, self.model_name).fetch_last_updated()
+        self.api_last_updated = getattr(
+            ds, self.model_name).fetch_last_updated()
         if self.api_last_updated:
             self.save()
 
     def check_api_for_update_and_update(self):
         if self.api_last_updated:
-            api_last_updated = getattr(ds, self.model_name).fetch_last_updated()
+            api_last_updated = getattr(
+                ds, self.model_name).fetch_last_updated()
 
             if not api_last_updated or api_last_updated.replace(tzinfo=timezone.utc) > self.api_last_updated.replace(tzinfo=timezone.utc):
                 self.model().create_async_update_worker()
@@ -102,7 +109,8 @@ class Dataset(models.Model):
         try:
             update_source = Dataset.objects.get(
                 model_name=self.model().UPDATE_SOURCE) if hasattr(self.model(), 'UPDATE_SOURCE') else self
-            latest = update_source.update_set.filter(task_result__status="SUCCESS").latest('created_date')
+            latest = update_source.update_set.filter(
+                task_result__status="SUCCESS").latest('created_date')
         except Exception as e:
             logger.warning(e)
             latest = None
@@ -179,10 +187,12 @@ class Update(models.Model):
     rows_updated = models.IntegerField(blank=True, null=True, default=0)
     rows_created = models.IntegerField(blank=True, null=True, default=0)
     total_rows = models.IntegerField(blank=True, null=True)
-    created_date = models.DateTimeField(default=timezone.now)  # TODO: change to make_aware(datetime.now())
+    # TODO: change to make_aware(datetime.now())
+    created_date = models.DateTimeField(default=timezone.now)
     completed_date = models.DateTimeField(blank=True, null=True)
     task_id = models.CharField(max_length=255, blank=True, null=True)
-    task_result = models.ForeignKey(TaskResult, on_delete=models.SET_NULL, null=True, blank=True)
+    task_result = models.ForeignKey(
+        TaskResult, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return str(self.id)
@@ -196,7 +206,8 @@ class Update(models.Model):
                 update.completed_date = task_result.date_done
                 update.save()
             except Exception as e:
-                logger.debug('Task result with task_id {} not found'.format(update.task_id))
+                logger.debug(
+                    'Task result with task_id {} not found'.format(update.task_id))
 
 
 @receiver(models.signals.post_save, sender=Update)
@@ -213,15 +224,18 @@ def auto_seed_on_create(sender, instance, created, **kwargs):
             elif not instance.dataset:
                 instance.dataset = instance.file.dataset
 
-            logger.debug("Creating worker task for update {}".format(instance.id))
+            logger.debug(
+                "Creating worker task for update {}".format(instance.id))
             if instance.file:
                 worker = async_seed_file.apply_async(args=[instance.file.file.path, instance.id], kwargs={
                     'dataset_id': instance.dataset.id}, countdown=2)
             else:
-                worker = async_seed_table.apply_async(args=[instance.id], countdown=2)
+                worker = async_seed_table.apply_async(
+                    args=[instance.id], countdown=2)
 
             instance.task_id = worker.id
-            logger.debug("Linking Worker {} to update {}".format(worker.id, instance.id))
+            logger.debug("Linking Worker {} to update {}".format(
+                worker.id, instance.id))
             instance.save()
     transaction.on_commit(lambda: on_commit())
 
@@ -236,16 +250,18 @@ def add_task_result_to_update(sender, instance, created, **kwargs):
                 u.completed_date = instance.date_done
                 u.save()
                 u.dataset.check_api_for_update()  # update dataset update time after success
-                u.dataset.update_records_range()  # update records start / records end after success
+                # update records start / records end after success
+                u.dataset.update_records_range()
                 async_send_update_success_mail.delay(u.id)
 
         except Exception as e:
-            logger.warning("TaskResult {} not synced to Update".format(instance.id))
+            logger.warning(
+                "TaskResult {} not synced to Update".format(instance.id))
 
     transaction.on_commit(lambda: on_commit())
 
 
-class BugReport(models.Model):
+class UserMessage(models.Model):
     STATUS_CHOICES = (
         ('reported', 'Reported'),
         ('duplicate', 'Duplicate'),
@@ -256,16 +272,18 @@ class BugReport(models.Model):
 
     from_email = models.TextField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
-    status = models.TextField(blank=True, null=True, choices=STATUS_CHOICES, default=STATUS_CHOICES[0][0])
-    date_created = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+    status = models.TextField(
+        blank=True, null=True, choices=STATUS_CHOICES, default=STATUS_CHOICES[0][0])
+    date_created = models.DateTimeField(
+        auto_now_add=True, blank=True, null=True)
 
 
-@receiver(models.signals.post_save, sender=BugReport)
-def send_bug_email_on_save(sender, instance, created, **kwargs):
-    from app.tasks import async_send_bug_report_email
+@receiver(models.signals.post_save, sender=UserMessage)
+def send_user_message_email_on_save(sender, instance, created, **kwargs):
+    from app.tasks import async_send_user_message_email
 
     def on_commit():
         if created == True:
-            async_send_bug_report_email.delay(instance.id)
+            async_send_user_message_email.delay(instance.id)
 
     transaction.on_commit(lambda: on_commit())

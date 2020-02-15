@@ -7,7 +7,7 @@ from rest_framework import mixins
 router = routers.DefaultRouter()
 
 router.register(r'datasets', v.DatasetViewSet)
-router.register(r'bug-reports', v.BugReportViewSet)
+router.register(r'user-messages', v.UserMessageViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

@@ -10,7 +10,8 @@ from rest_framework import mixins
 
 
 class DatasetViewSet(ApplicationViewSet, viewsets.ReadOnlyModelViewSet):
-    queryset = c.Dataset.objects.prefetch_related('update_set').prefetch_related('datafile_set').all()
+    queryset = c.Dataset.objects.prefetch_related(
+        'update_set').prefetch_related('datafile_set').all()
     serializer_class = serial.DatasetSerializer
     lookup_field = "model_name"
 
@@ -23,7 +24,7 @@ class DatasetViewSet(ApplicationViewSet, viewsets.ReadOnlyModelViewSet):
         return super().retrieve(request, *args, **kwargs)
 
 
-class BugReportViewSet(ApplicationViewSet, mixins.CreateModelMixin,
-                       viewsets.GenericViewSet):
-    queryset = c.BugReport.objects.all()
-    serializer_class = serial.BugReportSerializer
+class UserMessageViewSet(ApplicationViewSet, mixins.CreateModelMixin,
+                         viewsets.GenericViewSet):
+    queryset = c.UserMessage.objects.all()
+    serializer_class = serial.UserMessageSerializer

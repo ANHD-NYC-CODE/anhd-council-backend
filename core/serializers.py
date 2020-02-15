@@ -23,7 +23,7 @@ class DatasetSerializer(serializers.ModelSerializer):
         return obj.latest_version()
 
 
-class BugReportSerializer(serializers.ModelSerializer):
+class UserMessageSerializer(serializers.ModelSerializer):
     class Meta:
-        model = c.BugReport
+        model = c.UserMessage
         fields = ('from_email', 'description')
