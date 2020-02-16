@@ -25,7 +25,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
 class UserRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = u.UserRequest
-        fields = ('email', 'username', 'first_name', 'last_name', 'organization', 'description')
+        fields = ('email', 'username', 'first_name', 'last_name',
+                  'organization', 'description', 'long_description')
 
     def post(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
@@ -36,10 +37,12 @@ class UserRequestSerializer(serializers.ModelSerializer):
         """
         errors = []
         if len(u.CustomUser.objects.filter(email=data['email'])) > 0:
-            errors.append("This email is already taken. Please choose another.")
+            errors.append(
+                "This email is already taken. Please choose another.")
 
         if len(u.CustomUser.objects.filter(username=data['username'])) > 0 or len(u.UserRequest.objects.filter(username=data['username'])) > 0:
-            errors.append("This username is already taken. Please choose another.")
+            errors.append(
+                "This username is already taken. Please choose another.")
 
         if len(errors) > 0:
             raise serializers.ValidationError({"errors": errors})

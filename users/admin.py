@@ -26,15 +26,16 @@ class UserRequestAdmin(admin.ModelAdmin):
         return super().response_change(request, obj)
 
     list_display = ('email', 'username', 'first_name', 'last_name',
-                    'organization', 'description', 'approved', 'date_created')
+                    'organization', 'description', 'long_description', 'approved', 'date_created')
 
-    list_filter = ('approved', 'email', 'organization', 'description', 'date_created')
+    list_filter = ('approved', 'email', 'organization',
+                   'description', 'date_created')
 
     search_fields = ('approved', 'organization', 'email', 'description')
 
     ordering = ['-date_created']
     readonly_fields = ('email', 'username', 'first_name', 'last_name',
-                       'organization', 'description', 'approved', 'date_created')
+                       'organization', 'description', 'long_description', 'approved', 'date_created')
     actions = []
 
 
@@ -68,7 +69,8 @@ class CustomUserAdmin(auth_admin.UserAdmin):
     form = CustomUserChangeForm
     add_form = CustomUserCreationForm
     change_password_form = auth_admin.AdminPasswordChangeForm
-    list_display = ('email', 'username', 'first_name', 'last_name', 'is_superuser')
+    list_display = ('email', 'username', 'first_name',
+                    'last_name', 'is_superuser')
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups')
     search_fields = ('first_name', 'last_name', 'email')
     ordering = ('email',)
