@@ -43,7 +43,8 @@ class AcrisRealMaster(BaseDatasetModel, models.Model):
     reelyear = models.SmallIntegerField(blank=True, null=True)
     reelnbr = models.IntegerField(blank=True, null=True)
     reelpage = models.IntegerField(blank=True, null=True)
-    pcttransferred = models.DecimalField(decimal_places=2, max_digits=8, blank=True, null=True)
+    pcttransferred = models.DecimalField(
+        decimal_places=2, max_digits=8, blank=True, null=True)
     goodthroughdate = models.DateField(blank=True, null=True)
 
     # https://data.cityofnewyork.us/City-Government/ACRIS-Document-Control-Codes/7isb-wh4c
@@ -53,10 +54,24 @@ class AcrisRealMaster(BaseDatasetModel, models.Model):
 
     TAX_DOC_TYPES = ("RPTT")
     SALE_DOC_TYPES = ("DEED",)
+    FINANCING_DOC_TYPES = ("AALR",
+                           "AGMT",
+                           "AL&R",
+                           "ASST",
+                           "ASPM",
+                           "DEMM",
+                           "MTGE",
+                           "PSAT",
+                           "SAT",
+                           "SMTG",
+                           "WSAT",
+                           "M&CON",
+                           "SPRD")
 
     @classmethod
     def create_async_update_worker(self, endpoint=None, file_name=None):
-        async_download_and_update.delay(self.get_dataset().id, endpoint=endpoint, file_name=file_name)
+        async_download_and_update.delay(
+            self.get_dataset().id, endpoint=endpoint, file_name=file_name)
 
     @classmethod
     def construct_sales_query(self, relation_path):

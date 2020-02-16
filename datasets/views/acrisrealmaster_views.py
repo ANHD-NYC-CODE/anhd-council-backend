@@ -12,7 +12,8 @@ from datasets import models as ds
 
 
 class AcrisRealMasterViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
-    renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
+    renderer_classes = tuple(
+        api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
     queryset = ds.AcrisRealMaster.objects.filter(doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES).prefetch_related(
         'acrisrealparty_set').all().distinct().order_by('pk')
     serializer_class = serial.AcrisRealMasterSerializer
@@ -21,6 +22,11 @@ class AcrisRealMasterViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.Re
 
     @cache_request_path()
     def list(self, request, *args, **kwargs):
+
+        financing = self.request.query_params.get('financing')
+        if financing == 'true':
+            self.queryset = ds.AcrisRealMaster.objects.filter(
+                doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES + ds.AcrisRealMaster.FINANCING_DOC_TYPES)
         return super().list(request, *args, **kwargs)
 
     @cache_request_path()
