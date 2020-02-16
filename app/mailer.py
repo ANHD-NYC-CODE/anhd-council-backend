@@ -55,8 +55,8 @@ def send_user_message_email(bug_report=None):
 
 def send_new_user_request_email(user_request):
     subject = "DAP Portal - New user request received."
-    content = "<p>Hello!</p><p>We've received a request for a user account from {}</p><p>Please <a href='https://api.displacementalert.org/admin/users/userrequest/{}/change' target='_blank'>visit this link</a> and approve the request to send them a registration email.</p><p>Have a nice day!</p><p>- DAP Portal Admin</p><hr><p><b>Details</b></p><p><b>Email:</b> {}</p><p><b>Username:</b> {}</p><p><b>Organization:</b> {}</p><p><b>Description:</b> {}</p><p><b>First name:</b> {}</p><p><b>Last name:</b> {}</p>".format(
-        user_request.email, user_request.id, user_request.email, user_request.username, user_request.organization, user_request.description, user_request.first_name, user_request.last_name)
+    content = "<p>Hello!</p><p>We've received a request for a user account from {}</p><p>Please <a href='https://api.displacementalert.org/admin/users/userrequest/{}/change' target='_blank'>visit this link</a> and approve the request to send them a registration email.</p><p>Have a nice day!</p><p>- DAP Portal Admin</p><hr><p><b>Details</b></p><p><b>Email:</b> {}</p><p><b>Username:</b> {}</p><p><b>Organization:</b> {}</p><p><b>Position:</b> {}</p><p><b>Description:</b> {}</p><p><b>First name:</b> {}</p><p><b>Last name:</b> {}</p>".format(
+        user_request.email, user_request.id, user_request.email, user_request.username, user_request.organization, user_request.description, user_request.long_description, user_request.first_name, user_request.last_name)
 
     for user in us.CustomUser.objects.filter(is_staff=True):
         to = user.email
