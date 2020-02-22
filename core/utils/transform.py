@@ -195,19 +195,15 @@ def from_csv_file_to_gen(file_path_or_generator, update=None, cleaner=None):
     with f:
         if cleaner:
             lines = cleaner([*f])
-            headers = clean_headers(next(lines))
-            data = '\n'.join(str(x) for x in lines)
 
+            headers = clean_headers(next(lines))
+            reader = csv.DictReader(lines, fieldnames=headers)
         else:
-            lines = f
             headers = clean_headers(f.readline())
-            data = f.read()
+            reader = csv.DictReader(f, fieldnames=headers)
 
         logger.debug('Clearing NULL bytes')
 
-        data = data.replace("\0", "")      # get rid of null-bytes
-        data = io.StringIO(data)   # new pseudo file object
-        reader = csv.DictReader(data, fieldnames=headers)
         count = 0
         for row in reader:
             count = count + 1

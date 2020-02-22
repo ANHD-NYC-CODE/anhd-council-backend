@@ -349,6 +349,11 @@ class Property(BaseDatasetModel, models.Model):
         return csv_reader
 
     @classmethod
+    def clean_null_bytes(self, gen_rows):
+        for row in gen_rows:
+            yield row.replace("\0", "")  # get rid of null-bytes
+
+    @classmethod
     def pre_validation_filters(self, gen_rows):
         logger.debug("prevalidating properties")
         count = 0
@@ -371,7 +376,7 @@ class Property(BaseDatasetModel, models.Model):
 
     @classmethod
     def transform_self(self, file_path, update=None):
-        return self.pre_validation_filters(from_csv_file_to_gen(extract_csvs_from_zip(file_path), update))
+        return self.pre_validation_filters(from_csv_file_to_gen(extract_csvs_from_zip(file_path), update, self.clean_null_bytes))
 
     # SLOW
     @classmethod
