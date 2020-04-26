@@ -1,3 +1,4 @@
+from freezegun import freeze_time
 from django.test import TestCase
 from app.tests.base_test import BaseTest
 from django.db.models import Count, Q
@@ -7,7 +8,6 @@ import httpretty
 
 import logging
 logging.disable(logging.CRITICAL)
-from freezegun import freeze_time
 
 
 class EvictionTest(BaseTest, TestCase):
@@ -28,19 +28,25 @@ class EvictionTest(BaseTest, TestCase):
         property2 = self.property_factory(bbl="1000240036")
         property3 = self.property_factory(bbl="3")
 
-        self.address_factory(property=property1, number="123", street="Fake Street", borough="Manhattan")
-        self.address_factory(property=property3, number="125", street="Fake Street", borough="Bronx")
+        self.address_factory(property=property1, number="123",
+                             street="Fake Street", borough="Manhattan")
+        self.address_factory(property=property3, number="125",
+                             street="Fake Street", borough="Bronx")
         ds.AddressRecord.build_search()
 
         update = self.update_factory(model_name="Eviction",
                                      file_name="mock_evictions.csv")
 
-        ds.Eviction.seed_or_update_self(file_path=update.file.file.path, update=update)
+        ds.Eviction.seed_or_update_self(
+            file_path=update.file.file.path, update=update)
         self.assertEqual(ds.Eviction.objects.count(), 3)
         self.assertEqual(update.rows_created, 3)
-        self.assertEqual(ds.Property.objects.get(bbl='1').propertyannotation.evictions_last30, 0)
-        self.assertEqual(ds.Property.objects.get(bbl='1').propertyannotation.evictions_lastyear, 1)
-        self.assertEqual(ds.Property.objects.get(bbl='1').propertyannotation.evictions_last3years, 1)
+        self.assertEqual(ds.Property.objects.get(
+            bbl='1').propertyannotation.evictions_last30, 0)
+        self.assertEqual(ds.Property.objects.get(
+            bbl='1').propertyannotation.evictions_lastyear, 1)
+        self.assertEqual(ds.Property.objects.get(
+            bbl='1').propertyannotation.evictions_last3years, 1)
 
         for eviction in ds.Eviction.objects.all():
             self.assertEqual(bool(eviction.bbl), True)

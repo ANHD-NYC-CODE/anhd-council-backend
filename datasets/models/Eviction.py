@@ -39,7 +39,7 @@ class Eviction(BaseDatasetModel, models.Model):
     evictionaddress = models.TextField(default="", blank=True, null=True)
     evictionaptnum = models.TextField(default="", blank=True, null=True)
     evictionzip = models.TextField(default="", blank=True, null=True)
-    uniqueid = models.TextField(default="", blank=True, null=True)
+    uniqueid = models.TextField(default="", unique=True, blank=True, null=True)
     executeddate = models.DateField(blank=True, null=True)
     marshalfirstname = models.TextField(default="", blank=True, null=True)
     marshallastname = models.TextField(default="", blank=True, null=True)
@@ -89,6 +89,8 @@ class Eviction(BaseDatasetModel, models.Model):
             eviction.cleaned_address = cleaned_address
         if geosearch_address:
             eviction.geosearch_address = geosearch_address
+        eviction.uniqueid = "{}-{}-{}-{}".format(eviction.evictionaddress,
+                                                 eviction.evictionaptnum, eviction.executeddate, eviction.marshallastname)
         eviction.save()
 
     @classmethod
