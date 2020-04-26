@@ -34,19 +34,20 @@ class Eviction(BaseDatasetModel, models.Model):
         primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=True)
-    borough = models.TextField(blank=True, null=True)
-    docketnumber = models.TextField(blank=True, null=True)
-    evictionaddress = models.TextField(blank=True, null=True)
-    evictionaptnum = models.TextField(blank=True, null=True)
-    evictionzip = models.TextField(blank=True, null=True)
-    uniqueid = models.TextField(blank=True, null=True)
+    borough = models.TextField(default="", blank=True, null=True)
+    docketnumber = models.TextField(default="", blank=True, null=True)
+    evictionaddress = models.TextField(default="", blank=True, null=True)
+    evictionaptnum = models.TextField(default="", blank=True, null=True)
+    evictionzip = models.TextField(default="", blank=True, null=True)
+    uniqueid = models.TextField(default="", blank=True, null=True)
     executeddate = models.DateField(blank=True, null=True)
-    marshalfirstname = models.TextField(blank=True, null=True)
-    marshallastname = models.TextField(blank=True, null=True)
-    residentialcommercialind = models.TextField(blank=True, null=True)
-    schedulestatus = models.TextField(blank=True, null=True)
-    cleaned_address = models.TextField(blank=True, null=True)
-    geosearch_address = models.TextField(blank=True, null=True)
+    marshalfirstname = models.TextField(default="", blank=True, null=True)
+    marshallastname = models.TextField(default="", blank=True, null=True)
+    residentialcommercialind = models.TextField(
+        default="", blank=True, null=True)
+    schedulestatus = models.TextField(default="", blank=True, null=True)
+    cleaned_address = models.TextField(default="", blank=True, null=True)
+    geosearch_address = models.TextField(default="", blank=True, null=True)
 
     slim_query_fields = ["courtindexnumber", "bbl", "executeddate"]
 
@@ -74,8 +75,8 @@ class Eviction(BaseDatasetModel, models.Model):
     def clean_evictions_csv(self, gen_rows):
         for row in gen_rows:
             row = row.upper()
-            row = row.upper().replace(',JR.', ' JR')
-            row = row.upper().replace(', JR.', ' JR')
+            row = row.replace(',JR.', ' JR')
+            row = row.replace(', JR.', ' JR')
 
             row = clean_number_and_streets(row, True, clean_typos=True)
             yield row.upper().strip()
@@ -170,7 +171,7 @@ class Eviction(BaseDatasetModel, models.Model):
                 logger.warning(
                     'unable to match response bbl {} to a db record'.format(match['pad_bbl']))
                 return None
-        elif eviction.borough != "QUEENS" and  "-" in get_house_number(cleaned_address):
+        elif eviction.borough != "QUEENS" and "-" in get_house_number(cleaned_address):
           # try entirely new geosearch with the range of hyphenated numbers
             cleaned_house_number = get_house_number(
                 cleaned_address)
@@ -180,7 +181,7 @@ class Eviction(BaseDatasetModel, models.Model):
             cleaned_street = cleaned_address.split(' ', 1)[1]
 
             cleaned_address = " ".join([low, cleaned_street])
-            
+
             self.get_geosearch_address(cleaned_address, eviction)
         elif " AND " in cleaned_address:
           # ex: 123 and 125 FAKE STREET

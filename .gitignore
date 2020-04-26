@@ -119,3 +119,6 @@ celerybeat.pid
 init-letsencrypt.sh
 nginx/.htpasswd
 nginx/certbot/
+
+
+dap_council_pgvol1.tar

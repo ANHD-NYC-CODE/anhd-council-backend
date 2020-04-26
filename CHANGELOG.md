@@ -1,5 +1,7 @@
 # API CHANGELOG
 
+#### V1.0.3
+
 #### V1.0.2
 
 - Construct /foreclosure-auctions/ views
