@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, IntegrityError
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.utils.validation_filters import is_null
@@ -91,7 +91,11 @@ class Eviction(BaseDatasetModel, models.Model):
             eviction.geosearch_address = geosearch_address
         eviction.uniqueid = "{}-{}-{}-{}".format(eviction.evictionaddress,
                                                  eviction.evictionaptnum, eviction.executeddate, eviction.marshallastname)
-        eviction.save()
+        try:
+            eviction.save()
+        except IntegrityError as e:
+            # silently fail duplicate entries
+            return
 
     @classmethod
     def view_address_results(self, evictions):
@@ -174,7 +178,7 @@ class Eviction(BaseDatasetModel, models.Model):
                     'unable to match response bbl {} to a db record'.format(match['pad_bbl']))
                 return None
         elif eviction.borough != "QUEENS" and "-" in get_house_number(cleaned_address):
-          # try entirely new geosearch with the range of hyphenated numbers
+            # try entirely new geosearch with the range of hyphenated numbers
             cleaned_house_number = get_house_number(
                 cleaned_address)
             low = cleaned_house_number.split('-')[0]
@@ -186,7 +190,7 @@ class Eviction(BaseDatasetModel, models.Model):
 
             self.get_geosearch_address(cleaned_address, eviction)
         elif " AND " in cleaned_address:
-          # ex: 123 and 125 FAKE STREET
+            # ex: 123 and 125 FAKE STREET
             split_address = cleaned_address.split(' AND ')
 
             if split_address[0].isnumeric:
@@ -281,9 +285,12 @@ class Eviction(BaseDatasetModel, models.Model):
                 return True
             elif "-" in cleaned_house:
                 # Step from low to high and see if geosearch number matches anything
-                low, high = cleaned_house.split('-', 1)
+                split = cleaned_house.split("-")
+                low = split[0]
+                high = split[len(split) - 1]
                 cursor = int(low)
                 step = 2
+
                 while(cursor <= int(high)):
                     if int(geo_house) == cursor:
                         return True
