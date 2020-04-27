@@ -2,6 +2,8 @@
 
 #### V1.0.3
 
+- Fixes eviction de-duplication bug - now evictions properly unique on address, date, apt num, and marshall last name.
+
 #### V1.0.2
 
 - Construct /foreclosure-auctions/ views
