@@ -652,9 +652,18 @@ class BaseTest(APITestCase, URLPatternsTestCase):
             property = self.property_factory(
                 bbl=random.randint(1000000000, 5999999999))
 
+        latestuctotals = None
+        year_cursor = d_models.RentStabilizationRecord.MANUAL_YEAR
+        while latestuctotals == None and year_cursor > 2006:
+            key = "uc{}".format(year_cursor)
+            if key in kwargs and (kwargs[key] or kwargs[key] == 0):
+                latestuctotals = kwargs[key]
+            year_cursor -= 1
+
         factory = d_models.RentStabilizationRecord.objects.create(
             id=property.bbl,
             ucbbl=property,
+            latestuctotals=latestuctotals,
             **kwargs
         )
 

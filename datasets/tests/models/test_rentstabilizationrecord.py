@@ -23,12 +23,21 @@ class RentStabilizationRecordTests(BaseTest, TestCase):
         self.assertEqual(ds.Property.objects.get(
             bbl="6050720025").propertyannotation.unitsrentstabilized, 63)
 
+        first_record = ds.RentStabilizationRecord.objects.get(
+            id='1007530077')
+        self.assertEqual(first_record.uc2011, None)
+        self.assertEqual(first_record.uc2010, 17)
+        self.assertEqual(first_record.latestuctotals, 17)
+
     def test_seed_record_after_update(self):
         update = self.update_factory(model_name="RentStabilizationRecord",
                                      file_name="mock_rent_stabilization_records.csv")
         ds.RentStabilizationRecord.seed_or_update_self(
             file_path=update.file.file.path, update=update)
-
+        record = ds.RentStabilizationRecord.objects.get(
+            ucbbl='3050800013')
+        self.assertEqual(record.uc2017, 45)
+        self.assertEqual(record.latestuctotals, 45)
         new_update = self.update_factory(dataset=update.dataset, model_name="RentStabilizationRecord",
                                          file_name="mock_rent_stabilization_records_diff.csv", previous_file_name="mock_rent_stabilization_records.csv")
         ds.RentStabilizationRecord.seed_or_update_self(
@@ -36,11 +45,11 @@ class RentStabilizationRecordTests(BaseTest, TestCase):
         self.assertEqual(ds.RentStabilizationRecord.objects.count(), 13)
         self.assertEqual(new_update.rows_created, 1)
         self.assertEqual(new_update.rows_updated, 6)
-        self.assertEqual(ds.RentStabilizationRecord.objects.filter(
-            ucbbl='3050800013').first().uc2017, 45)
-        changed_record = ds.RentStabilizationRecord.objects.filter(
-            ucbbl='3050800013').first()
-        self.assertEqual(changed_record.uc2018, 6)
+        record = ds.RentStabilizationRecord.objects.get(
+            ucbbl='3050800013')
+
+        self.assertEqual(record.uc2018, 6)
+        self.assertEqual(record.latestuctotals, 6)
 
     def test_get_percent_lost(self):
         record = self.taxbill_factory(uc2007=100, uc2017=10)

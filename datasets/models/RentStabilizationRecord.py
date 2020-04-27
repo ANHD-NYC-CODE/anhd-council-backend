@@ -20,7 +20,7 @@ logger = logging.getLogger('app')
 class RentStabilizationRecord(BaseDatasetModel, models.Model):
     download_endpoint = "http://taxbills.nyc/joined.csv"
     data_2018 = "https://s3.amazonaws.com/justfix-data/rentstab_counts_for_pluto_19v1_bbls.csv"
-    MANUAL_YEAR = 2017  # latest year this information holds
+    MANUAL_YEAR = 2018  # latest year this information holds
 
     class Meta:
         indexes = [
@@ -156,6 +156,8 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
     lat = models.DecimalField(
         decimal_places=16, max_digits=32, blank=True, null=True)
     pdfsoa2018 = models.TextField(default='', blank=True, null=True)
+    # holds the latest uc value from the latest year w value
+    latestuctotals = models.IntegerField(blank=True, null=True)
 
     def get_latest_count(self):
         year = datetime.datetime.today().year
@@ -199,6 +201,14 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
                 continue
             row['ucbbl'] = str(row['ucbbl'])
             row['id'] = row['ucbbl']
+
+            year_cursor = self.MANUAL_YEAR
+            while 'latestuctotals' not in row and year_cursor > 2006:
+                key = "uc{}".format(year_cursor)
+                if key in row and (row[key]):
+                    row['latestuctotals'] = row[key]
+                year_cursor -= 1
+
             yield row
 
     # trims down new update files to preserve memory

@@ -393,3 +393,20 @@ ACTIVE_MODELS = [
 # models which are referenced in the PropertyAnnotation model
 ANNOTATED_DATASETS = ['HPDViolation', 'HPDComplaint', 'DOBViolation', 'DOBComplaint',
                       'ECBViolation', 'DOBIssuedPermit', 'DOBFiledPermit', 'Eviction', 'HousingLitigation', 'AcrisRealMaster', 'Foreclosure']
+
+
+TESTING = 'test' in sys.argv[1:]
+if TESTING:
+    print('=========================')
+    print('In TEST Mode - Disabling Migrations')
+    print('=========================')
+
+    class DisableMigrations(object):
+
+        def __contains__(self, item):
+            return True
+
+        def __getitem__(self, item):
+            return None
+
+    MIGRATION_MODULES = DisableMigrations()
