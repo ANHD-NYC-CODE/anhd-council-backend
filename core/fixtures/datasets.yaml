@@ -310,7 +310,7 @@
 - model: core.dataset
   pk: 43
   fields:
-    name: AED Buildings
-    model_name: AEDBuilding
+    name: AEP Buildings
+    model_name: AEPBuilding
     automated: false
     update_schedule: "when needed"

@@ -7,7 +7,7 @@ import logging
 logger = logging.getLogger('app')
 
 
-class AEDBuilding(BaseDatasetModel, models.Model):
+class AEPBuilding(BaseDatasetModel, models.Model):
     download_endpoint = "https://data.cityofnewyork.us/api/views/hcir-3275/rows.csv?accessType=DOWNLOAD"
 
     id = models.TextField(primary_key=True)  # buildingid-bbl-bin

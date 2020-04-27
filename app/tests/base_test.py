@@ -653,9 +653,11 @@ class BaseTest(APITestCase, URLPatternsTestCase):
                 bbl=random.randint(1000000000, 5999999999))
 
         factory = d_models.RentStabilizationRecord.objects.create(
+            id=property.bbl,
             ucbbl=property,
             **kwargs
         )
+
         return factory
 
     def eviction_factory(self, id=None, property=None, uniqueid=None, **kwargs):

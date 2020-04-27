@@ -20,7 +20,7 @@ logger = logging.getLogger('app')
 class RentStabilizationRecord(BaseDatasetModel, models.Model):
     download_endpoint = "http://taxbills.nyc/joined.csv"
     data_2018 = "https://s3.amazonaws.com/justfix-data/rentstab_counts_for_pluto_19v1_bbls.csv"
-    MANUAL_YEAR = 2018  # latest year this information holds
+    MANUAL_YEAR = 2017  # latest year this information holds
 
     class Meta:
         indexes = [
@@ -170,7 +170,7 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
         year = 2007
         earliest = None
 
-        while not earliest and int(year) < 2018:
+        while not earliest and int(year) < self.MANUAL_YEAR:
             earliest = getattr(self, 'uc' + str(year))
             year += 1
         return earliest

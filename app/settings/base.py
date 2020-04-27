@@ -385,7 +385,7 @@ ACTIVE_MODELS = [
     'PSForeclosure',
     'PSPreForeclosure',
     'Foreclosure',
-    'AEDBuilding'
+    'AEPBuilding'
 
 ]
 

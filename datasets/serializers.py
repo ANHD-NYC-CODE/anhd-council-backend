@@ -384,6 +384,11 @@ class PropertySummarySerializer(serializers.ModelSerializer):
     nycha = serializers.SerializerMethodField()
     unitsrentstabilized = serializers.SerializerMethodField()
 
+    legalclassa = serializers.SerializerMethodField()
+    legalclassb = serializers.SerializerMethodField()
+    managementprogram = serializers.SerializerMethodField()
+    aep = serializers.SerializerMethodField()
+
     def get_conhrecord(self, obj):
         try:
             return obj.propertyannotation.conhrecord
@@ -426,6 +431,30 @@ class PropertySummarySerializer(serializers.ModelSerializer):
         except Exception as e:
             return None
 
+    def get_legalclassa(self, obj):
+        try:
+            return obj.propertyannotation.legalclassa
+        except Exception as e:
+            return None
+
+    def get_legalclassb(self, obj):
+        try:
+            return obj.propertyannotation.legalclassb
+        except Exception as e:
+            return None
+
+    def get_managementprogram(self, obj):
+        try:
+            return obj.propertyannotation.managementprogram
+        except Exception as e:
+            return None
+
+    def get_aep(self, obj):
+        try:
+            return obj.propertyannotation.aep
+        except Exception as e:
+            return None
+
     class Meta:
         model = ds.Property
         fields = (
@@ -434,7 +463,7 @@ class PropertySummarySerializer(serializers.ModelSerializer):
             'ownername', 'taxlien', 'taxliens', 'buildings', 'rsunits_percent_lost', 'nycha', 'hpdregistrations',
             'subsidyprograms', 'rentstabilizationrecord', 'unitsrentstabilized', 'subsidyj51', 'subsidy421a', 'conhrecord',
             'zonedist1', 'zonedist2', 'zonedist3', 'zonedist4', 'overlay1', 'overlay2', 'spdist1', 'spdist2', 'spdist3',
-            'builtfar', 'residfar', 'commfar', 'facilfar', 'original_address'
+            'builtfar', 'residfar', 'commfar', 'facilfar', 'original_address', 'legalclassa', 'legalclassb', 'managementprogram', 'aep'
         )
 
     rsunits_percent_lost = serializers.SerializerMethodField()

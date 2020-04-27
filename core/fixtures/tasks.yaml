@@ -234,8 +234,8 @@
     date_changed: "2019-08-16"
 - model: django_celery_beat.periodictask
   fields:
-    name: "Check and Update AEDBuilding"
-    description: "Checks api for AEDBuilding update and updates."
+    name: "Check and Update AEPBuilding"
+    description: "Checks api for AEPBuilding update and updates."
     task: "core.tasks.async_check_api_for_update_and_update"
     crontab: 13 # every 10pm
     args: "[43]"

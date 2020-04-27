@@ -30,4 +30,4 @@ class RentStabilizationRecordTests(BaseTest, TestCase):
         content = response.data
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(content["id"], taxbill.id)
+        self.assertEqual(int(content["id"]), int(taxbill.id))

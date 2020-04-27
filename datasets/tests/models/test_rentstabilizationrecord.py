@@ -16,25 +16,30 @@ class RentStabilizationRecordTests(BaseTest, TestCase):
         property = self.property_factory(bbl='6050720025')
         update = self.update_factory(model_name="RentStabilizationRecord",
                                      file_name="mock_rent_stabilization_records.csv")
-        ds.RentStabilizationRecord.seed_or_update_self(file_path=update.file.file.path, update=update)
+        ds.RentStabilizationRecord.seed_or_update_self(
+            file_path=update.file.file.path, update=update)
         self.assertEqual(ds.RentStabilizationRecord.objects.count(), 12)
         self.assertEqual(update.rows_created, 12)
-        self.assertEqual(ds.Property.objects.get(bbl="6050720025").propertyannotation.unitsrentstabilized, 63)
+        self.assertEqual(ds.Property.objects.get(
+            bbl="6050720025").propertyannotation.unitsrentstabilized, 63)
 
     def test_seed_record_after_update(self):
         update = self.update_factory(model_name="RentStabilizationRecord",
                                      file_name="mock_rent_stabilization_records.csv")
-        ds.RentStabilizationRecord.seed_or_update_self(file_path=update.file.file.path, update=update)
+        ds.RentStabilizationRecord.seed_or_update_self(
+            file_path=update.file.file.path, update=update)
 
         new_update = self.update_factory(dataset=update.dataset, model_name="RentStabilizationRecord",
                                          file_name="mock_rent_stabilization_records_diff.csv", previous_file_name="mock_rent_stabilization_records.csv")
         ds.RentStabilizationRecord.seed_or_update_self(
             file_path=new_update.file.file.path, update=new_update)
-        self.assertEqual(ds.RentStabilizationRecord.objects.count(), 7)
-        self.assertEqual(new_update.rows_created, 7)
-        self.assertEqual(new_update.rows_updated, 0)
-        self.assertEqual(ds.RentStabilizationRecord.objects.first().uc2017, 6)
-        changed_record = ds.RentStabilizationRecord.objects.filter(ucbbl='3050800013').first()
+        self.assertEqual(ds.RentStabilizationRecord.objects.count(), 13)
+        self.assertEqual(new_update.rows_created, 1)
+        self.assertEqual(new_update.rows_updated, 6)
+        self.assertEqual(ds.RentStabilizationRecord.objects.filter(
+            ucbbl='3050800013').first().uc2017, 45)
+        changed_record = ds.RentStabilizationRecord.objects.filter(
+            ucbbl='3050800013').first()
         self.assertEqual(changed_record.uc2018, 6)
 
     def test_get_percent_lost(self):

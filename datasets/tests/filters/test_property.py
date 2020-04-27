@@ -19,8 +19,10 @@ class PropertyFilterTests(BaseTest, TestCase):
 
     def test_yearbuilt_field(self):
         council = self.council_factory(id=1)
-        property1 = self.property_factory(bbl=1, council=council, yearbuilt=2000)
-        property2 = self.property_factory(bbl=2, council=council, yearbuilt=1900)
+        property1 = self.property_factory(
+            bbl=1, council=council, yearbuilt=2000)
+        property2 = self.property_factory(
+            bbl=2, council=council, yearbuilt=1900)
 
         query = '/properties/?yearbuilt__gte=1950'
         response = self.client.get(query, format="json")
@@ -120,13 +122,16 @@ class PropertyFilterTests(BaseTest, TestCase):
         property2 = self.property_factory(bbl=2, council=council)
 
         for i in range(5):
-            self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2018-01-01")
 
         for i in range(5):
-            self.hpdviolation_factory(property=property1, approveddate="2017-01-01")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2017-01-01")
 
         for i in range(1):
-            self.hpdviolation_factory(property=property2, approveddate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property2, approveddate="2018-01-01")
 
         query = '/properties/?hpdviolations__start=2018-01-01&hpdviolations__end=2019-01-01&hpdviolations__gte=5'
         response = self.client.get(query, format="json")
@@ -142,13 +147,16 @@ class PropertyFilterTests(BaseTest, TestCase):
         property2 = self.property_factory(bbl=2, council=council)
 
         for i in range(5):
-            self.dobviolation_factory(property=property1, issuedate="2018-01-01")
+            self.dobviolation_factory(
+                property=property1, issuedate="2018-01-01")
 
         for i in range(5):
-            self.dobviolation_factory(property=property1, issuedate="2017-01-01")
+            self.dobviolation_factory(
+                property=property1, issuedate="2017-01-01")
 
         for i in range(1):
-            self.dobviolation_factory(property=property2, issuedate="2018-01-01")
+            self.dobviolation_factory(
+                property=property2, issuedate="2018-01-01")
 
         query = '/properties/?dobviolations__start=2018-01-01&dobviolations__end=2019-01-01&dobviolations__gte=5'
         response = self.client.get(query, format="json")
@@ -164,13 +172,16 @@ class PropertyFilterTests(BaseTest, TestCase):
         property2 = self.property_factory(bbl=2, council=council)
 
         for i in range(5):
-            self.ecbviolation_factory(property=property1, issuedate="2018-01-01")
+            self.ecbviolation_factory(
+                property=property1, issuedate="2018-01-01")
 
         for i in range(5):
-            self.ecbviolation_factory(property=property1, issuedate="2017-01-01")
+            self.ecbviolation_factory(
+                property=property1, issuedate="2017-01-01")
 
         for i in range(1):
-            self.ecbviolation_factory(property=property2, issuedate="2018-01-01")
+            self.ecbviolation_factory(
+                property=property2, issuedate="2018-01-01")
 
         query = '/properties/?ecbviolations__start=2018-01-01&ecbviolations__end=2019-01-01&ecbviolations__gte=5'
         response = self.client.get(query, format="json")
@@ -186,13 +197,16 @@ class PropertyFilterTests(BaseTest, TestCase):
         property2 = self.property_factory(bbl=2, council=council)
 
         for i in range(5):
-            self.hpdcomplaint_factory(property=property1, receiveddate="2018-01-01")
+            self.hpdcomplaint_factory(
+                property=property1, receiveddate="2018-01-01")
 
         for i in range(5):
-            self.hpdcomplaint_factory(property=property1, receiveddate="2017-01-01")
+            self.hpdcomplaint_factory(
+                property=property1, receiveddate="2017-01-01")
 
         for i in range(1):
-            self.hpdcomplaint_factory(property=property2, receiveddate="2018-01-01")
+            self.hpdcomplaint_factory(
+                property=property2, receiveddate="2018-01-01")
 
         query = '/properties/?hpdcomplaints__start=2018-01-01&hpdcomplaints__end=2019-01-01&hpdcomplaints__gte=5'
         response = self.client.get(query, format="json")
@@ -208,13 +222,16 @@ class PropertyFilterTests(BaseTest, TestCase):
         property2 = self.property_factory(bbl=2, council=council)
 
         for i in range(5):
-            self.dobcomplaint_factory(property=property1, dateentered="2018-01-01")
+            self.dobcomplaint_factory(
+                property=property1, dateentered="2018-01-01")
 
         for i in range(5):
-            self.dobcomplaint_factory(property=property1, dateentered="2017-01-01")
+            self.dobcomplaint_factory(
+                property=property1, dateentered="2017-01-01")
 
         for i in range(1):
-            self.dobcomplaint_factory(property=property2, dateentered="2018-01-01")
+            self.dobcomplaint_factory(
+                property=property2, dateentered="2018-01-01")
 
         query = '/properties/?dobcomplaints__start=2018-01-01&dobcomplaints__end=2019-01-01&dobcomplaints__gte=5'
         response = self.client.get(query, format="json")
@@ -230,13 +247,16 @@ class PropertyFilterTests(BaseTest, TestCase):
         property2 = self.property_factory(bbl=2, council=council)
 
         for i in range(5):
-            self.eviction_factory(property=property1, executeddate="2018-01-01")
+            self.eviction_factory(property=property1,
+                                  executeddate="2018-01-01")
 
         for i in range(5):
-            self.eviction_factory(property=property1, executeddate="2017-01-01")
+            self.eviction_factory(property=property1,
+                                  executeddate="2017-01-01")
 
         for i in range(1):
-            self.eviction_factory(property=property2, executeddate="2018-01-01")
+            self.eviction_factory(property=property2,
+                                  executeddate="2018-01-01")
 
         query = '/properties/?evictions__start=2018-01-01&evictions__end=2019-01-01&evictions__gte=5'
         response = self.client.get(query, format="json")
@@ -252,13 +272,16 @@ class PropertyFilterTests(BaseTest, TestCase):
         property2 = self.property_factory(bbl=2, council=council)
 
         for i in range(5):
-            self.dobissuedpermit_factory(property=property1, issuedate="2018-01-01")
+            self.dobissuedpermit_factory(
+                property=property1, issuedate="2018-01-01")
 
         for i in range(5):
-            self.dobissuedpermit_factory(property=property1, issuedate="2017-01-01")
+            self.dobissuedpermit_factory(
+                property=property1, issuedate="2017-01-01")
 
         for i in range(1):
-            self.dobissuedpermit_factory(property=property2, issuedate="2018-01-01")
+            self.dobissuedpermit_factory(
+                property=property2, issuedate="2018-01-01")
 
         query = '/properties/?dobissuedpermits__start=2018-01-01&dobissuedpermits__end=2019-01-01&dobissuedpermits__gte=5'
         response = self.client.get(query, format="json")
@@ -274,13 +297,16 @@ class PropertyFilterTests(BaseTest, TestCase):
         property2 = self.property_factory(bbl=2, council=council)
 
         for i in range(5):
-            self.dobfiledpermit_factory(property=property1, datefiled="2018-01-01")
+            self.dobfiledpermit_factory(
+                property=property1, datefiled="2018-01-01")
 
         for i in range(5):
-            self.dobfiledpermit_factory(property=property1, datefiled="2017-01-01")
+            self.dobfiledpermit_factory(
+                property=property1, datefiled="2017-01-01")
 
         for i in range(1):
-            self.dobfiledpermit_factory(property=property2, datefiled="2018-01-01")
+            self.dobfiledpermit_factory(
+                property=property2, datefiled="2018-01-01")
 
         query = '/properties/?dobfiledpermits__start=2018-01-01&dobfiledpermits__end=2019-01-01&dobfiledpermits__gte=5'
         response = self.client.get(query, format="json")
@@ -382,9 +408,12 @@ class PropertyFilterTests(BaseTest, TestCase):
         property1 = self.property_factory(bbl=1, council=council)
         property2 = self.property_factory(bbl=2, council=council)
         property3 = self.property_factory(bbl=3, council=council)
-        acrismaster1 = self.acrismaster_factory(docamount=10, docdate="2018-01-01", doctype="DEED")
-        acrismaster2 = self.acrismaster_factory(docamount=1, docdate="2018-01-01", doctype="DEED")
-        acrismaster3 = self.acrismaster_factory(docamount=10, docdate="2018-01-01", doctype="RPTT")
+        acrismaster1 = self.acrismaster_factory(
+            docamount=10, docdate="2018-01-01", doctype="DEED")
+        acrismaster2 = self.acrismaster_factory(
+            docamount=1, docdate="2018-01-01", doctype="DEED")
+        acrismaster3 = self.acrismaster_factory(
+            docamount=10, docdate="2018-01-01", doctype="RPTT")
         self.acrislegal_factory(master=acrismaster1, property=property1)
         self.acrislegal_factory(master=acrismaster2, property=property2)
         self.acrislegal_factory(master=acrismaster3, property=property3)
@@ -405,7 +434,8 @@ class PropertyFilterTests(BaseTest, TestCase):
         property2 = self.property_factory(bbl=2, council=council)
         # dates out of range
         property3 = self.property_factory(bbl=3, council=council)
-        acrismaster2 = self.acrismaster_factory(docamount=1, docdate="2018-01-01")
+        acrismaster2 = self.acrismaster_factory(
+            docamount=1, docdate="2018-01-01")
         self.acrislegal_factory(master=acrismaster2, property=property2)
 
         # wrong doctype but all in range
@@ -420,7 +450,8 @@ class PropertyFilterTests(BaseTest, TestCase):
             self.acrislegal_factory(master=am, property=property3)
 
         for i in range(5):
-            am = self.acrismaster_factory(doctype="hello", docdate="2018-01-01")
+            am = self.acrismaster_factory(
+                doctype="hello", docdate="2018-01-01")
             self.acrislegal_factory(master=am, property=property4)
 
         # 5 sales between 2017-2018
@@ -442,13 +473,16 @@ class PropertyFilterTests(BaseTest, TestCase):
         property3 = self.property_factory(bbl=3, council=council)
 
         for i in range(10):
-            self.dobissuedpermit_factory(property=property1, issuedate="2018-01-01")
+            self.dobissuedpermit_factory(
+                property=property1, issuedate="2018-01-01")
 
         for i in range(10):
-            self.dobissuedpermit_factory(property=property2, issuedate="2010-01-01")
+            self.dobissuedpermit_factory(
+                property=property2, issuedate="2010-01-01")
 
         for i in range(5):
-            self.dobissuedpermit_factory(property=property3, issuedate="2018-01-01")
+            self.dobissuedpermit_factory(
+                property=property3, issuedate="2018-01-01")
 
         # 10 permits between 2017-2018
         query = '/properties/?dobissuedpermits__start=2017-01-01&dobissuedpermits__end=2018-01-01&dobissuedpermits__gte=10'
@@ -470,13 +504,16 @@ class PropertyFilterTests(BaseTest, TestCase):
         property3 = self.property_factory(bbl=3, council=council)
 
         for i in range(10):
-            self.eviction_factory(property=property1, executeddate="2018-01-01")
+            self.eviction_factory(property=property1,
+                                  executeddate="2018-01-01")
 
         for i in range(10):
-            self.eviction_factory(property=property2, executeddate="2010-01-01")
+            self.eviction_factory(property=property2,
+                                  executeddate="2010-01-01")
 
         for i in range(5):
-            self.eviction_factory(property=property3, executeddate="2018-01-01")
+            self.eviction_factory(property=property3,
+                                  executeddate="2018-01-01")
 
         # 10 permits between 2017-2018
         query = '/properties/?evictions__start=2017-01-01&evictions__end=2018-01-01&evictions__gte=10'
@@ -517,11 +554,14 @@ class PropertyFilterTests(BaseTest, TestCase):
         # has lihtc ending 2025
         property3 = self.property_factory(bbl=3, council=council)
 
-        self.coredata_factory(property=property1, enddate="2018-01-01", programname="lihtc")
+        self.coredata_factory(property=property1,
+                              enddate="2018-01-01", programname="lihtc")
         self.coredata_factory(property=property1, enddate="2018-01-01",
                               programname="lihtc")  # duplicate which should get filtered out
-        self.coredata_factory(property=property2, enddate="2018-01-01", programname="j-51")
-        self.coredata_factory(property=property3, enddate="2025-01-01", programname="lihtc")
+        self.coredata_factory(property=property2,
+                              enddate="2018-01-01", programname="j-51")
+        self.coredata_factory(property=property3,
+                              enddate="2025-01-01", programname="lihtc")
 
         # any lihtc buildings ending 2018
         query = '/properties/?subsidyprograms__programname=lihtc&coresubsidyrecord__enddate__lte=2018-01-01'
@@ -543,10 +583,14 @@ class PropertyFilterTests(BaseTest, TestCase):
         # has 421-a ending 2018
         property4 = self.property_factory(bbl=4, council=council)
 
-        self.coredata_factory(property=property1, enddate="2018-01-01", programname="lihtc")
-        self.coredata_factory(property=property2, enddate="2018-01-01", programname="j-51")
-        self.coredata_factory(property=property3, enddate="2025-01-01", programname="lihtc")
-        self.coredata_factory(property=property4, enddate="2018-01-01", programname="421-a")
+        self.coredata_factory(property=property1,
+                              enddate="2018-01-01", programname="lihtc")
+        self.coredata_factory(property=property2,
+                              enddate="2018-01-01", programname="j-51")
+        self.coredata_factory(property=property3,
+                              enddate="2025-01-01", programname="lihtc")
+        self.coredata_factory(property=property4,
+                              enddate="2018-01-01", programname="421-a")
 
         # any lihtc buildings ending 2018
         query = '/properties/?subsidyprograms__programname__any=lihtc,j-51&coresubsidyrecord__enddate__lte=2018-01-01'
@@ -563,20 +607,24 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
     def tearDown(self):
         self.clean_tests()
 
-    
     def test_single_all_condition(self):
         council = self.council_factory(id=1)
-        property1 = self.property_factory(bbl=1, council=council, yearbuilt=2000)
-        property2 = self.property_factory(bbl=2, council=council, yearbuilt=1900)
+        property1 = self.property_factory(
+            bbl=1, council=council, yearbuilt=2000)
+        property2 = self.property_factory(
+            bbl=2, council=council, yearbuilt=1900)
 
         for i in range(5):
-            self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2018-01-01")
 
         for i in range(5):
-            self.hpdviolation_factory(property=property1, approveddate="2017-01-01")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2017-01-01")
 
         for i in range(1):
-            self.hpdviolation_factory(property=property2, approveddate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property2, approveddate="2018-01-01")
 
         # properties with 5 HPD violations b/t 2018- 2019
         query = '/properties/?q=*condition_0=AND+filter_0=hpdviolations__count__gte=5,hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01'
@@ -590,18 +638,24 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
 
     def test_single_all_condition_single_field(self):
         council = self.council_factory(id=1)
-        property1 = self.property_factory(bbl=1, council=council, yearbuilt=2000)
-        property2 = self.property_factory(bbl=2, council=council, yearbuilt=1900)
-        property3 = self.property_factory(bbl=3, council=council, yearbuilt=1900)
+        property1 = self.property_factory(
+            bbl=1, council=council, yearbuilt=2000)
+        property2 = self.property_factory(
+            bbl=2, council=council, yearbuilt=1900)
+        property3 = self.property_factory(
+            bbl=3, council=council, yearbuilt=1900)
 
         for i in range(5):
-            self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2018-01-01")
 
         for i in range(5):
-            self.hpdviolation_factory(property=property2, approveddate="2017-01-01")
+            self.hpdviolation_factory(
+                property=property2, approveddate="2017-01-01")
 
         for i in range(1):
-            self.hpdviolation_factory(property=property3, approveddate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property3, approveddate="2018-01-01")
 
         # properties with 5 HPD violations any date
         query = '/properties/?q=*condition_0=AND+filter_0=hpdviolations__count__gte=5'
@@ -624,15 +678,20 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         property3 = self.property_factory(bbl=3, council=council)
 
         for i in range(5):
-            self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
-            self.dobviolation_factory(property=property3, issuedate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2018-01-01")
+            self.dobviolation_factory(
+                property=property3, issuedate="2018-01-01")
 
         for i in range(5):
-            self.hpdviolation_factory(property=property1, approveddate="2017-01-01")
-            self.dobviolation_factory(property=property2, issuedate="2017-01-01")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2017-01-01")
+            self.dobviolation_factory(
+                property=property2, issuedate="2017-01-01")
 
         for i in range(1):
-            self.hpdviolation_factory(property=property2, approveddate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property2, approveddate="2018-01-01")
 
         # properties with 5 HPD violations b/t 2018- 2019 OR 5 DOB violations b/t 2018-2019
         # query = '/properties/?q=condition_0=OR+group_0A=hpdviolation__approveddate__gte=2018-01-01,hpdviolation__approveddate__lte=2019-01-01,hpdviolation__count__gte=5+group_0B=dobviolation__issuedate__gte=2018-01-01,dobviolation__issuedate__lte=2019-01-01,dobviolation__count__gte=5'
@@ -656,13 +715,18 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         property3 = self.property_factory(bbl=3, council=council)
 
         for i in range(5):
-            self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
-            self.dobviolation_factory(property=property1, issuedate="2018-01-01")
-            self.hpdviolation_factory(property=property3, approveddate="2018-01-01")
-            self.dobviolation_factory(property=property3, issuedate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2018-01-01")
+            self.dobviolation_factory(
+                property=property1, issuedate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property3, approveddate="2018-01-01")
+            self.dobviolation_factory(
+                property=property3, issuedate="2018-01-01")
 
         for i in range(5):
-            self.dobviolation_factory(property=property2, issuedate="2018-01-01")
+            self.dobviolation_factory(
+                property=property2, issuedate="2018-01-01")
 
         # properties with 5 HPD violations b/t 2018- 2019 AND 5 DOB violations b/t 2018-2019
         # query = '/properties/?q=condition_0=AND+group_0A=hpdviolation__approveddate__gte=2018-01-01,hpdviolation__approveddate__lte=2019-01-01,hpdviolation__count__gte=5+group_0B=dobviolation__issuedate__gte=2018-01-01,dobviolation__issuedate__lte=2019-01-01,dobviolation__count__gte=5'
@@ -690,14 +754,22 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         property5 = self.property_factory(bbl=5, council=council)
 
         for i in range(5):
-            self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
-            self.dobviolation_factory(property=property1, issuedate="2018-01-01")
-            self.hpdviolation_factory(property=property2, approveddate="2018-01-01")
-            self.ecbviolation_factory(property=property2, issuedate="2018-01-01")
-            self.hpdviolation_factory(property=property3, approveddate="2018-01-01")
-            self.dobviolation_factory(property=property4, issuedate="2018-01-01")
-            self.dobviolation_factory(property=property5, issuedate="2018-01-01")
-            self.ecbviolation_factory(property=property5, issuedate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2018-01-01")
+            self.dobviolation_factory(
+                property=property1, issuedate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property2, approveddate="2018-01-01")
+            self.ecbviolation_factory(
+                property=property2, issuedate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property3, approveddate="2018-01-01")
+            self.dobviolation_factory(
+                property=property4, issuedate="2018-01-01")
+            self.dobviolation_factory(
+                property=property5, issuedate="2018-01-01")
+            self.ecbviolation_factory(
+                property=property5, issuedate="2018-01-01")
 
         # properties with 5 HPD violations b/t 2018- 2019 AND (5 DOB violations b/t 2018-2019 OR 5 ECB violations b/t 2018-2019)
         query = '/properties/?q=*condition_0=AND+filter_0=condition_1+filter_0=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5+*condition_1=OR+filter_1=dobviolations__issuedate__gte=2018-01-01,dobviolations__issuedate__lte=2019-01-01,dobviolations__count__gte=5+filter_1=ecbviolations__issuedate__gte=2018-01-01,ecbviolations__issuedate__lte=2019-01-01,ecbviolations__count__gte=5'
@@ -724,14 +796,22 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         property5 = self.property_factory(bbl=5, council=council)
 
         for i in range(5):
-            self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
-            self.dobviolation_factory(property=property1, issuedate="2018-01-01")
-            self.hpdviolation_factory(property=property2, approveddate="2018-01-01")
-            self.ecbviolation_factory(property=property2, issuedate="2018-01-01")
-            self.hpdviolation_factory(property=property3, approveddate="2018-01-01")
-            self.dobviolation_factory(property=property4, issuedate="2018-01-01")
-            self.dobviolation_factory(property=property5, issuedate="2018-01-01")
-            self.ecbviolation_factory(property=property5, issuedate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2018-01-01")
+            self.dobviolation_factory(
+                property=property1, issuedate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property2, approveddate="2018-01-01")
+            self.ecbviolation_factory(
+                property=property2, issuedate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property3, approveddate="2018-01-01")
+            self.dobviolation_factory(
+                property=property4, issuedate="2018-01-01")
+            self.dobviolation_factory(
+                property=property5, issuedate="2018-01-01")
+            self.ecbviolation_factory(
+                property=property5, issuedate="2018-01-01")
 
         # properties with 5 HPD violations b/t 2018- 2019 OR (5 DOB violations b/t 2018-2019 AND 5 ECB violations b/t 2018-2019)
         query = '/properties/?q=*condition_0=OR+filter_0=condition_1+filter_0=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5+*condition_1=AND+filter_1=dobviolations__issuedate__gte=2018-01-01,dobviolations__issuedate__lte=2019-01-01,dobviolations__count__gte=5+group_1B=ecbviolations__issuedate__gte=2018-01-01,ecbviolations__issuedate__lte=2019-01-01,ecbviolations__count__gte=5'
@@ -760,15 +840,24 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         property5 = self.property_factory(bbl=5, council=council)
 
         for i in range(5):
-            self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
-            self.dobviolation_factory(property=property1, issuedate="2018-01-01")
-            self.hpdviolation_factory(property=property2, approveddate="2018-01-01")
-            self.ecbviolation_factory(property=property2, issuedate="2018-01-01")
-            self.hpdcomplaint_factory(property=property2, receiveddate="2018-01-01")
-            self.hpdviolation_factory(property=property3, approveddate="2018-01-01")
-            self.dobviolation_factory(property=property4, issuedate="2018-01-01")
-            self.hpdviolation_factory(property=property5, approveddate="2018-01-01")
-            self.ecbviolation_factory(property=property5, issuedate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2018-01-01")
+            self.dobviolation_factory(
+                property=property1, issuedate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property2, approveddate="2018-01-01")
+            self.ecbviolation_factory(
+                property=property2, issuedate="2018-01-01")
+            self.hpdcomplaint_factory(
+                property=property2, receiveddate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property3, approveddate="2018-01-01")
+            self.dobviolation_factory(
+                property=property4, issuedate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property5, approveddate="2018-01-01")
+            self.ecbviolation_factory(
+                property=property5, issuedate="2018-01-01")
 
         # properties with 5 HPD violations b/t 2018- 2019 AND (5 DOB violations b/t 2018-2019 OR (5 ECB violations b/t 2018-2019 AND 5 HPD Complaints b/t 2018-2019))
 
@@ -796,16 +885,25 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         property5 = self.property_factory(bbl=5, council=council)
 
         for i in range(5):
-            self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
-            self.hpdcomplaint_factory(property=property1, receiveddate="2018-01-01")
-            self.dobviolation_factory(property=property2, issuedate="2018-01-01")
-            self.ecbviolation_factory(property=property2, issuedate="2018-01-01")
-            self.hpdviolation_factory(property=property3, approveddate="2018-01-01")
-            self.hpdcomplaint_factory(property=property3, receiveddate="2016-01-01")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2018-01-01")
+            self.hpdcomplaint_factory(
+                property=property1, receiveddate="2018-01-01")
+            self.dobviolation_factory(
+                property=property2, issuedate="2018-01-01")
+            self.ecbviolation_factory(
+                property=property2, issuedate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property3, approveddate="2018-01-01")
+            self.hpdcomplaint_factory(
+                property=property3, receiveddate="2016-01-01")
 
-            self.dobviolation_factory(property=property4, issuedate="2018-01-01")
-            self.dobviolation_factory(property=property5, issuedate="2018-01-01")
-            self.ecbviolation_factory(property=property5, issuedate="2016-01-01")
+            self.dobviolation_factory(
+                property=property4, issuedate="2018-01-01")
+            self.dobviolation_factory(
+                property=property5, issuedate="2018-01-01")
+            self.ecbviolation_factory(
+                property=property5, issuedate="2016-01-01")
 
         # properties with either (5 HPD violations b/t 2018- 2019 AND 5 HPD complaints b/t 2018-2019) OR (5 DOB violations b/t 2018-2019 AND 5 ECB violations b/t 2018-2019)
         # query = '/properties/?q=condition_0=OR+group_0a=*condition_1+group_0b=*condition_2+condition_1=AND+group_1a=hpdviolation__approveddate__gte=2018-01-01,hpdviolation__approveddate__lte=2019-01-01,hpdviolation__count__gte=5+group_1b=hpdcomplaint__receiveddate__gte=2018-01-01,hpdcomplaint__receiveddate__lte=2019-01-01,hpdcomplaint__count__gte=5+condition_2=AND+group_2a=dobviolation__issuedate__gte=2018-01-01,dobviolation__issuedate__lte=2019-01-01,dobviolation__count__gte=5+group_2b=ecbviolation__issuedate__gte=2018-01-01,ecbviolation__issuedate__lte=2019-01-01,ecbviolation__count__gte=5'
@@ -851,22 +949,26 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         council = self.council_factory(id=1)
 
         # sold for $10 in date range
-        acrismaster1 = self.acrismaster_factory(documentid="a", doctype="DEED", docamount=10, docdate="2018-01-01")
+        acrismaster1 = self.acrismaster_factory(
+            documentid="a", doctype="DEED", docamount=10, docdate="2018-01-01")
         property1 = self.property_factory(bbl=1, council=council)
         self.acrislegal_factory(property=property1, master=acrismaster1)
 
         # sold for $1 in date range
-        acrismaster2 = self.acrismaster_factory(documentid="b", doctype="DEED", docamount=1, docdate="2018-01-01")
+        acrismaster2 = self.acrismaster_factory(
+            documentid="b", doctype="DEED", docamount=1, docdate="2018-01-01")
         property2 = self.property_factory(bbl=2, council=council)
         self.acrislegal_factory(property=property2, master=acrismaster2)
 
         # sold for $10 out of date range
-        acrismaster3 = self.acrismaster_factory(documentid="c", doctype="DEED", docamount=10, docdate="2011-01-01")
+        acrismaster3 = self.acrismaster_factory(
+            documentid="c", doctype="DEED", docamount=10, docdate="2011-01-01")
         property3 = self.property_factory(bbl=3, council=council)
         self.acrislegal_factory(property=property3, master=acrismaster3)
 
         # tax document for $10 in date range
-        acrismaster4 = self.acrismaster_factory(documentid="d", doctype="RPTT", docamount=10, docdate="2017-01-01")
+        acrismaster4 = self.acrismaster_factory(
+            documentid="d", doctype="RPTT", docamount=10, docdate="2017-01-01")
         property4 = self.property_factory(bbl=4, council=council)
         self.acrislegal_factory(property=property4, master=acrismaster4)
 
@@ -886,22 +988,26 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         council = self.council_factory(id=1)
 
         # sold for $10 in date range
-        acrismaster1 = self.acrismaster_factory(documentid="a", doctype="DEED", docamount=10, docdate="2018-01-01")
+        acrismaster1 = self.acrismaster_factory(
+            documentid="a", doctype="DEED", docamount=10, docdate="2018-01-01")
         property1 = self.property_factory(bbl=1, council=council)
         self.acrislegal_factory(property=property1, master=acrismaster1)
 
         # sold for $1 in date range
-        acrismaster2 = self.acrismaster_factory(documentid="b", doctype="DEED", docamount=1, docdate="2018-01-01")
+        acrismaster2 = self.acrismaster_factory(
+            documentid="b", doctype="DEED", docamount=1, docdate="2018-01-01")
         property2 = self.property_factory(bbl=2, council=council)
         self.acrislegal_factory(property=property2, master=acrismaster2)
 
         # sold for $10 out of date range
-        acrismaster3 = self.acrismaster_factory(documentid="c", doctype="DEED", docamount=10, docdate="2011-01-01")
+        acrismaster3 = self.acrismaster_factory(
+            documentid="c", doctype="DEED", docamount=10, docdate="2011-01-01")
         property3 = self.property_factory(bbl=3, council=council)
         self.acrislegal_factory(property=property3, master=acrismaster3)
 
         # tax document for $10 in date range
-        acrismaster4 = self.acrismaster_factory(documentid="d", doctype="RPTT", docamount=10, docdate="2017-01-01")
+        acrismaster4 = self.acrismaster_factory(
+            documentid="d", doctype="RPTT", docamount=10, docdate="2017-01-01")
         property4 = self.property_factory(bbl=4, council=council)
         self.acrislegal_factory(property=property4, master=acrismaster4)
 
@@ -910,7 +1016,8 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
 
         for i in range(5):
             # self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
-            self.hpdviolation_factory(property=property5, approveddate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property5, approveddate="2018-01-01")
 
         # properties that sold for over $5 between 2017-2018 OR +5 hpd violations
         query = '/properties/?q=*condition_0=OR+filter_0=acrisreallegals__documentid__docdate__gte=2017-01-01,acrisreallegals__documentid__docdate__lte=2018-01-01,acrisreallegals__documentid__docamount__gte=5+filter_1=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5'
@@ -931,11 +1038,13 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         # sold 5 times in date range
         property1 = self.property_factory(bbl=1, council=council)
         for i in range(5):
-            am = self.acrismaster_factory(doctype="DEED", docamount=10, docdate="2018-01-01")
+            am = self.acrismaster_factory(
+                doctype="DEED", docamount=10, docdate="2018-01-01")
             self.acrislegal_factory(property=property1, master=am)
 
         # sold 1 time in date range
-        acrismaster2 = self.acrismaster_factory(documentid="b", doctype="DEED", docamount=1, docdate="2018-01-01")
+        acrismaster2 = self.acrismaster_factory(
+            documentid="b", doctype="DEED", docamount=1, docdate="2018-01-01")
         property2 = self.property_factory(bbl=2, council=council)
         self.acrislegal_factory(property=property2, master=acrismaster2)
 
@@ -956,11 +1065,13 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         # sold 5 times in date range
         property1 = self.property_factory(bbl=1, council=council)
         for i in range(5):
-            am = self.acrismaster_factory(doctype="DEED", docamount=10, docdate="2018-01-01")
+            am = self.acrismaster_factory(
+                doctype="DEED", docamount=10, docdate="2018-01-01")
             self.acrislegal_factory(property=property1, master=am)
 
         # sold 1 time in date range
-        acrismaster2 = self.acrismaster_factory(documentid="b", doctype="DEED", docamount=1, docdate="2018-01-01")
+        acrismaster2 = self.acrismaster_factory(
+            documentid="b", doctype="DEED", docamount=1, docdate="2018-01-01")
         property2 = self.property_factory(bbl=2, council=council)
         self.acrislegal_factory(property=property2, master=acrismaster2)
 
@@ -973,7 +1084,8 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['bbl'], '1')
-        self.assertEqual(content[0]['acrisrealmasters__01/01/2017-01/01/2018'], 5)
+        self.assertEqual(
+            content[0]['acrisrealmasters__01/01/2017-01/01/2018'], 5)
 
     def test_acriscombined_rules(self):
         council = self.council_factory(id=1)
@@ -981,34 +1093,41 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         # sold 5 times in date range, once with price
         property1 = self.property_factory(bbl=1, council=council)
         for i in range(5):
-            am = self.acrismaster_factory(doctype="DEED", docamount=1, docdate="2018-01-01")
+            am = self.acrismaster_factory(
+                doctype="DEED", docamount=1, docdate="2018-01-01")
             self.acrislegal_factory(property=property1, master=am)
-        am = self.acrismaster_factory(doctype="DEED", docamount=10, docdate="2018-01-01")
+        am = self.acrismaster_factory(
+            doctype="DEED", docamount=10, docdate="2018-01-01")
         self.acrislegal_factory(property=property1, master=am)
 
         # sold 1 time in date range with price
-        acrismaster2 = self.acrismaster_factory(documentid="b", doctype="DEED", docamount=10, docdate="2018-01-01")
+        acrismaster2 = self.acrismaster_factory(
+            documentid="b", doctype="DEED", docamount=10, docdate="2018-01-01")
         property2 = self.property_factory(bbl=2, council=council)
         self.acrislegal_factory(property=property2, master=acrismaster2)
 
         # sold 5 times with price, out of date range
         property3 = self.property_factory(bbl=3, council=council)
         for i in range(5):
-            am3 = self.acrismaster_factory(doctype="DEED", docamount=10, docdate="2011-01-01")
+            am3 = self.acrismaster_factory(
+                doctype="DEED", docamount=10, docdate="2011-01-01")
             self.acrislegal_factory(property=property3, master=am3)
 
         # sold 5 times in date range, not with price
         property4 = self.property_factory(bbl=4, council=council)
         for i in range(5):
-            am4 = self.acrismaster_factory(doctype="DEED", docamount=1, docdate="2018-01-01")
+            am4 = self.acrismaster_factory(
+                doctype="DEED", docamount=1, docdate="2018-01-01")
             self.acrislegal_factory(property=property4, master=am4)
 
         # sold 5 times not in date range, not with price, and 1 time in date range with price
         property5 = self.property_factory(bbl=5, council=council)
         for i in range(5):
-            am = self.acrismaster_factory(doctype="DEED", docamount=1, docdate="2011-01-01")
+            am = self.acrismaster_factory(
+                doctype="DEED", docamount=1, docdate="2011-01-01")
             self.acrislegal_factory(property=property5, master=am)
-        am = self.acrismaster_factory(doctype="DEED", docamount=10, docdate="2018-01-01")
+        am = self.acrismaster_factory(
+            doctype="DEED", docamount=10, docdate="2018-01-01")
         self.acrislegal_factory(property=property5, master=am)
 
         # properties with 5 sales between 2017-2018 and sold for over $5 between 2017-2018
@@ -1030,13 +1149,16 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         property3 = self.property_factory(bbl=3, council=council)
 
         for i in range(10):
-            self.dobissuedpermit_factory(property=property1, issuedate="2018-01-01")
+            self.dobissuedpermit_factory(
+                property=property1, issuedate="2018-01-01")
 
         for i in range(10):
-            self.dobissuedpermit_factory(property=property2, issuedate="2010-01-01")
+            self.dobissuedpermit_factory(
+                property=property2, issuedate="2010-01-01")
 
         for i in range(5):
-            self.dobissuedpermit_factory(property=property3, issuedate="2018-01-01")
+            self.dobissuedpermit_factory(
+                property=property3, issuedate="2018-01-01")
 
         # 10 permits between 2017-2018
         query = '/properties/?q=*condition_0=AND+filter_0=dobissuedpermits__issuedate__gte=2017-01-01,dobissuedpermits__issuedate__lte=2018-01-01,dobissuedpermits__count__gte=10'
@@ -1059,13 +1181,16 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         property3 = self.property_factory(bbl=3, council=council)
 
         for i in range(10):
-            self.dobfiledpermit_factory(property=property1, datefiled="2018-01-01")
+            self.dobfiledpermit_factory(
+                property=property1, datefiled="2018-01-01")
 
         for i in range(10):
-            self.dobfiledpermit_factory(property=property2, datefiled="2010-01-01")
+            self.dobfiledpermit_factory(
+                property=property2, datefiled="2010-01-01")
 
         for i in range(5):
-            self.dobfiledpermit_factory(property=property3, datefiled="2018-01-01")
+            self.dobfiledpermit_factory(
+                property=property3, datefiled="2018-01-01")
 
         # 10 permits between 2017-2018
         query = '/properties/?q=*condition_0=AND+filter_0=dobfiledpermits__datefiled__gte=2017-01-01,dobfiledpermits__datefiled__lte=2018-01-01,dobfiledpermits__count__gte=10'
@@ -1088,13 +1213,16 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         property3 = self.property_factory(bbl=3, council=council)
 
         for i in range(10):
-            self.eviction_factory(property=property1, executeddate="2018-01-01")
+            self.eviction_factory(property=property1,
+                                  executeddate="2018-01-01")
 
         for i in range(10):
-            self.eviction_factory(property=property2, executeddate="2010-01-01")
+            self.eviction_factory(property=property2,
+                                  executeddate="2010-01-01")
 
         for i in range(5):
-            self.eviction_factory(property=property3, executeddate="2018-01-01")
+            self.eviction_factory(property=property3,
+                                  executeddate="2018-01-01")
 
         # 10 permits between 2017-2018
         query = '/properties/?q=*condition_0=AND+filter_0=evictions__executeddate__gte=2017-01-01,evictions__executeddate__lte=2018-01-01,evictions__count__gte=10'
@@ -1206,17 +1334,28 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         property6 = self.property_factory(bbl=6, council=council2, unitsres=4)
 
         for i in range(5):
-            self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
-            self.dobviolation_factory(property=property1, issuedate="2018-01-01")
-            self.hpdviolation_factory(property=property2, approveddate="2018-01-01")
-            self.ecbviolation_factory(property=property2, issuedate="2018-01-01")
-            self.hpdviolation_factory(property=property3, approveddate="2018-01-01")
-            self.dobviolation_factory(property=property3, issuedate="2016-01-01")
-            self.hpdviolation_factory(property=property4, approveddate="2018-01-01")
-            self.dobviolation_factory(property=property4, issuedate="2018-01-01")
-            self.hpdviolation_factory(property=property5, approveddate="2018-01-01")
-            self.dobviolation_factory(property=property5, issuedate="2018-01-01")
-            self.ecbviolation_factory(property=property6, issuedate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2018-01-01")
+            self.dobviolation_factory(
+                property=property1, issuedate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property2, approveddate="2018-01-01")
+            self.ecbviolation_factory(
+                property=property2, issuedate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property3, approveddate="2018-01-01")
+            self.dobviolation_factory(
+                property=property3, issuedate="2016-01-01")
+            self.hpdviolation_factory(
+                property=property4, approveddate="2018-01-01")
+            self.dobviolation_factory(
+                property=property4, issuedate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property5, approveddate="2018-01-01")
+            self.dobviolation_factory(
+                property=property5, issuedate="2018-01-01")
+            self.ecbviolation_factory(
+                property=property6, issuedate="2018-01-01")
 
         # properties in council 1 with small homes and with 5 HPD violations b/t 2018- 2019 AND (5 DOB violations b/t 2018-2019 OR 5 ECB violations b/t 2018-2019)
         query = '/properties/?format=json&council=1&housingtype=sh&unitsres__lte=4&q=*condition_0=AND+filter_0=condition_1+filter_0=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5+*condition_1=OR+filter_1=dobviolations__issuedate__gte=2018-01-01,dobviolations__issuedate__lte=2019-01-01,dobviolations__count__gte=5+filter_1=ecbviolations__issuedate__gte=2018-01-01,ecbviolations__issuedate__lte=2019-01-01,ecbviolations__count__gte=5'
@@ -1258,17 +1397,28 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         self.coredata_factory(property=property6, programname="j-51")
 
         for i in range(5):
-            self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
-            self.dobviolation_factory(property=property1, issuedate="2018-01-01")
-            self.hpdviolation_factory(property=property2, approveddate="2018-01-01")
-            self.ecbviolation_factory(property=property2, issuedate="2018-01-01")
-            self.hpdviolation_factory(property=property3, approveddate="2018-01-01")
-            self.dobviolation_factory(property=property3, issuedate="2016-01-01")
-            self.hpdviolation_factory(property=property4, approveddate="2018-01-01")
-            self.dobviolation_factory(property=property4, issuedate="2018-01-01")
-            self.hpdviolation_factory(property=property5, approveddate="2018-01-01")
-            self.dobviolation_factory(property=property5, issuedate="2018-01-01")
-            self.ecbviolation_factory(property=property6, issuedate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2018-01-01")
+            self.dobviolation_factory(
+                property=property1, issuedate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property2, approveddate="2018-01-01")
+            self.ecbviolation_factory(
+                property=property2, issuedate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property3, approveddate="2018-01-01")
+            self.dobviolation_factory(
+                property=property3, issuedate="2016-01-01")
+            self.hpdviolation_factory(
+                property=property4, approveddate="2018-01-01")
+            self.dobviolation_factory(
+                property=property4, issuedate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property5, approveddate="2018-01-01")
+            self.dobviolation_factory(
+                property=property5, issuedate="2018-01-01")
+            self.ecbviolation_factory(
+                property=property6, issuedate="2018-01-01")
 
         # properties in council 1 with rent regulated j-51 and with 5 HPD violations b/t 2018- 2019 AND (5 DOB violations b/t 2018-2019 OR 5 ECB violations b/t 2018-2019)
         query = '/properties/?council=1&housingtype=rr&subsidyprograms__programname=j-51&q=*condition_0=AND+filter_0=condition_1+filter_0=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5+*condition_1=OR+filter_1=dobviolations__issuedate__gte=2018-01-01,dobviolations__issuedate__lte=2019-01-01,dobviolations__count__gte=5+filter_1=ecbviolations__issuedate__gte=2018-01-01,ecbviolations__issuedate__lte=2019-01-01,ecbviolations__count__gte=5'
@@ -1285,26 +1435,34 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         council = self.council_factory(id=1)
         council2 = self.council_factory(id=2)
         # full match
-        property1 = self.property_factory(bbl=1, council=council, yearbuilt=1950)
+        property1 = self.property_factory(
+            bbl=1, council=council, yearbuilt=1950)
         self.taxbill_factory(property=property1, uc2007=10, uc2017=1)
         # council match, no housing type match
-        property2 = self.property_factory(bbl=2, council=council, yearbuilt=1950)
+        property2 = self.property_factory(
+            bbl=2, council=council, yearbuilt=1950)
         self.taxbill_factory(property=property2, uc2007=10, uc2017=10)
         # council match, housing type match, no record match
-        property3 = self.property_factory(bbl=3, council=council, yearbuilt=1950)
+        property3 = self.property_factory(
+            bbl=3, council=council, yearbuilt=1950)
         self.taxbill_factory(property=property3, uc2007=10, uc2017=1)
         # council match, no housing type match
         property4 = self.property_factory(bbl=4, council=council)
 
         # no council match, housing type match, record match
-        property5 = self.property_factory(bbl=5, council=council2, yearbuilt=1950)
+        property5 = self.property_factory(
+            bbl=5, council=council2, yearbuilt=1950)
         self.taxbill_factory(property=property5, uc2007=10, uc2017=1)
 
         for i in range(5):
-            self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
-            self.hpdviolation_factory(property=property2, approveddate="2018-01-01")
-            self.hpdviolation_factory(property=property4, approveddate="2018-01-01")
-            self.hpdviolation_factory(property=property5, approveddate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property2, approveddate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property4, approveddate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property5, approveddate="2018-01-01")
 
         # properties in council 1 with rent regulated j-51 and with 5 HPD violations b/t 2018- 2019 AND (5 DOB violations b/t 2018-2019 OR 5 ECB violations b/t 2018-2019)
         query = '/properties/?council=1&housingtype=rs&rsunitslost__gte=0.5&rsunitslost__start=2007&q=*condition_0=AND+filter_0=hpdviolations__count__gte=5,hpdviolations__approveddate__gte=2018-01-01'
@@ -1321,39 +1479,48 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         council2 = self.council_factory(id=2)
 
         # full match
-        property1 = self.property_factory(bbl=1, council=council, yearbuilt=1950)
+        property1 = self.property_factory(
+            bbl=1, council=council, yearbuilt=1950)
         self.taxbill_factory(property=property1, uc2007=10, uc2017=1)
         # council match, no housing type match
-        property2 = self.property_factory(bbl=2, council=council, yearbuilt=1950)
+        property2 = self.property_factory(
+            bbl=2, council=council, yearbuilt=1950)
         self.taxbill_factory(property=property2, uc2007=10, uc2017=10)
         # council match, housing type match, no record match
-        property3 = self.property_factory(bbl=3, council=council, yearbuilt=1950)
+        property3 = self.property_factory(
+            bbl=3, council=council, yearbuilt=1950)
         self.taxbill_factory(property=property3, uc2007=10, uc2017=1)
         # council match, no housing type match
         property4 = self.property_factory(bbl=4, council=council)
 
         # no council match, housing type match, record match
-        property5 = self.property_factory(bbl=5, council=council2, yearbuilt=1950)
+        property5 = self.property_factory(
+            bbl=5, council=council2, yearbuilt=1950)
         self.taxbill_factory(property=property5, uc2007=10, uc2017=1)
 
         # sold for $10 in date range
-        acrismaster1 = self.acrismaster_factory(documentid="a", doctype="DEED", docamount=10, docdate="2018-01-01")
+        acrismaster1 = self.acrismaster_factory(
+            documentid="a", doctype="DEED", docamount=10, docdate="2018-01-01")
         self.acrislegal_factory(property=property1, master=acrismaster1)
 
         # sold for $1 in date range
-        acrismaster2 = self.acrismaster_factory(documentid="b", doctype="DEED", docamount=1, docdate="2018-01-01")
+        acrismaster2 = self.acrismaster_factory(
+            documentid="b", doctype="DEED", docamount=1, docdate="2018-01-01")
         self.acrislegal_factory(property=property2, master=acrismaster2)
 
         # sold for $10 out of date range
-        acrismaster3 = self.acrismaster_factory(documentid="c", doctype="DEED", docamount=10, docdate="2011-01-01")
+        acrismaster3 = self.acrismaster_factory(
+            documentid="c", doctype="DEED", docamount=10, docdate="2011-01-01")
         self.acrislegal_factory(property=property3, master=acrismaster3)
 
         # tax document for $10 in date range
-        acrismaster4 = self.acrismaster_factory(documentid="d", doctype="RPTT", docamount=10, docdate="2017-01-01")
+        acrismaster4 = self.acrismaster_factory(
+            documentid="d", doctype="RPTT", docamount=10, docdate="2017-01-01")
         self.acrislegal_factory(property=property4, master=acrismaster4)
 
         # sold for $10 in date range
-        acrismaster5 = self.acrismaster_factory(documentid="e", doctype="DEED", docamount=10, docdate="2018-01-01")
+        acrismaster5 = self.acrismaster_factory(
+            documentid="e", doctype="DEED", docamount=10, docdate="2018-01-01")
         self.acrislegal_factory(property=property5, master=acrismaster5)
 
         # properties in council 1 lost 50% rs units and sold for at least $5 betwen 2017-2018
@@ -1371,26 +1538,39 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         council = self.council_factory(id=1)
         council2 = self.council_factory(id=2)
         # full match
-        property1 = self.property_factory(bbl=1, council=council, yearbuilt=1950)
-        self.coredata_factory(property=property1, enddate="2018-01-01", programname="421a Affordable")
+        property1 = self.property_factory(
+            bbl=1, council=council, yearbuilt=1950)
+        self.coredata_factory(
+            property=property1, enddate="2018-01-01", programname="421a Affordable")
         # council match, no housing type match, record match
-        property2 = self.property_factory(bbl=2, council=council, yearbuilt=1950)
+        property2 = self.property_factory(
+            bbl=2, council=council, yearbuilt=1950)
         # council match, no housing type match on program, record match
-        property3 = self.property_factory(bbl=3, council=council, yearbuilt=1950)
-        self.coredata_factory(property=property3, enddate="2018-01-01", programname="LIHCT")
+        property3 = self.property_factory(
+            bbl=3, council=council, yearbuilt=1950)
+        self.coredata_factory(property=property3,
+                              enddate="2018-01-01", programname="LIHCT")
         # council match, housing type match, no record match
-        property4 = self.property_factory(bbl=4, council=council, yearbuilt=1950)
-        self.coredata_factory(property=property4, enddate="2018-01-01", programname="421a Affordable")
+        property4 = self.property_factory(
+            bbl=4, council=council, yearbuilt=1950)
+        self.coredata_factory(
+            property=property4, enddate="2018-01-01", programname="421a Affordable")
 
         # no council match, housing type match, record match
-        property5 = self.property_factory(bbl=5, council=council2, yearbuilt=1950)
-        self.coredata_factory(property=property5, enddate="2018-01-01", programname="421a Affordable")
+        property5 = self.property_factory(
+            bbl=5, council=council2, yearbuilt=1950)
+        self.coredata_factory(
+            property=property5, enddate="2018-01-01", programname="421a Affordable")
 
         for i in range(5):
-            self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
-            self.hpdviolation_factory(property=property2, approveddate="2018-01-01")
-            self.hpdviolation_factory(property=property3, approveddate="2018-01-01")
-            self.hpdviolation_factory(property=property5, approveddate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property2, approveddate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property3, approveddate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property5, approveddate="2018-01-01")
 
         # properties in council 1 with rent regulated j-51 and with 5 HPD violations b/t 2018- 2019 AND (5 DOB violations b/t 2018-2019 OR 5 ECB violations b/t 2018-2019)
         query = '/properties/?council=1&housingtype=rr&subsidyprograms__programname__any=421a+Affordable&q=*condition_0=AND+filter_0=hpdviolations__count__gte=5,hpdviolations__approveddate__gte=2018-01-01'
@@ -1419,17 +1599,28 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         property6 = self.property_factory(bbl=6, zipcode=zipcode2, unitsres=4)
 
         for i in range(5):
-            self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
-            self.dobviolation_factory(property=property1, issuedate="2018-01-01")
-            self.hpdviolation_factory(property=property2, approveddate="2018-01-01")
-            self.ecbviolation_factory(property=property2, issuedate="2018-01-01")
-            self.hpdviolation_factory(property=property3, approveddate="2018-01-01")
-            self.dobviolation_factory(property=property3, issuedate="2016-01-01")
-            self.hpdviolation_factory(property=property4, approveddate="2018-01-01")
-            self.dobviolation_factory(property=property4, issuedate="2018-01-01")
-            self.hpdviolation_factory(property=property5, approveddate="2018-01-01")
-            self.dobviolation_factory(property=property5, issuedate="2018-01-01")
-            self.ecbviolation_factory(property=property6, issuedate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2018-01-01")
+            self.dobviolation_factory(
+                property=property1, issuedate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property2, approveddate="2018-01-01")
+            self.ecbviolation_factory(
+                property=property2, issuedate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property3, approveddate="2018-01-01")
+            self.dobviolation_factory(
+                property=property3, issuedate="2016-01-01")
+            self.hpdviolation_factory(
+                property=property4, approveddate="2018-01-01")
+            self.dobviolation_factory(
+                property=property4, issuedate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property5, approveddate="2018-01-01")
+            self.dobviolation_factory(
+                property=property5, issuedate="2018-01-01")
+            self.ecbviolation_factory(
+                property=property6, issuedate="2018-01-01")
 
         # properties in zipcode 1 with small homes and with 5 HPD violations b/t 2018- 2019 AND (5 DOB violations b/t 2018-2019 OR 5 ECB violations b/t 2018-2019)
         query = '/properties/?format=json&zipcode=1&housingtype=sh&unitsres__lte=4&q=*condition_0=AND+filter_0=condition_1+filter_0=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5+*condition_1=OR+filter_1=dobviolations__issuedate__gte=2018-01-01,dobviolations__issuedate__lte=2019-01-01,dobviolations__count__gte=5+filter_1=ecbviolations__issuedate__gte=2018-01-01,ecbviolations__issuedate__lte=2019-01-01,ecbviolations__count__gte=5'
@@ -1447,30 +1638,47 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         stateassembly = self.state_assembly_factory(id=1)
         stateassembly2 = self.state_assembly_factory(id=2)
         # full match
-        property1 = self.property_factory(bbl=1, stateassembly=stateassembly, unitsres=4)
+        property1 = self.property_factory(
+            bbl=1, stateassembly=stateassembly, unitsres=4)
         # full match
-        property2 = self.property_factory(bbl=2, stateassembly=stateassembly, unitsres=4)
+        property2 = self.property_factory(
+            bbl=2, stateassembly=stateassembly, unitsres=4)
         # correct stateassembly, correct housing type, not filter match
-        property3 = self.property_factory(bbl=3, stateassembly=stateassembly, unitsres=4)
+        property3 = self.property_factory(
+            bbl=3, stateassembly=stateassembly, unitsres=4)
         # correct stateassembly, wrong housing type, filter match
-        property4 = self.property_factory(bbl=4, stateassembly=stateassembly, unitsres=6)
+        property4 = self.property_factory(
+            bbl=4, stateassembly=stateassembly, unitsres=6)
         # wrong stateassembly, otherwise complete match
-        property5 = self.property_factory(bbl=5, stateassembly=stateassembly2, unitsres=4)
+        property5 = self.property_factory(
+            bbl=5, stateassembly=stateassembly2, unitsres=4)
         # wrong stateassembly, housing type only match
-        property6 = self.property_factory(bbl=6, stateassembly=stateassembly2, unitsres=4)
+        property6 = self.property_factory(
+            bbl=6, stateassembly=stateassembly2, unitsres=4)
 
         for i in range(5):
-            self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
-            self.dobviolation_factory(property=property1, issuedate="2018-01-01")
-            self.hpdviolation_factory(property=property2, approveddate="2018-01-01")
-            self.ecbviolation_factory(property=property2, issuedate="2018-01-01")
-            self.hpdviolation_factory(property=property3, approveddate="2018-01-01")
-            self.dobviolation_factory(property=property3, issuedate="2016-01-01")
-            self.hpdviolation_factory(property=property4, approveddate="2018-01-01")
-            self.dobviolation_factory(property=property4, issuedate="2018-01-01")
-            self.hpdviolation_factory(property=property5, approveddate="2018-01-01")
-            self.dobviolation_factory(property=property5, issuedate="2018-01-01")
-            self.ecbviolation_factory(property=property6, issuedate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2018-01-01")
+            self.dobviolation_factory(
+                property=property1, issuedate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property2, approveddate="2018-01-01")
+            self.ecbviolation_factory(
+                property=property2, issuedate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property3, approveddate="2018-01-01")
+            self.dobviolation_factory(
+                property=property3, issuedate="2016-01-01")
+            self.hpdviolation_factory(
+                property=property4, approveddate="2018-01-01")
+            self.dobviolation_factory(
+                property=property4, issuedate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property5, approveddate="2018-01-01")
+            self.dobviolation_factory(
+                property=property5, issuedate="2018-01-01")
+            self.ecbviolation_factory(
+                property=property6, issuedate="2018-01-01")
 
         # properties in stateassembly 1 with small homes and with 5 HPD violations b/t 2018- 2019 AND (5 DOB violations b/t 2018-2019 OR 5 ECB violations b/t 2018-2019)
         query = '/properties/?format=json&stateassembly=1&housingtype=sh&unitsres__lte=4&q=*condition_0=AND+filter_0=condition_1+filter_0=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5+*condition_1=OR+filter_1=dobviolations__issuedate__gte=2018-01-01,dobviolations__issuedate__lte=2019-01-01,dobviolations__count__gte=5+filter_1=ecbviolations__issuedate__gte=2018-01-01,ecbviolations__issuedate__lte=2019-01-01,ecbviolations__count__gte=5'
@@ -1488,30 +1696,47 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         statesenate = self.state_senate_factory(id=1)
         statesenate2 = self.state_senate_factory(id=2)
         # full match
-        property1 = self.property_factory(bbl=1, statesenate=statesenate, unitsres=4)
+        property1 = self.property_factory(
+            bbl=1, statesenate=statesenate, unitsres=4)
         # full match
-        property2 = self.property_factory(bbl=2, statesenate=statesenate, unitsres=4)
+        property2 = self.property_factory(
+            bbl=2, statesenate=statesenate, unitsres=4)
         # correct statesenate, correct housing type, not filter match
-        property3 = self.property_factory(bbl=3, statesenate=statesenate, unitsres=4)
+        property3 = self.property_factory(
+            bbl=3, statesenate=statesenate, unitsres=4)
         # correct statesenate, wrong housing type, filter match
-        property4 = self.property_factory(bbl=4, statesenate=statesenate, unitsres=6)
+        property4 = self.property_factory(
+            bbl=4, statesenate=statesenate, unitsres=6)
         # wrong statesenate, otherwise complete match
-        property5 = self.property_factory(bbl=5, statesenate=statesenate2, unitsres=4)
+        property5 = self.property_factory(
+            bbl=5, statesenate=statesenate2, unitsres=4)
         # wrong statesenate, housing type only match
-        property6 = self.property_factory(bbl=6, statesenate=statesenate2, unitsres=4)
+        property6 = self.property_factory(
+            bbl=6, statesenate=statesenate2, unitsres=4)
 
         for i in range(5):
-            self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
-            self.dobviolation_factory(property=property1, issuedate="2018-01-01")
-            self.hpdviolation_factory(property=property2, approveddate="2018-01-01")
-            self.ecbviolation_factory(property=property2, issuedate="2018-01-01")
-            self.hpdviolation_factory(property=property3, approveddate="2018-01-01")
-            self.dobviolation_factory(property=property3, issuedate="2016-01-01")
-            self.hpdviolation_factory(property=property4, approveddate="2018-01-01")
-            self.dobviolation_factory(property=property4, issuedate="2018-01-01")
-            self.hpdviolation_factory(property=property5, approveddate="2018-01-01")
-            self.dobviolation_factory(property=property5, issuedate="2018-01-01")
-            self.ecbviolation_factory(property=property6, issuedate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2018-01-01")
+            self.dobviolation_factory(
+                property=property1, issuedate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property2, approveddate="2018-01-01")
+            self.ecbviolation_factory(
+                property=property2, issuedate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property3, approveddate="2018-01-01")
+            self.dobviolation_factory(
+                property=property3, issuedate="2016-01-01")
+            self.hpdviolation_factory(
+                property=property4, approveddate="2018-01-01")
+            self.dobviolation_factory(
+                property=property4, issuedate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property5, approveddate="2018-01-01")
+            self.dobviolation_factory(
+                property=property5, issuedate="2018-01-01")
+            self.ecbviolation_factory(
+                property=property6, issuedate="2018-01-01")
 
         # properties in statesenate 1 with small homes and with 5 HPD violations b/t 2018- 2019 AND (5 DOB violations b/t 2018-2019 OR 5 ECB violations b/t 2018-2019)
         query = '/properties/?format=json&statesenate=1&housingtype=sh&unitsres__lte=4&q=*condition_0=AND+filter_0=condition_1+filter_0=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5+*condition_1=OR+filter_1=dobviolations__issuedate__gte=2018-01-01,dobviolations__issuedate__lte=2019-01-01,dobviolations__count__gte=5+filter_1=ecbviolations__issuedate__gte=2018-01-01,ecbviolations__issuedate__lte=2019-01-01,ecbviolations__count__gte=5'
@@ -1531,7 +1756,8 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         response = self.client.get(query, format="json")
 
         self.assertEqual(response.status_code, 500)
-        self.assertEqual('"fakedataset" is not a valid dataset.' in response.data['detail'], True)
+        self.assertEqual(
+            '"fakedataset" is not a valid dataset.' in response.data['detail'], True)
 
     def test_validations_2(self):
         # incorrect conditions types
@@ -1539,7 +1765,8 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         response = self.client.get(query, format="json")
 
         self.assertEqual(response.status_code, 500)
-        self.assertEqual('"BOR" is not a valid condition type.' in response.data['detail'], True)
+        self.assertEqual(
+            '"BOR" is not a valid condition type.' in response.data['detail'], True)
 
     def test_validations_3(self):
         # no filters on the condition
@@ -1547,7 +1774,8 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         response = self.client.get(query, format="json")
 
         self.assertEqual(response.status_code, 500)
-        self.assertEqual('Condition 0 has no filters' in response.data['detail'], True)
+        self.assertEqual(
+            'Condition 0 has no filters' in response.data['detail'], True)
 
     def test_validations_4(self):
         # invalid field on the dataset filter
@@ -1555,7 +1783,8 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         response = self.client.get(query, format="json")
 
         self.assertEqual(response.status_code, 500)
-        self.assertEqual('Field "badfield" is not valid for dataset "HPDViolation"' in response.data['detail'], True)
+        self.assertEqual(
+            'Field "badfield" is not valid for dataset "HPDViolation"' in response.data['detail'], True)
 
     def test_duplicate_dataset_1_OR(self):
         # 5 HPD Violations in range 1
@@ -1570,12 +1799,16 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         property4 = self.property_factory(bbl=4)
 
         for i in range(5):
-            self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
-            self.hpdviolation_factory(property=property2, approveddate="2008-01-01")
-            self.hpdviolation_factory(property=property4, approveddate="2015-01-01")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property2, approveddate="2008-01-01")
+            self.hpdviolation_factory(
+                property=property4, approveddate="2015-01-01")
 
         for i in range(1):
-            self.hpdviolation_factory(property=property3, approveddate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property3, approveddate="2018-01-01")
 
         # 5 HPD Violations after 2018 OR 5 HPD Violations before 2010
         query = '/properties/?q=*condition_0=OR+filter_0=hpdviolations__count__gte=5,hpdviolations__approveddate__gte=2018-01-01+filter_1=hpdviolations__count__gte=5,hpdviolations__approveddate__lte=2010-01-01'
