@@ -3,6 +3,7 @@
 #### V1.0.4
 
 - add AEDBuilding model
+- update RentStabalizationRecord to update with 2018 data
 
 #### V1.0.3
 
