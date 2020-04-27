@@ -307,3 +307,10 @@
     model_name: StateSenate
     automated: false
     update_schedule: "when needed"
+- model: core.dataset
+  pk: 43
+  fields:
+    name: AED Buildings
+    model_name: AEDBuilding
+    automated: false
+    update_schedule: "when needed"

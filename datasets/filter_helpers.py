@@ -47,7 +47,8 @@ def filtered_dataset_annotation(dataset_prefix, date_filters, queryset):
             af.construct_and_q([date_filters])))})
         # Slower due to:
         # Join table GROUP BY with many large datasets
-        queryset = queryset.annotate(**{dataset_plural_key: Count(filtered_key, distinct=True)})
+        queryset = queryset.annotate(
+            **{dataset_plural_key: Count(filtered_key, distinct=True)})
 
     # abandoned due to unexplained hang
     # queryset = queryset.annotate(**{dataset_plural_key: Count(dataset_prefix,
@@ -112,7 +113,8 @@ class CommaSeparatedConditionWidget(django_filters.widgets.SuffixedMultiWidget):
     """Character widget parsing comma separated values. ex: param__any=1,2,3"""
 
     def __init__(self, attrs=None):
-        widgets = (forms.TextInput, forms.TextInput, forms.TextInput, forms.TextInput,)
+        widgets = (forms.TextInput, forms.TextInput,
+                   forms.TextInput, forms.TextInput,)
         super().__init__(widgets, attrs)
     suffixes = ['_any', '_all', '', '_icontains']
 
@@ -124,7 +126,8 @@ class CommaSeparatedConditionField(django_filters.fields.RangeField):
         fields = (
             forms.CharField(), forms.CharField(),  forms.CharField(), forms.CharField(),)
 
-        super(CommaSeparatedConditionField, self).__init__(fields, *args, **kwargs)
+        super(CommaSeparatedConditionField, self).__init__(
+            fields, *args, **kwargs)
 
     def compress(self, data_list):
         if data_list:
@@ -198,9 +201,10 @@ class PercentWithDateField(django_filters.fields.RangeField):
             start_year, end_year, lt_value, lte_value, exact_value, gt_value, gte_value = data_list
             if not end_year:
                 if ds.RentStabilizationRecord.get_dataset():
-                    end_year = ds.RentStabilizationRecord.get_dataset().latest_version() or '2017'
+                    end_year = ds.RentStabilizationRecord.get_dataset(
+                    ).latest_version() or ds.RentStabilizationRecord.MANUAL_YEAR
                 else:
-                    end_year = '2017'
+                    end_year = ds.RentStabilizationRecord.MANUAL_YEAR
 
             filters = {
                 'start_year': 'rentstabilizationrecord__uc{}'.format(start_year),

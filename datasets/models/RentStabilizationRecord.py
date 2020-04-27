@@ -19,6 +19,8 @@ logger = logging.getLogger('app')
 
 class RentStabilizationRecord(BaseDatasetModel, models.Model):
     download_endpoint = "http://taxbills.nyc/joined.csv"
+    data_2018 = "https://s3.amazonaws.com/justfix-data/rentstab_counts_for_pluto_19v1_bbls.csv"
+    MANUAL_YEAR = 2018  # latest year this information holds
 
     class Meta:
         indexes = [
@@ -59,7 +61,7 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
             models.Index(fields=['uc2023', 'ucbbl']),
             models.Index(fields=['uc2024', 'ucbbl']),
         ]
-
+    id = models.TextField(primary_key=True, blank=False, null=False)
     ucbbl = models.OneToOneField('Property', db_column='ucbbl', db_constraint=False,
                                  on_delete=models.SET_NULL, null=True, blank=True)
     borough = models.TextField(blank=True, null=True)
@@ -143,13 +145,17 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
     address = models.TextField(blank=True, null=True)
     ownername = models.TextField(blank=True, null=True)
     numbldgs = models.SmallIntegerField(blank=True, null=True)
-    numfloors = models.DecimalField(decimal_places=2, max_digits=8, blank=True, null=True)
+    numfloors = models.DecimalField(
+        decimal_places=2, max_digits=8, blank=True, null=True)
     unitsres = models.IntegerField(blank=True, null=True)
     unitstotal = models.IntegerField(blank=True, null=True)
     yearbuilt = models.SmallIntegerField(blank=True, null=True)
     condono = models.SmallIntegerField(blank=True, null=True)
-    lon = models.DecimalField(decimal_places=16, max_digits=32, blank=True, null=True)
-    lat = models.DecimalField(decimal_places=16, max_digits=32, blank=True, null=True)
+    lon = models.DecimalField(
+        decimal_places=16, max_digits=32, blank=True, null=True)
+    lat = models.DecimalField(
+        decimal_places=16, max_digits=32, blank=True, null=True)
+    pdfsoa2018 = models.TextField(default='', blank=True, null=True)
 
     def get_latest_count(self):
         year = datetime.datetime.today().year
@@ -164,7 +170,7 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
         year = 2007
         earliest = None
 
-        while not earliest and int(year) < 2017:
+        while not earliest and int(year) < 2018:
             earliest = getattr(self, 'uc' + str(year))
             year += 1
         return earliest
@@ -192,6 +198,7 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
             if is_null(row['ucbbl']):
                 continue
             row['ucbbl'] = str(row['ucbbl'])
+            row['id'] = row['ucbbl']
             yield row
 
     # trims down new update files to preserve memory
@@ -206,7 +213,7 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        update = self.bulk_seed(**kwargs, overwrite=True)
+        update = self.seed_with_upsert(**kwargs)
         self.annotate_properties()
         return update
 
@@ -218,7 +225,8 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
                 annotation.unitsrentstabilized = annotation.bbl.get_rentstabilized_units()
                 annotation.save()
                 if count % 10000 == 0:
-                    logger.debug('{} annotation: {}'.format(self.__name__, count))
+                    logger.debug('{} annotation: {}'.format(
+                        self.__name__, count))
                 count = count + 1
             except Exception as e:
                 continue
