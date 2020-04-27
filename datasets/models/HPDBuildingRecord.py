@@ -33,7 +33,8 @@ class HPDBuildingRecord(BaseDatasetModel, models.Model):
     dobbuildingclass = models.TextField(blank=True, null=True)
     legalstories = models.IntegerField(blank=True, null=True)
     legalclassa = models.IntegerField(blank=True, null=True)
-    legalclassb = models.IntegerField(blank=True, null=True)
+    legalclassb = models.IntegerField(
+        blank=True, null=True)  # any of these = SRO flag
     lifecycle = models.TextField(blank=True, null=True)
     recordstatusid = models.IntegerField(blank=True, null=True)
     recordstatus = models.TextField(blank=True, null=True)

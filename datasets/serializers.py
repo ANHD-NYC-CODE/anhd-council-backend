@@ -194,6 +194,7 @@ class PropertySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+# used in District Dashboard
 class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.Property
@@ -363,6 +364,7 @@ class PropertyShortSummarySerializer(serializers.ModelSerializer):
             return None
 
 
+# used in lookup
 class PropertySummarySerializer(serializers.ModelSerializer):
     hpdregistrations = HPDRegistrationSerializer(
         source='hpdregistration_set', many=True, read_only=True)
