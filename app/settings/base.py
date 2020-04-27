@@ -21,7 +21,8 @@ TESTING = sys.argv[1:2] == ['test']
 
 BATCH_SIZE = 100000
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+BASE_DIR = os.path.dirname(os.path.dirname(
+    os.path.dirname(os.path.abspath(__file__))))
 SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY', '')
 
 CACHE_REQUEST_KEY = os.environ.get('CACHE_REQUEST_KEY', '')
@@ -29,7 +30,8 @@ CACHE_REQUEST_KEY = os.environ.get('CACHE_REQUEST_KEY', '')
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', '%h(!920-v_1e6)%+@)$l9t5955a4m9v&_ipgawllvk-^_$2%=0')
+SECRET_KEY = os.environ.get(
+    'SECRET_KEY', '%h(!920-v_1e6)%+@)$l9t5955a4m9v&_ipgawllvk-^_$2%=0')
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -383,9 +385,11 @@ ACTIVE_MODELS = [
     'PSForeclosure',
     'PSPreForeclosure',
     'Foreclosure',
+    'AEDBuilding'
 
 ]
 
 
+# models which are referenced in the PropertyAnnotation model
 ANNOTATED_DATASETS = ['HPDViolation', 'HPDComplaint', 'DOBViolation', 'DOBComplaint',
                       'ECBViolation', 'DOBIssuedPermit', 'DOBFiledPermit', 'Eviction', 'HousingLitigation', 'AcrisRealMaster', 'Foreclosure']

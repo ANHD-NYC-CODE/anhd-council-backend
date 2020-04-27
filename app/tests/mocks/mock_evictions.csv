@@ -1,2 +1,4 @@
 "borough","court_index_number","docket_number","eviction_address","eviction_apt_num","eviction_zip","executed_date","marshal_first_name","marshal_last_name","residential_commercial_ind","schedule_status"
-"MANHATTAN","N055677/17","382491","123 Fake Street","C27F","10031","2017-11-16T00:00:00.000","Richard","McCoy","Residential","Scheduled"
+"MANHATTAN","N055677/17","382491","123 Fake Street","a1","10031","2017-11-16T00:00:00.000","Richard","ln1","Residential","Scheduled"
+"BRONX","N055677/18","382491","125 Fake Street","a2","10031","2017-11-14T00:00:00.000","Richard","ln2","Residential","Scheduled"
+"MANHATTAN","N055677/19","382491","50 Broad Street","a3","10004","2017-11-13T00:00:00.000","Richard","ln3","Residential","Scheduled"

@@ -1,5 +1,9 @@
 # API CHANGELOG
 
+#### V1.0.4
+
+- add AEDBuilding model
+
 #### V1.0.3
 
 - Fixes eviction de-duplication bug - now evictions properly unique on address, date, apt num, and marshall last name.
