@@ -13,36 +13,37 @@ from django.db import connection, transaction
 from core import models as c
 from django.conf import settings
 from django_celery_results.models import TaskResult
+from app.celery import FaultTolerantTask
 import logging
 import os
 
 logger = logging.getLogger('app')
 
 
-@app.task(bind=True, queue='celery')
-def add(x, y):
+@app.task(bind=True, queue='celery', base=FaultTolerantTask)
+def add(self, x, y):
     print(x + y)
     return x + y
 
 
-@app.task(bind=True)
+@app.task(bind=True, base=FaultTolerantTask)
 def shutdown(self):
     # Add shutdown task to queue to shutdown workers / restart after all tasks done
     app.control.revoke(self.id)  # prevent this task from being executed again
     app.control.shutdown()  # send shutdown signal to all workers
 
 
-@app.task(bind=True, queue='celery', max_retries=0)
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', max_retries=0)
 def sanity_check(self):
     logger.info('Sanity check running.')
 
 
-@app.task(bind=True, queue='celery', default_retry_delay=60, max_retries=1)
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=60, max_retries=1)
 def async_ensure_update_task_results(self):
     c.Update.ensure_update_task_results()
 
 
-@app.task(bind=True, queue='celery', default_retry_delay=60, max_retries=1)
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=60, max_retries=1)
 def clean_temp_directory(self):
     try:
         flushexpiredtokens.Command().handle()
@@ -63,7 +64,7 @@ def clean_temp_directory(self):
 # clears cache
 
 
-@app.task(bind=True, queue='celery', default_retry_delay=60, max_retries=1)
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=60, max_retries=1)
 def reset_cache(self, token):
     try:
         cache.clear()
@@ -76,7 +77,7 @@ def reset_cache(self, token):
 # does not clear cache
 
 
-@app.task(bind=True, queue='celery', default_retry_delay=60, max_retries=1)
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=60, max_retries=1)
 def recache(self, token):
     try:
         create_async_cache_workers(token)
@@ -86,7 +87,7 @@ def recache(self, token):
         raise e
 
 
-@app.task(bind=True, queue='celery', default_retry_delay=60, max_retries=1)
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=60, max_retries=1)
 def clean_database(self):
     try:
         with transaction.atomic():
@@ -105,19 +106,19 @@ def clean_database(self):
         raise e
 
 
-@app.task(bind=True, queue='celery', default_retry_delay=30, max_retries=3)
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=30, max_retries=3)
 def async_send_new_user_email(self, user_id):
     user = CustomUser.objects.get(id=user_id)
     return send_new_user_email(user=user)
 
 
-@app.task(bind=True, queue='celery', default_retry_delay=30, max_retries=3)
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=30, max_retries=3)
 def async_send_new_user_request_email(self, user_request_id):
     user_request = UserRequest.objects.get(id=user_request_id)
     return send_new_user_request_email(user_request=user_request)
 
 
-@app.task(bind=True, queue='celery', default_retry_delay=30, max_retries=3)
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=30, max_retries=3)
 def async_send_user_message_email(self, bug_report_id):
     bug_report = UserMessage.objects.get(id=bug_report_id)
     return send_user_message_email(bug_report=bug_report)

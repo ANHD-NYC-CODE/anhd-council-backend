@@ -1,5 +1,9 @@
 # API CHANGELOG
 
+#### V1.0.5
+
+- add FaultTolerantTask to attempt to resolve celery task error: "connection closed"
+
 #### V1.0.4
 
 - add AEDBuilding model
