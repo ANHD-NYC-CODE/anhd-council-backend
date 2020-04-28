@@ -217,87 +217,92 @@ class Eviction(BaseDatasetModel, models.Model):
 
     @classmethod
     def validate_geosearch_match(self, geosearch_match, cleaned_address_with_borough):
-        if not geosearch_match:
-            return False
+        try:
+            if not geosearch_match:
+                return False
 
-        cleaned_house_number = get_house_number(
-            cleaned_address_with_borough)
+            cleaned_house_number = get_house_number(
+                cleaned_address_with_borough)
 
-        cleaned_street = cleaned_address_with_borough.split(' ', 1)[1]
+            cleaned_street = cleaned_address_with_borough.split(' ', 1)[1]
 
-        # remove apostrophes
-        geosearch_match['label'] = re.sub(r"\'", '', geosearch_match['label'])
-        # without borough, New York, NY, USA tokens
-        geosearch_house_street = remove_building_terms(
-            geosearch_match['label'].split(', ')[0].upper())
+            # remove apostrophes
+            geosearch_match['label'] = re.sub(
+                r"\'", '', geosearch_match['label'])
+            # without borough, New York, NY, USA tokens
+            geosearch_house_street = remove_building_terms(
+                geosearch_match['label'].split(', ')[0].upper())
 
-        geosearch_borough = geosearch_match['label'].split(', ')[1].upper()
+            geosearch_borough = geosearch_match['label'].split(', ')[1].upper()
 
-        geosearch_street_with_borough = ', '.join([clean_number_and_streets(
-            geosearch_house_street, True, clean_typos=True), geosearch_borough]).upper()
+            geosearch_street_with_borough = ', '.join([clean_number_and_streets(
+                geosearch_house_street, True, clean_typos=True), geosearch_borough]).upper()
 
-        geosearch_house_number = get_house_number(geosearch_house_street)
-        geosearch_street = geosearch_street_with_borough.split(' ', 1)[1]
+            geosearch_house_number = get_house_number(geosearch_house_street)
+            geosearch_street = geosearch_street_with_borough.split(' ', 1)[1]
 
-        if remove_apartment_letter(geosearch_street_with_borough) == remove_apartment_letter(cleaned_address_with_borough):
-            # First naive match against house + street + borough
-            # This match scrubs the apartment letters from both addresses for comparison, but preserves them in database record for later
-            return True
-        elif get_borough(cleaned_address_with_borough) != "QUEENS" and geosearch_borough != "QUEENS" and geosearch_street == cleaned_street and "-" in get_house_number(cleaned_address_with_borough):
-            # Hyphens in non-queens address typically represent a range of buildings.
-            # >> check if the FIRST number in the cleaned hyphen group equals the geosearch house #
-            # >> check if geosearch house # is WITHIN the cleaned house # range
-            cleaned_house_number = remove_apartment_letter(
-                cleaned_house_number)
-            geosearch_house_number = remove_apartment_letter(
-                geosearch_house_number)
-
-            if cleaned_house_number.split('-')[0] == geosearch_house_number:
+            if remove_apartment_letter(geosearch_street_with_borough) == remove_apartment_letter(cleaned_address_with_borough):
+                # First naive match against house + street + borough
+                # This match scrubs the apartment letters from both addresses for comparison, but preserves them in database record for later
                 return True
-            elif int(geosearch_house_number) in range(int(cleaned_house_number.split('-')[0]), int(cleaned_house_number.split('-')[1]) + 1):
-                return True
+            elif get_borough(cleaned_address_with_borough) != "QUEENS" and geosearch_borough != "QUEENS" and geosearch_street == cleaned_street and "-" in get_house_number(cleaned_address_with_borough):
+                # Hyphens in non-queens address typically represent a range of buildings.
+                # >> check if the FIRST number in the cleaned hyphen group equals the geosearch house #
+                # >> check if geosearch house # is WITHIN the cleaned house # range
+                cleaned_house_number = remove_apartment_letter(
+                    cleaned_house_number)
+                geosearch_house_number = remove_apartment_letter(
+                    geosearch_house_number)
 
-        elif re.search(r"(\d+[ST|ND|RD|TH]+)", cleaned_street):
-            # Replace 1ST, 2ND, 3RD etc with 1, 2, 3 in cleaned street because geosearch doesn't include these suffixes in streets
+                if cleaned_house_number.split('-')[0] == geosearch_house_number:
+                    return True
+                elif int(geosearch_house_number) in range(int(cleaned_house_number.split('-')[0]), int(cleaned_house_number.split('-')[1]) + 1):
+                    return True
 
-            match_cleaned = re.search(
-                r"(\d+[ST|ND|RD|TH]+)", cleaned_street).group(0)
-            scrubbed_cleaned_street_number = re.search(
-                r"\d", match_cleaned).group(0)
-            scrubbed_cleaned_street = re.sub(
-                r"(\d+[ST|ND|RD|TH]+)",  scrubbed_cleaned_street_number, cleaned_street)
+            elif re.search(r"(\d+[ST|ND|RD|TH]+)", cleaned_street):
+                # Replace 1ST, 2ND, 3RD etc with 1, 2, 3 in cleaned street because geosearch doesn't include these suffixes in streets
 
-            repaired_cleaned_address = " ".join(
-                [cleaned_house_number, scrubbed_cleaned_street])
+                match_cleaned = re.search(
+                    r"(\d+[ST|ND|RD|TH]+)", cleaned_street).group(0)
+                scrubbed_cleaned_street_number = re.search(
+                    r"\d", match_cleaned).group(0)
+                scrubbed_cleaned_street = re.sub(
+                    r"(\d+[ST|ND|RD|TH]+)",  scrubbed_cleaned_street_number, cleaned_street)
 
-            if (repaired_cleaned_address == geosearch_street_with_borough):
-                return True
+                repaired_cleaned_address = " ".join(
+                    [cleaned_house_number, scrubbed_cleaned_street])
 
-        elif get_street(geosearch_house_street) == get_street(cleaned_address_with_borough) and geosearch_borough == get_borough(cleaned_address_with_borough):
-            # if street and borough match, check for number range matches
-            geo_house = get_house_number(geosearch_house_street)
-            cleaned_house = get_house_number(cleaned_address_with_borough)
-            if geo_house == cleaned_house:
-                # try explicit match against house without apartment number + street + borough
-                return True
-            elif '-' in cleaned_house and geo_house in cleaned_house:
-                # try explict match against segment in a "-" number
-                return True
-            elif "-" in cleaned_house:
-                # Step from low to high and see if geosearch number matches anything
-                split = cleaned_house.split("-")
-                low = split[0]
-                high = split[len(split) - 1]
-                cursor = int(low)
-                step = 2
+                if (repaired_cleaned_address == geosearch_street_with_borough):
+                    return True
 
-                while(cursor <= int(high)):
-                    if int(geo_house) == cursor:
-                        return True
-                    cursor = cursor + step
+            elif get_street(geosearch_house_street) == get_street(cleaned_address_with_borough) and geosearch_borough == get_borough(cleaned_address_with_borough):
+                # if street and borough match, check for number range matches
+                geo_house = get_house_number(geosearch_house_street)
+                cleaned_house = get_house_number(cleaned_address_with_borough)
+                if geo_house == cleaned_house:
+                    # try explicit match against house without apartment number + street + borough
+                    return True
+                elif '-' in cleaned_house and geo_house in cleaned_house:
+                    # try explict match against segment in a "-" number
+                    return True
+                elif "-" in cleaned_house:
+                    # Step from low to high and see if geosearch number matches anything
+                    split = cleaned_house.split("-")
+                    low = split[0]
+                    high = split[len(split) - 1]
+                    cursor = int(low)
+                    step = 2
+
+                    while(cursor <= int(high)):
+                        if int(geo_house) == cursor:
+                            return True
+                        cursor = cursor + step
+                else:
+                    return False
             else:
                 return False
-        else:
+        except Exception as e:
+            logger.error("Error validating eviction: {}".format(e))
             return False
 
     @classmethod
