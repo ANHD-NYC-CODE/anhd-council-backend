@@ -80,7 +80,7 @@ class AEPBuilding(BaseDatasetModel, models.Model):
         for record in self.objects.all():
             try:
                 annotation = record.bbl.propertyannotation
-                annotation.aepbuilding = True
+                annotation.aepstatus = record.currentstatus
                 annotation.save()
             except Exception as e:
                 print(e)
@@ -95,8 +95,8 @@ def annotate_property_on_save(sender, instance, created, **kwargs):
     if created == True:
         try:
 
-            annotation = record.bbl.propertyannotation
-            annotation.aepbuilding = True
+            annotation = instance.bbl.propertyannotation
+            annotation.aepstatus = instance.currentstatus
             annotation.save()
 
         except Exception as e:

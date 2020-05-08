@@ -131,7 +131,7 @@ class PropertyAnnotation(BaseDatasetModel, models.Model):
     legalclassb = models.IntegerField(db_index=True, blank=True, null=True)
     managementprogram = models.TextField(
         db_index=True, default='', blank=True, null=True)
-    aepbuilding = models.BooleanField(
+    aepstatus = models.TextField(
         db_index=True, default=False, blank=True, null=True)
 
     def __str__(self):

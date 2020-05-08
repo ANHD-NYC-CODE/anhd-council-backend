@@ -26,7 +26,7 @@ class AEPBuildingTests(BaseTest, TestCase):
         self.assertEqual(update.rows_created, 4)
 
         self.assertEqual(ds.PropertyAnnotation.objects.get(
-            bbl=property.bbl).aepbuilding, True)
+            bbl=property.bbl).aepstatus, 'AEP Discharged')
 
     def test_seed_dataset_after_update(self):
 
