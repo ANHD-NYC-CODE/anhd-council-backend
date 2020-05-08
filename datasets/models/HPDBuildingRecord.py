@@ -3,6 +3,7 @@ from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.utils.validation_filters import is_null
 import logging
+from core.tasks import async_download_and_update
 
 logger = logging.getLogger('app')
 
@@ -38,6 +39,11 @@ class HPDBuildingRecord(BaseDatasetModel, models.Model):
     lifecycle = models.TextField(blank=True, null=True)
     recordstatusid = models.IntegerField(blank=True, null=True)
     recordstatus = models.TextField(blank=True, null=True)
+
+    @classmethod
+    def create_async_update_worker(self, endpoint=None, file_name=None):
+        async_download_and_update.delay(
+            self.get_dataset().id, endpoint=endpoint, file_name=file_name)
 
     @classmethod
     def download(self, endpoint=None, file_name=None):
