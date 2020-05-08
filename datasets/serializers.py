@@ -387,7 +387,7 @@ class PropertySummarySerializer(serializers.ModelSerializer):
     legalclassa = serializers.SerializerMethodField()
     legalclassb = serializers.SerializerMethodField()
     managementprogram = serializers.SerializerMethodField()
-    aep = serializers.SerializerMethodField()
+    aepbuilding = serializers.SerializerMethodField()
 
     def get_conhrecord(self, obj):
         try:
@@ -449,7 +449,7 @@ class PropertySummarySerializer(serializers.ModelSerializer):
         except Exception as e:
             return None
 
-    def get_aep(self, obj):
+    def get_aepbuilding(self, obj):
         try:
             return obj.propertyannotation.aepbuilding
         except Exception as e:
