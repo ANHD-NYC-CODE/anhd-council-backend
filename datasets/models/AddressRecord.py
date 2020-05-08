@@ -69,7 +69,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
             'key': key,
             'bbl': bbl,
             'bin': bin,
-            'number': number,
+            'number': number.replace('-', ''),  # remove dashes
             'street': building_street,
             'borough': code_to_boro(building_boro),
             'zipcode': building_zip,
@@ -205,7 +205,8 @@ class AddressRecord(BaseDatasetModel, models.Model):
 
         if number_letter:
             number_letter = number_letter.group()
-            street = property.address.split(number_letter)[1].strip()
+            # split first instance so 62 West 62nd Street returns West 62nd street
+            street = property.address.split(number_letter, 1)[1].strip()
             zipcode = property.zipcode_id
             borough = abrv_to_borough(property.borough)
 
@@ -218,7 +219,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
                 'key': key,
                 'bbl': property.bbl,
                 'bin': None,
-                'number': number_letter.strip() if number_letter else None,
+                'number': number_letter.strip().replace('-', '') if number_letter else None,
                 'street': street.strip() if street else None,
                 'borough': borough.strip() if borough else None,
                 'zipcode': zipcode.strip() if zipcode else None,

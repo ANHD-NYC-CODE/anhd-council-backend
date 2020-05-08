@@ -41,7 +41,8 @@ class SearchViewSet(ApplicationViewSet, viewsets.ReadOnlyModelViewSet):
             search_term = request.query_params['fts'].replace(',', '').strip()
 
             def construct_search_query(search_term, prefix_first=False):
-                tokens = search_term.strip().split(' ')
+                # remove spaces, dashes, split into tokens
+                tokens = search_term.replace('-', '').strip().split(' ')
                 terms = ''
 
                 ##
@@ -56,32 +57,40 @@ class SearchViewSet(ApplicationViewSet, viewsets.ReadOnlyModelViewSet):
                         for i in range(len(tokens)):
                             if i == len(tokens) - 1 and len(tokens[i]) <= 1:
                                 # on last token if token is <= 1 chars, don't add star, don't add ampersand
-                                terms = construct_search_terms(terms, tokens[i], False, False)
+                                terms = construct_search_terms(
+                                    terms, tokens[i], False, False)
                             elif i == len(tokens) - 1:
                                 # on last token don't add ampersand
-                                terms = construct_search_terms(terms, tokens[i], True, False)
+                                terms = construct_search_terms(
+                                    terms, tokens[i], True, False)
                             else:
-                                terms = construct_search_terms(terms, tokens[i], True, True)
+                                terms = construct_search_terms(
+                                    terms, tokens[i], True, True)
                     else:
                         for i in range(len(tokens)):
                             if i == 0:
                                 # first token, don't use * star
-                                terms = construct_search_terms(terms, tokens[i], False, True)
+                                terms = construct_search_terms(
+                                    terms, tokens[i], False, True)
                             elif i == len(tokens) - 1 and len(tokens[i]) <= 1:
                                 # on last token if token is <= 1 chars, don't add star, don't add ampersand
-                                terms = construct_search_terms(terms, tokens[i], False, False)
+                                terms = construct_search_terms(
+                                    terms, tokens[i], False, False)
                             elif i == len(tokens) - 1:
                                 # on last token don't add ampersand
-                                terms = construct_search_terms(terms, tokens[i], True, False)
+                                terms = construct_search_terms(
+                                    terms, tokens[i], True, False)
                             else:
-                                terms = construct_search_terms(terms, tokens[i], True, True)
+                                terms = construct_search_terms(
+                                    terms, tokens[i], True, True)
 
                 # https://czep.net/17/full-text-search.html
                 rank_normalization = 16 if prefix_first else 32
                 rank_field = 'rank'
                 vector_column = '"datasets_addressrecord"."address"'
                 ts_query = "(to_tsquery('%s'))" % terms
-                where_q = "\"datasets_addressrecord\".\"address\" @@ %s" % (ts_query + '= true')
+                where_q = "\"datasets_addressrecord\".\"address\" @@ %s" % (
+                    ts_query + '= true')
                 select = {}
                 select[rank_field] = 'ts_rank( "datasets_addressrecord"."address", %s, %d )' % (
                     ts_query, rank_normalization)
@@ -100,9 +109,11 @@ class SearchViewSet(ApplicationViewSet, viewsets.ReadOnlyModelViewSet):
             keys_list = list(doc['key'] for doc in qs)
 
             # Preserves order of keys_list in final query
-            preserved = Case(*[When(key=key, then=pos) for pos, key in enumerate(keys_list)])
+            preserved = Case(*[When(key=key, then=pos)
+                               for pos, key in enumerate(keys_list)])
 
-            self.queryset = ds.AddressRecord.objects.filter(key__in=keys_list).order_by(preserved)
+            self.queryset = ds.AddressRecord.objects.filter(
+                key__in=keys_list).order_by(preserved)
 
         else:
             self.queryset = ds.Building.objects.all().order_by('pk')
