@@ -249,7 +249,7 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
 def annotate_property_on_save(sender, instance, created, **kwargs):
     if created == True:
         try:
-            annotation = ds.PropertyAnnotation.objects.get(bbl=instance.ucbbl)
+            annotation = instance.ucbbl.propertyannotation
             annotation.unitsrentstabilized = annotation.bbl.get_rentstabilized_units()
             annotation.save()
 

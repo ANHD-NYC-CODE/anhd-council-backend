@@ -99,7 +99,7 @@ class HPDComplaint(BaseDatasetModel, models.Model):
 def annotate_property_on_save(sender, instance, created, **kwargs):
     if created == True:
         try:
-            annotation = sender.annotate_property_month_offset(ds.PropertyAnnotation.objects.get(bbl=instance.bbl))
+            annotation = sender.annotate_property_month_offset(instance.bbl.propertyannotation)
             annotation.save()
         except Exception as e:
             print(e)

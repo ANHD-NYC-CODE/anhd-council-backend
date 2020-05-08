@@ -121,7 +121,7 @@ def annotate_property_on_save(sender, instance, created, **kwargs):
             lastyear = dates.get_last_year(string=False)
             last3years = dates.get_last3years(string=False)
 
-            annotation = ds.PropertyAnnotation.objects.get(bbl=instance.bbl)
+            annotation = instance.bbl.propertyannotation
             annotation.foreclosures_last30 = Coalesce(
                 annotation.bbl.foreclosure_set.filter(date_added__gte=last30).count(), 0)
 

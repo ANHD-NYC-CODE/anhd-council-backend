@@ -233,6 +233,7 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
             return None
 
     def get_unitsrentstabilized(self, obj):
+        
         try:
             return obj.propertyannotation.unitsrentstabilized
         except Exception as e:
@@ -358,6 +359,7 @@ class PropertyShortSummarySerializer(serializers.ModelSerializer):
             return None
 
     def get_unitsrentstabilized(self, obj):
+        
         try:
             return obj.propertyannotation.unitsrentstabilized
         except Exception as e:
@@ -366,6 +368,18 @@ class PropertyShortSummarySerializer(serializers.ModelSerializer):
 
 # used in lookup
 class PropertySummarySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.Property
+        fields = (
+            'bbl', 'zipcode', 'council', 'cd', 'stateassembly', 'statesenate', 'borough', 'yearbuilt', 'unitsres', 'unitstotal',
+            'bldgclass', 'zonedist1', 'numbldgs', 'numfloors', 'address', 'lat', 'lng', 'ownertype',
+            'ownername', 'taxlien', 'taxliens', 'buildings', 'rsunits_percent_lost', 'nycha', 'hpdregistrations',
+            'subsidyprograms', 'rentstabilizationrecord', 'unitsrentstabilized', 'subsidyj51', 'subsidy421a', 'conhrecord',
+            'zonedist1', 'zonedist2', 'zonedist3', 'zonedist4', 'overlay1', 'overlay2', 'spdist1', 'spdist2', 'spdist3',
+            'builtfar', 'residfar', 'commfar', 'facilfar', 'original_address', 'legalclassa', 'legalclassb', 'managementprogram', 'aepbuilding'
+        )
+
+    
     hpdregistrations = HPDRegistrationSerializer(
         source='hpdregistration_set', many=True, read_only=True)
     buildings = BuildingSummarySerializer(
@@ -383,6 +397,7 @@ class PropertySummarySerializer(serializers.ModelSerializer):
     subsidy421a = serializers.SerializerMethodField()
     nycha = serializers.SerializerMethodField()
     unitsrentstabilized = serializers.SerializerMethodField()
+    rsunits_percent_lost = serializers.SerializerMethodField()
 
     legalclassa = serializers.SerializerMethodField()
     legalclassb = serializers.SerializerMethodField()
@@ -426,7 +441,7 @@ class PropertySummarySerializer(serializers.ModelSerializer):
             return None
 
     def get_unitsrentstabilized(self, obj):
-        try:
+        try:  
             return obj.propertyannotation.unitsrentstabilized
         except Exception as e:
             return None
@@ -455,18 +470,7 @@ class PropertySummarySerializer(serializers.ModelSerializer):
         except Exception as e:
             return None
 
-    class Meta:
-        model = ds.Property
-        fields = (
-            'bbl', 'zipcode', 'council', 'cd', 'stateassembly', 'statesenate', 'borough', 'yearbuilt', 'unitsres', 'unitstotal',
-            'bldgclass', 'zonedist1', 'numbldgs', 'numfloors', 'address', 'lat', 'lng', 'ownertype',
-            'ownername', 'taxlien', 'taxliens', 'buildings', 'rsunits_percent_lost', 'nycha', 'hpdregistrations',
-            'subsidyprograms', 'rentstabilizationrecord', 'unitsrentstabilized', 'subsidyj51', 'subsidy421a', 'conhrecord',
-            'zonedist1', 'zonedist2', 'zonedist3', 'zonedist4', 'overlay1', 'overlay2', 'spdist1', 'spdist2', 'spdist3',
-            'builtfar', 'residfar', 'commfar', 'facilfar', 'original_address', 'legalclassa', 'legalclassb', 'managementprogram', 'aepbuilding'
-        )
 
-    rsunits_percent_lost = serializers.SerializerMethodField()
 
     def get_rsunits_percent_lost(self, obj):
         try:

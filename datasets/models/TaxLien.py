@@ -69,8 +69,11 @@ class TaxLien(BaseDatasetModel, models.Model):
 def annotate_property_on_save(sender, instance, created, **kwargs):
     if created == True:
         try:
-            annotation = ds.PropertyAnnotation.objects.get(bbl=instance.bbl)
+            annotation = instance.bbl.propertyannotation
             annotation.taxlien = True
             annotation.save()
         except Exception as e:
             print(e)
+
+
+            

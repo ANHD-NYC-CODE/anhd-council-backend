@@ -139,7 +139,7 @@ def annotate_property_on_save(sender, instance, created, **kwargs):
             lastyear = dates.get_last_year(string=False)
             last3years = dates.get_last3years(string=False)
 
-            annotation = ds.PropertyAnnotation.objects.get(bbl=instance.bbl)
+            annotation = instance.bbl.propertyannotation
             annotation.acrisrealmasters_last30 = Coalesce(annotation.bbl.acrisreallegal_set.filter(
                 documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES, documentid__docdate__gte=last30).count(), 0)
 

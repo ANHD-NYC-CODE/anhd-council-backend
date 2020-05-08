@@ -72,7 +72,7 @@ class SubsidyJ51(BaseDatasetModel, models.Model):
 def annotate_property_on_save(sender, instance, created, **kwargs):
     if created == True:
         try:
-            annotation = ds.PropertyAnnotation.objects.get(bbl=instance.bbl)
+            annotation = instance.bbl.propertyannotation
             current_programs = annotation.subsidyprograms or ''
             annotation.subsidyj51 = True
             annotation.subsidyprograms = ', '.join(
