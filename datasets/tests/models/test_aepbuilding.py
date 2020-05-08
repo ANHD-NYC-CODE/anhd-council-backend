@@ -25,6 +25,9 @@ class AEPBuildingTests(BaseTest, TestCase):
         self.assertEqual(ds.AEPBuilding.objects.count(), 4)
         self.assertEqual(update.rows_created, 4)
 
+        self.assertEqual(ds.PropertyAnnotation.objects.get(
+            bbl=property.bbl).aepbuilding, True)
+
     def test_seed_dataset_after_update(self):
 
         update = self.update_factory(model_name="AEPBuilding",

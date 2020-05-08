@@ -4,6 +4,7 @@ from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.utils.validation_filters import is_null
 import logging
 from core.tasks import async_download_and_update
+from django.dispatch import receiver
 
 logger = logging.getLogger('app')
 
@@ -64,11 +65,45 @@ class HPDBuildingRecord(BaseDatasetModel, models.Model):
 
     @classmethod
     def transform_self(self, file_path, update=None):
-        return self.pre_validation_filters(with_bbl(from_csv_file_to_gen(file_path, update), allow_blank=True))
+        return self.pre_validation_filters(with_bbl(from_csv_file_to_gen(file_path, update), borough="boroid", allow_blank=True))
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
+        logger.debug("Seeding/Updating {}", self.__name__)
         self.seed_with_upsert(**kwargs)
+        logger.debug('annotating properties for {}', self.__name__)
+        self.annotate_properties()
+
+    @classmethod
+    def annotate_properties(self):
+        for record in self.objects.all():
+            try:
+
+                annotation = record.bbl.propertyannotation
+
+                annotation.legalclassa = record.legalclassa
+                annotation.legalclassb = record.legalclassb
+                annotation.managementprogram = record.managementprogram
+                annotation.save()
+            except Exception as e:
+                print(e)
 
     def __str__(self):
         return str(self.buildingid)
+
+
+@receiver(models.signals.post_save, sender=HPDBuildingRecord)
+def annotate_property_on_save(sender, instance, created, **kwargs):
+    if created == True:
+        try:
+
+            annotation = ds.PropertyAnnotation.objects.get(
+                bbl=instance.bbl)
+            annotation.legalclassa = instance.legalclassa
+            annotation.legalclassa = instance.legalclassa
+            annotation.managementprogram = instance.managementprogram
+
+            annotation.save()
+        except Exception as e:
+            print(e)
+            return
