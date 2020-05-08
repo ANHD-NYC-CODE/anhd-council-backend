@@ -95,8 +95,7 @@ def annotate_property_on_save(sender, instance, created, **kwargs):
     if created == True:
         try:
 
-            annotation = ds.PropertyAnnotation.objects.get(
-                bbl=instance.bbl)
+            annotation = record.bbl.propertyannotation
             annotation.aepbuilding = True
             annotation.save()
 

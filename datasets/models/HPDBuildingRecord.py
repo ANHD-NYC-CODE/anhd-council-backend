@@ -70,7 +70,7 @@ class HPDBuildingRecord(BaseDatasetModel, models.Model):
     @classmethod
     def seed_or_update_self(self, **kwargs):
         logger.debug("Seeding/Updating {}", self.__name__)
-        self.seed_with_upsert(**kwargs)
+        self.seed_with_upsert(ignore_conflict=True, **kwargs)
         logger.debug('annotating properties for {}', self.__name__)
         self.annotate_properties()
 
@@ -97,8 +97,7 @@ def annotate_property_on_save(sender, instance, created, **kwargs):
     if created == True:
         try:
 
-            annotation = ds.PropertyAnnotation.objects.get(
-                bbl=instance.bbl)
+            annotation = instance.bbl.propertyannotation
             annotation.legalclassa = instance.legalclassa
             annotation.legalclassa = instance.legalclassa
             annotation.managementprogram = instance.managementprogram

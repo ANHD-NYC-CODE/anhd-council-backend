@@ -71,13 +71,16 @@ class BaseDatasetModel():
         # Was the request OK?
         if file_request.status_code != requests.codes.ok:
             # Nope, error handling, skip file etc etc etc
-            logger.error("* ERROR * Download request failed: {}".format(endpoint))
-            raise Exception("Request error: {}".format(file_request.status_code))
+            logger.error(
+                "* ERROR * Download request failed: {}".format(endpoint))
+            raise Exception("Request error: {}".format(
+                file_request.status_code))
 
         # get filename
         if not file_name:
             try:
-                file_name = re.findall("filename=(.+)", file_request.headers['content-disposition'])[0]
+                file_name = re.findall(
+                    "filename=(.+)", file_request.headers['content-disposition'])[0]
             except Exception as e:
                 file_name = endpoint.split('/')[-1][0:64]
 
@@ -86,7 +89,8 @@ class BaseDatasetModel():
 
         # Read the streamed file in sections
         downloaded = 0
-        logger.info("Download started for: {} at {}".format(self.get_dataset().name, endpoint))
+        logger.info("Download started for: {} at {}".format(
+            self.get_dataset().name, endpoint))
 
         for block in file_request.iter_content(1024 * 8):
             downloaded += len(block)
@@ -99,7 +103,8 @@ class BaseDatasetModel():
             lf.write(block)
         data_file = c_models.DataFile(dataset=dataset)
         data_file.file.save(file_name, files.File(lf))
-        logger.info("Download completed for: {} and saved to: {}".format(self.get_dataset().name, data_file.file.path))
+        logger.info("Download completed for: {} and saved to: {}".format(
+            self.get_dataset().name, data_file.file.path))
         return data_file
 
     @classmethod
@@ -113,7 +118,8 @@ class BaseDatasetModel():
         lines_per_csv = math.ceil(csv_length / MAX_CONCURRENT_JOBS)
         logger.debug("Splitting CSV into {}".format(MAX_CONCURRENT_JOBS))
 
-        split_csvs = split_csv(file_path, settings.MEDIA_ROOT, self._meta.db_table, lines_per_csv)
+        split_csvs = split_csv(
+            file_path, settings.MEDIA_ROOT, self._meta.db_table, lines_per_csv)
         for csv_path in split_csvs:
             logger.debug('Creating job for split file {}'.format(csv_path))
             async_seed_split_file.delay(csv_path, update.id)
@@ -121,7 +127,8 @@ class BaseDatasetModel():
     @classmethod
     def seed_with_single(self, **kwargs):
         update = kwargs['update'] if 'update' in kwargs else None
-        upsert_single_rows(self, self.transform_self_from_file(kwargs['file_path'], update=update), update=update)
+        upsert_single_rows(self, self.transform_self_from_file(
+            kwargs['file_path'], update=update), update=update)
         if 'delete_file' in kwargs and kwargs['delete_file']:
             os.remove(kwargs['file_path'])
 
@@ -135,6 +142,9 @@ class BaseDatasetModel():
 
     @classmethod
     def seed_with_upsert(self, **kwargs):
+        # update
+        # callback
+        # ignore_conflict
         update = kwargs['update'] if 'update' in kwargs else None
         callback = kwargs['callback'] if 'callback' in kwargs else None
         return batch_upsert_from_gen(self, self.transform_self_from_file(kwargs['file_path'], update=update), settings.BATCH_SIZE, update=update, callback=callback)
@@ -164,7 +174,8 @@ class BaseDatasetModel():
             update.save()
 
         if (previous_file and os.path.isfile(previous_file.file.path)):
-            seed_from_csv_diff(previous_file.file.path, new_file_path, self, **kwargs)
+            seed_from_csv_diff(previous_file.file.path,
+                               new_file_path, self, **kwargs)
 
         else:
             if 'single' in kwargs and kwargs['single']:
@@ -219,7 +230,8 @@ class BaseDatasetModel():
     @classmethod
     def annotate_all_properties_month_offset(self):
         logger.debug('annotating properties for: {}'.format(self.__name__))
-        last30 = dates.get_last_month_since_api_update(self.get_dataset(), string=False)
+        last30 = dates.get_last_month_since_api_update(
+            self.get_dataset(), string=False)
         lastyear = dates.get_last_year(string=False)
         last3years = dates.get_last3years(string=False)
 
@@ -241,7 +253,8 @@ class BaseDatasetModel():
     @classmethod
     def annotate_property_month_offset(self, annotation):
         try:
-            last30 = dates.get_last_month_since_api_update(self.get_dataset(), string=False)
+            last30 = dates.get_last_month_since_api_update(
+                self.get_dataset(), string=False)
             lastyear = dates.get_last_year(string=False)
             last3years = dates.get_last3years(string=False)
 
