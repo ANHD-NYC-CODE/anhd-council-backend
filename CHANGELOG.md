@@ -1,5 +1,10 @@
 # API CHANGELOG
 
+#### V1.0.6
+
+- Allow dasherized address to be searchable without dashes (Ex: 12-34 Street can be found w 1234 street)
+- Fixed a address creation bug where house numbers w/ same number as street got removed (ex: 62 west 62nd street)
+
 #### V1.0.5
 
 - add FaultTolerantTask to attempt to resolve celery task error: "connection closed"
