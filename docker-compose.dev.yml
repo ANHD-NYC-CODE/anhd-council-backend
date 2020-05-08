@@ -1,4 +1,4 @@
-version: '2'
+version: "2"
 services:
   celery_default:
     env_file:
@@ -11,10 +11,10 @@ services:
       - .env.dev
   flower:
     ports:
-      - '8888:8888'
+      - "8888:8888"
   redis:
     ports:
-      - '6378:6379'
+      - "6378:6379"
   postgres:
     ports:
-      - '5678:5432'
+      - "5678:5432"

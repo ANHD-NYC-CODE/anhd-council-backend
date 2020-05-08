@@ -387,7 +387,7 @@ class PropertySummarySerializer(serializers.ModelSerializer):
     legalclassa = serializers.SerializerMethodField()
     legalclassb = serializers.SerializerMethodField()
     managementprogram = serializers.SerializerMethodField()
-    aep = serializers.SerializerMethodField()
+    aepbuilding = serializers.SerializerMethodField()
 
     def get_conhrecord(self, obj):
         try:
@@ -449,9 +449,9 @@ class PropertySummarySerializer(serializers.ModelSerializer):
         except Exception as e:
             return None
 
-    def get_aep(self, obj):
+    def get_aepbuilding(self, obj):
         try:
-            return obj.propertyannotation.aep
+            return obj.propertyannotation.aepbuilding
         except Exception as e:
             return None
 
@@ -463,7 +463,7 @@ class PropertySummarySerializer(serializers.ModelSerializer):
             'ownername', 'taxlien', 'taxliens', 'buildings', 'rsunits_percent_lost', 'nycha', 'hpdregistrations',
             'subsidyprograms', 'rentstabilizationrecord', 'unitsrentstabilized', 'subsidyj51', 'subsidy421a', 'conhrecord',
             'zonedist1', 'zonedist2', 'zonedist3', 'zonedist4', 'overlay1', 'overlay2', 'spdist1', 'spdist2', 'spdist3',
-            'builtfar', 'residfar', 'commfar', 'facilfar', 'original_address', 'legalclassa', 'legalclassb', 'managementprogram', 'aep'
+            'builtfar', 'residfar', 'commfar', 'facilfar', 'original_address', 'legalclassa', 'legalclassb', 'managementprogram', 'aepbuilding'
         )
 
     rsunits_percent_lost = serializers.SerializerMethodField()
