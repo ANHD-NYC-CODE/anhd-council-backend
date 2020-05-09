@@ -144,7 +144,7 @@ class BaseDatasetModel():
     def seed_with_upsert(self, **kwargs):
         # update
         # callback
-        # ignore_conflict
+        # ignore_conflict = true does nothing, false upserts
         update = kwargs['update'] if 'update' in kwargs else None
         callback = kwargs['callback'] if 'callback' in kwargs else None
         return batch_upsert_from_gen(self, self.transform_self_from_file(kwargs['file_path'], update=update), settings.BATCH_SIZE, update=update, callback=callback)
