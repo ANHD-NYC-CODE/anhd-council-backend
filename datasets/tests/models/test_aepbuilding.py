@@ -30,6 +30,8 @@ class AEPBuildingTests(BaseTest, TestCase):
             bbl=property.bbl).aepstatus, 'AEP Discharged')
         self.assertEqual(ds.PropertyAnnotation.objects.get(
             bbl=property.bbl).aepstartdate.year, 2007)
+        self.assertEqual(ds.PropertyAnnotation.objects.get(
+            bbl=property.bbl).aepdischargedate.year, 2014)
 
     def test_seed_dataset_after_update(self):
 

@@ -82,6 +82,7 @@ class AEPBuilding(BaseDatasetModel, models.Model):
                 annotation = record.bbl.propertyannotation
                 annotation.aepstatus = record.currentstatus
                 annotation.aepstartdate = record.aepstartdate
+                annotation.aepdischargedate = record.dischargedate
                 annotation.save()
             except Exception as e:
                 print(e)
@@ -99,6 +100,8 @@ def annotate_property_on_save(sender, instance, created, **kwargs):
             annotation = instance.bbl.propertyannotation
             annotation.aepstatus = instance.currentstatus
             annotation.aepstartdate = instance.aepstartdate
+            annotation.aepdischargedate = instance.dischargedate
+
             annotation.save()
 
         except Exception as e:
