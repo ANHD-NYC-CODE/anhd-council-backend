@@ -114,6 +114,8 @@ properties_router.register(
     parents_query_lookups=['bbl']
 )
 
+
+
 properties_router.register(
     'hpdviolations',
     v.hpdviolation_views.HPDViolationViewSet,
@@ -459,6 +461,11 @@ router.register(r'hpdproblems', v.hpdproblem_views.HPDProblemViewSet)
 router.register(r'dobviolations', v.dobviolation_views.DOBViolationViewSet)
 router.register(r'dobcomplaints', v.dobcomplaint_views.DOBComplaintViewSet)
 router.register(r'ecbviolations', v.ecbviolation_views.ECBViolationViewSet)
+
+router.register(r'aepbuildings', v.aepbuilding_views.AEPBuildingViewSet)
+
+
+
 acrisrealmasters_router = router.register(
     r'acrisrealmasters', v.acrisrealmaster_views.AcrisRealMasterViewSet)
 

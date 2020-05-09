@@ -278,6 +278,24 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         )
         return factory
 
+    def aepbuilding_factory(self, id=None, property=None, **kwargs):
+      name = 'AEPBuilding'
+
+      if not id:
+        id = random.randint(1000000000, 5999999999)
+      if not property:
+            property = self.property_factory(
+                bbl=random.randint(1000000000, 5999999999))
+
+      factory = d_models.AEPBuilding.objects.create(
+            id=id,
+            bbl=property,
+            **kwargs
+        )
+
+      return factory
+    
+
     def hpdbuilding_factory(self, buildingid=None, property=None, building=None, **kwargs):
         name = 'HPDBuildingRecord'
         if not buildingid:

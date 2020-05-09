@@ -523,6 +523,11 @@ class HPDBuildingSerializer(serializers.ModelSerializer):
         model = ds.HPDBuildingRecord
         fields = '__all__'
 
+class AEPBuildingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.AEPBuilding
+        fields = '__all__'
+
 
 class HPDViolationSerializer(serializers.ModelSerializer):
     class Meta:
