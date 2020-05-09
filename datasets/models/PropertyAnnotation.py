@@ -133,6 +133,7 @@ class PropertyAnnotation(BaseDatasetModel, models.Model):
         db_index=True, default='', blank=True, null=True)
     aepstatus = models.TextField(
         db_index=True, default=False, blank=True, null=True)
+    aepstartdate = models.DateField(blank=True, null=True)
 
     def __str__(self):
         return str(self.bbl)

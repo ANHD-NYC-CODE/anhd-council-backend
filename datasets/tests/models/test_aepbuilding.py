@@ -2,6 +2,7 @@ from django.test import TestCase
 from app.tests.base_test import BaseTest
 from django.db.models import Count, Q
 from datasets import models as ds
+from datetime import datetime
 # Create your tests here.
 from freezegun import freeze_time
 
@@ -27,6 +28,8 @@ class AEPBuildingTests(BaseTest, TestCase):
 
         self.assertEqual(ds.PropertyAnnotation.objects.get(
             bbl=property.bbl).aepstatus, 'AEP Discharged')
+        self.assertEqual(ds.PropertyAnnotation.objects.get(
+            bbl=property.bbl).aepstartdate.year, 2007)
 
     def test_seed_dataset_after_update(self):
 

@@ -376,7 +376,7 @@ class PropertySummarySerializer(serializers.ModelSerializer):
             'ownername', 'taxlien', 'taxliens', 'buildings', 'rsunits_percent_lost', 'nycha', 'hpdregistrations',
             'subsidyprograms', 'rentstabilizationrecord', 'unitsrentstabilized', 'subsidyj51', 'subsidy421a', 'conhrecord',
             'zonedist1', 'zonedist2', 'zonedist3', 'zonedist4', 'overlay1', 'overlay2', 'spdist1', 'spdist2', 'spdist3',
-            'builtfar', 'residfar', 'commfar', 'facilfar', 'original_address', 'legalclassa', 'legalclassb', 'managementprogram', 'aepstatus'
+            'builtfar', 'residfar', 'commfar', 'facilfar', 'original_address', 'legalclassa', 'legalclassb', 'managementprogram', 'aepstatus', 'aepstartdate'
         )
 
     
@@ -403,6 +403,7 @@ class PropertySummarySerializer(serializers.ModelSerializer):
     legalclassb = serializers.SerializerMethodField()
     managementprogram = serializers.SerializerMethodField()
     aepstatus = serializers.SerializerMethodField()
+    aepstartdate = serializers.SerializerMethodField()
 
     def get_conhrecord(self, obj):
         try:
@@ -470,6 +471,11 @@ class PropertySummarySerializer(serializers.ModelSerializer):
         except Exception as e:
             return None
 
+    def get_aepstartdate(self, obj):
+        try:
+            return obj.propertyannotation.aepstartdate
+        except Exception as e:
+            return None
 
 
     def get_rsunits_percent_lost(self, obj):
