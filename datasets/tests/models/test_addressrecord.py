@@ -3,6 +3,7 @@ from app.tests.base_test import BaseTest
 from core import models as c_models
 
 from datasets import models as ds
+from freezegun import freeze_time
 
 import logging
 logging.disable(logging.CRITICAL)
@@ -13,6 +14,12 @@ class AddressRecordTests(BaseTest, TestCase):
         self.clean_tests()
 
     def test_seed_addresssearch(self):
+
+        nil_date = self.address_factory(
+            number="50", street="MAIN STREET", borough="Brooklyn", zipcode='11111')
+
+        nil_date.created = None
+        nil_date.save()
 
         # adds 1
         property = self.property_factory(
@@ -135,3 +142,6 @@ class AddressRecordTests(BaseTest, TestCase):
         address14 = ds.AddressRecord.objects.get(
             number="1005", street="Fake Street", borough="Manhattan")
         self.assertEqual(bool(address14), True)
+
+        # timestamp added
+        self.assertEqual(bool(address14.created), True)

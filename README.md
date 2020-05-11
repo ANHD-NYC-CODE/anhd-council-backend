@@ -92,6 +92,8 @@ Whenever you update Pluto or PAD, you'll need to update the address records to m
 
 To do so, create an update within the admin panel with only the dataset attribute selected, and set to `AddressRecord`.
 
+This process requires around 6GB of available RAM due to a safety feature in the process. Existing address records will be stored in memory while the new records populate to ensure continuous operation of the search feature while the process takes place over several hours. The existing records will only be deleted once the process is complete. Because of this, please restart the app and postgres containers in docker first to clear up memory usage from long-lived workers.
+
 ### Maintaining the daily cache.
 
 Every night at around 1am (at the time of this writing) a task runs which caches ALL of the community and council district endpoints that serve the property data to District Dashboard in the frontend. The file which runs this task is in `cache.py`.

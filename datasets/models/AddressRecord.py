@@ -12,6 +12,8 @@ import logging
 import re
 import os
 import csv
+import datetime
+from django.dispatch import receiver
 
 logger = logging.getLogger('app')
 
@@ -36,6 +38,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
     zipcode = models.TextField(blank=True, null=True)
     address = SearchVectorField(blank=True, null=True)
     pad_address = models.TextField(blank=True, null=True)
+    created = models.DateField(blank=True, null=True)
 
     class Meta:
         indexes = [GinIndex(fields=['address'])]
@@ -74,7 +77,8 @@ class AddressRecord(BaseDatasetModel, models.Model):
             'borough': code_to_boro(building_boro),
             'zipcode': building_zip,
             'address': "",
-            'pad_address': "{}-{} {}".format(building.lhnd, building.hhnd, building.stname)
+            'pad_address': "{}-{} {}".format(building.lhnd, building.hhnd, building.stname),
+            'created': datetime.datetime.now().date()
         }
 
         return dict
@@ -224,6 +228,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
                 'borough': borough.strip() if borough else None,
                 'zipcode': zipcode.strip() if zipcode else None,
                 'address': "",
+                'created': datetime.datetime.now().date()
             }
 
             return dict
@@ -243,27 +248,26 @@ class AddressRecord(BaseDatasetModel, models.Model):
     @classmethod
     def build_table(self, overwrite=True, **kwargs):
         logger.debug('Building address table from scratch.')
-        # do inside atomic transaction to keep old results live while updating
-        with transaction.atomic():
-            if overwrite:
-                logger.debug('Deleting all records with atomic transaction...')
-                self.objects.all().delete()
+        timestamp = datetime.datetime.now().date()
+        property_gen = self.build_property_gen()
 
-            property_gen = self.build_property_gen()
+        logger.debug('bulk inserting property addresses...')
+        batch_upsert_from_gen(
+            self, property_gen, settings.BATCH_SIZE, ignore_conflict=False, **kwargs)
 
-            logger.debug('bulk inserting property addresses...')
-            batch_upsert_from_gen(
-                self, property_gen, settings.BATCH_SIZE, ignore_conflict=False, **kwargs)
+        building_gen = self.build_building_gen()
 
-            building_gen = self.build_building_gen()
+        logger.debug('bulk inserting building addresses...')
+        batch_upsert_from_gen(
+            self, building_gen, settings.BATCH_SIZE, ignore_conflict=True, **kwargs)
 
-            logger.debug('bulk inserting building addresses...')
-            batch_upsert_from_gen(
-                self, building_gen, settings.BATCH_SIZE, ignore_conflict=True, **kwargs)
+        logger.debug('Building search index...')
+        self.build_search()
+        logger.debug("Address Record seeding complete!")
 
-            logger.debug('Building search index...')
-            self.build_search()
-            logger.debug("Address Record seeding complete!")
+        logger.debug("Deleting older records...")
+        ds.AddressRecord.objects.filter(created=None).delete()
+        ds.AddressRecord.objects.filter(created__lt=timestamp).delete()
 
     @classmethod
     def build_search(self):
@@ -272,3 +276,14 @@ class AddressRecord(BaseDatasetModel, models.Model):
         address_vector = SearchVector('number', weight='A') + SearchVector(
             'street', weight='B') + SearchVector('borough', rank='C') + SearchVector('zipcode', rank='C')
         self.objects.update(address=address_vector)
+
+    def __str__(self):
+        return str(self.bbl)
+
+
+@receiver(models.signals.post_save, sender=AddressRecord)
+def timestamp(sender, instance, created, **kwargs):
+    if created == True:
+        timestamp = datetime.datetime.now().date()
+        instance.created = timestamp
+        instance.save()

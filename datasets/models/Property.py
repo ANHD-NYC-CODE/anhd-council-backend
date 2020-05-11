@@ -492,12 +492,12 @@ class Property(BaseDatasetModel, models.Model):
 
         return status
 
+    def __str__(self):
+        return str(self.bbl)
+
 
 @receiver(models.signals.post_save, sender=Property)
 def create_property_annotation_on_save(sender, instance, created, **kwargs):
     if created == True:
         annotation = ds.PropertyAnnotation.objects.create(bbl=instance)
         annotation.save()
-
-    def __str__(self):
-        return str(self.bbl)
