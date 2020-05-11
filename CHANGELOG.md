@@ -1,5 +1,9 @@
 # API CHANGELOG
 
+#### V1.0.7
+
+- Alter AddressRecord deletion routine
+
 #### V1.0.6
 
 - Allow dasherized address to be searchable without dashes (Ex: 12-34 Street can be found w 1234 street)
