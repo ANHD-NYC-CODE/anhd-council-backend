@@ -8,6 +8,7 @@ class PropertyAnnotationFilter(django_filters.rest_framework.FilterSet):
         fields = {
             'bbl': ['exact'],
             'aepstatus': ['exact', 'icontains'],
+            'legalclassb': ['exact', 'lt', 'lte', 'gt', 'gte'],
             'unitsrentstabilized': ['exact', 'lt', 'lte', 'gt', 'gte'],
             'latestsaleprice': ['exact', 'lt', 'lte', 'gt', 'gte'],
             'hpdviolations_last30': ['exact', 'lt', 'lte', 'gt', 'gte'],

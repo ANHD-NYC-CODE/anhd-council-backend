@@ -32,6 +32,23 @@ class PropertyFilterTests(BaseTest, TestCase):
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['bbl'], '1')
 
+    def test_legalclassb_units(self):
+        council = self.council_factory(id=1)
+        property1 = self.property_factory(
+            bbl=1, council=council, yearbuilt=2000)
+        property2 = self.property_factory(
+            bbl=2, council=council, yearbuilt=1900)
+        hpdbuilding1 = self.hpdbuilding_factory(
+            property=property1, legalclassb=1)
+
+        query = '/properties/?propertyannotation__legalclassb__gte=1'
+        response = self.client.get(query, format="json")
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 1)
+        self.assertEqual(content[0]['bbl'], '1')
+
     def test_community_field(self):
         cd = self.community_factory(id=101)
         property1 = self.property_factory(bbl=1, cd=cd)

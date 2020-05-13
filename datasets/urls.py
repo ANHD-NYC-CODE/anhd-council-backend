@@ -86,6 +86,7 @@ statesenate_router.register(
 
 properties_router = router.register(
     r'properties', v.property_views.PropertyViewSet)
+
 properties_router.register(
     'buildings',
     v.building_views.BuildingViewSet,
@@ -114,7 +115,12 @@ properties_router.register(
     parents_query_lookups=['bbl']
 )
 
-
+properties_router.register(
+    'aepbuildings',
+    v.aepbuilding_views.AEPBuildingViewSet,
+    base_name='property-aepbuildings',
+    parents_query_lookups=['bbl']
+)
 
 properties_router.register(
     'hpdviolations',
@@ -463,7 +469,6 @@ router.register(r'dobcomplaints', v.dobcomplaint_views.DOBComplaintViewSet)
 router.register(r'ecbviolations', v.ecbviolation_views.ECBViolationViewSet)
 
 router.register(r'aepbuildings', v.aepbuilding_views.AEPBuildingViewSet)
-
 
 
 acrisrealmasters_router = router.register(

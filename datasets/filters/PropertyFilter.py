@@ -42,9 +42,11 @@ def programnames_filter(self, queryset, name, value):
     if value['icontains']:
         return queryset.filter(**{"{}__icontains".format(name): value['icontains']}).distinct('bbl')
     if value['any']:
-        qs.append(reduce(operator.or_, (Q(**{"{}__icontains".format(name): item}) for item in value['any'])))
+        qs.append(reduce(operator.or_, (Q(
+            **{"{}__icontains".format(name): item}) for item in value['any'])))
     if value['all']:
-        qs.append(reduce(operator.and_, (Q(**{"{}__icontains".format(name): item}) for item in value['all'])))
+        qs.append(reduce(operator.and_, (Q(
+            **{"{}__icontains".format(name): item}) for item in value['all'])))
 
     combined_q = reduce(operator.and_, (q for q in qs))
 
@@ -69,60 +71,102 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     council = django_filters.NumberFilter(method='filter_council_exact')
     cd = django_filters.NumberFilter(method='filter_community_exact')
     zipcode = django_filters.NumberFilter(method='filter_zipcode_exact')
-    stateassembly = django_filters.NumberFilter(method='filter_stateassembly_exact')
-    statesenate = django_filters.NumberFilter(method='filter_statesenate_exact')
+    stateassembly = django_filters.NumberFilter(
+        method='filter_stateassembly_exact')
+    statesenate = django_filters.NumberFilter(
+        method='filter_statesenate_exact')
 
     housingtype = filters.CharFilter(method='filter_housingtype')
     bbls = CommaSeparatedConditionFilter(method="filter_bbls")
-    hpdcomplaints__exact = django_filters.NumberFilter(method='filter_hpdcomplaints_exact')
-    hpdcomplaints__gt = django_filters.NumberFilter(method='filter_hpdcomplaints_gt')
-    hpdcomplaints__gte = django_filters.NumberFilter(method='filter_hpdcomplaints_gte')
-    hpdcomplaints__lt = django_filters.NumberFilter(method='filter_hpdcomplaints_lt')
-    hpdcomplaints__lte = django_filters.NumberFilter(method='filter_hpdcomplaints_lte')
-    hpdcomplaints = TotalWithDateFilter(method="filter_hpdcomplaints_total_and_dates")
+    hpdcomplaints__exact = django_filters.NumberFilter(
+        method='filter_hpdcomplaints_exact')
+    hpdcomplaints__gt = django_filters.NumberFilter(
+        method='filter_hpdcomplaints_gt')
+    hpdcomplaints__gte = django_filters.NumberFilter(
+        method='filter_hpdcomplaints_gte')
+    hpdcomplaints__lt = django_filters.NumberFilter(
+        method='filter_hpdcomplaints_lt')
+    hpdcomplaints__lte = django_filters.NumberFilter(
+        method='filter_hpdcomplaints_lte')
+    hpdcomplaints = TotalWithDateFilter(
+        method="filter_hpdcomplaints_total_and_dates")
 
-    hpdviolations__exact = django_filters.NumberFilter(method='filter_hpdviolations_exact')
-    hpdviolations__gt = django_filters.NumberFilter(method='filter_hpdviolations_gt')
-    hpdviolations__gte = django_filters.NumberFilter(method='filter_hpdviolations_gte')
-    hpdviolations__lt = django_filters.NumberFilter(method='filter_hpdviolations_lt')
-    hpdviolations__lte = django_filters.NumberFilter(method='filter_hpdviolations_lte')
-    hpdviolations = TotalWithDateFilter(method="filter_hpdviolations_total_and_dates")
+    hpdviolations__exact = django_filters.NumberFilter(
+        method='filter_hpdviolations_exact')
+    hpdviolations__gt = django_filters.NumberFilter(
+        method='filter_hpdviolations_gt')
+    hpdviolations__gte = django_filters.NumberFilter(
+        method='filter_hpdviolations_gte')
+    hpdviolations__lt = django_filters.NumberFilter(
+        method='filter_hpdviolations_lt')
+    hpdviolations__lte = django_filters.NumberFilter(
+        method='filter_hpdviolations_lte')
+    hpdviolations = TotalWithDateFilter(
+        method="filter_hpdviolations_total_and_dates")
 
-    dobcomplaints__exact = django_filters.NumberFilter(method='filter_dobcomplaints_exact')
-    dobcomplaints__gt = django_filters.NumberFilter(method='filter_dobcomplaints_gt')
-    dobcomplaints__gte = django_filters.NumberFilter(method='filter_dobcomplaints_gte')
-    dobcomplaints__lt = django_filters.NumberFilter(method='filter_dobcomplaints_lt')
-    dobcomplaints__lte = django_filters.NumberFilter(method='filter_dobcomplaints_lte')
-    dobcomplaints = TotalWithDateFilter(method="filter_dobcomplaints_total_and_dates")
+    dobcomplaints__exact = django_filters.NumberFilter(
+        method='filter_dobcomplaints_exact')
+    dobcomplaints__gt = django_filters.NumberFilter(
+        method='filter_dobcomplaints_gt')
+    dobcomplaints__gte = django_filters.NumberFilter(
+        method='filter_dobcomplaints_gte')
+    dobcomplaints__lt = django_filters.NumberFilter(
+        method='filter_dobcomplaints_lt')
+    dobcomplaints__lte = django_filters.NumberFilter(
+        method='filter_dobcomplaints_lte')
+    dobcomplaints = TotalWithDateFilter(
+        method="filter_dobcomplaints_total_and_dates")
 
-    dobviolations__exact = django_filters.NumberFilter(method='filter_dobviolations_exact')
-    dobviolations__gt = django_filters.NumberFilter(method='filter_dobviolations_gt')
-    dobviolations__gte = django_filters.NumberFilter(method='filter_dobviolations_gte')
-    dobviolations__lt = django_filters.NumberFilter(method='filter_dobviolations_lt')
-    dobviolations__lte = django_filters.NumberFilter(method='filter_dobviolations_lte')
-    dobviolations = TotalWithDateFilter(method="filter_dobviolations_total_and_dates")
+    dobviolations__exact = django_filters.NumberFilter(
+        method='filter_dobviolations_exact')
+    dobviolations__gt = django_filters.NumberFilter(
+        method='filter_dobviolations_gt')
+    dobviolations__gte = django_filters.NumberFilter(
+        method='filter_dobviolations_gte')
+    dobviolations__lt = django_filters.NumberFilter(
+        method='filter_dobviolations_lt')
+    dobviolations__lte = django_filters.NumberFilter(
+        method='filter_dobviolations_lte')
+    dobviolations = TotalWithDateFilter(
+        method="filter_dobviolations_total_and_dates")
 
-    ecbviolations__exact = django_filters.NumberFilter(method='filter_ecbviolations_exact')
-    ecbviolations__gt = django_filters.NumberFilter(method='filter_ecbviolations_gt')
-    ecbviolations__gte = django_filters.NumberFilter(method='filter_ecbviolations_gte')
-    ecbviolations__lt = django_filters.NumberFilter(method='filter_ecbviolations_lt')
-    ecbviolations__lte = django_filters.NumberFilter(method='filter_ecbviolations_lte')
-    ecbviolations = TotalWithDateFilter(method="filter_ecbviolations_total_and_dates")
+    ecbviolations__exact = django_filters.NumberFilter(
+        method='filter_ecbviolations_exact')
+    ecbviolations__gt = django_filters.NumberFilter(
+        method='filter_ecbviolations_gt')
+    ecbviolations__gte = django_filters.NumberFilter(
+        method='filter_ecbviolations_gte')
+    ecbviolations__lt = django_filters.NumberFilter(
+        method='filter_ecbviolations_lt')
+    ecbviolations__lte = django_filters.NumberFilter(
+        method='filter_ecbviolations_lte')
+    ecbviolations = TotalWithDateFilter(
+        method="filter_ecbviolations_total_and_dates")
 
-    rsunitslost = RSLostPercentWithDateFilter(method="filter_stabilizedunitslost_percent_and_dates")
+    rsunitslost = RSLostPercentWithDateFilter(
+        method="filter_stabilizedunitslost_percent_and_dates")
 
-    acrisrealmasteramounts = TotalWithDateFilter(method="filter_acrisrealmasteramounts_total_and_dates")
-    acrisrealmasters = TotalWithDateFilter(method="filter_acrisrealmasters_total_and_dates")
+    acrisrealmasteramounts = TotalWithDateFilter(
+        method="filter_acrisrealmasteramounts_total_and_dates")
+    acrisrealmasters = TotalWithDateFilter(
+        method="filter_acrisrealmasters_total_and_dates")
 
-    dobfiledpermits = TotalWithDateFilter(method="filter_dobfiledpermits_total_and_dates")
-    dobissuedpermits = TotalWithDateFilter(method="filter_dobissuedpermits_total_and_dates")
+    dobfiledpermits = TotalWithDateFilter(
+        method="filter_dobfiledpermits_total_and_dates")
+    dobissuedpermits = TotalWithDateFilter(
+        method="filter_dobissuedpermits_total_and_dates")
     evictions = TotalWithDateFilter(method="filter_eviction_total_and_dates")
 
-    taxlien = django_filters.NumberFilter(field_name='taxlien__year', lookup_expr='exact')
-    taxlien__lt = django_filters.NumberFilter(field_name='taxlien__year', lookup_expr='lt')
-    taxlien__lte = django_filters.NumberFilter(field_name='taxlien__year', lookup_expr='lte')
-    taxlien__gt = django_filters.NumberFilter(field_name='taxlien__year', lookup_expr='gt')
-    taxlien__gte = django_filters.NumberFilter(field_name='taxlien__year', lookup_expr='gte')
+    taxlien = django_filters.NumberFilter(
+        field_name='taxlien__year', lookup_expr='exact')
+    taxlien__lt = django_filters.NumberFilter(
+        field_name='taxlien__year', lookup_expr='lt')
+    taxlien__lte = django_filters.NumberFilter(
+        field_name='taxlien__year', lookup_expr='lte')
+    taxlien__gt = django_filters.NumberFilter(
+        field_name='taxlien__year', lookup_expr='gt')
+    taxlien__gte = django_filters.NumberFilter(
+        field_name='taxlien__year', lookup_expr='gte')
 
     coresubsidyrecord__enddate__lte = django_filters.DateFilter(
         field_name='coresubsidyrecord__enddate', lookup_expr='lte')
@@ -134,7 +178,8 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         field_name='coresubsidyrecord__enddate', lookup_expr='gte')
     coresubsidyrecord__enddate__gt = django_filters.DateFilter(
         field_name='coresubsidyrecord__enddate', lookup_expr='gt')
-    subsidyprograms__programname = CommaSeparatedConditionFilter(method="filter_programnames")
+    subsidyprograms__programname = CommaSeparatedConditionFilter(
+        method="filter_programnames")
 
     def filter_council_exact(self, queryset, name, value):
         return queryset.council(value)
@@ -182,14 +227,16 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     def filter_acrisrealmasteramounts_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(
             'documentid__docdate', 'documentid__docamount', values)
-        docid_values = ds.AcrisRealMaster.construct_sales_query('acrisreallegal__documentid').only('documentid')
+        docid_values = ds.AcrisRealMaster.construct_sales_query(
+            'acrisreallegal__documentid').only('documentid')
         documenttype_queryset = ds.AcrisRealLegal.objects.filter(bbl__in=queryset.values('bbl'),
                                                                  documentid__in=docid_values).only('bbl', 'documentid')
 
         filtered_acris = documenttype_queryset.filter(
             **date_filters).filter(**total_filters).only('bbl').filter(bbl=OuterRef('bbl'))
 
-        queryset = queryset.annotate(has_filtered_acris=Exists(filtered_acris)).filter(has_filtered_acris=True)
+        queryset = queryset.annotate(has_filtered_acris=Exists(
+            filtered_acris)).filter(has_filtered_acris=True)
 
         return queryset
 
@@ -226,7 +273,8 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         date_filters, total_filters = self.parse_totaldate_field_values(
             'dobissuedpermit__' + ds.DOBIssuedPermit.QUERY_DATE_KEY, 'dobissuedpermits', values)
 
-        queryset = filtered_dataset_annotation('dobissuedpermit', date_filters, queryset)
+        queryset = filtered_dataset_annotation(
+            'dobissuedpermit', date_filters, queryset)
 
         return queryset.filter(**total_filters)
 
@@ -234,14 +282,16 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         date_filters, total_filters = self.parse_totaldate_field_values(
             'dobfiledpermit__' + ds.DOBFiledPermit.QUERY_DATE_KEY, 'dobfiledpermits', values)
 
-        queryset = filtered_dataset_annotation('dobfiledpermit', date_filters, queryset)
+        queryset = filtered_dataset_annotation(
+            'dobfiledpermit', date_filters, queryset)
 
         return queryset.filter(**total_filters)
 
     def filter_eviction_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(
             'eviction__' + ds.Eviction.QUERY_DATE_KEY, 'evictions', values)
-        queryset = filtered_dataset_annotation('eviction', date_filters, queryset)
+        queryset = filtered_dataset_annotation(
+            'eviction', date_filters, queryset)
 
         return queryset.filter(**total_filters)
 
@@ -250,7 +300,8 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     def filter_hpdcomplaints_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(
             'hpdcomplaint__' + ds.HPDComplaint.QUERY_DATE_KEY, 'hpdcomplaints', values)
-        queryset = filtered_dataset_annotation('hpdcomplaint', date_filters, queryset)
+        queryset = filtered_dataset_annotation(
+            'hpdcomplaint', date_filters, queryset)
 
         return queryset.filter(**total_filters)
 
@@ -284,7 +335,8 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
         date_filters, total_filters = self.parse_totaldate_field_values(
             'hpdviolation__' + ds.HPDViolation.QUERY_DATE_KEY, 'hpdviolations', values)
 
-        queryset = filtered_dataset_annotation('hpdviolation', date_filters, queryset)
+        queryset = filtered_dataset_annotation(
+            'hpdviolation', date_filters, queryset)
 
         return queryset.filter(**total_filters)
 
@@ -318,7 +370,8 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     def filter_dobcomplaints_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(
             'dobcomplaint__' + ds.DOBComplaint.QUERY_DATE_KEY, 'dobcomplaints', values)
-        queryset = filtered_dataset_annotation('dobcomplaint', date_filters, queryset)
+        queryset = filtered_dataset_annotation(
+            'dobcomplaint', date_filters, queryset)
 
         return queryset.filter(**total_filters)
 
@@ -351,7 +404,8 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     def filter_dobviolations_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(
             'dobviolation__' + ds.DOBViolation.QUERY_DATE_KEY, 'dobviolations', values)
-        queryset = filtered_dataset_annotation('dobviolation', date_filters, queryset)
+        queryset = filtered_dataset_annotation(
+            'dobviolation', date_filters, queryset)
 
         return queryset.filter(**total_filters)
 
@@ -384,7 +438,8 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
     def filter_ecbviolations_total_and_dates(self, queryset, name, values):
         date_filters, total_filters = self.parse_totaldate_field_values(
             'ecbviolation__' + ds.ECBViolation.QUERY_DATE_KEY, 'ecbviolations', values)
-        queryset = filtered_dataset_annotation('ecbviolation', date_filters, queryset)
+        queryset = filtered_dataset_annotation(
+            'ecbviolation', date_filters, queryset)
 
         return queryset.filter(**total_filters)
 
@@ -424,6 +479,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
             'bldgclass': ['exact'],
             'numbldgs': ['exact', 'lt', 'lte', 'gt', 'gte'],
             'numfloors': ['exact', 'lt', 'lte', 'gt', 'gte'],
+            'propertyannotation__legalclassb': ['exact', 'lt', 'lte', 'gt', 'gte'],
             'rentstabilizationrecord__uc2007': ['exact', 'lt', 'lte', 'gt', 'gte'],
             'rentstabilizationrecord__uc2008': ['exact', 'lt', 'lte', 'gt', 'gte'],
             'rentstabilizationrecord__uc2009': ['exact', 'lt', 'lte', 'gt', 'gte'],

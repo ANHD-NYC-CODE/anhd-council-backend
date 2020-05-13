@@ -99,7 +99,7 @@ def annotate_property_on_save(sender, instance, created, **kwargs):
 
             annotation = instance.bbl.propertyannotation
             annotation.legalclassa = instance.legalclassa
-            annotation.legalclassa = instance.legalclassa
+            annotation.legalclassb = instance.legalclassb
             annotation.managementprogram = instance.managementprogram
 
             annotation.save()
