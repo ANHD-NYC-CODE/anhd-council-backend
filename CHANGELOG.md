@@ -1,5 +1,9 @@
 # API CHANGELOG
 
+#### V1.0.8
+
+- Add property filters for legalclassb and managementprogram
+
 #### V1.0.7
 
 - Alter AddressRecord deletion routine

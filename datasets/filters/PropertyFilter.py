@@ -480,6 +480,7 @@ class PropertyFilter(django_filters.rest_framework.FilterSet):
             'numbldgs': ['exact', 'lt', 'lte', 'gt', 'gte'],
             'numfloors': ['exact', 'lt', 'lte', 'gt', 'gte'],
             'propertyannotation__legalclassb': ['exact', 'lt', 'lte', 'gt', 'gte'],
+            'propertyannotation__managementprogram': ['exact', 'icontains'],
             'rentstabilizationrecord__uc2007': ['exact', 'lt', 'lte', 'gt', 'gte'],
             'rentstabilizationrecord__uc2008': ['exact', 'lt', 'lte', 'gt', 'gte'],
             'rentstabilizationrecord__uc2009': ['exact', 'lt', 'lte', 'gt', 'gte'],
