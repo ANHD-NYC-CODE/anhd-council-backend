@@ -239,6 +239,9 @@ CELERY_BROKER_TRANSPORT_OPTIONS = {
     'visibility_timeout': 36000  # 10 hours
 }
 
+# https://adamj.eu/tech/2019/09/19/working-around-memory-leaks-in-your-django-app/
+CELERY_WORKER_MAX_TASKS_PER_CHILD = 32
+
 MEDIA_URL = '/data/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'data')
 MEDIA_TEMP_ROOT = os.path.join(MEDIA_ROOT, 'temp')
