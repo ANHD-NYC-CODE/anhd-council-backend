@@ -35,7 +35,8 @@ def annotated_fields_to_dict(start=None, end=None, dataset=None, dataset_class=N
     # start = '2018-01-01'
     # {'dates': ({'__gte': 2018-01-01}, {'__lte': 2018-01-01})}
     if start == 'recent':
-        start = dates.get_recent_dataset_start(dataset, dataset_class, string=True)
+        start = dates.get_recent_dataset_start(
+            dataset, dataset_class, string=True)
     if start:
         if isinstance(start, str):
             start = {'__gte': dates.parse_date_string(start)}
@@ -77,7 +78,8 @@ def prefetch_annotated_datasets(queryset, request):
                     params, dataset_class, dataset_class.QUERY_DATE_KEY, dataset_class), end=get_annotation_end(params, dataset_class, dataset_class.QUERY_DATE_KEY, dataset_class), dataset_class=dataset_class)
 
                 field_path = 'documentid__' + dataset_class.QUERY_DATE_KEY
-                date_filters = filter_helpers.value_dict_to_date_filter_dict(field_path, annotation_dict)
+                date_filters = filter_helpers.value_dict_to_date_filter_dict(
+                    field_path, annotation_dict)
                 count_subquery = Subquery(ds.AcrisRealLegal.objects.filter(bbl=OuterRef('bbl'), documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES, **date_filters).values(
                     'bbl').annotate(count=Count('bbl')).values('count'), output_field=IntegerField())
                 queryset = queryset.prefetch_related(dataset_prefix + '_set').annotate(**
@@ -89,7 +91,8 @@ def prefetch_annotated_datasets(queryset, request):
                     params, dataset_class, dataset_class.QUERY_DATE_KEY, dataset_class), end=get_annotation_end(params, dataset_class, dataset_class.QUERY_DATE_KEY, dataset_class), dataset_class=dataset_class)
 
                 field_path = dataset_class.QUERY_DATE_KEY
-                date_filters = filter_helpers.value_dict_to_date_filter_dict(field_path, annotation_dict)
+                date_filters = filter_helpers.value_dict_to_date_filter_dict(
+                    field_path, annotation_dict)
                 count_subquery = Subquery(dataset_class.objects.filter(bbl=OuterRef('bbl'), type='foreclosure', **date_filters).values(
                     'bbl').annotate(count=Count('bbl')).values('count'), output_field=IntegerField())
                 queryset = queryset.prefetch_related(dataset_prefix + '_set').annotate(**
@@ -101,7 +104,8 @@ def prefetch_annotated_datasets(queryset, request):
                     params, dataset_class, dataset_class.QUERY_DATE_KEY, dataset_class), end=get_annotation_end(params, dataset_class, dataset_class.QUERY_DATE_KEY, dataset_class), dataset_class=dataset_class)
 
                 field_path = dataset_class.QUERY_DATE_KEY
-                date_filters = filter_helpers.value_dict_to_date_filter_dict(field_path, annotation_dict)
+                date_filters = filter_helpers.value_dict_to_date_filter_dict(
+                    field_path, annotation_dict)
                 count_subquery = Subquery(dataset_class.objects.filter(bbl=OuterRef('bbl'), **date_filters).values(
                     'bbl').annotate(count=Count('bbl')).values('count'), output_field=IntegerField())
                 queryset = queryset.prefetch_related(dataset_prefix + '_set').annotate(**
@@ -122,7 +126,8 @@ def get_advanced_search_value(params, dataset_prefix=None, date_field='', date_c
         matches = re.findall(reg, q)
 
         if len(matches) > 0:
-            date_match = next((x for x in matches if "{}__{}".format(date_field, date_comparison) in x), None)
+            date_match = next((x for x in matches if "{}__{}".format(
+                date_field, date_comparison) in x), None)
             if date_match:
                 return date_match.split('=')[1]
 
@@ -136,17 +141,20 @@ def get_annotation_start(params, dataset=None, date_field='', dataset_class=''):
         start = params.get(dataset_prefix + '__start')
     elif 'annotation__start' in params:
         if params['annotation__start'] == 'recent':
-            start = dates.get_recent_dataset_start(dataset, dataset_class, string=False)
+            start = dates.get_recent_dataset_start(
+                dataset, dataset_class, string=False)
         elif params['annotation__start'] == 'lastyear':
             start = dates.get_last_year(string=False)
         elif params['annotation__start'] == 'last3years':
             start = dates.get_last3years(string=False)
         elif params['annotation__start'] == 'full':
-            start = dates.get_recent_dataset_start(dataset, dataset_class, string=False)
+            start = dates.get_recent_dataset_start(
+                dataset, dataset_class, string=False)
         else:
             start = params['annotation__start']
     elif 'q' in params:
-        start = get_advanced_search_value(params, dataset_prefix, date_field, 'gte')
+        start = get_advanced_search_value(
+            params, dataset_prefix, date_field, 'gte')
 
     if start:
         return start
@@ -165,7 +173,8 @@ def build_annotated_fields(request, datasets):
             params, dataset, date_field, dataset_class)
 
         if isinstance(annotation_start, str):
-            start_date = dates.parse_date_string(annotation_start).strftime("%m/%d/%Y")
+            start_date = dates.parse_date_string(
+                annotation_start).strftime("%m/%d/%Y")
         else:
             start_date = annotation_start.strftime("%m/%d/%Y")
 
@@ -204,9 +213,12 @@ def build_annotated_fields(request, datasets):
             fields_list.append(generate_date_key(params, dataset, dataset_prefix + 's_last3years', dataset_query_date_key, dataset_prefix, dataset_class)
                                )
         elif 'annotation__start' in params and params['annotation__start'] == 'full':
-            fields_list.append(generate_recent_date_key(dataset, dataset_class))
-            fields_list.append(generate_lastyear_date_key(dataset, dataset_class))
-            fields_list.append(generate_last3years_date_key(dataset, dataset_class))
+            fields_list.append(
+                generate_recent_date_key(dataset, dataset_class))
+            fields_list.append(
+                generate_lastyear_date_key(dataset, dataset_class))
+            fields_list.append(
+                generate_last3years_date_key(dataset, dataset_class))
 
         else:
             # default time frame is set to "RECENT"
@@ -233,6 +245,8 @@ def handle_property_summaries(self, request, *args, **kwargs):
                     self.queryset, request)
 
             self.serializer_class = serial.PropertyShortAnnotatedSerializer
+        elif 'summary-type' in request.query_params and request.query_params['summary-type'].lower() == 'custom-search':
+            self.serializer_class = serial.PropertySerializer
         else:
             self.queryset = self.queryset.prefetch_related('building_set').prefetch_related('hpdregistration_set').prefetch_related('taxlien_set').prefetch_related('conhrecord_set').prefetch_related(
                 'publichousingrecord_set').prefetch_related('rentstabilizationrecord').prefetch_related('coresubsidyrecord_set').prefetch_related('subsidyj51_set').prefetch_related('subsidy421a_set')
@@ -251,19 +265,22 @@ class ApplicationViewSet():
         if self.request.GET:
             if ('format' in self.request.GET and self.request.GET['format'] == 'csv') and 'filename' in self.request.GET:
 
-                response = super(viewsets.ReadOnlyModelViewSet, self).dispatch(*args, **kwargs)
+                response = super(viewsets.ReadOnlyModelViewSet,
+                                 self).dispatch(*args, **kwargs)
 
                 response['Content-Disposition'] = "attachment; filename=%s" % (
                     self.request.GET['filename'] if 'filename' in self.request.GET else "dap-portal.csv")
                 return response
             # if csv and no filename in params
             elif ('format' in self.request.GET and self.request.GET['format'] == 'csv') and 'filename' not in self.request.GET:
-                response = super(viewsets.ReadOnlyModelViewSet, self).dispatch(*args, **kwargs)
+                response = super(viewsets.ReadOnlyModelViewSet,
+                                 self).dispatch(*args, **kwargs)
                 response['Content-Disposition'] = "attachment; filename=%s" % (
                     "{}-{}-dap-portal.csv".format(self.serializer_class.Meta.model.__name__, datetime.today().strftime('%Y-%m-%d')))
                 return response
             else:
-                response = super(viewsets.ReadOnlyModelViewSet, self).dispatch(*args, **kwargs)
+                response = super(viewsets.ReadOnlyModelViewSet,
+                                 self).dispatch(*args, **kwargs)
                 return response
         else:
             return super().dispatch(*args, **kwargs)
