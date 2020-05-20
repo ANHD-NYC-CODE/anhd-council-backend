@@ -249,6 +249,10 @@ class AdvancedPropertyFilter(django_filters.rest_framework.FilterSet):
                                   "version",
                                   "borocode",
                                   "bldgclass",
-                                  "original_address")
+                                  "original_address",
+                                  "dcpedited",
+                                  "notes",
+                                  "latitude",
+                                  "longitude")
 
         return queryset
