@@ -226,8 +226,11 @@ def handle_property_summaries(self, request, *args, **kwargs):
         elif 'summary-type' in request.query_params and request.query_params['summary-type'].lower() == 'short-annotated':
             self.queryset = self.queryset.select_related('propertyannotation')
             # SINGLE-QUERY METHOD CHAIN
+            # Used in DD, PL, and CS
             if 'annotation__start' not in request.query_params:
-                self.queryset = prefetch_annotated_datasets(self.queryset, request)
+                # For DD
+                self.queryset = prefetch_annotated_datasets(
+                    self.queryset, request)
 
             self.serializer_class = serial.PropertyShortAnnotatedSerializer
         else:
