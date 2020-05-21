@@ -40,7 +40,7 @@ class PropertyViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyM
         if not self.request:
             return context
         if 'summary' in self.request.query_params and self.request.query_params['summary'] == 'true':
-            if 'summary-type' in self.request.query_params and self.request.query_params['summary-type'].lower() == 'short-annotated':
+            if 'summary-type' in self.request.query_params and (self.request.query_params['summary-type'].lower() == 'short-annotated' or self.request.query_params['summary-type'].lower() == 'custom-search'):
                 # calculate dynamic annotation fields here.
                 datasets = c_models.Dataset.objects.all()
                 context['datasets'] = list(datasets)
