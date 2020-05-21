@@ -233,7 +233,7 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
             return None
 
     def get_unitsrentstabilized(self, obj):
-        
+
         try:
             return obj.propertyannotation.unitsrentstabilized
         except Exception as e:
@@ -306,6 +306,92 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
         return rep
 
 
+# Custom Search
+class PropertyCustomSearchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ds.Property
+        fields = (ds.Property.SHORT_SUMMARY_FIELDS +
+                  ('nycha', 'subsidyprograms', 'subsidyj51', 'subsidy421a', 'unitsrentstabilized', 'latestsaleprice'))
+
+    subsidyprograms = serializers.SerializerMethodField()
+    subsidyj51 = serializers.SerializerMethodField()
+    subsidy421a = serializers.SerializerMethodField()
+    nycha = serializers.SerializerMethodField()
+    unitsrentstabilized = serializers.SerializerMethodField()
+    latestsaleprice = serializers.SerializerMethodField()
+
+    def get_nycha(self, obj):
+        try:
+            return obj.propertyannotation.nycha
+        except Exception as e:
+            return None
+
+    def get_subsidy421a(self, obj):
+        try:
+            return obj.propertyannotation.subsidy421a
+        except Exception as e:
+            return None
+
+    def get_subsidyj51(self, obj):
+        try:
+            return obj.propertyannotation.subsidyj51
+        except Exception as e:
+            return None
+
+    def get_subsidyprograms(self, obj):
+        try:
+            return obj.propertyannotation.subsidyprograms
+        except Exception as e:
+            return None
+
+    def get_unitsrentstabilized(self, obj):
+
+        try:
+            return obj.propertyannotation.unitsrentstabilized
+        except Exception as e:
+            return None
+
+    def get_latestsaleprice(self, obj):
+        try:
+            return obj.propertyannotation.latestsaleprice
+        except Exception as e:
+            return None
+
+    def to_representation(self, obj):
+        rep = super(serializers.ModelSerializer, self).to_representation(obj)
+
+        params = self.context['request'].query_params
+
+        def get_context_field(dataset_prefix, date_label=None):
+            # uses singular dataset_prefix
+            for field in self.context['fields']:
+                if date_label:
+                    if dataset_prefix in field and date_label in field:
+                        return field
+                else:
+                    if dataset_prefix in field:
+                        return field
+            return None
+
+        for model_name in settings.ANNOTATED_DATASETS:
+            dataset_class = getattr(ds, model_name)  # results in query
+            dataset = next(
+                x for x in self.context['datasets'] if x.model_name == model_name)
+            if hasattr(dataset_class, 'REQUIRES_AUTHENTICATION') and dataset_class.REQUIRES_AUTHENTICATION and not is_authenticated(self.context['request']):
+                continue
+
+            dataset_prefix = dataset_class.__name__.lower()
+            try:
+                if hasattr(obj, dataset_prefix + 's'):
+                    # annotated from advanced search
+                    rep[get_context_field(dataset_prefix)] = getattr(
+                        obj, dataset_prefix + 's')
+
+            except ds.PropertyAnnotation.DoesNotExist:
+                logger.warning('No property annotation for {}'.format(obj.bbl))
+        return rep
+
+
 class BuildingSummarySerializer(serializers.ModelSerializer):
     # TODO: add alternate addresses derived from AddressRecords' canonical fields
     class Meta:
@@ -359,7 +445,7 @@ class PropertyShortSummarySerializer(serializers.ModelSerializer):
             return None
 
     def get_unitsrentstabilized(self, obj):
-        
+
         try:
             return obj.propertyannotation.unitsrentstabilized
         except Exception as e:
@@ -379,7 +465,6 @@ class PropertySummarySerializer(serializers.ModelSerializer):
             'builtfar', 'residfar', 'commfar', 'facilfar', 'original_address', 'legalclassa', 'legalclassb', 'managementprogram', 'aepstatus', 'aepstartdate', 'aepdischargedate'
         )
 
-    
     hpdregistrations = HPDRegistrationSerializer(
         source='hpdregistration_set', many=True, read_only=True)
     buildings = BuildingSummarySerializer(
@@ -443,7 +528,7 @@ class PropertySummarySerializer(serializers.ModelSerializer):
             return None
 
     def get_unitsrentstabilized(self, obj):
-        try:  
+        try:
             return obj.propertyannotation.unitsrentstabilized
         except Exception as e:
             return None
@@ -483,7 +568,6 @@ class PropertySummarySerializer(serializers.ModelSerializer):
             return obj.propertyannotation.aepdischargedate
         except Exception as e:
             return None
-
 
     def get_rsunits_percent_lost(self, obj):
         try:
@@ -535,6 +619,7 @@ class HPDBuildingSerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.HPDBuildingRecord
         fields = '__all__'
+
 
 class AEPBuildingSerializer(serializers.ModelSerializer):
     class Meta:

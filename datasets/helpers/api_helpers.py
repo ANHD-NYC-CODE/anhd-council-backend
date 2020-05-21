@@ -246,7 +246,8 @@ def handle_property_summaries(self, request, *args, **kwargs):
 
             self.serializer_class = serial.PropertyShortAnnotatedSerializer
         elif 'summary-type' in request.query_params and request.query_params['summary-type'].lower() == 'custom-search':
-            self.serializer_class = serial.PropertySerializer
+            self.queryset = self.queryset.select_related('propertyannotation')
+            self.serializer_class = serial.PropertyCustomSearchSerializer
         else:
             self.queryset = self.queryset.prefetch_related('building_set').prefetch_related('hpdregistration_set').prefetch_related('taxlien_set').prefetch_related('conhrecord_set').prefetch_related(
                 'publichousingrecord_set').prefetch_related('rentstabilizationrecord').prefetch_related('coresubsidyrecord_set').prefetch_related('subsidyj51_set').prefetch_related('subsidy421a_set')
