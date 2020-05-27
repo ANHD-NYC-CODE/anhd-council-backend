@@ -289,8 +289,10 @@ class PropertyViewTests(BaseTest, TestCase):
 
     def test_property_lispendens(self):
         property = self.property_factory(bbl="1")
-        self.lispenden_factory(property=property, type=ds.LisPenden.LISPENDEN_TYPES['foreclosure'])
-        self.lispenden_factory(property=property, type=ds.LisPenden.LISPENDEN_TYPES['foreclosure'])
+        self.lispenden_factory(
+            property=property, type=ds.LisPenden.LISPENDEN_TYPES['foreclosure'])
+        self.lispenden_factory(
+            property=property, type=ds.LisPenden.LISPENDEN_TYPES['foreclosure'])
 
         token = self.get_access_token()
 
@@ -309,10 +311,13 @@ class PropertyViewTests(BaseTest, TestCase):
 
         self.taxlien_factory(property=property, year=2018)
         self.conhrecord_factory(property=property)
-        building1 = self.building_factory(bin="1", property=property, stname="fake st", lhnd="1")
-        building2 = self.building_factory(bin="2", property=property, stname="fake st", lhnd="2")
+        building1 = self.building_factory(
+            bin="1", property=property, stname="fake st", lhnd="1")
+        building2 = self.building_factory(
+            bin="2", property=property, stname="fake st", lhnd="2")
         self.publichousingrecord_factory(property=property)
-        registration = self.hpdregistration_factory(property=property, building=building1)
+        registration = self.hpdregistration_factory(
+            property=property, building=building1)
 
         self.coredata_factory(property=property, programname='HELLO')
         self.taxbill_factory(property=property, uc2008=50, uc2016=10)
@@ -346,21 +351,31 @@ class PropertyViewTests(BaseTest, TestCase):
         self.taxbill_factory(property=property1, uc2017=10)
 
         for i in range(5):
-            self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
-            self.hpdcomplaint_factory(property=property1, receiveddate="2018-01-01")
-            self.dobviolation_factory(property=property1, issuedate="2018-01-01")
-            self.dobcomplaint_factory(property=property1, dateentered="2018-01-01")
-            self.ecbviolation_factory(property=property1, issuedate="2018-01-01")
-            self.dobfiledpermit_factory(property=property1, datefiled="2018-01-01")
-            self.eviction_factory(property=property1, executeddate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2018-01-01")
+            self.hpdcomplaint_factory(
+                property=property1, receiveddate="2018-01-01")
+            self.dobviolation_factory(
+                property=property1, issuedate="2018-01-01")
+            self.dobcomplaint_factory(
+                property=property1, dateentered="2018-01-01")
+            self.ecbviolation_factory(
+                property=property1, issuedate="2018-01-01")
+            self.dobfiledpermit_factory(
+                property=property1, datefiled="2018-01-01")
+            self.eviction_factory(property=property1,
+                                  executeddate="2018-01-01")
             # self.dobissuedpermit_factory(property=property1, issuedate="2018-01-01")
 
         for i in range(5):
-            self.hpdviolation_factory(property=property1, approveddate="2017-01-01")
-            self.dobviolation_factory(property=property1, issuedate="2010-01-01")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2017-01-01")
+            self.dobviolation_factory(
+                property=property1, issuedate="2010-01-01")
 
         for i in range(1):
-            self.hpdviolation_factory(property=property2, approveddate="2010-01-01")
+            self.hpdviolation_factory(
+                property=property2, approveddate="2010-01-01")
 
         self.acrislegal_factory(property=property1, master=self.acrismaster_factory(
             documentid=i, docdate="2017-01-01", doctype="DEED", docamount=1))
@@ -379,15 +394,23 @@ class PropertyViewTests(BaseTest, TestCase):
 
         self.assertEqual(content[0]['bbl'], '1')
         self.assertEqual(content[0]['unitsrentstabilized'], 10)
-        self.assertEqual(content[0]['hpdviolations__01/01/2015-01/01/2019'], 10)
-        self.assertEqual(content[0]['hpdcomplaints__01/01/2018-12/31/2018'.format(now_date)], 5)
-        self.assertEqual(content[0]['dobviolations__01/01/2018-01/01/2019'.format(now_date)], 5)
-        self.assertEqual(content[0]['dobcomplaints__01/01/2018-01/01/2019'.format(now_date)], 5)
-        self.assertEqual(content[0]['ecbviolations__01/01/2018-01/01/2019'.format(now_date)], 5)
-        self.assertEqual(content[0]['dobfiledpermits__01/01/2018-01/01/2019'.format(now_date)], 5)
-        self.assertEqual(content[0]['evictions__01/01/2018-01/01/2019'.format(now_date)], 5)
+        self.assertEqual(
+            content[0]['hpdviolations__01/01/2015-01/01/2019'], 10)
+        self.assertEqual(
+            content[0]['hpdcomplaints__01/01/2018-12/31/2018'.format(now_date)], 5)
+        self.assertEqual(
+            content[0]['dobviolations__01/01/2018-01/01/2019'.format(now_date)], 5)
+        self.assertEqual(
+            content[0]['dobcomplaints__01/01/2018-01/01/2019'.format(now_date)], 5)
+        self.assertEqual(
+            content[0]['ecbviolations__01/01/2018-01/01/2019'.format(now_date)], 5)
+        self.assertEqual(
+            content[0]['dobfiledpermits__01/01/2018-01/01/2019'.format(now_date)], 5)
+        self.assertEqual(
+            content[0]['evictions__01/01/2018-01/01/2019'.format(now_date)], 5)
         # self.assertEqual(content[0]['dobissuedpermits'], 5)
-        self.assertEqual(content[0]['acrisrealmasters__01/01/2018-12/31/2018'.format(now_date)], 1)
+        self.assertEqual(
+            content[0]['acrisrealmasters__01/01/2018-12/31/2018'.format(now_date)], 1)
 
     # summary-annotated serializer
     @freeze_time("2019-01-01")
@@ -400,19 +423,28 @@ class PropertyViewTests(BaseTest, TestCase):
         property2 = self.property_factory(bbl='2', council=council)
 
         for i in range(5):
-            self.hpdviolation_factory(property=property1, approveddate="2019-01-01")
-            self.hpdcomplaint_factory(property=property1, receiveddate="2018-12-01")
-            self.dobviolation_factory(property=property1, issuedate="2019-01-01")
-            self.dobcomplaint_factory(property=property1, dateentered="2019-01-01")
-            self.ecbviolation_factory(property=property1, issuedate="2019-01-01")
-            self.dobfiledpermit_factory(property=property1, datefiled="2019-01-01")
-            self.eviction_factory(property=property1, executeddate="2019-01-01")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2019-01-01")
+            self.hpdcomplaint_factory(
+                property=property1, receiveddate="2018-12-01")
+            self.dobviolation_factory(
+                property=property1, issuedate="2019-01-01")
+            self.dobcomplaint_factory(
+                property=property1, dateentered="2019-01-01")
+            self.ecbviolation_factory(
+                property=property1, issuedate="2019-01-01")
+            self.dobfiledpermit_factory(
+                property=property1, datefiled="2019-01-01")
+            self.eviction_factory(property=property1,
+                                  executeddate="2019-01-01")
 
         for i in range(5):
-            self.hpdviolation_factory(property=property1, approveddate="2015-01-01")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2015-01-01")
 
         for i in range(1):
-            self.hpdviolation_factory(property=property2, approveddate="2010-01-01")
+            self.hpdviolation_factory(
+                property=property2, approveddate="2010-01-01")
 
         query = '/properties/?summary=true&summary-type=short-annotated&q=*condition_0=AND+filter_0=hpdviolations__approveddate__gte=2017-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5+filter_0=dobviolations__issuedate__gte=2018-01-01,dobviolations__issuedate__lte=2019-01-01,dobviolations__count__gte=5'
         response = self.client.get(query, format="json")
@@ -428,7 +460,8 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(content[0]['dobviolations__01/01/2018-01/01/2019'], 5)
         self.assertEqual(content[0]['dobcomplaints__12/02/2018-01/01/2019'], 5)
         self.assertEqual(content[0]['ecbviolations__12/02/2018-01/01/2019'], 5)
-        self.assertEqual(content[0]['dobfiledpermits__12/02/2018-01/01/2019'], 5)
+        self.assertEqual(
+            content[0]['dobfiledpermits__12/02/2018-01/01/2019'], 5)
         self.assertEqual(content[0]['evictions__12/02/2018-01/01/2019'], 5)
 
     # summary-annotated serializer
@@ -442,19 +475,29 @@ class PropertyViewTests(BaseTest, TestCase):
         property2 = self.property_factory(bbl='2', council=council)
 
         for i in range(5):
-            self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
-            self.hpdcomplaint_factory(property=property1, receiveddate="2018-01-01")
-            self.dobviolation_factory(property=property1, issuedate="2018-01-01")
-            self.dobcomplaint_factory(property=property1, dateentered="2018-01-01")
-            self.ecbviolation_factory(property=property1, issuedate="2018-01-01")
-            self.dobfiledpermit_factory(property=property1, datefiled="2018-01-01")
-            self.eviction_factory(property=property1, executeddate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2018-01-01")
+            self.hpdcomplaint_factory(
+                property=property1, receiveddate="2018-01-01")
+            self.dobviolation_factory(
+                property=property1, issuedate="2018-01-01")
+            self.dobcomplaint_factory(
+                property=property1, dateentered="2018-01-01")
+            self.ecbviolation_factory(
+                property=property1, issuedate="2018-01-01")
+            self.dobfiledpermit_factory(
+                property=property1, datefiled="2018-01-01")
+            self.eviction_factory(property=property1,
+                                  executeddate="2018-01-01")
 
         for i in range(5):
-            self.hpdviolation_factory(property=property1, approveddate="2010-01-01")
-            self.hpdviolation_factory(property=property2, approveddate="2010-01-01")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2010-01-01")
+            self.hpdviolation_factory(
+                property=property2, approveddate="2010-01-01")
         for i in range(1):
-            self.dobviolation_factory(property=property2, issuedate="2018-01-01")
+            self.dobviolation_factory(
+                property=property2, issuedate="2018-01-01")
 
         query = '/properties/?summary=true&summary-type=short-annotated&q=*condition_0=AND+filter_0=hpdviolations__approveddate__gte=2017-01-01,hpdviolations__approveddate__lte=2019-01-01,hpdviolations__count__gte=5'
         response = self.client.get(query, format="json")
@@ -471,11 +514,11 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(content[0]['dobviolations__12/02/2018-01/01/2019'], 0)
         self.assertEqual(content[0]['dobcomplaints__12/02/2018-01/01/2019'], 0)
         self.assertEqual(content[0]['ecbviolations__12/02/2018-01/01/2019'], 0)
-        self.assertEqual(content[0]['dobfiledpermits__12/02/2018-01/01/2019'], 0)
+        self.assertEqual(
+            content[0]['dobfiledpermits__12/02/2018-01/01/2019'], 0)
         self.assertEqual(content[0]['evictions__12/02/2018-01/01/2019'], 0)
 
     # summary-annotated serializer
-
     @freeze_time("2019-01-01")
     def test_results_with_annotate_datasets_4(self):
         self.create_annotated_datasets(datetime.datetime.now())
@@ -486,19 +529,29 @@ class PropertyViewTests(BaseTest, TestCase):
         property2 = self.property_factory(bbl='2', council=council)
 
         for i in range(5):
-            self.hpdcomplaint_factory(property=property1, receiveddate="2018-01-01")
-            self.dobviolation_factory(property=property1, issuedate="2018-01-01")
-            self.dobcomplaint_factory(property=property1, dateentered="2018-01-01")
-            self.ecbviolation_factory(property=property1, issuedate="2018-01-01")
-            self.dobfiledpermit_factory(property=property1, datefiled="2018-01-01")
-            self.eviction_factory(property=property1, executeddate="2018-01-01")
-            self.hpdviolation_factory(property=property2, approveddate="2018-01-01")
+            self.hpdcomplaint_factory(
+                property=property1, receiveddate="2018-01-01")
+            self.dobviolation_factory(
+                property=property1, issuedate="2018-01-01")
+            self.dobcomplaint_factory(
+                property=property1, dateentered="2018-01-01")
+            self.ecbviolation_factory(
+                property=property1, issuedate="2018-01-01")
+            self.dobfiledpermit_factory(
+                property=property1, datefiled="2018-01-01")
+            self.eviction_factory(property=property1,
+                                  executeddate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property2, approveddate="2018-01-01")
 
         for i in range(5):
-            self.hpdviolation_factory(property=property1, approveddate="2010-01-01")
-            self.hpdviolation_factory(property=property2, approveddate="2010-01-01")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2010-01-01")
+            self.hpdviolation_factory(
+                property=property2, approveddate="2010-01-01")
         for i in range(1):
-            self.dobviolation_factory(property=property2, issuedate="2018-01-01")
+            self.dobviolation_factory(
+                property=property2, issuedate="2018-01-01")
             self.acrislegal_factory(property=property2, master=self.acrismaster_factory(
                 documentid='1', docdate="2018-12-01", doctype="DEED", docamount=1))
 
@@ -512,14 +565,20 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
         self.assertEqual(content[0]['bbl'], '1')
-        self.assertEqual(content[0]['hpdviolations__01/01/2017-{}'.format(now_date)], 0)
-        self.assertEqual(content[0]['dobviolations__01/01/2018-{}'.format(now_date)], 5)
-        self.assertEqual(content[0]['ecbviolations__12/02/2018-{}'.format(now_date)], 0)
+        self.assertEqual(
+            content[0]['hpdviolations__01/01/2017-{}'.format(now_date)], 0)
+        self.assertEqual(
+            content[0]['dobviolations__01/01/2018-{}'.format(now_date)], 5)
+        self.assertEqual(
+            content[0]['ecbviolations__12/02/2018-{}'.format(now_date)], 0)
 
         self.assertEqual(content[1]['bbl'], '2')
-        self.assertEqual(content[1]['hpdviolations__01/01/2017-{}'.format(now_date)], 5)
-        self.assertEqual(content[1]['dobviolations__01/01/2018-{}'.format(now_date)], 1)
-        self.assertEqual(content[1]['acrisrealmasters__01/01/2018-12/31/2018'], 1)
+        self.assertEqual(
+            content[1]['hpdviolations__01/01/2017-{}'.format(now_date)], 5)
+        self.assertEqual(
+            content[1]['dobviolations__01/01/2018-{}'.format(now_date)], 1)
+        self.assertEqual(
+            content[1]['acrisrealmasters__01/01/2018-12/31/2018'], 1)
 
     @freeze_time("2019-01-01")
     def test_results_with_annotate_datasets_5(self):
@@ -544,7 +603,8 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(len(pre_cache_content), 1)
         self.assertEqual(pre_cache_content[0]['bbl'], '1')
 
-        self.assertEqual('lispendens__01/01/2018-{}'.format(now_date) not in pre_cache_content[0], True)
+        self.assertEqual('lispendens__01/01/2018-{}'.format(now_date)
+                         not in pre_cache_content[0], True)
 
         post_cache_query = '/properties/?summary=true&summary-type=short-annotated&annotation__start=2018-01-01'
         post_cache_response = self.client.get(post_cache_query, format="json")
@@ -556,7 +616,8 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(post_cache_response.status_code, 200)
         self.assertEqual(len(post_cache_content), 1)
         self.assertEqual(post_cache_content[0]['bbl'], '1')
-        self.assertEqual('lispendens__01/01/2018-{}'.format(now_date) not in post_cache_content[0], True)
+        self.assertEqual('lispendens__01/01/2018-{}'.format(now_date)
+                         not in post_cache_content[0], True)
 
     @freeze_time("2019-01-01")
     def test_results_with_annotate_datasets_6(self):
@@ -584,7 +645,8 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(len(pre_cache_content), 1)
         self.assertEqual(pre_cache_content[0]['bbl'], '1')
 
-        self.assertEqual(pre_cache_content[0]['foreclosures__01/01/2018-12/31/2018'], 5)
+        self.assertEqual(
+            pre_cache_content[0]['foreclosures__01/01/2018-12/31/2018'], 5)
 
         post_cache_query = '/properties/?summary=true&summary-type=short-annotated&annotation__start=2018-01-01'
         post_cache_response = self.client.get(post_cache_query, format="json")
@@ -596,26 +658,37 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(post_cache_response.status_code, 200)
         self.assertEqual(len(post_cache_content), 1)
         self.assertEqual(post_cache_content[0]['bbl'], '1')
-        self.assertEqual(post_cache_content[0]['foreclosures__01/01/2018-12/31/2018'], 5)
+        self.assertEqual(
+            post_cache_content[0]['foreclosures__01/01/2018-12/31/2018'], 5)
 
     # summary-annotated serializer
     # with 'recent' annotation start
     @freeze_time("2019-01-05")
     def test_results_with_annotate_datasets_7(self):
-        self.dataset_factory(name='HPDViolation', api_last_updated=datetime.datetime.today())
+        self.dataset_factory(name='HPDViolation',
+                             api_last_updated=datetime.datetime.today())
         self.dataset_factory(name='HPDComplaint', api_last_updated=datetime.datetime.today().replace(
             day=1) - relativedelta(months=1))
         self.dataset_factory(name='DOBComplaint', api_last_updated=datetime.datetime.today().replace(
             day=1))
-        self.dataset_factory(name='DOBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='ECBViolation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBFiledPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='DOBIssuedPermit', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='Eviction', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='HousingLitigation', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealMaster', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='AcrisRealLegal', api_last_updated=datetime.datetime.today())
-        self.dataset_factory(name='Foreclosure', api_last_updated=datetime.datetime.today())
+        self.dataset_factory(name='DOBViolation',
+                             api_last_updated=datetime.datetime.today())
+        self.dataset_factory(name='ECBViolation',
+                             api_last_updated=datetime.datetime.today())
+        self.dataset_factory(name='DOBFiledPermit',
+                             api_last_updated=datetime.datetime.today())
+        self.dataset_factory(name='DOBIssuedPermit',
+                             api_last_updated=datetime.datetime.today())
+        self.dataset_factory(
+            name='Eviction', api_last_updated=datetime.datetime.today())
+        self.dataset_factory(name='HousingLitigation',
+                             api_last_updated=datetime.datetime.today())
+        self.dataset_factory(name='AcrisRealMaster',
+                             api_last_updated=datetime.datetime.today())
+        self.dataset_factory(name='AcrisRealLegal',
+                             api_last_updated=datetime.datetime.today())
+        self.dataset_factory(name='Foreclosure',
+                             api_last_updated=datetime.datetime.today())
 
         # advanced query params
         council = self.council_factory(id=1)
@@ -623,20 +696,30 @@ class PropertyViewTests(BaseTest, TestCase):
         property2 = self.property_factory(bbl='2', council=council)
 
         for i in range(5):
-            self.hpdcomplaint_factory(property=property1, receiveddate="2018-12-01")
-            self.housinglitigation_factory(property=property1, caseopendate="2018-12-01")
+            self.hpdcomplaint_factory(
+                property=property1, receiveddate="2018-12-01")
+            self.housinglitigation_factory(
+                property=property1, caseopendate="2018-12-01")
             self.lispenden_factory(
                 property=property1, type=ds.LisPenden.LISPENDEN_TYPES['foreclosure'], fileddate="2018-12-01")
-            self.dobcomplaint_factory(property=property1, dateentered="2018-12-01")
-            self.ecbviolation_factory(property=property1, issuedate="2018-12-10")
-            self.dobfiledpermit_factory(property=property1, datefiled="2018-12-10")
-            self.eviction_factory(property=property1, executeddate="2018-12-10")
-            self.hpdviolation_factory(property=property2, approveddate="2018-12-10")
+            self.dobcomplaint_factory(
+                property=property1, dateentered="2018-12-01")
+            self.ecbviolation_factory(
+                property=property1, issuedate="2018-12-10")
+            self.dobfiledpermit_factory(
+                property=property1, datefiled="2018-12-10")
+            self.eviction_factory(property=property1,
+                                  executeddate="2018-12-10")
+            self.hpdviolation_factory(
+                property=property2, approveddate="2018-12-10")
         for i in range(5):
-            self.hpdviolation_factory(property=property1, approveddate="2010-01-01")
-            self.hpdviolation_factory(property=property2, approveddate="2010-01-01")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2010-01-01")
+            self.hpdviolation_factory(
+                property=property2, approveddate="2010-01-01")
         for i in range(1):
-            self.dobviolation_factory(property=property2, issuedate="2018-12-10")
+            self.dobviolation_factory(
+                property=property2, issuedate="2018-12-10")
 
         self.acrislegal_factory(property=property1, master=self.acrismaster_factory(
             documentid='1', docdate="2018-12-01", doctype="DEED", docamount=1))
@@ -656,20 +739,29 @@ class PropertyViewTests(BaseTest, TestCase):
 
         self.assertEqual(content[0]['bbl'], '1')
 
-        self.assertEqual(content[0]['hpdviolations_recent__12/06/2018-01/05/2019'], 0)
+        self.assertEqual(
+            content[0]['hpdviolations_recent__12/06/2018-01/05/2019'], 0)
 
         # starts 1 month and on the 1st before api_last_updated field
-        self.assertEqual(content[0]['hpdcomplaints_recent__11/01/2018-11/30/2018'], 5)
-        self.assertEqual(content[0]['housinglitigations_recent__12/01/2018-12/31/2018'], 5)
-        self.assertEqual(content[0]['acrisrealmasters_recent__12/01/2018-12/31/2018'], 1)
+        self.assertEqual(
+            content[0]['hpdcomplaints_recent__11/01/2018-11/30/2018'], 5)
+        self.assertEqual(
+            content[0]['housinglitigations_recent__12/01/2018-12/31/2018'], 5)
+        self.assertEqual(
+            content[0]['acrisrealmasters_recent__12/01/2018-12/31/2018'], 1)
 
         self.assertEqual(content[0]['dobcomplaints_recent__12/06/2018-01/01/2019'],
                          0)  # last api update on 1st of month
-        self.assertEqual(content[0]['ecbviolations_recent__12/06/2018-01/05/2019'], 5)
-        self.assertEqual(content[0]['dobfiledpermits_recent__12/06/2018-01/05/2019'], 5)
-        self.assertEqual(content[0]['evictions_recent__12/06/2018-01/05/2019'], 5)
-        self.assertEqual(content[1]['dobviolations_recent__12/06/2018-01/05/2019'], 1)
-        self.assertEqual(content[1]['hpdviolations_recent__12/06/2018-01/05/2019'], 5)
+        self.assertEqual(
+            content[0]['ecbviolations_recent__12/06/2018-01/05/2019'], 5)
+        self.assertEqual(
+            content[0]['dobfiledpermits_recent__12/06/2018-01/05/2019'], 5)
+        self.assertEqual(
+            content[0]['evictions_recent__12/06/2018-01/05/2019'], 5)
+        self.assertEqual(
+            content[1]['dobviolations_recent__12/06/2018-01/05/2019'], 1)
+        self.assertEqual(
+            content[1]['hpdviolations_recent__12/06/2018-01/05/2019'], 5)
 
     # summary-annotated serializer
     # with 'lastyear' annotation start
@@ -682,12 +774,16 @@ class PropertyViewTests(BaseTest, TestCase):
         property1 = self.property_factory(bbl='1', council=council)
 
         for i in range(5):
-            self.hpdcomplaint_factory(property=property1, receiveddate="2018-01-05")
+            self.hpdcomplaint_factory(
+                property=property1, receiveddate="2018-01-05")
 
-            self.hpdviolation_factory(property=property1, approveddate="2018-01-05")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2018-01-05")
         for i in range(5):
-            self.hpdcomplaint_factory(property=property1, receiveddate="2010-01-05")
-            self.hpdviolation_factory(property=property1, approveddate="2010-01-05")
+            self.hpdcomplaint_factory(
+                property=property1, receiveddate="2010-01-05")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2010-01-05")
 
         query = '/properties/?summary=true&summary-type=short-annotated&annotation__start=lastyear'
         response = self.client.get(query, format="json")
@@ -696,8 +792,10 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0]['bbl'], '1')
-        self.assertEqual(content[0]['hpdviolations_lastyear__01/05/2018-01/05/2019'], 5)
-        self.assertEqual(content[0]['hpdcomplaints_lastyear__01/05/2018-12/31/2018'], 5)
+        self.assertEqual(
+            content[0]['hpdviolations_lastyear__01/05/2018-01/05/2019'], 5)
+        self.assertEqual(
+            content[0]['hpdcomplaints_lastyear__01/05/2018-12/31/2018'], 5)
 
     # summary-annotated serializer
     # with 'last3years' annotation start
@@ -710,12 +808,16 @@ class PropertyViewTests(BaseTest, TestCase):
         property1 = self.property_factory(bbl='1', council=council)
 
         for i in range(5):
-            self.hpdcomplaint_factory(property=property1, receiveddate="2016-01-05")
+            self.hpdcomplaint_factory(
+                property=property1, receiveddate="2016-01-05")
 
-            self.hpdviolation_factory(property=property1, approveddate="2016-01-05")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2016-01-05")
         for i in range(5):
-            self.hpdcomplaint_factory(property=property1, receiveddate="2010-01-05")
-            self.hpdviolation_factory(property=property1, approveddate="2010-01-05")
+            self.hpdcomplaint_factory(
+                property=property1, receiveddate="2010-01-05")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2010-01-05")
 
         query = '/properties/?summary=true&summary-type=short-annotated&annotation__start=last3years'
         response = self.client.get(query, format="json")
@@ -725,8 +827,10 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(len(content), 1)
 
         self.assertEqual(content[0]['bbl'], '1')
-        self.assertEqual(content[0]['hpdviolations_last3years__01/05/2016-01/05/2019'], 5)
-        self.assertEqual(content[0]['hpdcomplaints_last3years__01/05/2016-12/31/2018'], 5)
+        self.assertEqual(
+            content[0]['hpdviolations_last3years__01/05/2016-01/05/2019'], 5)
+        self.assertEqual(
+            content[0]['hpdcomplaints_last3years__01/05/2016-12/31/2018'], 5)
 
     # summary-annotated serializer
     # annotation_start=full - sending all 3 annotation fields
@@ -742,14 +846,20 @@ class PropertyViewTests(BaseTest, TestCase):
         self.taxbill_factory(property=property1, uc2017=10)
 
         for i in range(5):
-            self.hpdviolation_factory(property=property1, approveddate="2018-12-05")
-            self.hpdcomplaint_factory(property=property1, receiveddate="2018-12-01")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2018-12-05")
+            self.hpdcomplaint_factory(
+                property=property1, receiveddate="2018-12-01")
         for i in range(5):
-            self.hpdviolation_factory(property=property1, approveddate="2018-01-01")
-            self.hpdcomplaint_factory(property=property1, receiveddate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2018-01-01")
+            self.hpdcomplaint_factory(
+                property=property1, receiveddate="2018-01-01")
         for i in range(5):
-            self.hpdviolation_factory(property=property1, approveddate="2017-12-01")
-            self.hpdcomplaint_factory(property=property1, receiveddate="2017-12-01")
+            self.hpdviolation_factory(
+                property=property1, approveddate="2017-12-01")
+            self.hpdcomplaint_factory(
+                property=property1, receiveddate="2017-12-01")
 
         self.acrislegal_factory(property=property1, master=self.acrismaster_factory(
             documentid='1', docdate="2017-01-01", doctype="DEED", docamount=1))
@@ -769,12 +879,18 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(content[0]['unitsrentstabilized'], 10)
         self.assertEqual(content[0]['latestsaleprice'], 1000)
 
-        self.assertEqual(content[0]['hpdviolations_recent__12/02/2018-01/01/2019'], 5)
-        self.assertEqual(content[0]['hpdcomplaints_recent__12/01/2018-12/31/2018'], 5)
-        self.assertEqual(content[0]['hpdviolations_lastyear__01/01/2018-01/01/2019'], 10)
-        self.assertEqual(content[0]['hpdcomplaints_lastyear__01/01/2018-12/31/2018'], 10)
-        self.assertEqual(content[0]['hpdviolations_last3years__01/01/2016-01/01/2019'], 15)
-        self.assertEqual(content[0]['hpdcomplaints_last3years__01/01/2016-12/31/2018'], 15)
+        self.assertEqual(
+            content[0]['hpdviolations_recent__12/02/2018-01/01/2019'], 5)
+        self.assertEqual(
+            content[0]['hpdcomplaints_recent__12/01/2018-12/31/2018'], 5)
+        self.assertEqual(
+            content[0]['hpdviolations_lastyear__01/01/2018-01/01/2019'], 10)
+        self.assertEqual(
+            content[0]['hpdcomplaints_lastyear__01/01/2018-12/31/2018'], 10)
+        self.assertEqual(
+            content[0]['hpdviolations_last3years__01/01/2016-01/01/2019'], 15)
+        self.assertEqual(
+            content[0]['hpdcomplaints_last3years__01/01/2016-12/31/2018'], 15)
 
     # with cache & authorized
     @freeze_time("2019-01-01")
@@ -800,7 +916,8 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(len(pre_auth_content), 1)
         self.assertEqual(pre_auth_content[0]['bbl'], '1')
 
-        self.assertEqual('foreclosures_lastyear__01/01/2018-12/31/2018' not in pre_auth_content[0], True)
+        self.assertEqual(
+            'foreclosures_lastyear__01/01/2018-12/31/2018' not in pre_auth_content[0], True)
 
         # uncached, authorized
         token = self.get_access_token()
@@ -817,7 +934,8 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(len(pre_cache_content), 1)
         self.assertEqual(pre_cache_content[0]['bbl'], '1')
 
-        self.assertEqual(pre_cache_content[0]['foreclosures_lastyear__01/01/2018-12/31/2018'], 5)
+        self.assertEqual(
+            pre_cache_content[0]['foreclosures_lastyear__01/01/2018-12/31/2018'], 5)
 
         # cached, authorized
         post_cache_query = '/properties/?summary=true&summary-type=short-annotated&annotation__start=full'
@@ -830,12 +948,14 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(post_cache_response.status_code, 200)
         self.assertEqual(len(post_cache_content), 1)
         self.assertEqual(post_cache_content[0]['bbl'], '1')
-        self.assertEqual(post_cache_content[0]['foreclosures_lastyear__01/01/2018-12/31/2018'], 5)
+        self.assertEqual(
+            post_cache_content[0]['foreclosures_lastyear__01/01/2018-12/31/2018'], 5)
 
         # cached, unauthorized
         self.client.credentials(HTTP_AUTHORIZATION=None)
         post_cache_no_auth_query = '/properties/?summary=true&summary-type=short-annotated&annotation__start=full'
-        post_cache_no_auth_response = self.client.get(post_cache_no_auth_query, format="json")
+        post_cache_no_auth_response = self.client.get(
+            post_cache_no_auth_query, format="json")
 
         post_cache_no_auth_content = post_cache_no_auth_response.data
 
@@ -843,4 +963,75 @@ class PropertyViewTests(BaseTest, TestCase):
 
         self.assertEqual(post_cache_no_auth_response.status_code, 200)
         self.assertEqual(len(post_cache_no_auth_content), 1)
-        self.assertEqual('foreclosures_lastyear__01/01/2018-12/31/2018' not in post_cache_no_auth_content[0], True)
+        self.assertEqual(
+            'foreclosures_lastyear__01/01/2018-12/31/2018' not in post_cache_no_auth_content[0], True)
+
+    # custom-search serializer
+    @freeze_time("2019-01-01")
+    def test_results_with_annotate_datasets_12(self):
+        self.create_annotated_datasets(datetime.datetime.now())
+
+        # advanced query params
+        council = self.council_factory(id=1)
+        property1 = self.property_factory(bbl='1', council=council)
+        property2 = self.property_factory(bbl='2', council=council)
+
+        for i in range(5):
+            self.hpdcomplaint_factory(
+                property=property1, receiveddate="2018-01-01")
+            self.dobviolation_factory(
+                property=property1, issuedate="2018-01-01")
+            self.dobcomplaint_factory(
+                property=property1, dateentered="2018-01-01")
+            self.ecbviolation_factory(
+                property=property1, issuedate="2018-01-01")
+            self.dobfiledpermit_factory(
+                property=property1, datefiled="2018-01-01")
+            self.eviction_factory(property=property1,
+                                  executeddate="2018-01-01")
+            self.hpdviolation_factory(
+                property=property2, approveddate="2018-01-01")
+
+        for i in range(5):
+            self.hpdviolation_factory(
+                property=property1, approveddate="2010-01-01")
+            self.hpdviolation_factory(
+                property=property2, approveddate="2010-01-01")
+        for i in range(1):
+            self.dobviolation_factory(
+                property=property2, issuedate="2018-01-01")
+            self.acrislegal_factory(property=property2, master=self.acrismaster_factory(
+                documentid='1', docdate="2018-12-01", doctype="DEED", docamount=1))
+
+        query = '/properties/?housingtype=all&q=*condition_0=OR+filter_0=hpdviolations__count__gte=5,hpdviolations__approveddate__gte=2017-01-01+filter_1=acrisreallegals__documentid__count__gte=1,acrisreallegals__documentid__docdate__gte=2018-01-01+filter_2=dobviolations__count__gte=5,dobviolations__issuedate__gte=2018-01-01&summary=true&summary-type=custom-search'
+        response = self.client.get(query, format="json")
+
+        content = response.data
+
+        now_date = datetime.datetime.now().strftime("%m/%d/%Y")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+        self.assertEqual(content[0]['bbl'], '1')
+
+        # query only involves HPD violations, DOB Violations, and Acris. Should not return ECB violations in keys.
+        # acris is annotated with most recent update cutoff while others are annotated with current date
+
+        self.assertEqual(
+            content[0]['hpdviolations__01/01/2017-{}'.format(now_date)], 0)
+        self.assertEqual(
+            content[0]['dobviolations__01/01/2018-{}'.format(now_date)], 5)
+        self.assertEqual(
+            content[0]['acrisrealmasters__01/01/2018-12/31/2018'], 0)
+        self.assertEqual(
+            'ecbviolations__01/01/2017-{}'.format(now_date) in content[1], False)
+
+        self.assertEqual(content[1]['bbl'], '2')
+        self.assertEqual(
+            content[1]['hpdviolations__01/01/2017-{}'.format(now_date)], 5)
+        self.assertEqual(
+            content[1]['dobviolations__01/01/2018-{}'.format(now_date)], 1)
+        self.assertEqual(
+            content[1]['acrisrealmasters__01/01/2018-12/31/2018'], 1)
+        self.assertEqual(
+            'ecbviolations__01/01/2017-{}'.format(now_date) in content[1], False)

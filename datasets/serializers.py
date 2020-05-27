@@ -374,9 +374,8 @@ class PropertyCustomSearchSerializer(serializers.ModelSerializer):
             return None
 
         for model_name in settings.ANNOTATED_DATASETS:
-            dataset_class = getattr(ds, model_name)  # results in query
-            dataset = next(
-                x for x in self.context['datasets'] if x.model_name == model_name)
+            dataset_class = getattr(ds, model_name)
+
             if hasattr(dataset_class, 'REQUIRES_AUTHENTICATION') and dataset_class.REQUIRES_AUTHENTICATION and not is_authenticated(self.context['request']):
                 continue
 

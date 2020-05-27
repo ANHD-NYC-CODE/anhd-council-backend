@@ -67,6 +67,7 @@ def prefetch_annotated_datasets(queryset, request):
 
     for model_name in settings.ANNOTATED_DATASETS:
         dataset_class = getattr(ds, model_name)
+
         plural_name = model_name.lower() + 's'
         # only do a prefetch and annotation query if the model name is in the query params
         # otherwise the values default to the last30 value in the property annotation using the serializer
@@ -100,16 +101,16 @@ def prefetch_annotated_datasets(queryset, request):
 
             else:
                 dataset_prefix = dataset_class.__name__.lower()
-                annotation_dict = annotated_fields_to_dict(dataset=dataset_class, start=get_annotation_start(
-                    params, dataset_class, dataset_class.QUERY_DATE_KEY, dataset_class), end=get_annotation_end(params, dataset_class, dataset_class.QUERY_DATE_KEY, dataset_class), dataset_class=dataset_class)
+                annotation_dict = annotated_fields_to_dict(dataset=dataset_class, start=get_annotation_start(params, dataset_class, dataset_class.QUERY_DATE_KEY, dataset_class), end=get_annotation_end(
+                    params, dataset_class, dataset_class.QUERY_DATE_KEY, dataset_class), dataset_class=dataset_class)
 
                 field_path = dataset_class.QUERY_DATE_KEY
                 date_filters = filter_helpers.value_dict_to_date_filter_dict(
                     field_path, annotation_dict)
                 count_subquery = Subquery(dataset_class.objects.filter(bbl=OuterRef('bbl'), **date_filters).values(
                     'bbl').annotate(count=Count('bbl')).values('count'), output_field=IntegerField())
-                queryset = queryset.prefetch_related(dataset_prefix + '_set').annotate(**
-                                                                                       {dataset_prefix + 's': Coalesce(count_subquery, 0)})
+                queryset = queryset.prefetch_related(
+                    dataset_prefix + '_set').annotate(**{dataset_prefix + 's': Coalesce(count_subquery, 0)})
 
     return queryset
 
@@ -247,6 +248,8 @@ def handle_property_summaries(self, request, *args, **kwargs):
             self.serializer_class = serial.PropertyShortAnnotatedSerializer
         elif 'summary-type' in request.query_params and request.query_params['summary-type'].lower() == 'custom-search':
             self.queryset = self.queryset.select_related('propertyannotation')
+            # fetches any datasets involved w/ search for accessing in serializers (ie: property.hpdviolations etc...)
+            self.queryset = prefetch_annotated_datasets(self.queryset, request)
             self.serializer_class = serial.PropertyCustomSearchSerializer
         else:
             self.queryset = self.queryset.prefetch_related('building_set').prefetch_related('hpdregistration_set').prefetch_related('taxlien_set').prefetch_related('conhrecord_set').prefetch_related(
