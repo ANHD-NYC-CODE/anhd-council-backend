@@ -18,8 +18,12 @@ def annotate_dataset(queryset, c_filter, bbl_values):
         **{c_filter['related_annotation_key']: FilteredRelation(c_filter['model'], condition=Q(construct_and_q(c_filter['query1_filters'])))})
 
     if c_filter['count_annotation_key']:
+        serializer_count_key = model_name[0].lower() + 's__count'
         queryset = queryset.annotate(
             **{c_filter['count_annotation_key']: Count(c_filter['related_annotation_key'], distinct=True)})
+        # double annotate with a normal key ie: filter_0_hpdviolations__count becomes hpdviolations__count
+        queryset = queryset.annotate(
+            **{serializer_count_key: Count(c_filter['related_annotation_key'], distinct=True)})
 
     return queryset
 
@@ -52,9 +56,13 @@ def annotate_acrislegals(queryset, c_filter, bbl_values):
 
         else:
             # annotate on count of acris records
-
+            serializer_count_key = 'acrisrealmasters__count'
             queryset = queryset.annotate(
                 **{c_filter['count_annotation_key']: Count(c_filter['related_annotation_key'], distinct=True)})
+
+            # double annotate with a normal key ie: filter_1_acrisreallegals__documentid__count becomes acrisrealmasters__count
+            queryset = queryset.annotate(
+                **{serializer_count_key: Count(c_filter['related_annotation_key'], distinct=True)})
     return queryset
 
 

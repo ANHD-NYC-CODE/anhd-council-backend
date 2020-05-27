@@ -360,8 +360,6 @@ class PropertyCustomSearchSerializer(serializers.ModelSerializer):
     def to_representation(self, obj):
         rep = super(serializers.ModelSerializer, self).to_representation(obj)
 
-        params = self.context['request'].query_params
-
         def get_context_field(dataset_prefix, date_label=None):
             # uses singular dataset_prefix
             for field in self.context['fields']:
@@ -381,10 +379,11 @@ class PropertyCustomSearchSerializer(serializers.ModelSerializer):
 
             dataset_prefix = dataset_class.__name__.lower()
             try:
-                if hasattr(obj, dataset_prefix + 's'):
-                    # annotated from advanced search
+                serializer_count_key = model_name.lower() + 's__count'
+                if hasattr(obj, serializer_count_key):
+                    # annotated from api_helpers.py #prefetch_annotated_datasets
                     rep[get_context_field(dataset_prefix)] = getattr(
-                        obj, dataset_prefix + 's')
+                        obj, serializer_count_key)
 
             except ds.PropertyAnnotation.DoesNotExist:
                 logger.warning('No property annotation for {}'.format(obj.bbl))
