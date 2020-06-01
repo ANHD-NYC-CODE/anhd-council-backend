@@ -14,8 +14,8 @@ class RentStabilizationRecordTests(BaseTest, TestCase):
         self.clean_tests()
 
     def test_list(self):
-        self.taxbill_factory()
-        self.taxbill_factory()
+        self.rentstabilizationrecord_factory()
+        self.rentstabilizationrecord_factory()
 
         response = self.client.get('/taxbills/', format="json")
         content = response.data
@@ -24,7 +24,7 @@ class RentStabilizationRecordTests(BaseTest, TestCase):
         self.assertEqual(len(content), 2)
 
     def test_retrieve(self):
-        taxbill = self.taxbill_factory()
+        taxbill = self.rentstabilizationrecord_factory()
 
         response = self.client.get('/taxbills/{}/'.format(taxbill.id))
         content = response.data

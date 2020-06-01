@@ -15,8 +15,8 @@ class AcrisRealLegalViewTests(BaseTest, TestCase):
 
     def test_list(self):
         master = self.acrismaster_factory(documentid="1")
-        self.acrislegal_factory(master=master)
-        self.acrislegal_factory(master=master)
+        self.acrisreallegal_factory(master=master)
+        self.acrisreallegal_factory(master=master)
 
         response = self.client.get('/acrisreallegals/', format="json")
         content = response.data
@@ -26,7 +26,7 @@ class AcrisRealLegalViewTests(BaseTest, TestCase):
 
     def test_retrieve(self):
         master = self.acrismaster_factory(documentid="1")
-        legal = self.acrislegal_factory(master=master)
+        legal = self.acrisreallegal_factory(master=master)
 
         response = self.client.get('/acrisreallegals/{}/'.format(legal.key))
         content = response.data

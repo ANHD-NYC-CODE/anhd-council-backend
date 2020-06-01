@@ -71,8 +71,6 @@ class HPDBuildingRecord(BaseDatasetModel, models.Model):
     def seed_or_update_self(self, **kwargs):
         logger.debug("Seeding/Updating {}", self.__name__)
         self.seed_with_upsert(ignore_conflict=True, **kwargs)
-        logger.debug('annotating properties for {}', self.__name__)
-        self.annotate_properties()
 
     @classmethod
     def annotate_properties(self):

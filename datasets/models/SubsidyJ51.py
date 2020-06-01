@@ -1,3 +1,5 @@
+from django.dispatch import receiver
+from datasets import models as ds
 from django.db import models
 from django.utils import timezone
 
@@ -7,9 +9,6 @@ from datasets.utils.validation_filters import is_null
 import logging
 import datetime
 logger = logging.getLogger('app')
-from datasets import models as ds
-
-from django.dispatch import receiver
 
 
 # Update process: Manual
@@ -49,7 +48,6 @@ class SubsidyJ51(BaseDatasetModel, models.Model):
     @classmethod
     def seed_or_update_self(self, **kwargs):
         self.bulk_seed(**kwargs, overwrite=True)
-        self.annotate_properties()
 
     @classmethod
     def annotate_properties(self):

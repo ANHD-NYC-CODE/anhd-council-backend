@@ -1,5 +1,9 @@
 # API CHANGELOG
 
+#### V1.0.9
+
+- Refactor property annotation tasks - perform once at midnight for all datasets, not directly after seeding each dataset.
+
 #### V1.0.8
 
 - Add property filters for legalclassb and managementprogram

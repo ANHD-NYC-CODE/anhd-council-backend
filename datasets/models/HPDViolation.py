@@ -22,7 +22,8 @@ class HPDViolation(BaseDatasetModel, models.Model):
 
     download_endpoint = "https://data.cityofnewyork.us/api/views/wvxf-dwi5/rows.csv?accessType=DOWNLOAD"
 
-    violationid = models.IntegerField(primary_key=True, blank=False, null=False)
+    violationid = models.IntegerField(
+        primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
     bin = models.ForeignKey('Building', db_column='bin', db_constraint=False,
@@ -59,8 +60,10 @@ class HPDViolation(BaseDatasetModel, models.Model):
     currentstatusdate = models.DateField(db_index=True, blank=True, null=True)
     novtype = models.TextField(blank=True, null=True)
     violationstatus = models.TextField(db_index=True, blank=True, null=True)
-    latitude = models.DecimalField(decimal_places=8, max_digits=32, blank=True, null=True)
-    longitude = models.DecimalField(decimal_places=8, max_digits=32, blank=True, null=True)
+    latitude = models.DecimalField(
+        decimal_places=8, max_digits=32, blank=True, null=True)
+    longitude = models.DecimalField(
+        decimal_places=8, max_digits=32, blank=True, null=True)
     communityboard = models.TextField(blank=True, null=True)
     councildistrict = models.IntegerField(blank=True, null=True)
     censustract = models.TextField(blank=True, null=True)
@@ -70,7 +73,8 @@ class HPDViolation(BaseDatasetModel, models.Model):
 
     @classmethod
     def create_async_update_worker(self, endpoint=None, file_name=None):
-        async_download_and_update.delay(self.get_dataset().id, endpoint=endpoint, file_name=file_name)
+        async_download_and_update.delay(
+            self.get_dataset().id, endpoint=endpoint, file_name=file_name)
 
     @classmethod
     def download(self, endpoint=None, file_name=None):
@@ -100,8 +104,6 @@ class HPDViolation(BaseDatasetModel, models.Model):
     def seed_or_update_self(self, **kwargs):
         logger.debug("Seeding/Updating {}", self.__name__)
         self.seed_with_upsert(**kwargs)
-        logger.debug('annotating properties for {}', self.__name__)
-        self.annotate_properties()
 
     @classmethod
     def annotate_properties(self):
@@ -116,7 +118,8 @@ def annotate_property_on_save(sender, instance, created, **kwargs):
     if created == True:
         try:
 
-            annotation = sender.annotate_property_standard(instance.bbl.propertyannotation)
+            annotation = sender.annotate_property_standard(
+                instance.bbl.propertyannotation)
             annotation.save()
         except Exception as e:
             print(e)

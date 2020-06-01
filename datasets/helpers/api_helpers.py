@@ -200,6 +200,8 @@ def build_annotated_fields(request, datasets):
     params = request.query_params
     for model_name in settings.ANNOTATED_DATASETS:
         dataset_class = getattr(ds, model_name)
+        if not hasattr(dataset_class, 'QUERY_DATE_KEY'):
+            continue
         dataset_prefix = dataset_class.__name__.lower()
         dataset_query_date_key = dataset_class.QUERY_DATE_KEY
         dataset = next(x for x in datasets if x.model_name == model_name)

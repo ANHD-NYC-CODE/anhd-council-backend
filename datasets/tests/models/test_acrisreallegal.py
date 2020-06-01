@@ -27,27 +27,23 @@ class AcrisRealLegalTests(BaseTest, TestCase):
         update = self.update_factory(model_name="AcrisRealLegal",
                                      file_name="mock_acris_real_property_legals.csv")
 
-        ds.AcrisRealLegal.seed_or_update_self(file_path=update.file.file.path, update=update)
+        ds.AcrisRealLegal.seed_or_update_self(
+            file_path=update.file.file.path, update=update)
 
         self.assertEqual(ds.AcrisRealLegal.objects.count(), 10)
         self.assertEqual(update.rows_created, 10)
-
-        self.assertEqual(ds.Property.objects.get(bbl='1021351059').propertyannotation.acrisrealmasters_last30, 1)
-        self.assertEqual(ds.Property.objects.get(bbl='1021351059').propertyannotation.acrisrealmasters_lastyear, 2)
-        self.assertEqual(ds.Property.objects.get(bbl='1021351059').propertyannotation.acrisrealmasters_last3years, 2)
-        self.assertEqual(ds.Property.objects.get(bbl='1021351059').propertyannotation.latestsaleprice, 250)
-        self.assertEqual(ds.Property.objects.get(
-            bbl='1021351059').propertyannotation.latestsaledate.strftime('%Y-%m-%d'), '2015-07-31')
 
     def test_seed_legals_with_diff(self):
 
         update = self.update_factory(model_name="AcrisRealLegal",
                                      file_name="mock_acris_real_property_legals.csv")
-        ds.AcrisRealLegal.seed_or_update_self(file_path=update.file.file.path, update=update)
+        ds.AcrisRealLegal.seed_or_update_self(
+            file_path=update.file.file.path, update=update)
 
         new_update = self.update_factory(dataset=update.dataset, model_name="AcrisRealLegal",
                                          file_name="mock_acris_real_property_legals_diff.csv", previous_file_name="mock_acris_real_property_legals.csv")
-        ds.AcrisRealLegal.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
+        ds.AcrisRealLegal.seed_or_update_self(
+            file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds.AcrisRealLegal.objects.count(), 12)
         # self.assertEqual(new_update.rows_created, 2)
         # self.assertEqual(new_update.rows_updated, 10)

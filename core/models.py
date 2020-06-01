@@ -40,6 +40,19 @@ class Dataset(models.Model):
     update_schedule = models.CharField(
         max_length=255, choices=UPDATE_SCHEDULE_CHOICES, blank=True, null=True)
 
+    @classmethod
+    def annotate_properties_all(self):
+        try:
+            for model_name in settings.ANNOTATED_DATASETS:
+                if model_name == 'AcrisRealMaster':
+                    model_name = 'AcrisRealLegal'
+                dataset = self.objects.get(model_name=model_name)
+                dataset.model().annotate_properties()
+        except Exception as e:
+            logger.error(
+                'Error during task: {} with assumed model name: {}'.format(e, model_name))
+            raise e
+
     def model(self):
         return getattr(ds, self.model_name)
 

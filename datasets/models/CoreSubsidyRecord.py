@@ -1,3 +1,5 @@
+from django.dispatch import receiver
+from datasets import models as ds
 from django.db import models
 from django.utils import timezone
 
@@ -8,9 +10,6 @@ import logging
 import datetime
 import re
 logger = logging.getLogger('app')
-from datasets import models as ds
-
-from django.dispatch import receiver
 
 
 # Update process: Manual
@@ -116,7 +115,6 @@ class CoreSubsidyRecord(BaseDatasetModel, models.Model):
     @classmethod
     def seed_or_update_self(self, **kwargs):
         self.bulk_seed(**kwargs, overwrite=True)
-        self.annotate_properties()
 
     @classmethod
     def annotate_properties(self):

@@ -314,8 +314,7 @@ class Eviction(BaseDatasetModel, models.Model):
         logger.debug("Seeding/Updating {}", self.__name__)
         update = self.seed_with_upsert(**kwargs)
         self.link_eviction_to_pluto_by_address()
-        logger.debug('annotating properties for {}', self.__name__)
-        self.annotate_properties()
+
         return update
 
     @classmethod
@@ -331,7 +330,8 @@ def annotate_property_on_save(sender, instance, created, **kwargs):
     if created == True:
         try:
 
-            annotation = sender.annotate_property_standard(instance.bbl.propertyannotation)
+            annotation = sender.annotate_property_standard(
+                instance.bbl.propertyannotation)
             annotation.save()
         except Exception as e:
             logger.warning(e)

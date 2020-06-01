@@ -166,6 +166,7 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
         while not latest_count and int(year) > 2006:
             latest_count = getattr(self, 'uc' + str(year))
             year -= 1
+
         return latest_count
 
     def get_earliest_count(self):
@@ -224,7 +225,6 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
     @classmethod
     def seed_or_update_self(self, **kwargs):
         update = self.seed_with_upsert(**kwargs)
-        self.annotate_properties()
         return update
 
     @classmethod

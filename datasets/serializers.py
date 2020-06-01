@@ -66,10 +66,6 @@ class PropertyAnnotationSerializer(serializers.ModelSerializer):
     def to_representation(self, obj):
         rep = super(serializers.ModelSerializer, self).to_representation(obj)
         if not self.context['request'].user.is_authenticated:
-            del rep['lispendens_last30']
-            del rep['lispendens_lastyear']
-            del rep['lispendens_last3years']
-            del rep['lispendens_lastupdated']
             del rep['foreclosures_last30']
             del rep['foreclosures_lastyear']
             del rep['foreclosures_last3years']
@@ -263,6 +259,8 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
 
         for model_name in settings.ANNOTATED_DATASETS:
             dataset_class = getattr(ds, model_name)  # results in query
+            if not hasattr(dataset_class, 'QUERY_DATE_KEY'):
+                continue
             dataset = next(
                 x for x in self.context['datasets'] if x.model_name == model_name)
             if hasattr(dataset_class, 'REQUIRES_AUTHENTICATION') and dataset_class.REQUIRES_AUTHENTICATION and not is_authenticated(self.context['request']):

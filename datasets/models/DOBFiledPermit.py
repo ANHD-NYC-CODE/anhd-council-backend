@@ -40,9 +40,12 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
     streetname = models.TextField(blank=True, null=True)
     borough = models.TextField(blank=True, null=True)
     jobstatus = models.TextField(blank=True, null=True)
-    jobtype = models.TextField(blank=True, null=True)  # AKA Work Type # no NOW equivalent
-    jobdescription = models.TextField(blank=True, null=True)  # no NOW equivalent
-    datefiled = models.DateField(db_index=True, blank=True, null=True)  # no NOW equivalent
+    # AKA Work Type # no NOW equivalent
+    jobtype = models.TextField(blank=True, null=True)
+    jobdescription = models.TextField(
+        blank=True, null=True)  # no NOW equivalent
+    datefiled = models.DateField(
+        db_index=True, blank=True, null=True)  # no NOW equivalent
     applicantsfirstname = models.TextField(blank=True, null=True)
     applicantslastname = models.TextField(blank=True, null=True)
     applicantprofessionaltitle = models.TextField(blank=True, null=True)
@@ -64,7 +67,8 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
         primary_key = self._meta.pk.name
         other_table_name = other_table._meta.db_table
         fields = ', '.join([k.name for k in self._meta.get_fields()])
-        upsert_fields = ', '.join([k.name + "=EXCLUDED." + k.name for k in self._meta.get_fields()])
+        upsert_fields = ', '.join(
+            [k.name + "=EXCLUDED." + k.name for k in self._meta.get_fields()])
 
         sql = "INSERT INTO {table_name} ({fields}) SELECT {cols} FROM {other_table_name} ON CONFLICT ({primary_key}) DO UPDATE SET {upsert_fields};"
         return sql.format(table_name=table_name, fields=fields, cols=cols, other_table_name=other_table_name, primary_key=primary_key, upsert_fields=upsert_fields)
@@ -89,24 +93,27 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
         execute(self.upsert_permit_sql(legacy_table, legacy_cols))
         logger.debug("legacy seeded - current count: {}", self.objects.count())
         rows_created_legacy = self.objects.count() - starting_count
-        kwargs['update'].rows_created = kwargs['update'].rows_created + rows_created_legacy
-        kwargs['update'].rows_updated = kwargs['update'].rows_updated + (legacy_count - rows_created_legacy)
+        kwargs['update'].rows_created = kwargs['update'].rows_created + \
+            rows_created_legacy
+        kwargs['update'].rows_updated = kwargs['update'].rows_updated + \
+            (legacy_count - rows_created_legacy)
         kwargs['update'].save()
-        logger.debug("Completed seed into {} for {}", self.__name__, legacy_table._meta.db_table)
+        logger.debug("Completed seed into {} for {}",
+                     self.__name__, legacy_table._meta.db_table)
 
         starting_count = self.objects.count()
         execute(self.upsert_permit_sql(now_table, now_cols))
         logger.debug("now seeded - current count: {}", self.objects.count())
 
         rows_created_now = self.objects.count() - starting_count
-        kwargs['update'].rows_created = kwargs['update'].rows_created + rows_created_now
-        kwargs['update'].rows_updated = kwargs['update'].rows_updated + (now_count - rows_created_now)
+        kwargs['update'].rows_created = kwargs['update'].rows_created + \
+            rows_created_now
+        kwargs['update'].rows_updated = kwargs['update'].rows_updated + \
+            (now_count - rows_created_now)
         kwargs['update'].save()
 
-        logger.debug("Completed seed into {} for {}", self.__name__, now_table._meta.db_table)
-
-        logger.debug('annotating properties for {}', self.__name__)
-        self.annotate_properties()
+        logger.debug("Completed seed into {} for {}",
+                     self.__name__, now_table._meta.db_table)
 
         dataset = self.get_dataset()
         dataset.api_last_updated = datetime.today()
@@ -124,7 +131,8 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
 def annotate_property_on_save(sender, instance, created, **kwargs):
     if created == True:
         try:
-            annotation = sender.annotate_property_standard(instance.bbl.propertyannotation)
+            annotation = sender.annotate_property_standard(
+                instance.bbl.propertyannotation)
             annotation.save()
         except Exception as e:
             print(e)

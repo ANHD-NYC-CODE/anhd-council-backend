@@ -22,15 +22,14 @@ class LisPendenTests(BaseTest, TestCase):
         comment_update = self.update_factory(model_name="LisPendenComment",
                                              file_name="mock_lispenden_comments.csv")
 
-        ds.LisPenden.seed_or_update_self(file_path=update.file.file.path, update=update)
-        ds.LisPendenComment.seed_or_update_self(file_path=comment_update.file.file.path, update=comment_update)
+        ds.LisPenden.seed_or_update_self(
+            file_path=update.file.file.path, update=update)
+        ds.LisPendenComment.seed_or_update_self(
+            file_path=comment_update.file.file.path, update=comment_update)
 
         self.assertEqual(ds.LisPenden.objects.count(), 3)
 
         # 1 foreclosure from comment, 1 foreclosure from creditor
-        self.assertEqual(ds.LisPenden.objects.filter(type='foreclosure').count(), 2)
+        self.assertEqual(ds.LisPenden.objects.filter(
+            type='foreclosure').count(), 2)
         self.assertEqual(update.rows_created, 3)
-
-        self.assertEqual(ds.Property.objects.get(bbl='1111111111').propertyannotation.lispendens_last30, 1)
-        self.assertEqual(ds.Property.objects.get(bbl='1111111111').propertyannotation.lispendens_lastyear, 1)
-        self.assertEqual(ds.Property.objects.get(bbl='1111111111').propertyannotation.lispendens_last3years, 1)

@@ -134,4 +134,4 @@ class AcrisRealMaster(BaseDatasetModel, models.Model):
             return self.async_concurrent_seed(**kwargs)
 
     def __str__(self):
-        return self.documentid
+        return str(self.documentid)

@@ -19,27 +19,27 @@ class HPDViolationTests(BaseTest, TestCase):
         update = self.update_factory(model_name="HPDViolation",
                                      file_name="mock_hpd_violations.csv")
 
-        ds.HPDViolation.seed_or_update_self(file_path=update.file.file.path, update=update)
+        ds.HPDViolation.seed_or_update_self(
+            file_path=update.file.file.path, update=update)
         self.assertEqual(ds.HPDViolation.objects.count(), 4)
         self.assertEqual(update.rows_created, 4)
-
-        self.assertEqual(ds.Property.objects.get(bbl='3046050019').propertyannotation.hpdviolations_last30, 1)
-        self.assertEqual(ds.Property.objects.get(bbl='3046050019').propertyannotation.hpdviolations_lastyear, 1)
-        self.assertEqual(ds.Property.objects.get(bbl='3046050019').propertyannotation.hpdviolations_last3years, 1)
 
     def test_seed_hpdviolation_after_update(self):
 
         update = self.update_factory(model_name="HPDViolation",
                                      file_name="mock_hpd_violations.csv")
-        ds.HPDViolation.seed_or_update_self(file_path=update.file.file.path, update=update)
+        ds.HPDViolation.seed_or_update_self(
+            file_path=update.file.file.path, update=update)
 
         new_update = self.update_factory(dataset=update.dataset, model_name='HPDViolation',
                                          file_name="mock_hpd_violations_diff.csv", previous_file_name="mock_hpd_violations.csv")
-        ds.HPDViolation.seed_or_update_self(file_path=new_update.file.file.path, update=new_update)
+        ds.HPDViolation.seed_or_update_self(
+            file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds.HPDViolation.objects.count(), 6)
         self.assertEqual(new_update.rows_created, 2)
         self.assertEqual(new_update.rows_updated, 4)
-        self.assertEqual(ds.HPDViolation.objects.get(violationid=10000011).currentstatus, "VIOLATION CLOSED")
+        self.assertEqual(ds.HPDViolation.objects.get(
+            violationid=10000011).currentstatus, "VIOLATION CLOSED")
         changed_record = ds.HPDViolation.objects.get(violationid=10000014)
         self.assertEqual(changed_record.currentstatus, 'VIOLATION CLOSED')
         self.assertEqual(changed_record.currentstatusdate.year, 2017)

@@ -122,7 +122,7 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         return update
 
     def council_factory(self, id=None, **kwargs):
-        name = 'Council'
+        name = 'Council Districts'
         if not id:
             id = random.randint(1, 1000000)
         if not len(c_models.Dataset.objects.filter(name=name)):
@@ -136,7 +136,7 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         return factory
 
     def community_factory(self, id=None, **kwargs):
-        name = 'Community'
+        name = 'Community Districts'
         if not id:
             id = random.randint(1, 1000000)
         if not len(c_models.Dataset.objects.filter(name=name)):
@@ -150,7 +150,7 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         return factory
 
     def state_assembly_factory(self, id=None, **kwargs):
-        name = 'StateAssembly'
+        name = 'State Assemblies'
         if not id:
             id = random.randint(1, 1000000)
         if not len(c_models.Dataset.objects.filter(name=name)):
@@ -164,7 +164,7 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         return factory
 
     def state_senate_factory(self, id=None, **kwargs):
-        name = 'StateSenate'
+        name = 'State Senates'
         if not id:
             id = random.randint(1, 1000000)
         if not len(c_models.Dataset.objects.filter(name=name)):
@@ -178,7 +178,7 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         return factory
 
     def zipcode_factory(self, id=None, **kwargs):
-        name = 'ZipCode'
+        name = 'ZipCodes'
         if not id:
             id = random.randint(1, 1000000)
         if not len(c_models.Dataset.objects.filter(name=name)):
@@ -192,7 +192,7 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         return factory
 
     def property_factory(self, bbl=None, council=None, unitsres=1, unitstotal=1, borough=1, block='0001', lot='00001', **kwargs):
-        name = 'Property'
+        name = 'Properties'
         if not bbl:
             bbl = random.randint(1000000000, 5999999999)
         if not len(c_models.Dataset.objects.filter(name=name)):
@@ -214,7 +214,7 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         return factory
 
     def building_factory(self, bin=None, property=None, boro=1, block='0001', lot='00001', lhnd='1a', hhnd='1b', **kwargs):
-        name = 'Building'
+        name = 'Buildings'
         if not bin:
             bin = random.randint(1, 1000000)
         if not len(c_models.Dataset.objects.filter(name=name)):
@@ -295,8 +295,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
 
         return factory
 
-    def hpdbuilding_factory(self, buildingid=None, property=None, building=None, **kwargs):
-        name = 'HPDBuildingRecord'
+    def hpdbuildingrecord_factory(self, buildingid=None, property=None, building=None, **kwargs):
+        name = 'HPD Building Records'
         if not buildingid:
             buildingid = random.randint(1, 1000000)
         if not len(c_models.Dataset.objects.filter(name=name)):
@@ -329,7 +329,7 @@ class BaseTest(APITestCase, URLPatternsTestCase):
             building = self.building_factory(bin=random.randint(1, 1000000), property=property, boro=property.borough,
                                              block=property.block, lot=property.lot)
         if not hpdbuilding:
-            hpdbuilding = self.hpdbuilding_factory(buildingid=random.randint(
+            hpdbuilding = self.hpdbuildingrecord_factory(buildingid=random.randint(
                 1, 100000), property=property, building=building)
 
         factory = d_models.HPDComplaint.objects.create(
@@ -510,7 +510,7 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         )
         return factory
 
-    def acrislegal_factory(self, master=None, property=None, **kwargs):
+    def acrisreallegal_factory(self, master=None, property=None, **kwargs):
         name = 'AcrisRealLegal'
         if not master:
             master = self.acrismaster_factory(
@@ -663,7 +663,7 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         )
         return factory
 
-    def taxbill_factory(self, property=None, **kwargs):
+    def rentstabilizationrecord_factory(self, property=None, **kwargs):
         name = 'RentStabilizationRecord'
         if not property:
             property = self.property_factory(

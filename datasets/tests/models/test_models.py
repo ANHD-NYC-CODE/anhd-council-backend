@@ -227,18 +227,12 @@ class HPDComplaint(BaseTest, TestCase):
             file_path=update.file.file.path, update=update)
         self.assertEqual(ds.HPDComplaint.objects.count(), 9)
         self.assertEqual(update.rows_created, 9)
-        self.assertEqual(ds.Property.objects.get(
-            bbl='1018730024').propertyannotation.hpdcomplaints_last30, 1)
-        self.assertEqual(ds.Property.objects.get(
-            bbl='1018730024').propertyannotation.hpdcomplaints_lastyear, 1)
-        self.assertEqual(ds.Property.objects.get(
-            bbl='1018730024').propertyannotation.hpdcomplaints_last3years, 1)
 
     def test_seed_complaints_adds_bin(self):
         update = self.update_factory(model_name="HPDComplaint",
                                      file_name="mock_hpd_complaints.csv")
         building = self.building_factory(bin=1)
-        hpdbuilding = self.hpdbuilding_factory(
+        hpdbuilding = self.hpdbuildingrecord_factory(
             buildingid="3418", building=building)
         ds.HPDComplaint.seed_or_update_self(
             file_path=update.file.file.path, update=update)
@@ -310,12 +304,6 @@ class DOBViolationTests(BaseTest, TestCase):
             file_path=update.file.file.path, update=update)
         self.assertEqual(ds.DOBViolation.objects.count(), 10)
         self.assertEqual(update.rows_created, 10)
-        self.assertEqual(ds.Property.objects.get(
-            bbl='4033609001').propertyannotation.dobviolations_last30, 1)
-        self.assertEqual(ds.Property.objects.get(
-            bbl='4033609001').propertyannotation.dobviolations_lastyear, 1)
-        self.assertEqual(ds.Property.objects.get(
-            bbl='4033609001').propertyannotation.dobviolations_last3years, 1)
 
     def test_seed_dobviolation_after_update(self):
         update = self.update_factory(model_name="DOBViolation",
@@ -351,13 +339,6 @@ class ECBViolationTests(BaseTest, TestCase):
             file_path=update.file.file.path, update=update)
         self.assertEqual(ds.ECBViolation.objects.count(), 5)
         self.assertEqual(update.rows_created, 5)
-
-        self.assertEqual(ds.Property.objects.get(
-            bbl='1015177501').propertyannotation.ecbviolations_last30, 1)
-        self.assertEqual(ds.Property.objects.get(
-            bbl='1015177501').propertyannotation.ecbviolations_lastyear, 1)
-        self.assertEqual(ds.Property.objects.get(
-            bbl='1015177501').propertyannotation.ecbviolations_last3years, 1)
 
     def test_seed_ecbviolation_after_update(self):
         update = self.update_factory(model_name="ECBViolation",
@@ -398,12 +379,6 @@ class DOBComplaintTests(BaseTest, TestCase):
         # Adds the BBL from the Building
         self.assertEqual(ds.DOBComplaint.objects.filter(
             bin="4298330")[0].bbl.pk, '1')
-        self.assertEqual(ds.Property.objects.get(
-            bbl='1').propertyannotation.dobcomplaints_last30, 1)
-        self.assertEqual(ds.Property.objects.get(
-            bbl='1').propertyannotation.dobcomplaints_lastyear, 1)
-        self.assertEqual(ds.Property.objects.get(
-            bbl='1').propertyannotation.dobcomplaints_last3years, 1)
 
     def test_seed_dobcomplaint_after_update(self):
         update = self.update_factory(model_name="DOBComplaint",
@@ -437,12 +412,6 @@ class HousingLitigationTests(BaseTest, TestCase):
             file_path=update.file.file.path, update=update)
         self.assertEqual(ds.HousingLitigation.objects.count(), 10)
         self.assertEqual(update.rows_created, 10)
-        self.assertEqual(ds.Property.objects.get(
-            bbl='4122580012').propertyannotation.housinglitigations_last30, 1)
-        self.assertEqual(ds.Property.objects.get(
-            bbl='4122580012').propertyannotation.housinglitigations_lastyear, 1)
-        self.assertEqual(ds.Property.objects.get(
-            bbl='4122580012').propertyannotation.housinglitigations_last3years, 1)
 
     def test_seed_litigation_after_update(self):
         update = self.update_factory(model_name="HousingLitigation",
@@ -543,9 +512,6 @@ class HPDBuildingRecordTests(BaseTest, TestCase):
         self.assertEqual(update.rows_created, 6)
 
         annotation = ds.PropertyAnnotation.objects.get(bbl=property.bbl)
-        self.assertEqual(annotation.legalclassa, 1)
-        self.assertEqual(annotation.legalclassb, 8)
-        self.assertEqual(annotation.managementprogram, '7A')
 
     def test_seed_record_after_update(self):
         update = self.update_factory(model_name="HPDBuildingRecord",
@@ -593,9 +559,6 @@ class TaxLienTests(BaseTest, TestCase):
             file_path=new_update.file.file.path, update=new_update)
         self.assertEqual(ds.TaxLien.objects.count(), 9)
 
-        self.assertEqual(ds.Property.objects.get(
-            bbl='1001351101').propertyannotation.taxlien, True)
-
 
 class CoreSubsidyRecordTests(BaseTest, TestCase):
     def tearDown(self):
@@ -610,8 +573,6 @@ class CoreSubsidyRecordTests(BaseTest, TestCase):
 
         self.assertEqual(ds.CoreSubsidyRecord.objects.count(), 10)
         self.assertEqual(update.rows_created, 10)
-        self.assertEqual(ds.Property.objects.get(
-            bbl='1000160015').propertyannotation.subsidyprograms, 'LIHTC 4%')
 
     def test_seed_record_after_overwrite(self):
         update = self.update_factory(model_name="CoreSubsidyRecord",
@@ -639,8 +600,6 @@ class SubsidyJ51Tests(BaseTest, TestCase):
             file_path=update.file.file.path, update=update)
         self.assertEqual(ds.SubsidyJ51.objects.count(), 19)
         self.assertEqual(update.rows_created, 19)
-        self.assertEqual(ds.Property.objects.get(
-            bbl='1003990039').propertyannotation.subsidyj51, True)
 
     def test_seed_record_after_overwrite(self):
         update = self.update_factory(model_name="SubsidyJ51",
@@ -669,8 +628,6 @@ class Subsidy421aTests(BaseTest, TestCase):
             file_path=update.file.file.path, update=update)
         self.assertEqual(ds.Subsidy421a.objects.count(), 10)
         self.assertEqual(update.rows_created, 10)
-        self.assertEqual(ds.Property.objects.get(
-            bbl='1003961008').propertyannotation.subsidy421a, True)
 
     def test_seed_record_after_overwrite(self):
         update = self.update_factory(model_name="Subsidy421a",
@@ -768,13 +725,6 @@ class DOBPermitIssuedTests(BaseTest, TestCase):
         self.assertEqual(ds.DOBIssuedPermit.objects.filter(
             type='dobpermitissuedlegacy').first().permit_status, "ISSUED")
 
-        self.assertEqual(ds.Property.objects.get(
-            bbl='1').propertyannotation.dobissuedpermits_last30, 5)
-        self.assertEqual(ds.Property.objects.get(
-            bbl='1').propertyannotation.dobissuedpermits_lastyear, 10)
-        self.assertEqual(ds.Property.objects.get(
-            bbl='1').propertyannotation.dobissuedpermits_last3years, 10)
-
     def test_seed_joined_table_with_update(self):
         update = self.update_factory(model_name="DOBIssuedPermit")
 
@@ -853,9 +803,6 @@ class PublicHousingRecordTests(BaseTest, TestCase):
         self.assertEqual(update.total_rows, 9)
         self.assertEqual(ds.PublicHousingRecord.objects.count(), 9)
         self.assertEqual(update.rows_created, 9)
-
-        self.assertEqual(ds.Property.objects.get(
-            bbl='2022150116').propertyannotation.nycha, True)
 
     def test_seed_record_after_update(self):
         update = self.update_factory(model_name="PublicHousingRecord",

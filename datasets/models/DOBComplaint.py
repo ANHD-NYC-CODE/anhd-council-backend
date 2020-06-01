@@ -23,7 +23,8 @@ class DOBComplaint(BaseDatasetModel, models.Model):
 
     download_endpoint = "https://nycopendata.socrata.com/api/views/eabe-havv/rows.csv?accessType=DOWNLOAD"
 
-    complaintnumber = models.IntegerField(primary_key=True, blank=False, null=False)
+    complaintnumber = models.IntegerField(
+        primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=True)
     bin = models.ForeignKey('Building', db_column='bin', db_constraint=False,
@@ -46,7 +47,8 @@ class DOBComplaint(BaseDatasetModel, models.Model):
 
     @classmethod
     def create_async_update_worker(self, endpoint=None, file_name=None):
-        async_download_and_update.delay(self.get_dataset().id, endpoint=endpoint, file_name=file_name)
+        async_download_and_update.delay(
+            self.get_dataset().id, endpoint=endpoint, file_name=file_name)
 
     @classmethod
     def download(self, endpoint=None, file_name=None):
@@ -82,14 +84,13 @@ class DOBComplaint(BaseDatasetModel, models.Model):
             'bbl'
         )[:1]
 
-        self.objects.prefetch_related('building').all().update(bbl=Subquery(bbl))
+        self.objects.prefetch_related(
+            'building').all().update(bbl=Subquery(bbl))
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
         logger.debug("Seeding/Updating {}", self.__name__)
         self.seed_with_upsert(callback=self.add_bbls_from_bin, **kwargs)
-        logger.debug('annotating properties for {}', self.__name__)
-        self.annotate_properties()
 
     @classmethod
     def annotate_properties(self):
@@ -104,7 +105,8 @@ def annotate_property_on_save(sender, instance, created, **kwargs):
     if created == True:
         try:
 
-            annotation = sender.annotate_property_standard(instance.bbl.propertyannotation)
+            annotation = sender.annotate_property_standard(
+                instance.bbl.propertyannotation)
             annotation.save()
         except Exception as e:
             print(e)

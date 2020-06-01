@@ -14,8 +14,8 @@ class HPDBuildingViewTests(BaseTest, TestCase):
         self.clean_tests()
 
     def test_list(self):
-        self.hpdbuilding_factory(buildingid="1")
-        self.hpdbuilding_factory(buildingid="2")
+        self.hpdbuildingrecord_factory(buildingid="1")
+        self.hpdbuildingrecord_factory(buildingid="2")
 
         response = self.client.get('/hpdbuildings/', format="json")
         content = response.data
@@ -25,7 +25,7 @@ class HPDBuildingViewTests(BaseTest, TestCase):
 
     def test_retrieve(self):
         building = self.building_factory(bin="1")
-        self.hpdbuilding_factory(buildingid="1", building=building)
+        self.hpdbuildingrecord_factory(buildingid="1", building=building)
 
         response = self.client.get('/hpdbuildings/1/')
         content = response.data
@@ -34,7 +34,7 @@ class HPDBuildingViewTests(BaseTest, TestCase):
         self.assertEqual(content["buildingid"], 1)
 
     def mock_hpdbuilding_violations(self):
-        hpdbuilding = self.hpdbuilding_factory(buildingid="1")
+        hpdbuilding = self.hpdbuildingrecord_factory(buildingid="1")
         self.hpdviolation_factory(hpdbuilding=hpdbuilding)
         self.hpdviolation_factory(hpdbuilding=hpdbuilding)
 
@@ -45,7 +45,7 @@ class HPDBuildingViewTests(BaseTest, TestCase):
         self.assertEqual(len(content), 2)
 
     def mock_hpdbuilding_complaints(self):
-        hpdbuilding = self.hpdbuilding_factory(buildingid="1")
+        hpdbuilding = self.hpdbuildingrecord_factory(buildingid="1")
         self.hpdcomplaint_factory(hpdbuilding=hpdbuilding)
         self.hpdcomplaint_factory(hpdbuilding=hpdbuilding)
 
@@ -56,7 +56,7 @@ class HPDBuildingViewTests(BaseTest, TestCase):
         self.assertEqual(len(content), 2)
 
     def mock_hpdbuilding_registrations(self):
-        hpdbuilding = self.hpdbuilding_factory(buildingid="1")
+        hpdbuilding = self.hpdbuildingrecord_factory(buildingid="1")
         self.hpdregistration_factory(hpdbuilding=hpdbuilding)
         self.hpdregistration_factory(hpdbuilding=hpdbuilding)
 

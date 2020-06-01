@@ -58,14 +58,16 @@ class LisPendenComment(BaseDatasetModel, models.Model):
             if not comment.datecomments:
                 continue
             if comment.foreclosure_in_comment():
-                related_comments = self.objects.prefetch_related('key').filter(key=comment.key_id)
+                related_comments = self.objects.prefetch_related(
+                    'key').filter(key=comment.key_id)
                 # search for word 'mortgage' in all comments related to the lispenden
                 for related_comment in related_comments:
                     if 'mortgage' in related_comment.datecomments.lower():
                         try:
                             keys.add(comment.key_id)
                         except Exception as e:
-                            logger.debug("Foreclosure Key not found {}".format(comment.key_id))
+                            logger.debug(
+                                "Foreclosure Key not found {}".format(comment.key_id))
 
         ds.LisPenden.objects.filter(key__in=keys).update(type='foreclosure')
         logger.debug("Marked {} foreclosures".format(len(keys)))
@@ -76,30 +78,6 @@ class LisPendenComment(BaseDatasetModel, models.Model):
 
         self.seed_with_upsert(**kwargs)
         self.mark_lispenden_foreclosures()
-        ds.LisPenden.annotate_properties()
 
     def __str__(self):
         return str(self.id)
-
-
-@receiver(models.signals.post_save, sender=LisPendenComment)
-def annotate_property_on_save(sender, instance, created, **kwargs):
-    if created == True:
-        try:
-            last30 = dates.get_last_month(string=False)
-            lastyear = dates.get_last_year(string=False)
-            last3years = dates.get_last3years(string=False)
-
-            annotation = instance.bbl.propertyannotation
-            annotation.lispendens_last30 = Coalesce(annotation.bbl.acrisreallegal_set.filter(
-                type=ds.LisPenden.LISPENDEN_TYPES['foreclosure'], fileddate__gte=last30).count(), 0)
-
-            annotation.lispendens_lastyear = Coalesce(annotation.bbl.acrisreallegal_set.filter(
-                type=ds.LisPenden.LISPENDEN_TYPES['foreclosure'], fileddate__gte=lastyear).count(), 0)
-
-            annotation.lispendens_last3years = Coalesce(annotation.bbl.acrisreallegal_set.filter(
-                type=ds.LisPenden.LISPENDEN_TYPES['foreclosure'], fileddate__gte=last3years).count(), 0)
-
-            annotation.save()
-        except Exception as e:
-            print(e)

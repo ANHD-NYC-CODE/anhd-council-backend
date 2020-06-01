@@ -19,7 +19,8 @@ class ECBViolation(BaseDatasetModel, models.Model):
     download_endpoint = "https://data.cityofnewyork.us/api/views/6bgk-3dad/rows.csv?accessType=DOWNLOAD"
     QUERY_DATE_KEY = 'issuedate'
 
-    ecbviolationnumber = models.TextField(primary_key=True, blank=False, null=False)
+    ecbviolationnumber = models.TextField(
+        primary_key=True, blank=False, null=False)
     isndobbisextract = models.ForeignKey('DOBViolation', db_column='isndobbisextract', db_constraint=False,
                                          on_delete=models.SET_NULL, null=True, blank=False)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
@@ -27,7 +28,8 @@ class ECBViolation(BaseDatasetModel, models.Model):
     bin = models.ForeignKey('Building', db_column='bin', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=True)
     ecbviolationstatus = models.TextField(db_index=True, blank=True, null=True)
-    dobviolationnumber = models.TextField(blank=True, null=True)  # not reliable FK
+    dobviolationnumber = models.TextField(
+        blank=True, null=True)  # not reliable FK
     boro = models.TextField(blank=True, null=True)
     block = models.TextField(blank=True, null=True)
     lot = models.TextField(blank=True, null=True)
@@ -43,9 +45,12 @@ class ECBViolation(BaseDatasetModel, models.Model):
     respondentcity = models.TextField(blank=True, null=True)
     respondentzip = models.TextField(blank=True, null=True)
     violationdescription = models.TextField(blank=True, null=True)
-    penalityimposed = models.DecimalField(db_index=True, decimal_places=2, max_digits=8, blank=True, null=True)
-    amountpaid = models.DecimalField(decimal_places=2, max_digits=8, blank=True, null=True)
-    balancedue = models.DecimalField(decimal_places=2, max_digits=8, blank=True, null=True)
+    penalityimposed = models.DecimalField(
+        db_index=True, decimal_places=2, max_digits=8, blank=True, null=True)
+    amountpaid = models.DecimalField(
+        decimal_places=2, max_digits=8, blank=True, null=True)
+    balancedue = models.DecimalField(
+        decimal_places=2, max_digits=8, blank=True, null=True)
     infractioncode1 = models.TextField(blank=True, null=True)
     sectionlawdescription1 = models.TextField(blank=True, null=True)
     infractioncode2 = models.TextField(blank=True, null=True)
@@ -74,7 +79,8 @@ class ECBViolation(BaseDatasetModel, models.Model):
 
     @classmethod
     def create_async_update_worker(self, endpoint=None, file_name=None):
-        async_download_and_update.delay(self.get_dataset().id, endpoint=endpoint, file_name=file_name)
+        async_download_and_update.delay(
+            self.get_dataset().id, endpoint=endpoint, file_name=file_name)
 
     @classmethod
     def download(self, endpoint=None, file_name=None):
@@ -104,8 +110,6 @@ class ECBViolation(BaseDatasetModel, models.Model):
     def seed_or_update_self(self, **kwargs):
         logger.debug("Seeding/Updating {}", self.__name__)
         self.seed_with_upsert(**kwargs)
-        logger.debug('annotating properties for {}', self.__name__)
-        self.annotate_properties()
 
     @classmethod
     def annotate_properties(self):
@@ -120,7 +124,8 @@ def annotate_property_on_save(sender, instance, created, **kwargs):
     if created == True:
         try:
 
-            annotation = sender.annotate_property_standard(instance.bbl.propertyannotation)
+            annotation = sender.annotate_property_standard(
+                instance.bbl.propertyannotation)
             annotation.save()
         except Exception as e:
             print(e)

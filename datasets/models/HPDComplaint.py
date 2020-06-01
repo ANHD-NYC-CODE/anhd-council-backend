@@ -24,7 +24,8 @@ class HPDComplaint(BaseDatasetModel, models.Model):
     QUERY_DATE_KEY = 'receiveddate'
     RECENT_DATE_PINNED = True
 
-    complaintid = models.IntegerField(primary_key=True, blank=False, null=False)
+    complaintid = models.IntegerField(
+        primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
     bin = models.ForeignKey('Building', db_column='bin', db_constraint=False,
@@ -49,7 +50,8 @@ class HPDComplaint(BaseDatasetModel, models.Model):
 
     @classmethod
     def create_async_update_worker(self, endpoint=None, file_name=None):
-        async_download_and_update.delay(self.get_dataset().id, endpoint=endpoint, file_name=file_name)
+        async_download_and_update.delay(
+            self.get_dataset().id, endpoint=endpoint, file_name=file_name)
 
     @classmethod
     def download(self, endpoint=None, file_name=None):
@@ -78,14 +80,14 @@ class HPDComplaint(BaseDatasetModel, models.Model):
     @classmethod
     def add_bins_from_buildingid(self):
         logger.debug(" * Adding BINs through building for HPD Complaints.")
-        bin = ds.HPDBuildingRecord.objects.filter(buildingid=OuterRef('buildingid')).values_list('bin')[:1]
-        self.objects.prefetch_related('buildingid').all().update(bin=Subquery(bin))
+        bin = ds.HPDBuildingRecord.objects.filter(
+            buildingid=OuterRef('buildingid')).values_list('bin')[:1]
+        self.objects.prefetch_related(
+            'buildingid').all().update(bin=Subquery(bin))
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
         self.seed_with_upsert(callback=self.add_bins_from_buildingid, **kwargs)
-        logger.debug('annotating properties for {}', self.__name__)
-        self.annotate_properties()
 
     @classmethod
     def annotate_properties(self):
@@ -99,7 +101,8 @@ class HPDComplaint(BaseDatasetModel, models.Model):
 def annotate_property_on_save(sender, instance, created, **kwargs):
     if created == True:
         try:
-            annotation = sender.annotate_property_month_offset(instance.bbl.propertyannotation)
+            annotation = sender.annotate_property_month_offset(
+                instance.bbl.propertyannotation)
             annotation.save()
         except Exception as e:
             print(e)

@@ -20,8 +20,6 @@ class RentStabilizationRecordTests(BaseTest, TestCase):
             file_path=update.file.file.path, update=update)
         self.assertEqual(ds.RentStabilizationRecord.objects.count(), 12)
         self.assertEqual(update.rows_created, 12)
-        self.assertEqual(ds.Property.objects.get(
-            bbl="6050720025").propertyannotation.unitsrentstabilized, 63)
 
         first_record = ds.RentStabilizationRecord.objects.get(
             id='1007530077')
@@ -52,11 +50,11 @@ class RentStabilizationRecordTests(BaseTest, TestCase):
         self.assertEqual(record.latestuctotals, 6)
 
     def test_get_percent_lost(self):
-        record = self.taxbill_factory(uc2007=100, uc2017=10)
+        record = self.rentstabilizationrecord_factory(uc2007=100, uc2017=10)
         self.assertEqual(record.get_percent_lost(), -0.9)
 
-        record2 = self.taxbill_factory(uc2007=10, uc2017=11)
+        record2 = self.rentstabilizationrecord_factory(uc2007=10, uc2017=11)
         self.assertEqual(record2.get_percent_lost(), 0.1)
 
-        record2 = self.taxbill_factory(uc2007=34, uc2017=23)
+        record2 = self.rentstabilizationrecord_factory(uc2007=34, uc2017=23)
         self.assertEqual(record2.get_percent_lost(), -0.3235294117647059)

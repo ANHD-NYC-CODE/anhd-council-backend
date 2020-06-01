@@ -99,14 +99,6 @@ class PropertyAnnotation(BaseDatasetModel, models.Model):
         db_index=True, default=0, blank=True, null=True)
     acrisrealmasters_lastupdated = models.DateTimeField(blank=True, null=True)
 
-    lispendens_last30 = models.IntegerField(
-        db_index=True, default=0, blank=True, null=True)
-    lispendens_lastyear = models.IntegerField(
-        db_index=True, default=0, blank=True, null=True)
-    lispendens_last3years = models.IntegerField(
-        db_index=True, default=0, blank=True, null=True)
-    lispendens_lastupdated = models.DateTimeField(blank=True, null=True)
-
     foreclosures_last30 = models.IntegerField(
         db_index=True, default=0, blank=True, null=True)
     foreclosures_lastyear = models.IntegerField(

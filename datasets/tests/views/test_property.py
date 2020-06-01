@@ -49,8 +49,8 @@ class PropertyViewTests(BaseTest, TestCase):
 
     def test_property_hpdbuildings(self):
         property = self.property_factory(bbl="1")
-        self.hpdbuilding_factory(buildingid="1", property=property)
-        self.hpdbuilding_factory(buildingid="2", property=property)
+        self.hpdbuildingrecord_factory(buildingid="1", property=property)
+        self.hpdbuildingrecord_factory(buildingid="2", property=property)
 
         response = self.client.get('/properties/1/hpdbuildings/')
         content = response.data
@@ -118,8 +118,8 @@ class PropertyViewTests(BaseTest, TestCase):
         property = self.property_factory(bbl="1")
         master1 = self.acrismaster_factory(doctype="DEED", documentid="1")
         master2 = self.acrismaster_factory(doctype="DEED", documentid="2")
-        self.acrislegal_factory(master=master1, property=property)
-        self.acrislegal_factory(master=master2, property=property)
+        self.acrisreallegal_factory(master=master1, property=property)
+        self.acrisreallegal_factory(master=master2, property=property)
 
         response = self.client.get('/properties/1/acrisrealmasters/')
         content = response.data
@@ -174,8 +174,8 @@ class PropertyViewTests(BaseTest, TestCase):
     def test_property_taxbills(self):
         property1 = self.property_factory(bbl="1")
         property2 = self.property_factory(bbl="2")
-        self.taxbill_factory(property=property1)
-        self.taxbill_factory(property=property2)
+        self.rentstabilizationrecord_factory(property=property1)
+        self.rentstabilizationrecord_factory(property=property2)
 
         response = self.client.get('/properties/1/taxbills/')
         content = response.data
@@ -320,7 +320,8 @@ class PropertyViewTests(BaseTest, TestCase):
             property=property, building=building1)
 
         self.coredata_factory(property=property, programname='HELLO')
-        self.taxbill_factory(property=property, uc2008=50, uc2016=10)
+        self.rentstabilizationrecord_factory(
+            property=property, uc2008=50, uc2016=10)
 
         response = self.client.get('/properties/?summary=true', format="json")
         content = response.data
@@ -348,7 +349,7 @@ class PropertyViewTests(BaseTest, TestCase):
         property1 = self.property_factory(bbl='1', council=council)
         property2 = self.property_factory(bbl='2', council=council)
 
-        self.taxbill_factory(property=property1, uc2017=10)
+        self.rentstabilizationrecord_factory(property=property1, uc2017=10)
 
         for i in range(5):
             self.hpdviolation_factory(
@@ -377,11 +378,11 @@ class PropertyViewTests(BaseTest, TestCase):
             self.hpdviolation_factory(
                 property=property2, approveddate="2010-01-01")
 
-        self.acrislegal_factory(property=property1, master=self.acrismaster_factory(
+        self.acrisreallegal_factory(property=property1, master=self.acrismaster_factory(
             documentid=i, docdate="2017-01-01", doctype="DEED", docamount=1))
-        self.acrislegal_factory(property=property1, master=self.acrismaster_factory(
+        self.acrisreallegal_factory(property=property1, master=self.acrismaster_factory(
             documentid=i, docdate="2018-01-01", doctype="DEED", docamount=1000))
-        self.acrislegal_factory(property=property1, master=self.acrismaster_factory(
+        self.acrisreallegal_factory(property=property1, master=self.acrismaster_factory(
             documentid=i, docdate="2018-01-01", doctype="NOT_SALE", docamount=1000))
 
         query = '/properties/?summary=true&summary-type=short-annotated&annotation__start=2018-01-01&hpdviolations__start=2015-01-01&hpdviolations__end=2019-01-01&hpdviolations__gte=5'
@@ -552,7 +553,7 @@ class PropertyViewTests(BaseTest, TestCase):
         for i in range(1):
             self.dobviolation_factory(
                 property=property2, issuedate="2018-01-01")
-            self.acrislegal_factory(property=property2, master=self.acrismaster_factory(
+            self.acrisreallegal_factory(property=property2, master=self.acrismaster_factory(
                 documentid='1', docdate="2018-12-01", doctype="DEED", docamount=1))
 
         query = '/properties/?housingtype=all&q=*condition_0=OR+filter_0=hpdviolations__count__gte=5,hpdviolations__approveddate__gte=2017-01-01+filter_1=acrisreallegals__documentid__count__gte=1,acrisreallegals__documentid__docdate__gte=2018-01-01+filter_2=dobviolations__count__gte=5,dobviolations__issuedate__gte=2018-01-01&summary=true&summary-type=short-annotated'
@@ -721,9 +722,9 @@ class PropertyViewTests(BaseTest, TestCase):
             self.dobviolation_factory(
                 property=property2, issuedate="2018-12-10")
 
-        self.acrislegal_factory(property=property1, master=self.acrismaster_factory(
+        self.acrisreallegal_factory(property=property1, master=self.acrismaster_factory(
             documentid='1', docdate="2018-12-01", doctype="DEED", docamount=1))
-        self.acrislegal_factory(property=property1, master=self.acrismaster_factory(
+        self.acrisreallegal_factory(property=property1, master=self.acrismaster_factory(
             documentid='2', docdate="2017-01-01", doctype="DEED", docamount=1))
 
         token = self.get_access_token()
@@ -843,7 +844,7 @@ class PropertyViewTests(BaseTest, TestCase):
         property1 = self.property_factory(bbl='1', council=council)
         property2 = self.property_factory(bbl='2', council=council)
 
-        self.taxbill_factory(property=property1, uc2017=10)
+        self.rentstabilizationrecord_factory(property=property1, uc2017=10)
 
         for i in range(5):
             self.hpdviolation_factory(
@@ -861,11 +862,11 @@ class PropertyViewTests(BaseTest, TestCase):
             self.hpdcomplaint_factory(
                 property=property1, receiveddate="2017-12-01")
 
-        self.acrislegal_factory(property=property1, master=self.acrismaster_factory(
+        self.acrisreallegal_factory(property=property1, master=self.acrismaster_factory(
             documentid='1', docdate="2017-01-01", doctype="DEED", docamount=1))
-        self.acrislegal_factory(property=property1, master=self.acrismaster_factory(
+        self.acrisreallegal_factory(property=property1, master=self.acrismaster_factory(
             documentid='2', docdate="2018-01-01", doctype="DEED", docamount=1000))
-        self.acrislegal_factory(property=property1, master=self.acrismaster_factory(
+        self.acrisreallegal_factory(property=property1, master=self.acrismaster_factory(
             documentid='3', docdate="2018-01-01", doctype="NOT_SALE", docamount=1000))
 
         query = '/properties/?summary=true&summary-type=short-annotated&annotation__start=full'
@@ -1000,7 +1001,7 @@ class PropertyViewTests(BaseTest, TestCase):
         for i in range(1):
             self.dobviolation_factory(
                 property=property2, issuedate="2018-01-01")
-            self.acrislegal_factory(property=property2, master=self.acrismaster_factory(
+            self.acrisreallegal_factory(property=property2, master=self.acrismaster_factory(
                 documentid='1', docdate="2018-12-01", doctype="DEED", docamount=1))
 
         query = '/properties/?housingtype=all&q=*condition_0=OR+filter_0=hpdviolations__count__gte=5,hpdviolations__approveddate__gte=2017-01-01+filter_1=acrisreallegals__documentid__count__gte=1,acrisreallegals__documentid__docdate__gte=2018-01-01+filter_2=dobviolations__count__gte=5,dobviolations__issuedate__gte=2018-01-01&summary=true&summary-type=custom-search'

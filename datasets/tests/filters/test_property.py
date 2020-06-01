@@ -38,7 +38,7 @@ class PropertyFilterTests(BaseTest, TestCase):
             bbl=1, council=council, yearbuilt=2000)
         property2 = self.property_factory(
             bbl=2, council=council, yearbuilt=1900)
-        hpdbuilding1 = self.hpdbuilding_factory(
+        hpdbuilding1 = self.hpdbuildingrecord_factory(
             property=property1, legalclassb=1)
 
         query = '/properties/?propertyannotation__legalclassb__gte=1'
@@ -55,7 +55,7 @@ class PropertyFilterTests(BaseTest, TestCase):
             bbl=1, council=council, yearbuilt=2000)
         property2 = self.property_factory(
             bbl=2, council=council, yearbuilt=1900)
-        hpdbuilding1 = self.hpdbuilding_factory(
+        hpdbuilding1 = self.hpdbuildingrecord_factory(
             property=property1, managementprogram="7A")
 
         # Positive
@@ -355,8 +355,10 @@ class PropertyFilterTests(BaseTest, TestCase):
         council = self.council_factory(id=1)
         property1 = self.property_factory(bbl=1, council=council)
         property2 = self.property_factory(bbl=2, council=council)
-        self.taxbill_factory(property=property1, uc2007=10, uc2017=1)
-        self.taxbill_factory(property=property2, uc2007=10, uc2017=5)
+        self.rentstabilizationrecord_factory(
+            property=property1, uc2007=10, uc2017=1)
+        self.rentstabilizationrecord_factory(
+            property=property2, uc2007=10, uc2017=5)
 
         query = '/properties/?rsunitslost__start=2007&rsunitslost__end=2017&rsunitslost__gte=0.9'
         response = self.client.get(query, format="json")
@@ -375,8 +377,10 @@ class PropertyFilterTests(BaseTest, TestCase):
         council = self.council_factory(id=1)
         property1 = self.property_factory(bbl=1, council=council)
         property2 = self.property_factory(bbl=2, council=council)
-        self.taxbill_factory(property=property1, uc2007=10, uc2018=1)
-        self.taxbill_factory(property=property2, uc2007=10, uc2018=5)
+        self.rentstabilizationrecord_factory(
+            property=property1, uc2007=10, uc2018=1)
+        self.rentstabilizationrecord_factory(
+            property=property2, uc2007=10, uc2018=5)
 
         query = '/properties/?rsunitslost__gte=0.9&rsunitslost__start=2007'
         response = self.client.get(query, format="json")
@@ -397,11 +401,16 @@ class PropertyFilterTests(BaseTest, TestCase):
         property4 = self.property_factory(bbl=4, council=council)
         property5 = self.property_factory(bbl=5, council=council)
 
-        self.taxbill_factory(property=property1, uc2007=10, uc2018=1)
-        self.taxbill_factory(property=property2, uc2007=10, uc2018=5)
-        self.taxbill_factory(property=property3, uc2007=10, uc2018=10)
-        self.taxbill_factory(property=property4, uc2007=0, uc2018=11)
-        self.taxbill_factory(property=property5, uc2007=10, uc2018=0)
+        self.rentstabilizationrecord_factory(
+            property=property1, uc2007=10, uc2018=1)
+        self.rentstabilizationrecord_factory(
+            property=property2, uc2007=10, uc2018=5)
+        self.rentstabilizationrecord_factory(
+            property=property3, uc2007=10, uc2018=10)
+        self.rentstabilizationrecord_factory(
+            property=property4, uc2007=0, uc2018=11)
+        self.rentstabilizationrecord_factory(
+            property=property5, uc2007=10, uc2018=0)
 
         query = '/properties/?rsunitslost__gte=0.9&rsunitslost__start=2007'
         response = self.client.get(query, format="json")
@@ -423,11 +432,16 @@ class PropertyFilterTests(BaseTest, TestCase):
         property4 = self.property_factory(bbl=4, council=council)
         property5 = self.property_factory(bbl=5, council=council)
 
-        self.taxbill_factory(property=property1, uc2007=10, uc2018=1)
-        self.taxbill_factory(property=property2, uc2007=10, uc2018=5)
-        self.taxbill_factory(property=property3, uc2007=10, uc2018=10)
-        self.taxbill_factory(property=property4, uc2007=0, uc2018=11)
-        self.taxbill_factory(property=property5, uc2007=10, uc2018=0)
+        self.rentstabilizationrecord_factory(
+            property=property1, uc2007=10, uc2018=1)
+        self.rentstabilizationrecord_factory(
+            property=property2, uc2007=10, uc2018=5)
+        self.rentstabilizationrecord_factory(
+            property=property3, uc2007=10, uc2018=10)
+        self.rentstabilizationrecord_factory(
+            property=property4, uc2007=0, uc2018=11)
+        self.rentstabilizationrecord_factory(
+            property=property5, uc2007=10, uc2018=0)
 
         query = '/properties/?rsunitslost__exact=0&rsunitslost__start=2007'
         response = self.client.get(query, format="json")
@@ -449,9 +463,9 @@ class PropertyFilterTests(BaseTest, TestCase):
             docamount=1, docdate="2018-01-01", doctype="DEED")
         acrismaster3 = self.acrismaster_factory(
             docamount=10, docdate="2018-01-01", doctype="RPTT")
-        self.acrislegal_factory(master=acrismaster1, property=property1)
-        self.acrislegal_factory(master=acrismaster2, property=property2)
-        self.acrislegal_factory(master=acrismaster3, property=property3)
+        self.acrisreallegal_factory(master=acrismaster1, property=property1)
+        self.acrisreallegal_factory(master=acrismaster2, property=property2)
+        self.acrisreallegal_factory(master=acrismaster3, property=property3)
 
         query = '/properties/?acrisrealmasteramounts__start=2017-01-01&acrisrealmasteramounts__end=2018-01-01&acrisrealmasteramounts__gte=5'
         response = self.client.get(query, format="json")
@@ -471,23 +485,23 @@ class PropertyFilterTests(BaseTest, TestCase):
         property3 = self.property_factory(bbl=3, council=council)
         acrismaster2 = self.acrismaster_factory(
             docamount=1, docdate="2018-01-01")
-        self.acrislegal_factory(master=acrismaster2, property=property2)
+        self.acrisreallegal_factory(master=acrismaster2, property=property2)
 
         # wrong doctype but all in range
         property4 = self.property_factory(bbl=4, council=council)
 
         for i in range(5):
             am = self.acrismaster_factory(doctype="DEED", docdate="2018-01-01")
-            self.acrislegal_factory(master=am, property=property1)
+            self.acrisreallegal_factory(master=am, property=property1)
 
         for i in range(5):
             am = self.acrismaster_factory(doctype="DEED", docdate="2010-01-01")
-            self.acrislegal_factory(master=am, property=property3)
+            self.acrisreallegal_factory(master=am, property=property3)
 
         for i in range(5):
             am = self.acrismaster_factory(
                 doctype="hello", docdate="2018-01-01")
-            self.acrislegal_factory(master=am, property=property4)
+            self.acrisreallegal_factory(master=am, property=property4)
 
         # 5 sales between 2017-2018
         query = '/properties/?acrisrealmasters__start=2017-01-01&acrisrealmasters__end=2018-01-01&acrisrealmasters__gte=5'
@@ -957,16 +971,20 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         council = self.council_factory(id=1)
         # loses 90% between 2007 - 2017
         property1 = self.property_factory(bbl=1, council=council)
-        self.taxbill_factory(property=property1, uc2007=10, uc2017=1)
+        self.rentstabilizationrecord_factory(
+            property=property1, uc2007=10, uc2017=1)
         # loses 50% between 2007 - 2017
         property2 = self.property_factory(bbl=2, council=council)
-        self.taxbill_factory(property=property2, uc2007=10, uc2017=5)
+        self.rentstabilizationrecord_factory(
+            property=property2, uc2007=10, uc2017=5)
         # loses 10% between 2007 - 2017
         property3 = self.property_factory(bbl=3, council=council)
-        self.taxbill_factory(property=property3, uc2007=10, uc2017=9)
+        self.rentstabilizationrecord_factory(
+            property=property3, uc2007=10, uc2017=9)
         # loses 0% between 2007 - 2017
         property4 = self.property_factory(bbl=4, council=council)
-        self.taxbill_factory(property=property4, uc2007=10, uc2017=10)
+        self.rentstabilizationrecord_factory(
+            property=property4, uc2007=10, uc2017=10)
 
         # properties that lost over 50% of rent stabilized units between 2007 and 2017
         query = '/properties/?q=*condition_0=AND+filter_0=rentstabilizationrecords__year__gte=2007,rentstabilizationrecords__year__gte=2017,rentstabilizationrecords__percent__gte=0.5'
@@ -987,25 +1005,25 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         acrismaster1 = self.acrismaster_factory(
             documentid="a", doctype="DEED", docamount=10, docdate="2018-01-01")
         property1 = self.property_factory(bbl=1, council=council)
-        self.acrislegal_factory(property=property1, master=acrismaster1)
+        self.acrisreallegal_factory(property=property1, master=acrismaster1)
 
         # sold for $1 in date range
         acrismaster2 = self.acrismaster_factory(
             documentid="b", doctype="DEED", docamount=1, docdate="2018-01-01")
         property2 = self.property_factory(bbl=2, council=council)
-        self.acrislegal_factory(property=property2, master=acrismaster2)
+        self.acrisreallegal_factory(property=property2, master=acrismaster2)
 
         # sold for $10 out of date range
         acrismaster3 = self.acrismaster_factory(
             documentid="c", doctype="DEED", docamount=10, docdate="2011-01-01")
         property3 = self.property_factory(bbl=3, council=council)
-        self.acrislegal_factory(property=property3, master=acrismaster3)
+        self.acrisreallegal_factory(property=property3, master=acrismaster3)
 
         # tax document for $10 in date range
         acrismaster4 = self.acrismaster_factory(
             documentid="d", doctype="RPTT", docamount=10, docdate="2017-01-01")
         property4 = self.property_factory(bbl=4, council=council)
-        self.acrislegal_factory(property=property4, master=acrismaster4)
+        self.acrisreallegal_factory(property=property4, master=acrismaster4)
 
         # properties that sold for over $5 between 2017-2018
         query = '/properties/?q=*condition_0=AND+filter_0=acrisreallegals__documentid__docdate__gte=2017-01-01,acrisreallegals__documentid__docdate__lte=2018-01-01,acrisreallegals__documentid__docamount__gte=5'
@@ -1026,25 +1044,25 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         acrismaster1 = self.acrismaster_factory(
             documentid="a", doctype="DEED", docamount=10, docdate="2018-01-01")
         property1 = self.property_factory(bbl=1, council=council)
-        self.acrislegal_factory(property=property1, master=acrismaster1)
+        self.acrisreallegal_factory(property=property1, master=acrismaster1)
 
         # sold for $1 in date range
         acrismaster2 = self.acrismaster_factory(
             documentid="b", doctype="DEED", docamount=1, docdate="2018-01-01")
         property2 = self.property_factory(bbl=2, council=council)
-        self.acrislegal_factory(property=property2, master=acrismaster2)
+        self.acrisreallegal_factory(property=property2, master=acrismaster2)
 
         # sold for $10 out of date range
         acrismaster3 = self.acrismaster_factory(
             documentid="c", doctype="DEED", docamount=10, docdate="2011-01-01")
         property3 = self.property_factory(bbl=3, council=council)
-        self.acrislegal_factory(property=property3, master=acrismaster3)
+        self.acrisreallegal_factory(property=property3, master=acrismaster3)
 
         # tax document for $10 in date range
         acrismaster4 = self.acrismaster_factory(
             documentid="d", doctype="RPTT", docamount=10, docdate="2017-01-01")
         property4 = self.property_factory(bbl=4, council=council)
-        self.acrislegal_factory(property=property4, master=acrismaster4)
+        self.acrisreallegal_factory(property=property4, master=acrismaster4)
 
         # only hpd violations
         property5 = self.property_factory(bbl=5, council=council)
@@ -1075,13 +1093,13 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         for i in range(5):
             am = self.acrismaster_factory(
                 doctype="DEED", docamount=10, docdate="2018-01-01")
-            self.acrislegal_factory(property=property1, master=am)
+            self.acrisreallegal_factory(property=property1, master=am)
 
         # sold 1 time in date range
         acrismaster2 = self.acrismaster_factory(
             documentid="b", doctype="DEED", docamount=1, docdate="2018-01-01")
         property2 = self.property_factory(bbl=2, council=council)
-        self.acrislegal_factory(property=property2, master=acrismaster2)
+        self.acrisreallegal_factory(property=property2, master=acrismaster2)
 
         # properties with 5 sales between 2017-2018
         query = '/properties/?q=*condition_0=AND+filter_0=acrisreallegals__documentid__docdate__gte=2017-01-01,acrisreallegals__documentid__docdate__lte=2018-01-01,acrisreallegals__documentid__count__gte=5'
@@ -1102,13 +1120,13 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         for i in range(5):
             am = self.acrismaster_factory(
                 doctype="DEED", docamount=10, docdate="2018-01-01")
-            self.acrislegal_factory(property=property1, master=am)
+            self.acrisreallegal_factory(property=property1, master=am)
 
         # sold 1 time in date range
         acrismaster2 = self.acrismaster_factory(
             documentid="b", doctype="DEED", docamount=1, docdate="2018-01-01")
         property2 = self.property_factory(bbl=2, council=council)
-        self.acrislegal_factory(property=property2, master=acrismaster2)
+        self.acrisreallegal_factory(property=property2, master=acrismaster2)
 
         # properties with 5 sales between 2017-2018
         query = '/properties/?summary=true&summary-type=short-annotated&q=*condition_0=AND+filter_0=acrisreallegals__documentid__docdate__gte=2017-01-01,acrisreallegals__documentid__docdate__lte=2018-01-01,acrisreallegals__documentid__count__gte=5'
@@ -1130,40 +1148,40 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         for i in range(5):
             am = self.acrismaster_factory(
                 doctype="DEED", docamount=1, docdate="2018-01-01")
-            self.acrislegal_factory(property=property1, master=am)
+            self.acrisreallegal_factory(property=property1, master=am)
         am = self.acrismaster_factory(
             doctype="DEED", docamount=10, docdate="2018-01-01")
-        self.acrislegal_factory(property=property1, master=am)
+        self.acrisreallegal_factory(property=property1, master=am)
 
         # sold 1 time in date range with price
         acrismaster2 = self.acrismaster_factory(
             documentid="b", doctype="DEED", docamount=10, docdate="2018-01-01")
         property2 = self.property_factory(bbl=2, council=council)
-        self.acrislegal_factory(property=property2, master=acrismaster2)
+        self.acrisreallegal_factory(property=property2, master=acrismaster2)
 
         # sold 5 times with price, out of date range
         property3 = self.property_factory(bbl=3, council=council)
         for i in range(5):
             am3 = self.acrismaster_factory(
                 doctype="DEED", docamount=10, docdate="2011-01-01")
-            self.acrislegal_factory(property=property3, master=am3)
+            self.acrisreallegal_factory(property=property3, master=am3)
 
         # sold 5 times in date range, not with price
         property4 = self.property_factory(bbl=4, council=council)
         for i in range(5):
             am4 = self.acrismaster_factory(
                 doctype="DEED", docamount=1, docdate="2018-01-01")
-            self.acrislegal_factory(property=property4, master=am4)
+            self.acrisreallegal_factory(property=property4, master=am4)
 
         # sold 5 times not in date range, not with price, and 1 time in date range with price
         property5 = self.property_factory(bbl=5, council=council)
         for i in range(5):
             am = self.acrismaster_factory(
                 doctype="DEED", docamount=1, docdate="2011-01-01")
-            self.acrislegal_factory(property=property5, master=am)
+            self.acrisreallegal_factory(property=property5, master=am)
         am = self.acrismaster_factory(
             doctype="DEED", docamount=10, docdate="2018-01-01")
-        self.acrislegal_factory(property=property5, master=am)
+        self.acrisreallegal_factory(property=property5, master=am)
 
         # properties with 5 sales between 2017-2018 and sold for over $5 between 2017-2018
         query = '/properties/?q=*condition_0=AND+filter_0=acrisreallegals__documentid__count__gte=5,acrisreallegals__documentid__docdate__gte=2018-01-01+filter_1=acrisreallegals__documentid__docamount__gte=10,acrisreallegals__documentid__docdate__gte=2018-01-01'
@@ -1472,22 +1490,26 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         # full match
         property1 = self.property_factory(
             bbl=1, council=council, yearbuilt=1950)
-        self.taxbill_factory(property=property1, uc2007=10, uc2017=1)
+        self.rentstabilizationrecord_factory(
+            property=property1, uc2007=10, uc2017=1)
         # council match, no housing type match
         property2 = self.property_factory(
             bbl=2, council=council, yearbuilt=1950)
-        self.taxbill_factory(property=property2, uc2007=10, uc2017=10)
+        self.rentstabilizationrecord_factory(
+            property=property2, uc2007=10, uc2017=10)
         # council match, housing type match, no record match
         property3 = self.property_factory(
             bbl=3, council=council, yearbuilt=1950)
-        self.taxbill_factory(property=property3, uc2007=10, uc2017=1)
+        self.rentstabilizationrecord_factory(
+            property=property3, uc2007=10, uc2017=1)
         # council match, no housing type match
         property4 = self.property_factory(bbl=4, council=council)
 
         # no council match, housing type match, record match
         property5 = self.property_factory(
             bbl=5, council=council2, yearbuilt=1950)
-        self.taxbill_factory(property=property5, uc2007=10, uc2017=1)
+        self.rentstabilizationrecord_factory(
+            property=property5, uc2007=10, uc2017=1)
 
         for i in range(5):
             self.hpdviolation_factory(
@@ -1516,47 +1538,51 @@ class PropertyAdvancedFilterTests(BaseTest, TestCase):
         # full match
         property1 = self.property_factory(
             bbl=1, council=council, yearbuilt=1950)
-        self.taxbill_factory(property=property1, uc2007=10, uc2017=1)
+        self.rentstabilizationrecord_factory(
+            property=property1, uc2007=10, uc2017=1)
         # council match, no housing type match
         property2 = self.property_factory(
             bbl=2, council=council, yearbuilt=1950)
-        self.taxbill_factory(property=property2, uc2007=10, uc2017=10)
+        self.rentstabilizationrecord_factory(
+            property=property2, uc2007=10, uc2017=10)
         # council match, housing type match, no record match
         property3 = self.property_factory(
             bbl=3, council=council, yearbuilt=1950)
-        self.taxbill_factory(property=property3, uc2007=10, uc2017=1)
+        self.rentstabilizationrecord_factory(
+            property=property3, uc2007=10, uc2017=1)
         # council match, no housing type match
         property4 = self.property_factory(bbl=4, council=council)
 
         # no council match, housing type match, record match
         property5 = self.property_factory(
             bbl=5, council=council2, yearbuilt=1950)
-        self.taxbill_factory(property=property5, uc2007=10, uc2017=1)
+        self.rentstabilizationrecord_factory(
+            property=property5, uc2007=10, uc2017=1)
 
         # sold for $10 in date range
         acrismaster1 = self.acrismaster_factory(
             documentid="a", doctype="DEED", docamount=10, docdate="2018-01-01")
-        self.acrislegal_factory(property=property1, master=acrismaster1)
+        self.acrisreallegal_factory(property=property1, master=acrismaster1)
 
         # sold for $1 in date range
         acrismaster2 = self.acrismaster_factory(
             documentid="b", doctype="DEED", docamount=1, docdate="2018-01-01")
-        self.acrislegal_factory(property=property2, master=acrismaster2)
+        self.acrisreallegal_factory(property=property2, master=acrismaster2)
 
         # sold for $10 out of date range
         acrismaster3 = self.acrismaster_factory(
             documentid="c", doctype="DEED", docamount=10, docdate="2011-01-01")
-        self.acrislegal_factory(property=property3, master=acrismaster3)
+        self.acrisreallegal_factory(property=property3, master=acrismaster3)
 
         # tax document for $10 in date range
         acrismaster4 = self.acrismaster_factory(
             documentid="d", doctype="RPTT", docamount=10, docdate="2017-01-01")
-        self.acrislegal_factory(property=property4, master=acrismaster4)
+        self.acrisreallegal_factory(property=property4, master=acrismaster4)
 
         # sold for $10 in date range
         acrismaster5 = self.acrismaster_factory(
             documentid="e", doctype="DEED", docamount=10, docdate="2018-01-01")
-        self.acrislegal_factory(property=property5, master=acrismaster5)
+        self.acrisreallegal_factory(property=property5, master=acrismaster5)
 
         # properties in council 1 lost 50% rs units and sold for at least $5 betwen 2017-2018
         query = '/properties/?council=1&housingtype=rs&rsunitslost__gte=0.5&rsunitslost__start=2007&q=*condition_0=AND+filter_0=acrisreallegals__documentid__docdate__gte=2017-01-01,acrisreallegals__documentid__docdate__lte=2018-01-01,acrisreallegals__documentid__docamount__gte=5'

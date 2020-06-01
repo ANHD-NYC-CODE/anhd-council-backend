@@ -22,7 +22,7 @@ logger = logging.getLogger('app')
 class AcrisRealLegal(BaseDatasetModel, models.Model):
     API_ID = '8h5j-fqxa'
     download_endpoint = 'https://data.cityofnewyork.us/api/views/8h5j-fqxa/rows.csv?accessType=DOWNLOAD'
-    QUERY_DATE_KEY = 'documentid__docdate'
+    QUERY_DATE_KEY = 'documentid__docdate'  # date is on the acrisrealmaster record
 
     class Meta:
         indexes = [
@@ -54,7 +54,8 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
 
     @classmethod
     def create_async_update_worker(self, endpoint=None, file_name=None):
-        async_download_and_update.delay(self.get_dataset().id, endpoint=endpoint, file_name=file_name)
+        async_download_and_update.delay(
+            self.get_dataset().id, endpoint=endpoint, file_name=file_name)
 
     @classmethod
     def download(self, endpoint=None, file_name=None):
@@ -66,7 +67,8 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
             if is_null(row['documentid']):
                 continue
 
-            row['key'] = "{}-{}".format(row['documentid'], row['bbl'])  # add primary key
+            # add primary key
+            row['key'] = "{}-{}".format(row['documentid'], row['bbl'])
             yield row
 
     # trims down new update files to preserve memory
@@ -89,12 +91,8 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
         logger.debug("Seeding/Updating {}", self.__name__)
         if settings.TESTING:
             self.seed_with_single(**kwargs)
-            self.annotate_properties()
         else:
             self.async_concurrent_seed(**kwargs)
-
-        logger.debug('annotating properties for {}', self.__name__)
-        self.annotate_properties()
 
     @classmethod
     def annotate_properties(self):
@@ -102,7 +100,8 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
         records = []
         logger.debug('annotating properties for: {}'.format(self.__name__))
 
-        last30 = dates.get_last_month_since_api_update(self.get_dataset(), string=False)
+        last30 = dates.get_last_month_since_api_update(
+            self.get_dataset(), string=False)
         lastyear = dates.get_last_year(string=False)
         last3years = dates.get_last3years(string=False)
 
@@ -135,7 +134,8 @@ def annotate_property_on_save(sender, instance, created, **kwargs):
     if created == True:
         try:
 
-            last30 = dates.get_last_month_since_api_update(ds.AcrisRealLegal.get_dataset(), string=False)
+            last30 = dates.get_last_month_since_api_update(
+                ds.AcrisRealLegal.get_dataset(), string=False)
             lastyear = dates.get_last_year(string=False)
             last3years = dates.get_last3years(string=False)
 

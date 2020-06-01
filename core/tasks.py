@@ -124,11 +124,7 @@ def async_create_update(self, dataset_id, file_id=None):
 
 @app.task(bind=True, base=FaultTolerantTask, queue='update', acks_late=True, max_retries=1)
 def async_annotate_properties_with_all_datasets(self):
-    for model_name in settings.ANNOTATED_DATASETS:
-        if model_name == 'AcrisRealMaster':
-            model_name = 'AcrisRealLegal'
-        dataset = c.Dataset.objects.get(model_name=model_name)
-        dataset.model().annotate_properties()
+    c.Dataset.annotate_properties_all()
 
 
 @app.task(bind=True, base=FaultTolerantTask, queue='update', acks_late=True, max_retries=1)

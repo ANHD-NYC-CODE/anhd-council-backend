@@ -119,8 +119,10 @@ class DOBLegacyFiledPermit(BaseDatasetModel, models.Model):
     specialactiondate = models.DateField(blank=True, null=True)
     buildingclass = models.TextField(blank=True, null=True)
     jobnogoodcount = models.TextField(blank=True, null=True)
-    gislatitude = models.DecimalField(decimal_places=8, max_digits=16, blank=True, null=True)
-    gislongitude = models.DecimalField(decimal_places=8, max_digits=16, blank=True, null=True)
+    gislatitude = models.DecimalField(
+        decimal_places=8, max_digits=16, blank=True, null=True)
+    gislongitude = models.DecimalField(
+        decimal_places=8, max_digits=16, blank=True, null=True)
     giscouncildistrict = models.TextField(blank=True, null=True)
     giscensustract = models.TextField(blank=True, null=True)
     gisntaname = models.TextField(blank=True, null=True)
@@ -133,7 +135,8 @@ class DOBLegacyFiledPermit(BaseDatasetModel, models.Model):
 
     @classmethod
     def create_async_update_worker(self, endpoint=None, file_name=None):
-        async_download_and_update.delay(self.get_dataset().id, endpoint=endpoint, file_name=file_name)
+        async_download_and_update.delay(
+            self.get_dataset().id, endpoint=endpoint, file_name=file_name)
 
     @classmethod
     def download(self, endpoint=None, file_name=None):

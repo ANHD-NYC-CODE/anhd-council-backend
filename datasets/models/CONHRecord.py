@@ -75,7 +75,6 @@ class CONHRecord(BaseDatasetModel, models.Model):
     @classmethod
     def seed_or_update_self(self, **kwargs):
         self.bulk_seed(**kwargs, overwrite=True)
-        self.annotate_properties()
 
     @classmethod
     def annotate_properties(self):
