@@ -24,7 +24,8 @@ class Foreclosure(BaseDatasetModel, models.Model):
     QUERY_DATE_KEY = 'date_added'
     RECENT_DATE_PINNED = True
     REQUIRES_AUTHENTICATION = True
-    UPDATE_SOURCE = "PSPreForeclosure"  # Tells dataset to get the last update timestamp from this model
+    # Tells dataset to get the last update timestamp from this model
+    UPDATE_SOURCE = "PSPreForeclosure"
 
     class Meta:
         indexes = [
@@ -45,7 +46,8 @@ class Foreclosure(BaseDatasetModel, models.Model):
     debtor = models.TextField(blank=True, null=True)
     mortgage_date = models.TextField(blank=True, null=True)
     mortgage_amount = models.TextField(blank=True, null=True)
-    auction = models.DateField(blank=True, null=True)  # only from PropertySharkForeclosure
+    # only from PropertySharkForeclosure
+    auction = models.DateField(blank=True, null=True)
     foreign_key = models.TextField(blank=True, null=True)
     source = models.TextField(blank=True, null=True)  # PDC or PropertyShark
 
@@ -55,7 +57,8 @@ class Foreclosure(BaseDatasetModel, models.Model):
         records = []
         logger.debug('annotating properties for: {}'.format(self.__name__))
 
-        last30 = dates.get_last_month_since_api_update(self.get_dataset(), string=False)
+        last30 = dates.get_last_month_since_api_update(
+            self.get_dataset(), string=False)
         lastyear = dates.get_last_year(string=False)
         last3years = dates.get_last3years(string=False)
 
@@ -86,7 +89,8 @@ class Foreclosure(BaseDatasetModel, models.Model):
                 elif 'tax lien' in rc.datecomments.lower():
                     return 'Tax Lien'
 
-        lispendens = ds.LisPenden.objects.filter(type='foreclosure', bbl__isnull=False).distinct('index')
+        lispendens = ds.LisPenden.objects.filter(
+            type='foreclosure', bbl__isnull=False).distinct('index')
         foreclosures = []
 
         for lispenden in lispendens:

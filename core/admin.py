@@ -27,6 +27,10 @@ class DatasetAdmin(admin.ModelAdmin):
                 messages.error(
                     request, "This file does not have an automated download configured.")
             return HttpResponseRedirect(".")
+
+        # downloads CSV of all data
+        elif "_download-csv" in request.POST:
+            return self.download_csv(request, obj)
         return super().response_change(request, obj)
 
     @admin_changelist_link('datafile_set', ('DataFiles'), query_string=lambda c: 'dataset={}'.format(c.pk))
@@ -48,6 +52,33 @@ class DatasetAdmin(admin.ModelAdmin):
 
     def has_change_permission(self, request, obj=None):
         return False
+
+    def download_csv(self, request, obj):
+        import csv
+        from django.http import HttpResponse
+        queryset = obj.model().objects.all()
+        csv_name = '{}.csv'.format(obj.name.lower())
+        f = open(csv_name, 'w')
+
+        useable_fields = [*filter(lambda field: field.one_to_many != True and field.many_to_one !=
+                                  True and field.one_to_one != True, [*obj.model()._meta.get_fields()])]
+
+        writer = csv.writer(f)
+        writer.writerow(
+            [field.name for field in useable_fields])
+
+        for entry in queryset:
+            writer.writerow([getattr(entry, field.name)
+                             for field in useable_fields])
+
+        f.close()
+
+        f = open(csv_name, 'r')
+        response = HttpResponse(f, content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename={}'.format(
+            csv_name)
+
+        return response
 
     list_display = ['name', 'automated', 'update_instructions',
                     'updates_count', 'updates_link', 'data_files_count', 'datafiles_link', 'api_last_updated', 'records_start', 'records_end', 'update_schedule']

@@ -45,12 +45,14 @@ class PSPreForeclosure(BaseDatasetModel, models.Model):
     debtor = models.TextField(blank=True, null=True)  # debtor
     debtoraddress = models.TextField(blank=True, null=True)
     mortgagedate = models.DateField(blank=True, null=True)  # mortgage_date
-    mortgageamount = models.IntegerField(blank=True, null=True)  # mortgage_amount
+    mortgageamount = models.IntegerField(
+        blank=True, null=True)  # mortgage_amount
     hasphoto = models.TextField(blank=True, null=True)
 
     @classmethod
     def create_async_update_worker(self, endpoint=None, file_name=None):
-        async_download_and_update.delay(self.get_dataset().id, endpoint=endpoint, file_name=file_name)
+        async_download_and_update.delay(
+            self.get_dataset().id, endpoint=endpoint, file_name=file_name)
 
     @classmethod
     def download(self, endpoint=None, file_name=None):
@@ -82,7 +84,8 @@ class PSPreForeclosure(BaseDatasetModel, models.Model):
         primary_key = ds.Foreclosure._meta.pk.name
         other_table_name = other_table._meta.db_table
         fields = ', '.join([k.name for k in ds.Foreclosure._meta.get_fields()])
-        upsert_fields = ', '.join([k.name + "=EXCLUDED." + k.name for k in ds.Foreclosure._meta.get_fields()])
+        upsert_fields = ', '.join(
+            [k.name + "=EXCLUDED." + k.name for k in ds.Foreclosure._meta.get_fields()])
 
         sql = "INSERT INTO {table_name} ({fields}) SELECT {cols} FROM {other_table_name} ON CONFLICT ({primary_key}) DO NOTHING"
         return sql.format(table_name=table_name, fields=fields, cols=cols, other_table_name=other_table_name, primary_key=primary_key, upsert_fields=upsert_fields)
@@ -98,7 +101,8 @@ class PSPreForeclosure(BaseDatasetModel, models.Model):
 
         execute(self.upsert_sql(preforeclosure_table, preforeclosure_cols))
 
-        logger.info("Completed seed into {} for {}", ds.Foreclosure.__name__, preforeclosure_table._meta.db_table)
+        logger.info("Completed seed into {} for {}",
+                    ds.Foreclosure.__name__, preforeclosure_table._meta.db_table)
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
