@@ -123,6 +123,7 @@ services:
   postgres:
     image: postgres:11
     container_name: "postgres"
+    restart: on-failure
     # https://blog.2ndquadrant.com/basics-of-tuning-checkpoints/
     # linux OOM overcommit https://www.postgresql.org/docs/current/kernel-resources.html#LINUX-MEMORY-OVERCOMMIT
     command:
