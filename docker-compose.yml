@@ -30,6 +30,10 @@ services:
       - .env
     environment:
       - DJANGO_SETTINGS_MODULE=app.settings.production
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
   celery_default:
     restart: always
     build: .
@@ -52,6 +56,10 @@ services:
     env_file:
       - .env
     entrypoint: "celery -A app worker -E -Q celery -l debug -n celery_worker --concurrency=8 --logfile=./celery/logs/default.log"
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
   celery_update:
     restart: always
     build: .
@@ -74,6 +82,10 @@ services:
     env_file:
       - .env
     entrypoint: "celery -A app worker -E -Q update -l debug -n update_worker --concurrency=8 --logfile=./celery/logs/update.log"
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
   celerybeat:
     restart: always
     build: .
@@ -93,7 +105,11 @@ services:
       - ./celery:/app/celery
     env_file:
       - .env
-  # https://www.distributedpython.com/2018/10/13/flower-docker/
+    # https://www.distributedpython.com/2018/10/13/flower-docker/
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
   flower:
     image: mher/flower
     container_name: "flower"
@@ -107,6 +123,10 @@ services:
       - nginx_network
     depends_on:
       - redis
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
   redis:
     restart: always
     hostname: redis
@@ -120,6 +140,10 @@ services:
       - network1
     env_file:
       - .env
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
   postgres:
     image: postgres:11
     container_name: "postgres"
@@ -191,10 +215,18 @@ services:
       - pg_vol1:/var/lib/postgresql/data
     env_file:
       - .env
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
   nginx:
     build: ./nginx
     container_name: "nginx_server"
-  # https://medium.com/@pentacent/nginx-and-lets-encrypt-with-docker-in-less-than-5-minutes-b4b8a60d3a71
+    # https://medium.com/@pentacent/nginx-and-lets-encrypt-with-docker-in-less-than-5-minutes-b4b8a60d3a71
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
   certbot:
     container_name: "certbot"
     image: certbot/certbot
@@ -203,6 +235,10 @@ services:
       - ./nginx/certbot/www:/var/www/certbot
     depends_on:
       - nginx
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
 volumes:
   pg_vol1:
   redis_data:
