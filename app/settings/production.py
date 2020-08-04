@@ -13,9 +13,9 @@ ADMINS = (
 
 # Only want rollbar firing in production
 
-ROLLBAR = {
-    'access_token': os.environ.get('ROLLBAR_API_KEY', ''),
-    'environment': 'production',
-    'branch': 'master',
-    'root': BASE_DIR,
-}
+# ROLLBAR = {
+#     'access_token': os.environ.get('ROLLBAR_API_KEY', ''),
+#     'environment': 'production',
+#     'branch': 'master',
+#     'root': BASE_DIR,
+# }
