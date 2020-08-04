@@ -49,6 +49,7 @@ google-auth-httplib2 = "*"
 google-auth-oauthlib = "*"
 beautifulsoup4 = "*"
 shapely = "*"
+rollbar = "*"
 
 [requires]
 python_version = "3.5.6"
