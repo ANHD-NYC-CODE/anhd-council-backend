@@ -122,3 +122,9 @@ def async_send_new_user_request_email(self, user_request_id):
 def async_send_user_message_email(self, bug_report_id):
     bug_report = UserMessage.objects.get(id=bug_report_id)
     return send_user_message_email(bug_report=bug_report)
+
+
+@app.task(bind=True, queue='celery')
+def async_test_rollbar(self):
+    # should error when called and trigger a rollbar notification
+    return test_rollbar_bad_variable

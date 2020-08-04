@@ -10,3 +10,12 @@ EMAIL_USE_TLS = True
 ADMINS = (
     ('Dev', 'anhd.tech@gmail.com'),
 )
+
+# Only want rollbar firing in production
+
+ROLLBAR = {
+    'access_token': os.environ.get('ROLLBAR_API_KEY', ''),
+    'environment': 'production',
+    'branch': 'master',
+    'root': BASE_DIR,
+}

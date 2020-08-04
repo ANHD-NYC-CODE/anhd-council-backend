@@ -69,6 +69,10 @@
 
 ## Maintaining this App
 
+### 3rd Party Services
+
+- Rollbar - account through anhd github auth.
+
 ### Opening a live shell
 
 1. ssh into the server
