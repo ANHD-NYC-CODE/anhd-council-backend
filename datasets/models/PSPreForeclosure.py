@@ -45,6 +45,7 @@ class PSPreForeclosure(BaseDatasetModel, models.Model):
     debtor = models.TextField(blank=True, null=True)  # debtor
     debtoraddress = models.TextField(blank=True, null=True)
     mortgagedate = models.DateField(blank=True, null=True)  # mortgage_date
+    effectivedate = models.DateField(blank=True, null=True)  # effective_date
     mortgageamount = models.IntegerField(
         blank=True, null=True)  # mortgage_amount
     hasphoto = models.TextField(blank=True, null=True)
