@@ -46,6 +46,7 @@ class PSPreForeclosure(BaseDatasetModel, models.Model):
     debtoraddress = models.TextField(blank=True, null=True)
     mortgagedate = models.DateField(blank=True, null=True)  # mortgage_date
     effectivedate = models.DateField(blank=True, null=True)  # effective_date
+
     mortgageamount = models.IntegerField(
         blank=True, null=True)  # mortgage_amount
     hasphoto = models.TextField(blank=True, null=True)
@@ -106,9 +107,19 @@ class PSPreForeclosure(BaseDatasetModel, models.Model):
                     ds.Foreclosure.__name__, preforeclosure_table._meta.db_table)
 
     @classmethod
+    def switch_effectivedate_to_dateadded(self):
+        # Implemented because in August 2020 PS stopped using the dateadded field and added an effectivedate field.
+        null_dates = self.objects.filter(dateadded__isnull=True)
+        for record in null_dates:
+            record.dateadded = record.effectivedate
+            record.save()
+
+    @classmethod
     def seed_or_update_self(self, **kwargs):
         logger.info("Seeding/Updating {}", self.__name__)
         self.seed_with_upsert(**kwargs)
+        self.switch_effectivedate_to_dateadded()
+
         self.update_foreclosure_table(**kwargs)
         ds.Foreclosure.annotate_properties()
 
