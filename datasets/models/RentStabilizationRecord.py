@@ -15,6 +15,8 @@ logger = logging.getLogger('app')
 # Download file from:
 # http://taxbills.nyc/joined.csv
 # upload file through admin then update
+# **** Add the YEAR of the most recent data to the version field when updating through admin ****
+# So "2019" is the version of the most recent data
 
 
 class RentStabilizationRecord(BaseDatasetModel, models.Model):
@@ -156,6 +158,7 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
     lat = models.DecimalField(
         decimal_places=16, max_digits=32, blank=True, null=True)
     pdfsoa2018 = models.TextField(default='', blank=True, null=True)
+    pdfsoa2019 = models.TextField(default='', blank=True, null=True)
     # holds the latest uc value from the latest year w value
     latestuctotals = models.IntegerField(blank=True, null=True)
 
