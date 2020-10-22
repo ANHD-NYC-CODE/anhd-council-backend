@@ -22,7 +22,7 @@ logger = logging.getLogger('app')
 #
 # Download latest
 # https://data.cityofnewyork.us/City-Government/Property-Address-Directory/bc8t-ecyu
-# Extract ZIP and upload bobaadr.csv file through admin, then update
+# Extract ZIP and upload bobaadr.csv file through admin (associated w/ Building model), then update Building, PadRecord, and finally this one when all others finished.
 
 
 class AddressRecord(BaseDatasetModel, models.Model):

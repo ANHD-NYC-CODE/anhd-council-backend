@@ -19,7 +19,7 @@ logger = logging.getLogger('app')
 #
 # Download latest
 # https://data.cityofnewyork.us/City-Government/Property-Address-Directory/bc8t-ecyu
-# Extract ZIP and upload bobaadr.csv file through admin, then update using bobaadr AND settng dataset = PadRecord
+# Extract ZIP and upload bobaadr.csv file (associated with Building dataset) through admin, then update using bobaadr AND settng dataset = PadRecord
 
 
 class PadRecord(BaseDatasetModel, models.Model):
@@ -84,8 +84,10 @@ class PadRecord(BaseDatasetModel, models.Model):
                 continue
             if is_null(row['lhnd']):
                 continue
-            row['stname'] = clean_number_and_streets(row['stname'], False, clean_typos=False)
-            row['key'] = re.sub(' ', '', "{}{}-{}{}".format(row['bin'], row['lhnd'], row['hhnd'], row['stname']))
+            row['stname'] = clean_number_and_streets(
+                row['stname'], False, clean_typos=False)
+            row['key'] = re.sub(
+                ' ', '', "{}{}-{}{}".format(row['bin'], row['lhnd'], row['hhnd'], row['stname']))
             yield row
 
     # trims down new update files to preserve memory
@@ -106,7 +108,8 @@ class PadRecord(BaseDatasetModel, models.Model):
                     building.save()
                     count = count + 1
                     if count % (settings.BATCH_SIZE / 10) == 0:
-                        logger.debug('Processed {} pad addresses'.format(count))
+                        logger.debug(
+                            'Processed {} pad addresses'.format(count))
                 else:
                     continue
 

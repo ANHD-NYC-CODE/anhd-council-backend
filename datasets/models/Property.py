@@ -21,9 +21,11 @@ logger = logging.getLogger('app')
 # Update process: Manual
 # Update strategy: Upsert
 #
-# Download latest .csv zipfile from:
+# Download latest Pluto .csv zipfile from:
 # https://www1.nyc.gov/site/planning/data-maps/open-data/dwn-pluto-mappluto.page
 # upload zipfile file through admin, update
+# *** Add the pluto version to the 'version' field in admin ****
+# Ex: 20v6
 
 
 class CurrentPropertyManager(models.Manager):
