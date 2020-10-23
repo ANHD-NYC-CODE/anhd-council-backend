@@ -24,6 +24,7 @@ logger = logging.getLogger('app')
 # https://data.cityofnewyork.us/City-Government/Property-Address-Directory/bc8t-ecyu
 # Extract ZIP and upload bobaadr.csv file through admin (associated w/ Building model), then update Building, PadRecord, and finally this one when all others finished.
 # ** RESOURCE INTENSIVE UPDATE ** - don't run during regular updates after 6pm
+# ** Best done on a weekend morning. can take many hours.
 
 
 class AddressRecord(BaseDatasetModel, models.Model):
