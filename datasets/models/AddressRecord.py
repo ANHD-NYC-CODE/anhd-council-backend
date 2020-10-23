@@ -25,6 +25,7 @@ logger = logging.getLogger('app')
 # Extract ZIP and upload bobaadr.csv file through admin (associated w/ Building model), then update Building, PadRecord, and finally this one when all others finished.
 # ** RESOURCE INTENSIVE UPDATE ** - don't run during regular updates after 6pm
 # ** Best done on a weekend morning. can take many hours.
+# ** May need to run build_search method alone in console if runs out of memory after seeding properties and buildings
 
 
 class AddressRecord(BaseDatasetModel, models.Model):
