@@ -23,6 +23,7 @@ logger = logging.getLogger('app')
 # Download latest
 # https://data.cityofnewyork.us/City-Government/Property-Address-Directory/bc8t-ecyu
 # Extract ZIP and upload bobaadr.csv file through admin (associated w/ Building model), then update Building, PadRecord, and finally this one when all others finished.
+# ** RESOURCE INTENSIVE UPDATE ** - don't run during regular updates after 6pm
 
 
 class AddressRecord(BaseDatasetModel, models.Model):
@@ -76,7 +77,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
             'street': building_street,
             'borough': code_to_boro(building_boro),
             'zipcode': building_zip,
-            'address': "",
+            'address': "",  # blank because we build the search vector in build_search method afterwards
             'pad_address': "{}-{} {}".format(building.lhnd, building.hhnd, building.stname),
             'created': datetime.datetime.now().date()
         }
@@ -227,7 +228,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
                 'street': street.strip() if street else None,
                 'borough': borough.strip() if borough else None,
                 'zipcode': zipcode.strip() if zipcode else None,
-                'address': "",
+                'address': "",  # blank because we build the search vector in build_search method afterwards
                 'created': datetime.datetime.now().date()
             }
 

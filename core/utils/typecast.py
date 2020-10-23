@@ -17,9 +17,12 @@ import pytz
 
 logger = logging.getLogger('app')
 
-YES_VALUES = [1, True, 'T', 't', 'true', 'True', 'TRUE', '1', 'y', 'Y', "YES", 'Yes']
-NO_VALUES = ['0', 0, False, 'False', 'f', 'F', 'false', 'FALSE', 'N', 'n', 'NO', 'No', 'no']
-INTEGER_TYPES = (models.fields.IntegerField, models.fields.SmallIntegerField, models.fields.BigIntegerField)
+YES_VALUES = [1, True, 'T', 't', 'true',
+              'True', 'TRUE', '1', 'y', 'Y', "YES", 'Yes']
+NO_VALUES = ['0', 0, False, 'False', 'f', 'F',
+             'false', 'FALSE', 'N', 'n', 'NO', 'No', 'no']
+INTEGER_TYPES = (models.fields.IntegerField,
+                 models.fields.SmallIntegerField, models.fields.BigIntegerField)
 
 
 def downcase_fields_and_values(d):
@@ -76,6 +79,8 @@ def mm_dd_yyyy(date_str):
         month, day, year = map(int, date_str[0:10].split('/'))
         return datetime.date(year, month, day)
     except ValueError:
+        logger.warning(
+            "mm_dd_yyyy - * Unable to parse date string - {}".format(date_str))
         return None
 
 
@@ -83,7 +88,8 @@ def yyyy_mm_dd(date_str):
     try:
         return datetime.datetime.strptime(str(date_str), '%Y%m%d').date()
     except ValueError:
-        logger.warning("* Unable to parse date string - {}".format(date_str))
+        logger.warning(
+            "yyyy_mm_dd - * Unable to parse date string - {}".format(date_str))
         return None
 
 
@@ -106,7 +112,8 @@ def date(x):
             try:
                 parsed_date = yyyy_mm_dd(x)
             except ValueError:
-                logger.warning("* Unable to parse date string - {}".format(x))
+                logger.warning(
+                    "r'[0-9]\{\8\}', * Unable to parse date string - {}".format(x))
                 parsed_date = None
 
         elif (len(x.strip()) == 8 or len(x.strip()) == 9 or len(x.strip()) == 10) and len(x.split('/')) == 3:
@@ -124,7 +131,8 @@ def date(x):
             # checks for 2017-02-06T00:00:00000
             parsed_date = yyyy_mm_dd(x.split('T')[0].replace('-', ''))
         else:
-            logger.warning("* Unable to parse date string - {}".format(x))
+            logger.warning(
+                " 2017-02-06T00:00:00000 - * Unable to parse date string - {}".format(x))
             parsed_date = None
 
     return parsed_date

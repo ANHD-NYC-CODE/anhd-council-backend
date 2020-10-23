@@ -20,6 +20,7 @@ logger = logging.getLogger('app')
 # Download latest
 # https://data.cityofnewyork.us/City-Government/Property-Address-Directory/bc8t-ecyu
 # Extract ZIP and upload bobaadr.csv file (associated with Building dataset) through admin, then update using bobaadr AND settng dataset = PadRecord
+# ** RESOURCE INTENSIVE UPDATE ** - don't run during regular updates after 6pm
 
 
 class PadRecord(BaseDatasetModel, models.Model):
