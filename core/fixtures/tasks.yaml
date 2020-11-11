@@ -180,10 +180,10 @@
     date_changed: "2019-04-25"
 - model: django_celery_beat.periodictask
   fields:
-    name: "Reset cache at 1am"
+    name: "Reset cache at 7am"
     description: "Maintainence task."
     task: "app.tasks.reset_cache"
-    crontab: 3 # every 1 am
+    crontab: 9 # every 7 am
     args: "[]" # add token to args in admin
     kwargs: "{}"
     date_changed: "2019-04-25"
@@ -219,7 +219,7 @@
     name: "Recount Property Annotations"
     description: "Maintainence task. midnight every day"
     task: "app.tasks.async_annotate_properties_with_all_datasets"
-    crontab: 2
+    crontab: 7 # do 5am because if the annotations run before ACRIS finishes, you'll get incomplete data on custom search
     args: "[]"
     kwargs: "{}"
     date_changed: "2019-04-25"

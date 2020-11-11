@@ -1,5 +1,9 @@
 # API CHANGELOG
 
+
+### V1.0.10
+- change the times that annotation occurs (5am from 12am) and caching (7am from 1am) to avoid the instance where annotation occurs before acris legals finish updating, resulting in custom search results being populated without the annotated latestsaleprice.
+
 #### V1.0.9
 
 - Refactor property annotation tasks - perform once at midnight for all datasets, not directly after seeding each dataset.
