@@ -3,6 +3,7 @@
 
 ### V1.0.10
 - change the times that annotation occurs (5am from 12am) and caching (7am from 1am) to avoid the instance where annotation occurs before acris legals finish updating, resulting in custom search results being populated without the annotated latestsaleprice.
+- Modify "is_older_than" method to return False when missing dates, hoping to fix DOBIssuePermit date bug.
 
 #### V1.0.9
 
