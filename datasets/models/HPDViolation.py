@@ -68,6 +68,7 @@ class HPDViolation(BaseDatasetModel, models.Model):
     councildistrict = models.IntegerField(blank=True, null=True)
     censustract = models.TextField(blank=True, null=True)
     nta = models.TextField(blank=True, null=True)
+    rentimpairing = models.TextField(default='', blank=True, null=True)
 
     slim_query_fields = ["violationid", "bbl", "approveddate"]
 
