@@ -170,3 +170,8 @@ With these in mind, this is how you start defining a new condition in the query 
 - When condition_0's expression is complete, you can begin the next condition's expression after a `SPACE` using the same format.
 
 Please view the test suite `PropertyAdvancedFilterTests` in `datasets/tests/filters/test_property.py`. There are numerous examples of this language that cover all of the special cases and advanced query types. This feature was very well tested!
+
+### Running tests
+
+1. bash into the app `docker exec -it app bash`
+2. run `python manage.py test`
