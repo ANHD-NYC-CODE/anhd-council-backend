@@ -8,4 +8,4 @@ docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d --force-rec
 docker exec -it app python manage.py migrate
 docker image prune -f
 
-echo "Dev build complete!"
+echo "Dev build complete! View logs with 'docker-compose logs -f app' or attach to the app for debugging with 'docker attach app'"

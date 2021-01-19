@@ -1,5 +1,13 @@
 version: "2"
 services:
+  app:
+    stdin_open: true # for debugging w/ "docker attach app"
+    tty: true # for debugging w/ "docker attach app"
+    entrypoint: ["sh", "/app/docker-entrypoint.dev.sh"]
+    env_file:
+      - .env.dev
+    environment:
+      - DJANGO_SETTINGS_MODULE=app.settings.development
   celery_default:
     env_file:
       - .env.dev
@@ -14,7 +22,9 @@ services:
       - "8888:8888"
   redis:
     ports:
-      - "6378:6379"
+      - "6379:6379"
   postgres:
     ports:
-      - "5678:5432"
+      - "5432:5432"
+  nginx:
+  certbot:

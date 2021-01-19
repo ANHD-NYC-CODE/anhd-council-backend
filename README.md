@@ -12,7 +12,7 @@
 3. Run build script `sh build.prod.sh` or `sh build.dev.sh` depending on your environment
 4. (first time startup) Shell into app container `docker exec -i -t app /bin/bash` and
 
-- create super user `python manage.py createsuperuser`
+- create super user `python manage.py createsuperuser` (NOTE: check your email because the app will auto-generate a password despite you creating one in the wizard)
 - seed datasets `python manage.py loaddata /app/core/fixtures/datasets.yaml`
 - seed crontabs `python manage.py loaddata /app/core/fixtures/crontabs.yaml`
 - seed automation tasks `python manage.py loaddata /app/core/fixtures/tasks.yaml`
@@ -34,21 +34,22 @@
 
 ## Development Setup
 
-1. You can download a pre-seeded database from dropbox here: https://www.dropbox.com/s/lxdzcjkoezsn086/dap_council_pgvol1.tar?dl=0 This database comes with all the councils, communities, properties, buildings, address records, and subsidy programs pre-loaded.
-2. Once downloaded, put the `.tar` file in the project root and create all the postgres docker services + volumes `docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d postgres`
-3. Then stop postgres `docker-compose stop postgres`
-4. And run this command to copy the data - `docker run --rm --volumes-from postgres -v $(pwd):/backup ubuntu bash -c "cd / && tar xvf /backup/dap_council_pgvol1.tar"`
+1. run `sh build.dev.sh`
+2. Stop postgres `docker-compose stop postgres`
+3. Download a pre-seeded database from dropbox here to move it to project root: https://www.dropbox.com/s/lxdzcjkoezsn086/dap_council_pgvol1.tar?dl=0 This database comes with all the councils, communities, properties, buildings, address records, and subsidy programs pre-loaded.
+4. Run this command to copy the data - `docker run --rm --volumes-from postgres -v $(pwd):/backup ubuntu bash -c "cd / && tar xvf /backup/dap_council_pgvol1.tar"`
 5. Restart postgres, start all the docker containers and the app.
 6. The app should now have a login - username: `admin` password: `123456` and all updates are visible at `localhost:8000/admin/core/updates`. Run database migrations to setup latest tables.
 
-## Development Startup
+## Dev Startup (post setup)
 
-1. You can follow the same steps for production (using `sh build.dev.sh` for step 2), however you may want to have a non-dockerized and non-daemonized version of the app running for debugging purposes.
-2. stop the docker app `docker-compose stop app`
-3. If the app is ejected, you'll need to eject the celery workers too if you plan on using them: `docker-compose stop app celery_default celery_update`.
-4. start the `celery_update` worker manually with `celery -A app worker -Q update -l debug -n update_worker --concurrency=8 --logfile=./celery/logs/update.log`
-5. start the `celery_default` worker manually with `celery -A app worker -Q celery -l debug -n celery_worker --concurrency=8 --logfile=./celery/logs/default.log`
-6. start the app in terminal `python manage.py runserver`
+1. After setting up the dev environment you can always restat it with `docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d` however you may want to have a non-dockerized and non-daemonized version of the app running for debugging purposes. (Note: PDB debugging is possible if you attach to the app container w/ `docker attach app` )
+2.
+3. (optional) To detach for local debugging, stop the docker app `docker-compose stop app`
+4. (optional) If the app is ejected, you'll need to eject the celery workers too if you plan on using them: `docker-compose stop app celery_default celery_update`.
+5. (optional) start the `celery_update` worker manually with the shell script `sh celery1.sh`
+6. (optional) start the `celery_default` worker manually with the shell script `sh celery2.sh`
+7. (optional) start the app in terminal `python manage.py runserver`
 
 **You can view logs in production with `docker-compose logs -f app`**
 
@@ -86,17 +87,47 @@ You can load tasks with `python manage.py loaddata crontabs` and `python manage.
 
 I recommend going through the admin panel and adding it in manually because rewriting all the tasks with a new bulk upload using the `loaddata` command has run into problems.
 
+### Manually triggering tasks
+
+1. Login to admin
+2. go tohttps://api.displacementalert.org/admin/django_celery_beat/periodictask/
+3. Select the task
+4. in the "action" dropdown, select "run selected tasks" and click "go".
+5. monitor tasks in flower https://tasks.displacementalert.org
+
 ### Updating Pluto or PAD
 
 Updating either one of these will leave the old entries intact and overwrite any existing entries that conflict with the new entries. To update these records, create an update in the admin panel using the appropriate file containing the new data.
 
+### Downloading an open-data file to your local computer
+
+1. Login to admin
+2. go to https://api.displacementalert.org/admin/core/dataset/
+3. select a dataset
+4. click "Download File"
+
+### Manually updating datasets
+
+1. Login to admin
+2. navigate to https://api.displacementalert.org/admin/core/update/
+3. Click "Add update"
+4. Click the green "+" icon in the "File" field.
+5. In the popup window, upload your file where is says "choose file"
+6. Select the dataset to associate thi file with in the "Dataset" field.
+7. Click "Save" and monitor its progress in flower https://tasks.displacementalert.org
+
+### Manually updating property shark data
+
+1. Download the monthly pre-foreclosures from property shark and manually upload it via admin associating it with the PSPreforeclosure dataset.
+2. Download the monthly foreclosure auctions from property shark and manually upload it via admin associating it with the PSForeclosure dataset.
+
 ### Building the address table
 
-Whenever you update Pluto or PAD, you'll need to update the address records to make the new properties searchable. Updating the address records will delete all records and seed new ones from the existing property and building records. This runs within an atomic transaction, so there will be no interruption to the live address data while this is happening.
+Whenever you update Pluto or PAD, you'll need to update the address records to make the new properties searchable. Updating the address records will delete all address records and seed new ones from the existing property and building records within an atomic transaction, meaning if it fails, the old records will be preserved. This runs within an atomic transaction, so there will be no interruption to the live address data while this is happening.
 
-To do so, create an update within the admin panel with only the dataset attribute selected, and set to `AddressRecord`.
+To do so, create an update within the admin panel with only the dataset attribute selected, and set it to `AddressRecord`.
 
-This process requires around 6GB of available RAM due to a safety feature in the process. Existing address records will be stored in memory while the new records populate to ensure continuous operation of the search feature while the process takes place over several hours. The existing records will only be deleted once the process is complete. Because of this, please restart the app and postgres containers in docker first to clear up memory usage from long-lived workers.
+This process requires around 6GB of available RAM due to performing an atomic transaction in the DB. Existing address records will be stored in memory while the new records populate to ensure continuous operation of the search feature while the process takes place over several hours. The existing records will only be deleted once the process is complete. Because of this, please restart the app and postgres containers in docker first to clear up memory usage from long-lived workers. (ssh in and run `sh build.prod.sh` to clear memory)
 
 ### Maintaining the daily cache.
 

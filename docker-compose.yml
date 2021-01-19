@@ -213,8 +213,6 @@ services:
       - network1
     volumes:
       - pg_vol1:/var/lib/postgresql/data
-    env_file:
-      - .env
     logging:
       options:
         max-size: "10m"

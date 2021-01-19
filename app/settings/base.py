@@ -113,7 +113,7 @@ DATABASES = {
         'NAME': 'anhd',
         'HOST':  os.environ.get('DATABASE_HOST', 'localhost'),
         'USER': 'anhd',
-        'PORT':  os.environ.get('DATABASE_PORT', 5678)
+        'PORT':  os.environ.get('DATABASE_PORT', 5432)
     }
 }
 
