@@ -66,6 +66,7 @@
 
 ## Continuous deployment
 
+- the production branch is `master`
 - Run this remote task to update the production server.
 - Updating the server will interrupt any running workers and clear the redis cache. Keep this in mind if any long running tasks are currently running.
 
