@@ -1,5 +1,13 @@
 # DAP Council Reports
 
+## Important urls
+
+1. App: `portal.displacementalert.org`
+2. Staging app: `staging.portal.displacementalert.org`
+3. Api: `api.displacementalert.org`
+4. api docs: `api.displacementalert.org/docs`
+5. tasks: `tasks.displacementalert.org`
+
 ## Installation
 
 1. Install docker https://docs.docker.com/install/linux/docker-ce/ubuntu/#install-docker-ce and docker compose `sudo apt-get install docker-compose`
@@ -32,7 +40,7 @@
 - j51 data
 - 421a data
 
-## Development Setup
+## Development Setup (after cloning this repo)
 
 1. run `sh build.dev.sh`
 2. Stop postgres `docker-compose stop postgres`
@@ -44,12 +52,11 @@
 ## Dev Startup (post setup)
 
 1. After setting up the dev environment you can always restat it with `docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d` however you may want to have a non-dockerized and non-daemonized version of the app running for debugging purposes. (Note: PDB debugging is possible if you attach to the app container w/ `docker attach app` )
-2.
-3. (optional) To detach for local debugging, stop the docker app `docker-compose stop app`
-4. (optional) If the app is ejected, you'll need to eject the celery workers too if you plan on using them: `docker-compose stop app celery_default celery_update`.
-5. (optional) start the `celery_update` worker manually with the shell script `sh celery1.sh`
-6. (optional) start the `celery_default` worker manually with the shell script `sh celery2.sh`
-7. (optional) start the app in terminal `python manage.py runserver`
+2. (optional) To detach for local debugging, stop the docker app `docker-compose stop app`
+3. (optional) If the app is ejected, you'll need to eject the celery workers too if you plan on using them: `docker-compose stop app celery_default celery_update`.
+4. (optional) start the `celery_update` worker manually with the shell script `sh celery1.sh`
+5. (optional) start the `celery_default` worker manually with the shell script `sh celery2.sh`
+6. (optional) start the app in terminal `python manage.py runserver`
 
 **You can view logs in production with `docker-compose logs -f app`**
 
@@ -90,7 +97,7 @@ I recommend going through the admin panel and adding it in manually because rewr
 ### Manually triggering tasks
 
 1. Login to admin
-2. go tohttps://api.displacementalert.org/admin/django_celery_beat/periodictask/
+2. go to https://api.displacementalert.org/admin/django_celery_beat/periodictask/
 3. Select the task
 4. in the "action" dropdown, select "run selected tasks" and click "go".
 5. monitor tasks in flower https://tasks.displacementalert.org
@@ -135,9 +142,9 @@ Every night at around 1am (at the time of this writing) a task runs which caches
 
 This script uses a unique token for authentication to cache both the authenticated and unauthenticated responses.
 
-It mirrors the GET endpoint that the frontend calls when users visit this page, so if the client ever changes this endpoint, MAKE SURE TO UPDATE IT HERE TOO OR ELSE THE NIGHTLY CACHE WILL NOT WORK.
+It visits each GET endpoint that the frontend calls when users visit this page, so if the client ever changes this endpoint, make sure to also update the endpoint in `cache.py`
 
-### Understanding the Advanced Search URL query code
+### Understanding the Advanced Search URL query dsl
 
 Currently, a url based method exists to build an advanced query. A POST method is still a work in prorgess.
 
