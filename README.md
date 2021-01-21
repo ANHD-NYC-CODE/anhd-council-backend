@@ -80,7 +80,7 @@
 
 - or if already SSHed inside, Run the build script `sh build.prod.sh`
 
-2. Rebuild the cache by visiting the admin interface the running the periodic task titled "reset cache" - takes approx 30-45 min to complete.
+2. cache is preserved on deploy
 
 ## Maintaining this App
 
