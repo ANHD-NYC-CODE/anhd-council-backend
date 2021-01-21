@@ -13,6 +13,12 @@
 1. Install docker https://docs.docker.com/install/linux/docker-ce/ubuntu/#install-docker-ce and docker compose `sudo apt-get install docker-compose`
 2. Install git, clone repo
 
+## Restarting server
+
+1. ssh in
+2. `cd /var/www/anhd-council-backend`
+3. `sudo docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d`
+
 ## Production Startup
 
 1. Clone repo
