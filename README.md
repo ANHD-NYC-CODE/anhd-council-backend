@@ -147,7 +147,7 @@ This process requires around 6GB of available RAM due to performing an atomic tr
 
 Caveats:
 
-1. Best to run Property, Building, PADRecord, and AddressRecord updates around noon so they finish before 7pm (which is the when daily updates start.)
+1. Best to run `Property`, `Building`, `PADRecord`, and `AddressRecord` updates around noon so they finish before 7pm (which is the when daily updates start.)
 2. Space out the updates by a day. (property 1 day, building + pad on day 2, address on day 3)
 
 ### Maintaining the daily cache.
