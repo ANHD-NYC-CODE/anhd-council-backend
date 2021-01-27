@@ -137,7 +137,7 @@ def async_seed_split_file(self, file_path, update_id, dataset_id=None):
         dataset = c.Dataset.objects.get(
             id=dataset_id) if dataset_id else update.file.dataset
         logger.info(
-            "Beginning async seeding - {} - c.Update: {}".format(update.file.dataset.name, update.id))
+            "Beginning async seeding - {} - c.Update: {}".format(update.dataset.name, update.id))
         dataset.split_seed_dataset(file_path=file_path, update=update)
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
@@ -158,7 +158,7 @@ def async_seed_file(self, file_path, update_id, dataset_id=None):
         dataset = c.Dataset.objects.get(
             id=dataset_id) if dataset_id else update.file.dataset
         logger.info(
-            "Beginning async seeding - {} - c.Update: {}".format(update.file.dataset.name, update.id))
+            "Beginning async seeding - {} - c.Update: {}".format(update.dataset.name, update.id))
         dataset.seed_dataset(file_path=file_path, update=update)
     except Exception as e:
         logger.error('Error during task: {}'.format(e))

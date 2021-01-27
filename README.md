@@ -115,6 +115,11 @@ Updating either one of these will leave the old entries intact and overwrite any
 
 If you update Pluto / `Property`, you also need to update `Buildings`, `PADRecord`, and `AddressRecord` to make sure all the data for the frontend gets surfaced.
 
+1. Update `Property` with Pluto (NOT MAPPluto) data
+2. Update `Building` with PAD dataset
+3. Update `PADRecord` with PAD dataset (same file as Building)
+4. Update `AddressRecord` (no file needed)
+
 ### Downloading an open-data file to your local computer
 
 1. Login to admin
@@ -123,6 +128,15 @@ If you update Pluto / `Property`, you also need to update `Buildings`, `PADRecor
 4. click "Download File"
 
 ### Manually updating datasets
+
+If the dataset is automated,
+
+1. Login to admin
+2. navigate to https://api.displacementalert.org/admin/core/dataset/
+3. Select an automated dataset
+4. Click the "Update Dataset" button, which will run the normally automated task on command.
+
+If the dataset ISNT automated, you need to download the file to your local computer, upload & associate it to a dataset manually, then create an update manually. Each model file has a link to the download endpoint.
 
 1. Login to admin
 2. navigate to https://api.displacementalert.org/admin/core/update/
