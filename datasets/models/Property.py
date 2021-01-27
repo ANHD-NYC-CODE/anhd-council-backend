@@ -205,9 +205,10 @@ class Property(BaseDatasetModel, models.Model):
         primary_key=True, max_length=10, blank=False, null=False)
     council = models.ForeignKey('Council', on_delete=models.SET_NULL, null=True,
                                 db_column='council', db_constraint=False)
+    # 1 = manhattan 2 = bronx 3 = brooklyn 4 = queens 5 = staten island
     borough = models.TextField(blank=True, null=True)
-    block = models.TextField(blank=True, null=True)
-    lot = models.TextField(blank=True, null=True)
+    block = models.TextField(blank=True, null=True)  # 5 digit number
+    lot = models.TextField(blank=True, null=True)  # 4 digit number
     cd = models.ForeignKey('Community', on_delete=models.SET_NULL, null=True,
                            db_column='cd', db_constraint=False)
     zipcode = models.ForeignKey('ZipCode', on_delete=models.SET_NULL, null=True,

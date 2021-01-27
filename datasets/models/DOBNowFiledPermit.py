@@ -89,15 +89,18 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
     fence = models.BooleanField(blank=True, null=True)
     scaffold = models.BooleanField(blank=True, null=True)
     shed = models.BooleanField(blank=True, null=True)
-    latitude = models.DecimalField(decimal_places=16, max_digits=32, blank=True, null=True)
-    longitude = models.DecimalField(decimal_places=16, max_digits=32, blank=True, null=True)
+    latitude = models.DecimalField(
+        decimal_places=16, max_digits=32, blank=True, null=True)
+    longitude = models.DecimalField(
+        decimal_places=16, max_digits=32, blank=True, null=True)
     councildistrict = models.TextField(blank=True, null=True)
     censustract = models.TextField(blank=True, null=True)
     nta = models.TextField(blank=True, null=True)
 
     @classmethod
     def create_async_update_worker(self, endpoint=None, file_name=None):
-        async_download_and_update.delay(self.get_dataset().id, endpoint=endpoint, file_name=file_name)
+        async_download_and_update.delay(
+            self.get_dataset().id, endpoint=endpoint, file_name=file_name)
 
     # BIN
     @classmethod

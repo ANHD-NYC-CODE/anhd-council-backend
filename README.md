@@ -113,6 +113,8 @@ I recommend going through the admin panel and adding it in manually because rewr
 
 Updating either one of these will leave the old entries intact and overwrite any existing entries that conflict with the new entries. To update these records, create an update in the admin panel using the appropriate file containing the new data.
 
+If you update Pluto / `Property`, you also need to update `Buildings`, `PADRecord`, and `AddressRecord` to make sure all the data for the frontend gets surfaced.
+
 ### Downloading an open-data file to your local computer
 
 1. Login to admin
@@ -142,6 +144,11 @@ Whenever you update Pluto or PAD, you'll need to update the address records to m
 To do so, create an update within the admin panel with only the dataset attribute selected, and set it to `AddressRecord`.
 
 This process requires around 6GB of available RAM due to performing an atomic transaction in the DB. Existing address records will be stored in memory while the new records populate to ensure continuous operation of the search feature while the process takes place over several hours. The existing records will only be deleted once the process is complete. Because of this, please restart the app and postgres containers in docker first to clear up memory usage from long-lived workers. (ssh in and run `sh build.prod.sh` to clear memory)
+
+Caveats:
+
+1. Best to run Property, Building, PADRecord, and AddressRecord updates around noon so they finish before 7pm (which is the when daily updates start.)
+2. Space out the updates by a day. (property 1 day, building + pad on day 2, address on day 3)
 
 ### Maintaining the daily cache.
 

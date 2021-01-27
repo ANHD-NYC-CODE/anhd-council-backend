@@ -20,6 +20,7 @@ logger = logging.getLogger('app')
 # Download latest
 # https://data.cityofnewyork.us/City-Government/Property-Address-Directory/bc8t-ecyu
 # Extract ZIP and upload bobaadr.csv file through admin and set the dataset to "Building", then update
+# Note: might need to change the file from bobaadr.txt to bobaadr.csv
 # ** RESOURCE INTENSIVE UPDATE ** - don't run during regular updates after 7pm
 # Make sure to update the PADRecord dataset AFTER this one using the same file.
 
