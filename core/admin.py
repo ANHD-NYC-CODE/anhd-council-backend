@@ -31,6 +31,12 @@ class DatasetAdmin(admin.ModelAdmin):
         # downloads CSV of all data
         elif "_download-csv" in request.POST:
             return self.download_csv(request, obj)
+        elif "_update-dataset" in request.POST:
+            messages.info(
+                request, "The dataset is now updating. Please view monitor the status in Flower. {}".format(settings.FLOWER_URL))
+            obj.model().create_async_update_worker()
+            return HttpResponseRedirect(".")
+
         return super().response_change(request, obj)
 
     @admin_changelist_link('datafile_set', ('DataFiles'), query_string=lambda c: 'dataset={}'.format(c.pk))

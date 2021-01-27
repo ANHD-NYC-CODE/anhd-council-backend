@@ -1,6 +1,9 @@
 {% extends "admin/change_form.html" %} {% block form_top %} {{ block.super }}
 <div class="submit-row">
-  <input type="submit" value="Download File" name="_download-file" />
+  {% if original.automated %}
+  <input type="submit" value="Update Dataset" name="_update-dataset" />
+  {% endif %}
+  <input type="submit" value="Download Source" name="_download-file" />
   <input type="submit" value="Download CSV" name="_download-csv" />
 </div>
 
