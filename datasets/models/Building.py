@@ -23,6 +23,16 @@ logger = logging.getLogger('app')
 # ** RESOURCE INTENSIVE UPDATE ** - don't run during regular updates after 7pm
 # Make sure to update the PADRecord dataset AFTER this one using the same file.
 
+# NOTE on the BIN 1,000,000 error
+# Currently the BIN field is the primary key field.
+# However, it was discovered after building this table that NYC assigns "million" BINs to multiple buildings as a placeholder.
+# see: https://nycplanning.github.io/Geosupport-UPG/chapters/chapterVI/section03/
+# This results in missing buildings because the primary key field must be unique.
+# Most missing addresses in the app are a result of this "million BIN" issue.
+# TODO - migrate the primary key to a different value (perhaps a concatenation of BBL-BIN-LHND)
+# Doing this will be tricky though, since you'll need to rework the API routing (currently is) /properties/<property PK>/buildings/<building PK>
+# and make sure all the property > building associations stay intact
+
 
 class Building(BaseDatasetModel, models.Model):
     bin = models.TextField(primary_key=True, blank=False, null=False)
