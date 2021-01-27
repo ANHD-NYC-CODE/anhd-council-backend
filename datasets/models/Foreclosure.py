@@ -13,6 +13,7 @@ from datasets import models as ds
 import logging
 logger = logging.getLogger('app')
 
+# Supertable of PSPreforeclosure and PSForeclosure
 # Update Instructions:
 # 1. Login to Property Shark on 1st of the month
 # 2. Download Foreclosures AND Preforeclosures from last month

@@ -12,8 +12,8 @@ logger = logging.getLogger('app')
 # Update process: Automatic
 # Update strategy: Overwrite
 #
-
-# Create an update in admin with this model name, no file.
+# Supertable of DOBPermitIssuedLegacy and DOBPermitIssuedNow
+# First, update the child tables, then create an update in admin with this DATASET, no file needed.
 
 # TODO rename to DOBPermitIssued
 

@@ -14,10 +14,8 @@ logger = logging.getLogger('app')
 # Update process: Automatic
 # Update strategy: Overwrite
 #
-
-# Create an update in admin with this model name, no file.
-
-# TODO rename to DOBPermitIssued
+# Supertable of DOBLegacyFiledPermit and DOBNowFiledPermit
+# First, update the child tables, then create an update in admin with this DATASET, no file needed.
 
 
 class DOBFiledPermit(BaseDatasetModel, models.Model):

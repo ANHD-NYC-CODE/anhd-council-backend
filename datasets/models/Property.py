@@ -26,7 +26,7 @@ logger = logging.getLogger('app')
 # upload zipfile file through admin, update
 # *** Add the pluto version to the 'version' field in admin ****
 # Ex: 20v6
-# ** RESOURCE INTENSIVE UPDATE ** - don't run during regular updates after 6pm
+# ** RESOURCE INTENSIVE UPDATE ** - don't run during regular updates after 7pm
 
 
 class CurrentPropertyManager(models.Manager):
