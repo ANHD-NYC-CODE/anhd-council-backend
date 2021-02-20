@@ -109,7 +109,7 @@ class DOBPermitIssuedLegacy(BaseDatasetModel, models.Model):
     @classmethod
     def update_set_filter(self, csv_reader, headers):
         for row in csv_reader:
-            if headers.index('Issuance Date') and is_older_than(row[headers.index('Issuance Date')], 1):
+            if headers.index('Issuance Date') and is_older_than(row[headers.index('Issuance Date')], 2):
                 continue
             if does_not_contain_values(["a1", "a2", "dm", "nb"], row[headers.index('Job Type')]):
                 continue

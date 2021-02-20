@@ -132,13 +132,13 @@ def date(x):
         elif len(x.strip()) == 19 and len(x[0:10].split('/')) == 3:
             # checks for 12/31/2018 12:00:00 date input
             parsed_date = mm_dd_yyyy(x, '/')
-        elif len(x.split('T')[0]) == 10 and len(x.split('T')[0]).split('-')) == 3:
+        elif len(x.split('T')[0]) == 10 and len(x.split('T')[0].split('-')) == 3:
             # checks for 2017-02-06T00:00:00000
-            parsed_date=yyyy_mm_dd(x.split('T')[0], '%Y-%m-%d')
+            parsed_date = yyyy_mm_dd(x.split('T')[0], '%Y-%m-%d')
         else:
             logger.warning(
                 " Format not found - * Unable to parse date string - {}".format(x))
-            parsed_date=None
+            parsed_date = None
 
     return parsed_date
 
@@ -166,13 +166,13 @@ def boolean(x):
         return None
 
 
-def text_array(x, sep = ","):
+def text_array(x, sep=","):
     return x.strip().split(sep)
 
 
 def char_cast(n):
     # convert to string char
-    n=copy.copy(n)
+    n = copy.copy(n)
 
     def to_char(x):
         return char(x, n)
@@ -182,8 +182,8 @@ def char_cast(n):
 
 class Typecast():
     def __init__(self, model):
-        self.fields=model._meta.fields
-        self.cast=self.generate_cast()
+        self.fields = model._meta.fields
+        self.cast = self.generate_cast()
 
     def cast_rows(self, rows):
         """
@@ -200,9 +200,9 @@ class Typecast():
         output: Dict
         """
         try:
-            d={}
+            d = {}
             for column, val in row.items():
-                d[column]=self.cast[column.lower()](val)
+                d[column] = self.cast[column.lower()](val)
             return d
         except:
             # print the row for debugging:
@@ -214,27 +214,27 @@ class Typecast():
         """
         Generates conversation table for dataset schema
         """
-        d={}
+        d = {}
         for field in self.fields:
             if isinstance(field, models.fields.CharField):
-                n=int(field.max_length)
-                d[field.name]=char_cast(n)
+                n = int(field.max_length)
+                d[field.name] = char_cast(n)
             elif isinstance(field, INTEGER_TYPES):
-                d[field.name]=lambda x: integer(x)
+                d[field.name] = lambda x: integer(x)
             elif isinstance(field, models.fields.TextField):
                 d[field.name] = lambda x: text(x)
             elif isinstance(field, models.fields.BooleanField):
-                d[field.name]=lambda x: boolean(x)
+                d[field.name] = lambda x: boolean(x)
             elif isinstance(field, models.fields.DateField):
-                d[field.name]=lambda x: date(x)
+                d[field.name] = lambda x: date(x)
             elif isinstance(field, models.fields.DateTimeField):
-                d[field.name]=lambda x: date(x)
+                d[field.name] = lambda x: date(x)
             elif isinstance(field, models.fields.TimeField):
-                d[field.name]=lambda x: time(x)
+                d[field.name] = lambda x: time(x)
             elif isinstance(field, models.fields.DecimalField):
-                d[field.name]=lambda x: numeric(x)
+                d[field.name] = lambda x: numeric(x)
             elif isinstance(field, ArrayField):
-                d[field.name]=lambda x: text_array(x)
+                d[field.name] = lambda x: text_array(x)
             else:
-                d[field.name]=lambda x: x
+                d[field.name] = lambda x: x
         return d
