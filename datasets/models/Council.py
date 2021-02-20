@@ -7,8 +7,9 @@ from core.utils.transform import from_geojson
 # Update process: Manual
 # Update strategy: Upsert
 #
-# Copy data from:
-# http://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/nymc/FeatureServer/0/query?where=1=1&outFields=*&outSR=4326&f=geojson
+# Copy data in a file called councils.geojson from:
+# City Council Districts > Clipped to Shoreline > GeoJson
+# https://www1.nyc.gov/site/planning/data-maps/open-data/districts-download-metadata.page
 # Paste into a .geojson file, upload file through admin, update
 
 class Council(BaseDatasetModel, models.Model):

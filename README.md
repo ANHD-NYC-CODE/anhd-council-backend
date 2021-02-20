@@ -30,7 +30,6 @@
 - seed datasets `python manage.py loaddata /app/core/fixtures/datasets.yaml`
 - seed crontabs `python manage.py loaddata /app/core/fixtures/crontabs.yaml`
 - seed automation tasks `python manage.py loaddata /app/core/fixtures/tasks.yaml`
-- seed council info `python manage.py loaddata /app/core/fixtures/councils.yaml`
 
 5. Upload initial datafiles and update (or download the pre-seeded database `.tar` from here: https://www.dropbox.com/s/lxdzcjkoezsn086/dap_council_pgvol1.tar?dl=0)
 
@@ -205,6 +204,11 @@ With these in mind, this is how you start defining a new condition in the query 
 - When condition_0's expression is complete, you can begin the next condition's expression after a `SPACE` using the same format.
 
 Please view the test suite `PropertyAdvancedFilterTests` in `datasets/tests/filters/test_property.py`. There are numerous examples of this language that cover all of the special cases and advanced query types. This feature was very well tested!
+
+### Debugging
+
+1. attach to app with `docker attach app`
+2. use PDB to create a breakpoint: `import pdb; pdb.set_trace()`
 
 ### Running tests
 

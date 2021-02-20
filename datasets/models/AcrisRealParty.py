@@ -37,7 +37,8 @@ class AcrisRealParty(BaseDatasetModel, models.Model):
 
     @classmethod
     def create_async_update_worker(self, endpoint=None, file_name=None):
-        async_download_and_update.delay(self.get_dataset().id, endpoint=endpoint, file_name=file_name)
+        async_download_and_update.delay(
+            self.get_dataset().id, endpoint=endpoint, file_name=file_name)
 
     @classmethod
     def download(self, endpoint=None, file_name=None):
@@ -48,7 +49,8 @@ class AcrisRealParty(BaseDatasetModel, models.Model):
         for row in gen_rows:
             if is_null(row['documentid']):
                 continue
-            row['key'] = "{}-{}".format(row['documentid'], ''.join(e for e in row['name'] if e.isalnum()))
+            row['key'] = "{}-{}".format(row['documentid'],
+                                        ''.join(e for e in row['name'] if e.isalnum()))
             yield row
 
     # trims down new update files to preserve memory
@@ -63,12 +65,12 @@ class AcrisRealParty(BaseDatasetModel, models.Model):
 
     @classmethod
     def split_seed_or_update_self(self, **kwargs):
-        logger.debug("Seeding/Updating {}", self.__name__)
+        logger.info("Seeding/Updating {}", self.__name__)
         return self.seed_with_single(delete_file=True, **kwargs)
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        logger.debug("Seeding/Updating {}", self.__name__)
+        logger.info("Seeding/Updating {}", self.__name__)
         if settings.TESTING:
             return self.seed_with_single(**kwargs)
         else:

@@ -132,7 +132,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
             try:
                 building.bbl
             except Exception as e:
-                logger.debug('no BBL record: {} for bin {}'.format(
+                logger.info('no BBL record: {} for bin {}'.format(
                     building.bbl_id, building.bin_id))
                 continue
             # Do not create addresses for special buildings
@@ -167,10 +167,18 @@ class AddressRecord(BaseDatasetModel, models.Model):
                         low_number = low_number.split(' ')[0]
                     if re.search(r'(1/2|1/3|1/4)', high_number):
                         high_number = low_number.split(' ')[0]
-                    house_numbers = self.generate_rangelist(
-                        int(low_number), int(high_number))
-                    for number in house_numbers:
-                        address_row = self.address_row_from_building(number=number,
+
+                    # For that one number that slips through to here that is "10-06"
+                    if low_number.isdigit() and high_number.isdigit():
+                        house_numbers = self.generate_rangelist(
+                            int(low_number), int(high_number))
+                        for number in house_numbers:
+                            address_row = self.address_row_from_building(number=number,
+                                                                         building=building)
+                            if address_row:
+                                yield address_row
+                    else:
+                        address_row = self.address_row_from_building(number=low_number,
                                                                      building=building)
                         if address_row:
                             yield address_row
@@ -238,7 +246,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
 
     @classmethod
     def build_property_gen(self):
-        logger.debug("Generating Addresses from property objects...")
+        logger.info("Generating Addresses from property objects...")
         for property in ds.Property.objects.all():
             record = self.address_row_from_property(property)
             if record:
@@ -250,31 +258,31 @@ class AddressRecord(BaseDatasetModel, models.Model):
 
     @classmethod
     def build_table(self, overwrite=True, **kwargs):
-        logger.debug('Building address table from scratch.')
+        logger.info('Building address table from scratch.')
         timestamp = datetime.datetime.now().date()
         property_gen = self.build_property_gen()
 
-        logger.debug('bulk inserting property addresses...')
+        logger.info('bulk inserting property addresses...')
         batch_upsert_from_gen(
             self, property_gen, settings.BATCH_SIZE, ignore_conflict=False, **kwargs)
 
         building_gen = self.build_building_gen()
 
-        logger.debug('bulk inserting building addresses...')
+        logger.info('bulk inserting building addresses...')
         batch_upsert_from_gen(
             self, building_gen, settings.BATCH_SIZE, ignore_conflict=True, **kwargs)
 
-        logger.debug('Building search index...')
+        logger.info('Building search index...')
         self.build_search()
-        logger.debug("Address Record seeding complete!")
+        logger.info("Address Record seeding complete!")
 
-        logger.debug("Deleting older records...")
+        logger.info("Deleting older records...")
         ds.AddressRecord.objects.filter(created=None).delete()
         ds.AddressRecord.objects.filter(created__lt=timestamp).delete()
 
     @classmethod
     def build_search(self):
-        logger.debug(
+        logger.info(
             "Updating address search vector: {}".format(self.__name__))
         address_vector = SearchVector('number', weight='A') + SearchVector(
             'street', weight='B') + SearchVector('borough', rank='C') + SearchVector('zipcode', rank='C')

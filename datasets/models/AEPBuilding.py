@@ -70,7 +70,7 @@ class AEPBuilding(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        logger.debug("Seeding/Updating {}", self.__name__)
+        logger.info("Seeding/Updating {}", self.__name__)
         self.seed_with_upsert(**kwargs)
 
     @classmethod

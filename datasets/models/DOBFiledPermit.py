@@ -73,7 +73,7 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        logger.debug("Seeding/Updating {}", self.__name__)
+        logger.info("Seeding/Updating {}", self.__name__)
         # Add records from both tables
         legacy_table = ds.DOBLegacyFiledPermit
         legacy_count = legacy_table.objects.count()
