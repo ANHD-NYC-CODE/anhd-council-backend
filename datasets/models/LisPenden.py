@@ -103,7 +103,7 @@ class LisPenden(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        logger.debug("Seeding/Updating {}", self.__name__)
+        logger.info("Seeding/Updating {}", self.__name__)
         self.seed_with_upsert(**kwargs)
         logger.debug('marking foreclosures by creditor for {}', self.__name__)
         self.mark_foreclosure_with_creditor()

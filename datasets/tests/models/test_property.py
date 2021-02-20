@@ -45,7 +45,6 @@ class PropertyTests(BaseTest, TestCase):
             file_path=update.file.file.path, update=update)
 
         self.assertEqual(ds.Property.objects.count(), 2)
-
         self.assertEqual(ds.Property.objects.get(
             bbl='2022600001').stateassembly.pk, 84)
         self.assertEqual(ds.Property.objects.get(

@@ -122,12 +122,12 @@ class AcrisRealMaster(BaseDatasetModel, models.Model):
 
     @classmethod
     def split_seed_or_update_self(self, **kwargs):
-        logger.debug("Seeding/Updating {}", self.__name__)
+        logger.info("Seeding/Updating {}", self.__name__)
         return self.seed_with_single(delete_file=True, **kwargs)
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        logger.debug("Seeding/Updating {}", self.__name__)
+        logger.info("Seeding/Updating {}", self.__name__)
         if settings.TESTING:
             return self.seed_with_single(**kwargs)
         else:

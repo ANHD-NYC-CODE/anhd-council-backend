@@ -84,7 +84,7 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
     # Join DOBPermitIssuedLegacy table with DOBPermitIssuedNow table
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        logger.debug("Seeding/Updating {}", self.__name__)
+        logger.info("Seeding/Updating {}", self.__name__)
         # Add records from both tables
         legacy_table = ds.DOBPermitIssuedLegacy
         legacy_count = legacy_table.objects.count()

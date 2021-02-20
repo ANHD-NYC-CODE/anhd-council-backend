@@ -75,8 +75,10 @@ class DOBPermitIssuedLegacy(BaseDatasetModel, models.Model):
     ownershousezipcode = models.TextField(blank=True, null=True)
     ownersphone = models.TextField(blank=True, null=True)
     dobrundate = models.DateField(blank=True, null=True)
-    latitude = models.DecimalField(decimal_places=8, max_digits=16, blank=True, null=True)
-    longitude = models.DecimalField(decimal_places=8, max_digits=16, blank=True, null=True)
+    latitude = models.DecimalField(
+        decimal_places=8, max_digits=16, blank=True, null=True)
+    longitude = models.DecimalField(
+        decimal_places=8, max_digits=16, blank=True, null=True)
     councildistrict = models.TextField(blank=True, null=True)
     censustract = models.TextField(blank=True, null=True)
     ntaname = models.TextField(blank=True, null=True)
@@ -86,7 +88,8 @@ class DOBPermitIssuedLegacy(BaseDatasetModel, models.Model):
 
     @classmethod
     def create_async_update_worker(self, endpoint=None, file_name=None):
-        async_download_and_update.delay(self.get_dataset().id, endpoint=endpoint, file_name=file_name)
+        async_download_and_update.delay(
+            self.get_dataset().id, endpoint=endpoint, file_name=file_name)
 
     @classmethod
     def download(self, endpoint=None, file_name=None):
@@ -106,7 +109,7 @@ class DOBPermitIssuedLegacy(BaseDatasetModel, models.Model):
     @classmethod
     def update_set_filter(self, csv_reader, headers):
         for row in csv_reader:
-            if headers.index('Issuance Date') and is_older_than(row[headers.index('Issuance Date')], 1):
+            if headers.index('Issuance Date') and is_older_than(row[headers.index('Issuance Date')], 2):
                 continue
             if does_not_contain_values(["a1", "a2", "dm", "nb"], row[headers.index('Job Type')]):
                 continue
@@ -118,7 +121,7 @@ class DOBPermitIssuedLegacy(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        logger.debug("Seeding/Updating {}", self.__name__)
+        logger.info("Seeding/Updating {}", self.__name__)
         self.bulk_seed(**kwargs, overwrite=True)
 
     def __str__(self):

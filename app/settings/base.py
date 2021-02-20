@@ -251,7 +251,7 @@ LOG_ROOT = os.path.join(BASE_DIR, 'logs')
 
 FLOWER_URL = "localhost:8888"
 
-DJANGO_LOG_LEVEL = "DEBUG"
+DJANGO_LOG_LEVEL = "INFO"
 
 LOGGING = {
     'version': 1,
@@ -319,12 +319,12 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': False,
         },
         'django.db.backends': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': False,
         },
         'django.template': {
@@ -337,8 +337,9 @@ LOGGING = {
             'propagate': False,
         },
         'app': {
-            'handlers': ['console', 'sql', 'logfile', 'errorfile'],
-            'level': 'DEBUG',
+            # 'handlers': ['console', 'sql', 'logfile', 'errorfile'],
+            'handlers': ['console'],
+            'level': 'INFO',
             'propagate': False
         },
     }

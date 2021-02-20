@@ -193,8 +193,10 @@ class PropertyManager(models.Manager):
 
 class Property(BaseDatasetModel, models.Model):
     SHORT_SUMMARY_FIELDS = ('bbl', 'council', 'cd', 'zipcode', 'yearbuilt', 'unitsres', 'unitstotal',
-                            'address', 'lat', 'lng', 'stateassembly', 'statesenate')
+                            'address', 'latitude', 'longitude', 'stateassembly', 'statesenate')
 
+    # DEPRECATED - now the versin is pulled from the Dataset "Version" field - make sure to include this
+    # when creating a Property Update from pluto
     current_version = '20v1'
     objects = PropertyManager()
     current = CurrentPropertyManager()
@@ -323,7 +325,7 @@ class Property(BaseDatasetModel, models.Model):
     longitude = models.DecimalField(
         max_digits=16, decimal_places=14, blank=True, null=True)
 
-    # Custom fields
+    # Custom fields deprecated
     lng = models.DecimalField(
         decimal_places=16, max_digits=32, blank=True, null=True)
     lat = models.DecimalField(
@@ -359,7 +361,7 @@ class Property(BaseDatasetModel, models.Model):
 
     @classmethod
     def pre_validation_filters(self, gen_rows):
-        logger.debug("prevalidating properties")
+        logger.info("prevalidating properties")
         count = 0
         for row in gen_rows:
             # Address Standardizing
@@ -374,7 +376,7 @@ class Property(BaseDatasetModel, models.Model):
             # Count
             count = count + 1
             if count % 10000 == 0:
-                logger.debug("prepared {} properties".format(count))
+                logger.info("prepared {} properties".format(count))
 
             yield row
 
@@ -382,42 +384,44 @@ class Property(BaseDatasetModel, models.Model):
     def transform_self(self, file_path, update=None):
         return self.pre_validation_filters(from_csv_file_to_gen(extract_csvs_from_zip(file_path), update, self.clean_null_bytes))
 
-    # SLOW
+    # DEPRECATED - KEEP FOR TESTS
+    # UPDATE MOCK PLUTO FILES TO versin 20+ which have latitude and longitude included
     @classmethod
     def add_geometry(self):
-        logger.debug("Attaching geos to properties")
+        logger.info("Attaching geos to properties")
         count = 0
         for record in self.objects.filter(lng__isnull=True, lat__isnull=True).all():
             lng, lat = get_geo(record)
-            record.lat = lat
-            record.lng = lng
+            record.latitude = lat
+            record.longitude = lng
             record.save()
-            count = count = 1
+            count = count + 1
 
             if count % 10000 == 0:
-                logger.debug("attached geos to {} properties".format(count))
+                logger.info("attached geos to {} properties".format(count))
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
         self.seed_with_upsert(**kwargs)
-        logger.debug('adding geometry')
-        self.add_geometry()
-        logger.debug('adding property annotations')
+        logger.info('adding property annotations')
         self.create_property_annotations()
+        if settings.TESTING:
+            # TODO - update mock pluto datasets to v20+ (mock_pluto_17v1.zip) because newer PLUTO includes latitude and longitude
+            self.add_geometry()
         self.add_state_geographies()
 
     @classmethod
     def add_state_geographies(self):
-        logger.debug('Adding State Assembly associations via geoshape')
-        status1 = self.queryset_foreach(self.objects.filter(stateassembly__isnull=True, lat__isnull=False,
-                                                            lng__isnull=False).order_by('pk'), self.create_state_assembly_association, 'stateassembly', batch_size=1000)
+        logger.info('Adding State Assembly associations via geoshape')
+        status1 = self.queryset_foreach(self.objects.filter(stateassembly__isnull=True, latitude__isnull=False,
+                                                            longitude__isnull=False).order_by('pk'), self.create_state_assembly_association, 'stateassembly', batch_size=1000)
 
-        logger.debug(status1)
+        logger.info(status1)
 
-        logger.debug('Adding State Senate associations via geoshape')
-        status2 = self.queryset_foreach(self.objects.filter(statesenate__isnull=True, lat__isnull=False,
-                                                            lng__isnull=False).order_by('pk'), self.create_state_senate_association, 'statesenate', batch_size=1000)
-        logger.debug(status2)
+        logger.info('Adding State Senate associations via geoshape')
+        status2 = self.queryset_foreach(self.objects.filter(statesenate__isnull=True, latitude__isnull=False,
+                                                            longitude__isnull=False).order_by('pk'), self.create_state_senate_association, 'statesenate', batch_size=1000)
+        logger.info(status2)
 
     @classmethod
     def create_property_annotations(self):
@@ -425,12 +429,12 @@ class Property(BaseDatasetModel, models.Model):
         for property in self.objects.filter(propertyannotation__isnull=True):
             ds.PropertyAnnotation.objects.create(bbl=property)
             if count % 10000 == 0:
-                logger.debug('property annotations created: {}'.format(count))
+                logger.info('property annotations created: {}'.format(count))
             count = count + 1
 
     @classmethod
     def create_state_assembly_association(self, property, objects_to_update):
-        point = Point(property.lng, property.lat)
+        point = Point(property.longitude, property.latitude)
         for stateassembly in ds.StateAssembly.objects.order_by('pk'):
             polygon = shape(stateassembly.data['geometry'])
             if polygon.contains(point):
@@ -444,7 +448,7 @@ class Property(BaseDatasetModel, models.Model):
     def create_state_senate_association(self, property, objects_to_update):
         # count = 0
         # for property in self.objects.filter(statesenate__isnull=True, lat__isnull=False, lng__isnull=False):
-        point = Point(property.lng, property.lat)
+        point = Point(property.longitude, property.latitude)
         for statesenate in ds.StateSenate.objects.order_by('pk'):
             polygon = shape(statesenate.data['geometry'])
             if polygon.contains(point):
