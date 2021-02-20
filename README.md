@@ -214,3 +214,9 @@ Please view the test suite `PropertyAdvancedFilterTests` in `datasets/tests/filt
 
 1. bash into the app `docker exec -it app bash`
 2. run `python manage.py test`
+
+### Database Dumps
+
+Run
+
+`docker exec postgres pg_dump -U anhd -F t anhd | gzip > dap.tar.gz`
