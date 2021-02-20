@@ -49,7 +49,7 @@
 
 1. run `sh build.dev.sh`
 2. Stop postgres `docker-compose stop postgres`
-3. Download a pre-seeded database from dropbox here to move it to project root: https://www.dropbox.com/s/lxdzcjkoezsn086/dap.tar.gz This database comes with all the councils, communities, properties, buildings, address records, and subsidy programs pre-loaded.
+3. Download a pre-seeded database from dropbox here to move it to project root: https://www.dropbox.com/s/8iqkuk0ip39mtle/dap.gz?dl=0 This database comes with all the councils, communities, properties, buildings, address records, and subsidy programs pre-loaded.
 4. Run this command to copy the data - `gzip -d dap.gz && cat dap | docker exec -i postgres psql -U anhd -d anhd`
 5. Restart postgres, start all the docker containers and the app.
 
