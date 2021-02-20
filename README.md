@@ -52,7 +52,6 @@
 3. Download a pre-seeded database from dropbox here to move it to project root: https://www.dropbox.com/s/lxdzcjkoezsn086/dap.tar.gz This database comes with all the councils, communities, properties, buildings, address records, and subsidy programs pre-loaded.
 4. Run this command to copy the data - `gzip -d dap.gz && cat dap | docker exec -i postgres psql -U anhd -d anhd`
 5. Restart postgres, start all the docker containers and the app.
-6. The app should now have a login - username: <redacted> password: <redacted> and all updates are visible at `localhost:8000/admin/core/updates`. Run database migrations to setup latest tables.
 
 ## Dev Startup (post setup)
 
@@ -219,11 +218,12 @@ Please view the test suite `PropertyAdvancedFilterTests` in `datasets/tests/filt
 
 To create a database dump, run the following at the directory root (/var/www/anhd-council-backend)
 
-`docker exec -t postgres pg_dump --column-inserts -v -t datasets_council -t datasets_community -t datasets_stateassembly -t datasets_statesenate -t datasets_zipcode -t datasets_coresubsidyrecord -t datasets_property -t datasets_building -t datasets_padrecord -t datasets_addressrecord -c -U anhd | gzip > dap.gz`
+`docker exec -t postgres pg_dump --column-inserts -v -t datasets_council -t datasets_community -t datasets_stateassembly -t datasets_statesenate -t datasets_zipcode -t datasets_coresubsidyrecord -t datasets_property -t datasets_building -t datasets_padrecord -t datasets_addressrecord -t datasets_publichousingrecord -t django_celery_beat* -t core_dataset -c -U anhd | gzip > dap.gz`
 
 Then SFTP in and transfer the file locally and DELETE from the production server - it's a big file!
 
-- Be sure to to create a superuser (`python manage.py createsuperuser`)
+- restore it with `gzip -d dap.gz && cat dap | docker exec -i postgres psql -U anhd -d anhd` on your local machine at repo root
+- Be sure to to create a superuser (`python manage.py createsuperuser` inside the `app` docker container)
 
 docker exec postgres pg_dump -U anhd anhd -t datasets_council > dap.sql
 
