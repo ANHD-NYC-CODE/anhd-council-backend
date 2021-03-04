@@ -8,15 +8,15 @@ services:
       - .env.dev
     environment:
       - DJANGO_SETTINGS_MODULE=app.settings.development
-  celery_default:
-    env_file:
-      - .env.dev
-  celery_update:
-    env_file:
-      - .env.dev
-  celerybeat:
-    env_file:
-      - .env.dev
+  # celery_default:
+  #   env_file:
+  #     - .env.dev
+  # celery_update:
+  #   env_file:
+  #     - .env.dev
+  # celerybeat:
+  #   env_file:
+  #     - .env.dev
   flower:
     ports:
       - "8888:8888"

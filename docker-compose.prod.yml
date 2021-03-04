@@ -1,6 +1,10 @@
 version: "2"
 services:
   app:
+    depends_on:
+      - postgres
+      - redis
+      - celerybeat
     env_file:
       - .env
   # https://www.digitalocean.com/community/tutorials/how-to-secure-a-containerized-node-js-application-with-nginx-let-s-encrypt-and-docker-compose
@@ -23,5 +27,81 @@ services:
     networks:
       - nginx_network
     command: '/bin/sh -c ''while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g "daemon off;"'''
+  celery_default:
+    restart: always
+    build: .
+    container_name: "celery_default"
+    image: app_image
+    networks:
+      - network1
+    links:
+      - redis
+      - postgres
+    depends_on:
+      - postgres
+      - redis
+      - celerybeat
+    volumes:
+      - ./:/app
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./celery:/app/celery
+    env_file:
+      - .env
+    entrypoint: "celery -A app worker -E -Q celery -l debug -n celery_worker --concurrency=8 --logfile=./celery/logs/default.log"
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+  celery_update:
+    restart: always
+    build: .
+    container_name: "celery_update"
+    image: app_image
+    networks:
+      - network1
+    depends_on:
+      - postgres
+      - redis
+      - celerybeat
+    volumes:
+      - ./:/app
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./celery/logs:/app/celery/logs
+    links:
+      - postgres
+      - redis
+    env_file:
+      - .env
+    entrypoint: "celery -A app worker -E -Q update -l debug -n update_worker --concurrency=8 --logfile=./celery/logs/update.log"
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+  celerybeat:
+    restart: always
+    build: .
+    container_name: "celerybeat"
+    image: app_image
+    entrypoint: "celery -A app beat -l debug --scheduler django_celery_beat.schedulers:DatabaseScheduler --logfile=./celery/logs/beat.log"
+    networks:
+      - network1
+    depends_on:
+      - postgres
+      - redis
+    links:
+      - postgres
+      - redis
+    volumes:
+      - ./:/app
+      - ./celery:/app/celery
+    env_file:
+      - .env
+    # https://www.distributedpython.com/2018/10/13/flower-docker/
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
   certbot:
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
