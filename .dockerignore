@@ -7,6 +7,8 @@ env.*
 docker-entrypoint.sh
 celerybeat-schedule.db
 *.csv
+*.tar
+dap
 
 data
 tmp
