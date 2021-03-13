@@ -96,6 +96,7 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
     councildistrict = models.TextField(blank=True, null=True)
     censustract = models.TextField(blank=True, null=True)
     nta = models.TextField(blank=True, null=True)
+    currentstatusdate = models.DateField(blank=True, null=True)
 
     @classmethod
     def create_async_update_worker(self, endpoint=None, file_name=None):
