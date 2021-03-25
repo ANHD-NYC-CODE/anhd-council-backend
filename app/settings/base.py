@@ -62,8 +62,8 @@ INSTALLED_APPS = [
 
 AUTH_USER_MODEL = 'users.CustomUser'
 
-SECURE_BROWSER_XSS_FILTER=True
-SECURE_CONTENT_TYPE_NOSNIFF=True
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -246,6 +246,7 @@ CELERY_BROKER_TRANSPORT_OPTIONS = {
 
 # https://adamj.eu/tech/2019/09/19/working-around-memory-leaks-in-your-django-app/
 CELERY_WORKER_MAX_TASKS_PER_CHILD = 32
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1
 
 MEDIA_URL = '/data/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'data')

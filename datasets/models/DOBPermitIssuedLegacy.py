@@ -17,6 +17,12 @@ class DOBPermitIssuedLegacy(BaseDatasetModel, models.Model):
     API_ID = 'ipu4-2q9a'
     download_endpoint = "https://data.cityofnewyork.us/api/views/ipu4-2q9a/rows.csv?accessType=DOWNLOAD"
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['bbl', 'bin', 'job', 'permitsino'], name='uuid')
+        ]
+
     job = models.TextField(blank=False, null=False)
     permitsino = models.TextField(blank=False, null=False)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
@@ -82,10 +88,6 @@ class DOBPermitIssuedLegacy(BaseDatasetModel, models.Model):
     councildistrict = models.TextField(blank=True, null=True)
     censustract = models.TextField(blank=True, null=True)
     ntaname = models.TextField(blank=True, null=True)
-
-    class Meta:
-        models.UniqueConstraint(
-            fields=['bbl', 'bin', 'job', 'permitsino'], name='uuid')
 
     @classmethod
     def create_async_update_worker(self, endpoint=None, file_name=None):
