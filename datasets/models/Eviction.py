@@ -48,6 +48,7 @@ class Eviction(BaseDatasetModel, models.Model):
     schedulestatus = models.TextField(default="", blank=True, null=True)
     cleaned_address = models.TextField(default="", blank=True, null=True)
     geosearch_address = models.TextField(default="", blank=True, null=True)
+    councildistrict = models.TextField(default="", blank=True, null=True)
 
     slim_query_fields = ["courtindexnumber", "bbl", "executeddate"]
 
