@@ -50,6 +50,11 @@
 1. run `sh build.dev.sh`
 2. Download a pre-seeded database from dropbox here to move it to project root: https://www.dropbox.com/s/8iqkuk0ip39mtle/dap.gz?dl=0 This database comes with all the councils, communities, properties, buildings, address records, and subsidy programs pre-loaded.
 3. Run this command to copy the data - `gzip -d dap.gz && cat dap | docker exec -i postgres psql -U anhd -d anhd`
+4. If the site does not run as is, run `docker exec -it app /bin/bash` to connect to the running docker container, and then run `python manage.py migrate`
+
+
+## Migrations
+To add a migration, run `docker exec -it app /bin/bash` and then run `python manag.py makemigrations`
 
 
 ## Dev Startup (post setup)
@@ -168,14 +173,6 @@ Every night at around 1am (at the time of this writing) a task runs which caches
 This script uses a unique token for authentication to cache both the authenticated and unauthenticated responses.
 
 It visits each GET endpoint that the frontend calls when users visit this page, so if the client ever changes this endpoint, make sure to also update the endpoint in `cache.py`
-
-### Understanding the Advanced Search URL query dsl
-
-Currently, a url based method exists to build an advanced query. A POST method is still a work in prorgess.
-
-Numerous examples of url queries live in `datasets/tests/filters/test_property.py` under the class `PropertyAdvancedFilterTests`
-
-The query code is written to allow someone to construct a query with nested conditions. For example, X AND (Y OR Z) needs to be differentiated from (X AND Y) OR Z.
 
 ###### Here's an example:
 

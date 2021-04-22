@@ -49,6 +49,7 @@ class Eviction(BaseDatasetModel, models.Model):
     cleaned_address = models.TextField(default="", blank=True, null=True)
     geosearch_address = models.TextField(default="", blank=True, null=True)
     councildistrict = models.TextField(default="", blank=True, null=True)
+    evictionpostcode = models.TextField(default="", blank=True, null=True)
 
     slim_query_fields = ["courtindexnumber", "bbl", "executeddate"]
 
@@ -312,6 +313,10 @@ class Eviction(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
+        """
+            default method is bulk_seed for most datasets (immutable update, fast, memory intensive)
+            if dataset gets too big, switch to seed_with_upsert (upsert, slow, low memory)
+        """
         logger.info("Seeding/Updating {}", self.__name__)
         update = self.seed_with_upsert(**kwargs)
         self.link_eviction_to_pluto_by_address()
