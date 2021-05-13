@@ -48,6 +48,19 @@ class Eviction(BaseDatasetModel, models.Model):
     schedulestatus = models.TextField(default="", blank=True, null=True)
     cleaned_address = models.TextField(default="", blank=True, null=True)
     geosearch_address = models.TextField(default="", blank=True, null=True)
+    ejectment = models.TextField(default="", blank=True, null=True)
+    eviction_possession = models.TextField(default="", blank=True, null=True)
+    latitude = models.DecimalField(
+        decimal_places=8, max_digits=16, blank=True, null=True)
+    longitude = models.DecimalField(
+        decimal_places=8, max_digits=16, blank=True, null=True)
+    community_board = models.TextField(default="", blank=True, null=True)
+    council_district = models.TextField(default="", blank=True, null=True)
+    census_tract = models.TextField(default="", blank=True, null=True)
+    bin = models.ForeignKey('Building', on_delete=models.SET_NULL, null=True,
+                            db_column='bin', db_constraint=False)
+    nta = models.TextField(default="", blank=True, null=True)
+
 
     slim_query_fields = ["courtindexnumber", "bbl", "executeddate"]
 
