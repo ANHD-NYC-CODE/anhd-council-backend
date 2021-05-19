@@ -23,7 +23,7 @@ class Eviction(BaseDatasetModel, models.Model):
             models.Index(fields=['-executeddate']),
 
         ]
-        unique_together = ('evictionaddress', 'evictionaptnum',
+        unique_together = ('evictionaddress', 'evictionapartmentnumber',
                            'executeddate', 'marshallastname')
 
     download_endpoint = "https://data.cityofnewyork.us/api/views/6z8x-wfk4/rows.csv?accessType=DOWNLOAD"
@@ -37,13 +37,13 @@ class Eviction(BaseDatasetModel, models.Model):
     borough = models.TextField(default="", blank=True, null=True)
     docketnumber = models.TextField(default="", blank=True, null=True)
     evictionaddress = models.TextField(default="", blank=True, null=True)
-    evictionaptnum = models.TextField(default="", blank=True, null=True)
+    evictionapartmentnumber = models.TextField(default="", blank=True, null=True)
     evictionzip = models.TextField(default="", blank=True, null=True)
     uniqueid = models.TextField(default="", unique=True, blank=True, null=True)
     executeddate = models.DateField(blank=True, null=True)
     marshalfirstname = models.TextField(default="", blank=True, null=True)
     marshallastname = models.TextField(default="", blank=True, null=True)
-    residentialcommercialind = models.TextField(
+    residentialcommercial = models.TextField(
         default="", blank=True, null=True)
     schedulestatus = models.TextField(default="", blank=True, null=True)
     cleaned_address = models.TextField(default="", blank=True, null=True)
@@ -51,13 +51,13 @@ class Eviction(BaseDatasetModel, models.Model):
     councildistrict = models.TextField(default="", blank=True, null=True)
     evictionpostcode = models.TextField(default="", blank=True, null=True)
     ejectment = models.TextField(default="", blank=True, null=True)
-    eviction_possession = models.TextField(default="", blank=True, null=True)
+    evictionlegalpossession = models.TextField(default="", blank=True, null=True)
     latitude = models.DecimalField(
         decimal_places=8, max_digits=16, blank=True, null=True)
     longitude = models.DecimalField(
         decimal_places=8, max_digits=16, blank=True, null=True)
-    community_board = models.TextField(default="", blank=True, null=True)
-    census_tract = models.TextField(default="", blank=True, null=True)
+    communityboard = models.TextField(default="", blank=True, null=True)
+    censustract = models.TextField(default="", blank=True, null=True)
     bin = models.ForeignKey('Building', on_delete=models.SET_NULL, null=True,
                             db_column='bin', db_constraint=False)
     nta = models.TextField(default="", blank=True, null=True)
@@ -103,7 +103,7 @@ class Eviction(BaseDatasetModel, models.Model):
         if geosearch_address:
             eviction.geosearch_address = geosearch_address
         eviction.uniqueid = "{}-{}-{}-{}".format(eviction.evictionaddress,
-                                                 eviction.evictionaptnum, eviction.executeddate, eviction.marshallastname)
+                                                 eviction.evictionapartmentnumber, eviction.executeddate, eviction.marshallastname)
         try:
             eviction.save()
         except IntegrityError as e:
