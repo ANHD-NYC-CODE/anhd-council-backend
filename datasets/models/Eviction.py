@@ -41,7 +41,7 @@ class Eviction(BaseDatasetModel, models.Model):
     evictionzip = models.TextField(default="", blank=True, null=True)
     uniqueid = models.TextField(default="", unique=True, blank=True, null=True)
     executeddate = models.DateField(blank=True, null=True)
-    marshalfirstname = models.TextField(default="", blank=True, null=True)
+    marshal1stname = models.TextField(default="", blank=True, null=True)
     marshallastname = models.TextField(default="", blank=True, null=True)
     residentialcommercial = models.TextField(
         default="", blank=True, null=True)
