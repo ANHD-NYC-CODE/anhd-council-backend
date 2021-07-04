@@ -8,15 +8,82 @@ services:
       - .env.dev
     environment:
       - DJANGO_SETTINGS_MODULE=app.settings.development
-  # celery_default:
-  #   env_file:
-  #     - .env.dev
-  # celery_update:
-  #   env_file:
-  #     - .env.dev
-  # celerybeat:
-  #   env_file:
-  #     - .env.dev
+  celery_default:
+    restart: always
+    build: .
+    container_name: "celery_default"
+    image: app_image
+    networks:
+      - network1
+    links:
+      - redis
+      - postgres
+    depends_on:
+      - postgres
+      - redis
+      - celerybeat
+    volumes:
+      - ./:/app
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./celery:/app/celery
+    env_file:
+      - .env.dev
+    entrypoint: "celery -A app worker -E -Q celery -l debug -n celery_worker --concurrency=8 --logfile=./celery/logs/default.log"
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+  celery_update:
+    restart: always
+    build: .
+    container_name: "celery_update"
+    image: app_image
+    networks:
+      - network1
+    depends_on:
+      - postgres
+      - redis
+      - celerybeat
+    volumes:
+      - ./:/app
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./celery/logs:/app/celery/logs
+    links:
+      - postgres
+      - redis
+    env_file:
+      - .env.dev
+    entrypoint: "celery -A app worker -E -Q update -l debug -n update_worker --concurrency=8 --logfile=./celery/logs/update.log"
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+  celerybeat:
+    restart: always
+    build: .
+    container_name: "celerybeat"
+    image: app_image
+    entrypoint: "celery -A app beat -l debug --scheduler django_celery_beat.schedulers:DatabaseScheduler --logfile=./celery/logs/beat.log"
+    networks:
+      - network1
+    depends_on:
+      - postgres
+      - redis
+    links:
+      - postgres
+      - redis
+    volumes:
+      - ./:/app
+      - ./celery:/app/celery
+    env_file:
+      - .env.dev
+    # https://www.distributedpython.com/2018/10/13/flower-docker/
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
   flower:
     ports:
       - "8888:8888"
