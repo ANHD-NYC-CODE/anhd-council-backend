@@ -96,9 +96,21 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
     councildistrict = models.TextField(blank=True, null=True)
     censustract = models.TextField(blank=True, null=True)
     nta = models.TextField(blank=True, null=True)
+    bin_2 = models.TextField(blank=True, null=True)
     currentstatusdate = models.DateField(blank=True, null=True)
     filingdate = models.DateField(blank=True, null=True)
     permitissuedate = models.DateField(blank=True, null=True)
+    boilerequipmentworktype = models.BooleanField(blank=True, null=True)
+    earthworkworktype = models.BooleanField(blank=True, null=True)
+    foundationworktype = models.BooleanField(blank=True, null=True)
+    generalconstructionworktype = models.BooleanField(blank=True, null=True)
+    mechanicalsystemsworktype = models.BooleanField(blank=True, null=True)
+    placeofassemblyworktype = models.BooleanField(blank=True, null=True)
+    protectionmechanicalmethodsworktype = models.BooleanField(blank=True, null=True)
+    sidewalkshedworktype = models.BooleanField(blank=True, null=True)
+    structuralworktype = models.BooleanField(blank=True, null=True)
+    supportofexcavationworktype = models.BooleanField(blank=True, null=True)
+    temporaryplaceofassemblyworktype = models.BooleanField(blank=True, null=True)
 
     @classmethod
     def create_async_update_worker(self, endpoint=None, file_name=None):

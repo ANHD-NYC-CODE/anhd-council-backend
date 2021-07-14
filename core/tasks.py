@@ -137,8 +137,8 @@ def async_seed_split_file(self, file_path, update_id, dataset_id=None):
         dataset = c.Dataset.objects.get(
             id=dataset_id) if dataset_id else update.file.dataset
         logger.info(
-            "Beginning async seeding - {} - c.Update: {}".format(update.dataset.name, update.id))
-        dataset.split_seed_dataset(file_path=file_path, update=update)
+            "Beginning async seeding (split) - {} - c.Update: {}".format(update.dataset.name, update.id))
+        dataset.split_seed_dataset(file_path=file_path, update=update, logger=logger)
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
         if update:
@@ -158,8 +158,10 @@ def async_seed_file(self, file_path, update_id, dataset_id=None):
         dataset = c.Dataset.objects.get(
             id=dataset_id) if dataset_id else update.file.dataset
         logger.info(
-            "Beginning async seeding - {} - c.Update: {}".format(update.dataset.name, update.id))
-        dataset.seed_dataset(file_path=file_path, update=update)
+            "Beginning async seeding (file) - {} - c.Update: {}".format(update.dataset.name, update.id))
+        dataset.seed_dataset(file_path=file_path, update=update, logger=logger)
+        logger.info(
+            "{} updated successfully".format(update.dataset.name))
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
         if update:
@@ -174,8 +176,8 @@ def async_seed_table(self, update_id):
     try:
         update = c.Update.objects.get(id=update_id)
         logger.info(
-            "Beginning async seeding - {} - c.Update: {}".format(update.dataset.name, update.id))
-        update.dataset.seed_dataset(update=update)
+            "Beginning async seeding (table) - {} - c.Update: {}".format(update.dataset.name, update.id))
+        update.dataset.seed_dataset(update=update, logger=logger)
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
         if update:

@@ -76,8 +76,17 @@ def clean_headers(headers):
         s = s.replace(old, new)
     for name in invalid_header_names:
         s = re.sub(r'\b{}\b'.format(re.escape(name)), name + '_name', s, 1)
-    return [flip_numbers(x) for x in s.split(',')]
+    char_fixed_headers = [flip_numbers(x) for x in s.split(',')]
+    fixed_headers = []
 
+    for col_index in range(len(char_fixed_headers)):
+        col_name = char_fixed_headers[col_index]
+        if col_name in char_fixed_headers[:col_index]:
+            occurances = char_fixed_headers[:col_index].count(col_name)
+            fixed_headers.append(col_name + '_{}'.format(occurances + 1))
+        else:
+            fixed_headers.append(col_name)
+    return fixed_headers
 
 def from_geojson(file_path, pk='CounDist'):
     if isinstance(file_path, str):
