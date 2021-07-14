@@ -111,6 +111,7 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
     structuralworktype = models.BooleanField(blank=True, null=True)
     supportofexcavationworktype = models.BooleanField(blank=True, null=True)
     temporaryplaceofassemblyworktype = models.BooleanField(blank=True, null=True)
+    jobtype = models.TextField(blank=True, null=True)
 
     @classmethod
     def create_async_update_worker(self, endpoint=None, file_name=None):
