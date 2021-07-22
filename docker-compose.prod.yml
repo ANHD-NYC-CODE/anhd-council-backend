@@ -2,7 +2,7 @@ version: "2"
 services:
   app:
     depends_on:
-      - postgres
+    #  - postgres
       - redis
       - celerybeat
     env_file:
@@ -36,9 +36,9 @@ services:
       - network1
     links:
       - redis
-      - postgres
+    #  - postgres
     depends_on:
-      - postgres
+    #  - postgres
       - redis
       - celerybeat
     volumes:
@@ -61,7 +61,7 @@ services:
     networks:
       - network1
     depends_on:
-      - postgres
+    #  - postgres
       - redis
       - celerybeat
     volumes:
@@ -70,7 +70,7 @@ services:
       - ./logs:/app/logs
       - ./celery/logs:/app/celery/logs
     links:
-      - postgres
+    #  - postgres
       - redis
     env_file:
       - .env
@@ -88,10 +88,10 @@ services:
     networks:
       - network1
     depends_on:
-      - postgres
+    #  - postgres
       - redis
     links:
-      - postgres
+    #  - postgres
       - redis
     volumes:
       - ./:/app
