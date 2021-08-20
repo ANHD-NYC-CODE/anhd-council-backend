@@ -9,10 +9,10 @@ services:
     # image: debian/latest
     image: app_image
     links:
-      #- postgres
+      - postgres
       - redis
     depends_on:
-      #- postgres
+      - postgres
       - redis
     ports:
       - "8000:8000"
@@ -67,80 +67,6 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-  # postgres:
-  #   image: postgres:11
-  #   container_name: "postgres"
-  #   restart: on-failure
-  #     https://blog.2ndquadrant.com/basics-of-tuning-checkpoints/
-  #     linux OOM overcommit https://www.postgresql.org/docs/current/kernel-resources.html#LINUX-MEMORY-OVERCOMMIT
-  #   command:
-  #     [
-  #       "-c",
-  #       "autovacuum_vacuum_scale_factor=0.05",
-  #       "-c",
-  #       "vacuum_cost_page_hit=1",
-  #       "-c",
-  #       "vacuum_cost_page_miss=10",
-  #       "-c",
-  #       "vacuum_cost_page_dirty=20",
-  #       "-c",
-  #       "autovacuum_vacuum_cost_delay=20ms",
-  #       "-c",
-  #       "autovacuum_vacuum_cost_limit=1000",
-  #       "-c",
-  #       "enable_seqscan=ON",
-  #       "-c",
-  #       "huge_pages=try",
-  #       "-c",
-  #       "effective_io_concurrency=1",
-  #       "-c",
-  #       "max_parallel_workers_per_gather=4",
-  #       "-c",
-  #       "dynamic_shared_memory_type=posix",
-  #       "-c",
-  #       "max_stack_depth=6MB",
-  #       "-c",
-  #       "maintenance_work_mem=1GB",
-  #       "-c",
-  #       "temp_buffers=64MB",
-  #       "-c",
-  #       "shared_buffers=4GB",
-  #       "-c",
-  #       "default_statistics_target=1000",
-  #       "-c",
-  #       "checkpoint_timeout=120min",
-  #       "-c",
-  #       "checkpoint_completion_target=0.93",
-  #       "-c",
-  #       "max_wal_size=6GB",
-  #       "-c",
-  #       "effective_cache_size=8GB",
-  #       "-c",
-  #       "work_mem=600MB",
-  #       "-c",
-  #       "max_connections=200",
-  #       "-c",
-  #       "random_page_cost=1.05",
-  #       "-c",
-  #       "seq_page_cost=2",
-  #       "-c",
-  #       "log_min_duration_statement=10000",
-  #       "-c",
-  #       "log_temp_files=1",
-  #     ]
-  #   shm_size: "2GB"
-  #   environment:
-  #     POSTGRES_DB: anhd
-  #     POSTGRES_USER: anhd
-  #     POSTGRES_HOST_AUTH_METHOD: trust # fixes error: “Error: Database is uninitialized and superuser password is not specified.”
-  #   networks:
-  #     - network1
-  #   volumes:
-  #     - pg_vol1:/var/lib/postgresql/data
-  #   logging:
-  #     options:
-  #       max-size: "10m"
-  #       max-file: "3"
   nginx:
     build: ./nginx
     container_name: "nginx_server"
@@ -162,7 +88,6 @@ services:
         max-size: "10m"
         max-file: "3"
 volumes:
-#  pg_vol1:
   redis_data:
   static_volume:
 networks:
