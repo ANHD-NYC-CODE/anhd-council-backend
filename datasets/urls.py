@@ -535,6 +535,7 @@ router.register(r'propertyannotations',
                 v.propertyannotation_views.PropertyAnnotationViewSet)
 router.register(r'addressrecords', v.addressrecord_views.AddressRecordViewSet)
 router.register(r'padrecords', v.padrecord_views.PadRecordViewSet)
+router.register(r'oca-housing-court', v.ocahousingcourt_views.OCAHousingCourtViewSet)
 
 
 custom_routes = format_suffix_patterns([
