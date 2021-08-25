@@ -125,7 +125,7 @@ class DOBPermitIssuedLegacy(BaseDatasetModel, models.Model):
     @classmethod
     def seed_or_update_self(self, **kwargs):
         logger.info("Seeding/Updating {}", self.__name__)
-        self.seed_with_upsert(**kwargs, overwrite=True)
+        self.bulk_seed(**kwargs, overwrite=True)
 
     def __str__(self):
         return str(self.job)
