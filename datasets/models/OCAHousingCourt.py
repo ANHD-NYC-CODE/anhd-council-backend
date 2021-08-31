@@ -78,7 +78,7 @@ class OCAHousingCourt(BaseDatasetModel, models.Model):
             raise e
 
         data_file = c_models.DataFile(dataset=dataset)
-        data_file.file.save(file_name, files.File(lf))
+        data_file.file.save('oca_addresses_with_bbl.csv', files.File(lf))
         logger.info("Download completed for: {} and saved to: {}".format(
             self.get_dataset().name, data_file.file.path))
         return data_file
