@@ -9,6 +9,8 @@ EMAIL_USE_TLS = True
 
 ADMINS = (
     ('Dev', 'anhd.tech@gmail.com'),
+    ('Jack T. (Conceptual)', 'jack@conceptu.al'),
+    ('Anhd admin', 'dapadmin@anhd.org')
 )
 
 # Only want rollbar firing in production

@@ -92,6 +92,20 @@ class Eviction(BaseDatasetModel, models.Model):
             row = row.replace(', JR.', ' JR')
 
             row = clean_number_and_streets(row, True, clean_typos=True)
+            temp_row = row.split(',')
+
+            # This only works for newyork lat and long
+            # check and fix latitude
+            if temp_row[12].isdigit():
+                latitude = temp_row[12]
+                temp_row[12] = latitude[:2] + '.' + latitude[2:]
+            # check and fix longitude
+            if temp_row[13].strip('-').isdigit():
+                longitude = temp_row[13]
+                temp_row[13] = longitude[:3] + '.' + longitude[3:]
+
+            row = ','.join(temp_row)
+
             yield row.upper().strip()
 
     @classmethod
