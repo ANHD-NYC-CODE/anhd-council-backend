@@ -1,6 +1,10 @@
 version: "2"
 services:
   app:
+    links:
+      - postgres
+    depends_on:
+      - postgres
     stdin_open: true # for debugging w/ "docker attach app"
     tty: true # for debugging w/ "docker attach app"
     entrypoint: ["sh", "/app/docker-entrypoint.dev.sh"]
