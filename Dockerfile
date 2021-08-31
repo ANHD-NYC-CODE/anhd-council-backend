@@ -1,4 +1,4 @@
-FROM python:3.5.6
+FROM python:3.6.14
 COPY . /app/
 WORKDIR /app/
 RUN pip install pipenv==2018.11.26
