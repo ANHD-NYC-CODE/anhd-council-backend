@@ -52,6 +52,8 @@ class OCAHousingCourt(BaseDatasetModel, models.Model):
     msg = models.TextField(default="", blank=True, null=True)
     msg2 = models.TextField(default="", blank=True, null=True)
     unitsres = models.IntegerField(default=None, blank=True, null=True)
+    bin = models.ForeignKey('Building', db_column='bin', db_constraint=False,
+                            on_delete=models.SET_NULL, null=True, blank=True)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
 
