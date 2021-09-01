@@ -395,14 +395,15 @@ ACTIVE_MODELS = [
     'PSForeclosure',
     'PSPreForeclosure',
     'Foreclosure',
-    'AEPBuilding'
+    'AEPBuilding',
+    'OCAHousingCourt'
 
 ]
 
 
 # models which are referenced in the PropertyAnnotation model
 ANNOTATED_DATASETS = ['HPDViolation', 'HPDComplaint', 'DOBViolation', 'DOBComplaint',
-                      'ECBViolation', 'DOBIssuedPermit', 'DOBFiledPermit', 'Eviction', 'HousingLitigation', 'AcrisRealMaster', 'Foreclosure', 'CONHRecord', 'HPDBuildingRecord', 'PublicHousingRecord', 'RentStabilizationRecord', 'Subsidy421a', 'SubsidyJ51', 'TaxLien', 'AEPBuilding']
+                      'ECBViolation', 'DOBIssuedPermit', 'DOBFiledPermit', 'Eviction', 'HousingLitigation', 'AcrisRealMaster', 'Foreclosure', 'CONHRecord', 'HPDBuildingRecord', 'PublicHousingRecord', 'RentStabilizationRecord', 'Subsidy421a', 'SubsidyJ51', 'TaxLien', 'AEPBuilding', 'OCAHousingCourt']
 
 
 TESTING = 'test' in sys.argv[1:]
