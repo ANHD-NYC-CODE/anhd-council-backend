@@ -312,6 +312,13 @@ properties_router.register(
     parents_query_lookups=['bbl']
 )
 
+properties_router.register(
+    'oca-housing-court',
+    v.ocahousingcourt_views.OCAHousingCourtViewSet,
+    base_name='property-oca-housing-court',
+    parents_query_lookups=['bbl']
+)
+
 
 buildings_router = router.register(
     r'buildings', v.building_views.BuildingViewSet)
