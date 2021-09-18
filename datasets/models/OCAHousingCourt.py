@@ -57,6 +57,17 @@ class OCAHousingCourt(BaseDatasetModel, models.Model):
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
 
+    court = models.TextField(blank=True, null=True)
+    fileddate = models.DateField(blank=True, null=True)
+    propertytype = models.TextField(blank=True, null=True)
+    classification = models.TextField(blank=True, null=True)
+    specialtydesignationtypes = models.TextField(blank=True, null=True)
+    disposeddate = models.DateField(blank=True, null=True)
+    disposedreason = models.TextField(blank=True, null=True)
+    firstpaper = models.TextField(blank=True, null=True)
+    primaryclaimtotal = models.DecimalField(decimal_places=8, max_digits=16, blank=True, null=True)
+    dateofjurydemand = models.TextField(blank=True, null=True)
+
 
     @classmethod
     def create_async_update_worker(self, endpoint=None, file_name=None):
