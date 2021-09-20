@@ -121,5 +121,9 @@ class OCAHousingCourt(BaseDatasetModel, models.Model):
         logger.info("Seeding/Updating {}", self.__name__)
         self.bulk_seed(**kwargs, overwrite=True)
 
+    @classmethod
+    def annotate_properties(self):
+        self.annotate_all_properties_standard()
+
     def __str__(self):
         return str(self.indexnumberid)
