@@ -11,6 +11,7 @@ from core.utils.address import clean_number_and_streets
 from django.dispatch import receiver
 from core.utils.database import queryset_foreach
 from core.utils.database import Status, progress_callback
+from core.tasks import async_download_and_update
 
 from datasets import models as ds
 
@@ -202,6 +203,9 @@ class Property(BaseDatasetModel, models.Model):
     current = CurrentPropertyManager()
     obsolete = ObsoletePropertyManager()
 
+    download_endpoint = "https://data.cityofnewyork.us/api/views/64uk-42ks/rows.csv?accessType=DOWNLOAD"
+    API_ID = '64uk-42ks'
+
     # https://www1.nyc.gov/assets/planning/download/pdf/data-maps/open-data/pluto_datadictionary.pdf?r=18v1
     bbl = models.CharField(
         primary_key=True, max_length=10, blank=False, null=False)
@@ -325,6 +329,11 @@ class Property(BaseDatasetModel, models.Model):
     longitude = models.DecimalField(
         max_digits=16, decimal_places=14, blank=True, null=True)
 
+    # To conform to socrata
+    newnotinold = models.TextField(blank=True, null=True)
+    censustract2010 = models.TextField(blank=True, null=True)
+    councildistrict = models.TextField(blank=True, null=True)
+
     # Custom fields deprecated
     lng = models.DecimalField(
         decimal_places=16, max_digits=32, blank=True, null=True)
@@ -341,6 +350,15 @@ class Property(BaseDatasetModel, models.Model):
     # uses original header values
 
     @classmethod
+    def create_async_update_worker(self, endpoint=None, file_name=None):
+        async_download_and_update.delay(
+            self.get_dataset().id, endpoint=endpoint, file_name=file_name)
+
+    @classmethod
+    def download(self, endpoint=None, file_name=None):
+        return self.download_file(self.download_endpoint, file_name=file_name)
+
+    @classmethod
     def recreate_community_relations(self):
         for property in self.objects.all():
             try:
@@ -355,9 +373,14 @@ class Property(BaseDatasetModel, models.Model):
         return csv_reader
 
     @classmethod
-    def clean_null_bytes(self, gen_rows):
+    def clean_null_bytes_headers(self, gen_rows):
+        gen_rows[0] = gen_rows[0].replace('postcode', 'zipcode')
+        gen_rows[0] = gen_rows[0].replace('community board', 'cd')
+
         for row in gen_rows:
-            yield row.replace("\0", "")  # get rid of null-bytes
+            row = row.replace("\0", "")  # get rid of null-bytes
+            row = row.replace("\t", ",")  # switch to csv
+            yield row
 
     @classmethod
     def pre_validation_filters(self, gen_rows):
@@ -382,7 +405,7 @@ class Property(BaseDatasetModel, models.Model):
 
     @classmethod
     def transform_self(self, file_path, update=None):
-        return self.pre_validation_filters(from_csv_file_to_gen(extract_csvs_from_zip(file_path), update, self.clean_null_bytes))
+        return self.pre_validation_filters(from_csv_file_to_gen(file_path, update, self.clean_null_bytes_headers))
 
     # DEPRECATED - KEEP FOR TESTS
     # UPDATE MOCK PLUTO FILES TO versin 20+ which have latitude and longitude included
