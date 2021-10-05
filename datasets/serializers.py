@@ -786,6 +786,20 @@ class OCAHousingCourtSerializer(serializers.ModelSerializer):
         model = ds.OCAHousingCourt
         fields = ('__all__')
 
+    def to_representation(self, obj):
+        rep = super(serializers.ModelSerializer, self).to_representation(obj)
+        # if not self.context['request'].user.is_authenticated:
+        #     del rep['foreclosures_last30']
+        #     del rep['foreclosures_lastyear']
+        #     del rep['foreclosures_last3years']
+        #     del rep['foreclosures_lastupdated']
+        # print(rep)
+        
+        if rep['unitsres'] > 10:
+            return rep
+        else:
+            raise Exception('BBL with less than 10 res units')
+
 
 def property_query_serializer(properties):
     return list({'foo': 'bar'} for property in properties)

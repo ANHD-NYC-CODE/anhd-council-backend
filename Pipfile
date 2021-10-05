@@ -52,6 +52,7 @@ beautifulsoup4 = "*"
 shapely = "*"
 rollbar = "*"
 boto3 = "*"
+pandas = "*"
 
 [requires]
 python_version = "3.6.14"
