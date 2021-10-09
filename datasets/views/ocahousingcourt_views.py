@@ -19,16 +19,28 @@ class OCAHousingCourtViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.Re
     serializer_class = serial.OCAHousingCourtSerializer
     permission_classes = (IsAuthenticated,)
 
+    def check_bbl_unitsres(self, bbl):
+        property = ds.Property.objects.get(bbl)
+        if property.unitsres <= 10:
+            raise Exception('BBL with less than 10 res units')
+
     @cache_request_path()
     def list(self, request, *args, **kwargs):
         try:
+            self.check_bbl_unitsres(kwargs['parent_lookup_bbl'])
+
             response = super().list(request, *args, **kwargs)
             return response
         except Exception as e:
-            return HttpResponseForbidden()
+            return HttpResponseForbidden('OCA Housing Court data only available for properties with more than 10 units')
 
 
     @cache_request_path()
     def retrieve(self, request, *args, **kwargs):
-        response = super().retrieve(request, *args, **kwargs)
-        return response
+        try:
+            self.check_bbl_unitsres(kwargs['parent_lookup_bbl'])
+
+            response = super().retrieve(request, *args, **kwargs)
+            return response
+        except Exception as e:
+            return HttpResponseForbidden('OCA Housing Court data only available for properties with more than 10 units')
