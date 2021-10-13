@@ -3,7 +3,7 @@ from django.contrib import admin
 # Register your models here.
 from django.contrib import admin
 from django.contrib.auth import admin as auth_admin
-from users.models import CustomUser, UserRequest
+from users.models import CustomUser, UserRequest, UserBookmarkedProperties
 from users.forms import CustomUserChangeForm, CustomUserCreationForm
 from django.contrib import messages
 from django.http import HttpResponseRedirect
@@ -76,6 +76,10 @@ class CustomUserAdmin(auth_admin.UserAdmin):
     ordering = ('email',)
     readonly_fields = ('last_login', 'date_joined',)
 
+
+@admin.register(UserBookmarkedProperties)
+class UserBookmarkedPropertiesAdmin(admin.ModelAdmin):
+    pass
 
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(UserRequest, UserRequestAdmin)

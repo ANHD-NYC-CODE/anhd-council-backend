@@ -47,3 +47,12 @@ class UserRequestSerializer(serializers.ModelSerializer):
         if len(errors) > 0:
             raise serializers.ValidationError({"errors": errors})
         return data
+
+
+class UserBookmarkedPropertiesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = u.UserBookmarkedProperties
+        fields = ('id', 'name', 'description', 'bbl')
+
+    def create(self, validated_data):
+        return u.UserBookmarkedProperties.objects.create(**validated_data)

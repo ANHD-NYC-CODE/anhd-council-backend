@@ -18,4 +18,7 @@ custom_routes = format_suffix_patterns([
 urlpatterns = [
     *custom_routes,
     path('', include(router.urls)),
+
+    path('users/bookmarks/', v.UserBookmarkedPropertiesCollection.as_view()),
+    path('users/bookmarks/<uuid:pk>', v.UserBookmarkedPropertiesMember.as_view()),
 ]

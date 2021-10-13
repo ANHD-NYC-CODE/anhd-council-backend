@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models, transaction
 from django.dispatch import receiver
 # https://gist.github.com/haxoza/7921eaf966a16ffb95a0
+import uuid
 
 
 class CustomUserManager(UserManager):
@@ -51,6 +52,14 @@ class UserRequest(models.Model):
         user.save()
         self.approved = True
         self.save()
+
+
+class UserBookmarkedProperties(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    name = models.CharField(blank=True, max_length=255)
+    description = models.TextField(blank=True, null=True)
+    bbl = models.CharField(blank=True, max_length=10, unique=True)
 
 
 @receiver(models.signals.post_save, sender=CustomUser)
