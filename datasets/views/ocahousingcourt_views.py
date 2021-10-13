@@ -20,8 +20,8 @@ class OCAHousingCourtViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.Re
     permission_classes = (IsAuthenticated,)
 
     def check_bbl_unitsres(self, bbl):
-        property = ds.Property.objects.get(bbl)
-        if property.unitsres <= 10:
+        prop = ds.Property.objects.get(bbl=bbl)
+        if prop.unitsres <= 10:
             raise Exception('BBL with less than 10 res units')
 
     @cache_request_path()
@@ -32,6 +32,7 @@ class OCAHousingCourtViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.Re
             response = super().list(request, *args, **kwargs)
             return response
         except Exception as e:
+            print(e)
             return HttpResponseForbidden('OCA Housing Court data only available for properties with more than 10 units')
 
 
@@ -43,4 +44,5 @@ class OCAHousingCourtViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.Re
             response = super().retrieve(request, *args, **kwargs)
             return response
         except Exception as e:
+            print(e)
             return HttpResponseForbidden('OCA Housing Court data only available for properties with more than 10 units')
