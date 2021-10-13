@@ -32,7 +32,6 @@ class OCAHousingCourtViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.Re
             response = super().list(request, *args, **kwargs)
             return response
         except Exception as e:
-            print(e)
             return HttpResponseForbidden('OCA Housing Court data only available for properties with more than 10 units')
 
 
@@ -44,5 +43,4 @@ class OCAHousingCourtViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.Re
             response = super().retrieve(request, *args, **kwargs)
             return response
         except Exception as e:
-            print(e)
             return HttpResponseForbidden('OCA Housing Court data only available for properties with more than 10 units')
