@@ -128,5 +128,13 @@ class PropertyAnnotation(BaseDatasetModel, models.Model):
     aepstartdate = models.DateField(blank=True, null=True)
     aepdischargedate = models.DateField(blank=True, null=True)
 
+    ocahousingcourts_last30 = models.IntegerField(
+        db_index=True, default=0, blank=True, null=True)
+    ocahousingcourts_lastyear = models.IntegerField(
+        db_index=True, default=0, blank=True, null=True)
+    ocahousingcourts_last3years = models.IntegerField(
+        db_index=True, default=0, blank=True, null=True)
+    ocahousingcourts_lastupdated = models.DateTimeField(blank=True, null=True)
+
     def __str__(self):
         return str(self.bbl)
