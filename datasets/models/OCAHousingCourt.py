@@ -26,6 +26,10 @@ logger = logging.getLogger('app')
 
 
 class OCAHousingCourt(BaseDatasetModel, models.Model):
+    QUERY_DATE_KEY = 'fileddate'
+    # RECENT_DATE_PINNED = True
+    REQUIRES_AUTHENTICATION = True
+
 
     class Meta:
         indexes = [
