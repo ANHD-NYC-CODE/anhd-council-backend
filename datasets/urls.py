@@ -313,9 +313,9 @@ properties_router.register(
 )
 
 properties_router.register(
-    'oca-housing-court',
+    'ocahousingcourts',
     v.ocahousingcourt_views.OCAHousingCourtViewSet,
-    base_name='property-oca-housing-court',
+    base_name='property-ocahousingcourts',
     parents_query_lookups=['bbl']
 )
 
@@ -542,7 +542,7 @@ router.register(r'propertyannotations',
                 v.propertyannotation_views.PropertyAnnotationViewSet)
 router.register(r'addressrecords', v.addressrecord_views.AddressRecordViewSet)
 router.register(r'padrecords', v.padrecord_views.PadRecordViewSet)
-router.register(r'oca-housing-court', v.ocahousingcourt_views.OCAHousingCourtViewSet)
+router.register(r'ocahousingcourts', v.ocahousingcourt_views.OCAHousingCourtViewSet)
 
 
 custom_routes = format_suffix_patterns([
