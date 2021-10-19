@@ -62,6 +62,30 @@ class UserBookmarkedProperties(models.Model):
     bbl = models.CharField(blank=True, max_length=10, unique=True)
 
 
+class DistrictDashboard(models.Model):
+    query_string = models.TextField(blank=True, null=True)
+
+
+class UserDistrictDashboard(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    name = models.CharField(blank=True, max_length=255)
+    description = models.TextField(blank=True, null=True)
+    district_dashboard_view = models.ForeignKey(DistrictDashboard, on_delete=models.CASCADE)
+
+
+class CustomSearch(models.Model):
+    query_string = models.TextField(blank=True, null=True)
+
+
+class UserCustomSearch(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    name = models.CharField(blank=True, max_length=255)
+    description = models.TextField(blank=True, null=True)
+    district_dashboard_view = models.ForeignKey(CustomSearch, on_delete=models.CASCADE)
+
+
 @receiver(models.signals.post_save, sender=CustomUser)
 def create_profile_on_save(sender, instance, created, **kwargs):
 
