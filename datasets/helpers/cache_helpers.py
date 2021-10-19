@@ -43,6 +43,8 @@ def scrub_authenticated(cached_value, request):
                 del cached_value['foreclosures']
             if 'foreclosure-auctions' in cached_value:
                 del cached_value['foreclosure-auctions']
+            if 'ocahousingcourts' in cached_value:
+                del cached_value['ocahousingcourts']
             pass
         else:  # TEMP: only lists have the sensitive data for now.
 

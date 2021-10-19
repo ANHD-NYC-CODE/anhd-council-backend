@@ -26,6 +26,10 @@ logger = logging.getLogger('app')
 
 
 class OCAHousingCourt(BaseDatasetModel, models.Model):
+    QUERY_DATE_KEY = 'fileddate'
+    # RECENT_DATE_PINNED = True
+    REQUIRES_AUTHENTICATION = True
+
 
     class Meta:
         indexes = [
@@ -182,6 +186,10 @@ class OCAHousingCourt(BaseDatasetModel, models.Model):
     def seed_or_update_self(self, **kwargs):
         logger.info("Seeding/Updating {}", self.__name__)
         self.bulk_seed(**kwargs, overwrite=True)
+
+    @classmethod
+    def annotate_properties(self):
+        self.annotate_all_properties_standard()
 
     def __str__(self):
         return str(self.indexnumberid)
