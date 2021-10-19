@@ -1,6 +1,7 @@
 from django.db import models
 from django.dispatch import receiver
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
+from datasets.utils.validation_filters import is_null
 from core.utils.transform import from_csv_file_to_gen, with_bbl
 from core import models as c_models
 from datasets.utils import dates
@@ -12,6 +13,9 @@ from django.core import files
 import tempfile
 import os
 import boto3
+import pandas
+import numpy
+import csv
 from datetime import datetime
 from core.utils.database import execute
 from core.tasks import async_download_and_update
@@ -22,6 +26,10 @@ logger = logging.getLogger('app')
 
 
 class OCAHousingCourt(BaseDatasetModel, models.Model):
+    QUERY_DATE_KEY = 'fileddate'
+    # RECENT_DATE_PINNED = True
+    REQUIRES_AUTHENTICATION = True
+
 
     class Meta:
         indexes = [
@@ -90,19 +98,77 @@ class OCAHousingCourt(BaseDatasetModel, models.Model):
                 aws_secret_access_key=AWS_SECRET_KEY,
             )
 
-            # Create Tempfile
-            lf = tempfile.NamedTemporaryFile()
+            # Create Tempfile for OCA with addresses and oca index
+            oca_base_tf = tempfile.NamedTemporaryFile()
             logger.info("Download started for: {} at aws".format(
                 dataset.name))
-            client.download_fileobj(AWS_BUCKET_NAME, 'oca_addresses_with_bbl.csv', lf)
+            client.download_fileobj(AWS_BUCKET_NAME, 'oca_addresses_with_bbl.csv', oca_base_tf)
+
+            oca_index_tf = tempfile.NamedTemporaryFile()
+            logger.info("Download started for: oca index at aws")
+            client.download_fileobj(AWS_BUCKET_NAME, 'oca_index.csv', oca_index_tf)
         except Exception as e:
             logger.error(
                 "* ERROR * AWS OCA download failed")
             raise e
 
+        try:
+            oca_base_file = open(oca_base_tf.name, newline='')
+            oca_index_file = open(oca_index_tf.name, newline='')
+
+            # Create oca joined temp file
+            oca_joined_tf = tempfile.NamedTemporaryFile()
+            oca_joined_file = open(oca_joined_tf.name, 'w', newline='')
+
+            oca_index_frame = pandas.read_csv(oca_index_file.name)
+            oca_index = oca_index_frame.set_index('indexnumberid')
+            oca_index.sort_values(['indexnumberid'],
+                    axis=0,
+                    ascending=[True],
+                    inplace=True)
+
+            oca_base = csv.reader(oca_base_file, delimiter=',', quotechar='"')
+            print('test')
+            oca_joined = csv.writer(oca_joined_file, delimiter=',',
+                            quotechar='"', quoting=csv.QUOTE_MINIMAL)
+
+            base_header = oca_base.__next__()
+            index_header = oca_index_file.readline().replace('\n', '').split(',')[1:]
+            oca_index_file.close()
+
+            # Write headers and joined csv
+            oca_joined.writerow(base_header + index_header)
+
+            for base_row in oca_base:
+                indexnumberid = base_row[0]
+
+                # Skip if no bbl
+                if base_row[15] == '':
+                    continue
+
+                oca_index_row = oca_index.loc[indexnumberid].tolist()
+
+                # Remove spaces from classification (3) and status (5)
+                oca_index_row[3] = oca_index_row[3].replace(' ', '-')
+                oca_index_row[5] = oca_index_row[5].replace(' ', '-')
+
+                for index, item in enumerate(oca_index_row):
+                    if type(item) == numpy.float64 or type(item) == float:
+                        oca_index_row[index] = str(item) if str(item) != 'nan' else ''
+                    else:
+                        oca_index_row[index] = str(item)
+
+                oca_joined.writerow(base_row + oca_index_row)
+        except Exception as e:
+            logger.error(
+                "* ERROR * AWS OCA join failed {}".format(e))
+            raise e
+
+        oca_joined_file.close()
+        # oca_joined_file = open(oca_joined_tf.name, newline='')
         data_file = c_models.DataFile(dataset=dataset)
-        data_file.file.save('oca_addresses_with_bbl.csv', files.File(lf))
-        logger.info("Download completed for: {} and saved to: {}".format(
+        data_file.file.save('oca_joined.csv', files.File(oca_joined_tf))
+        logger.info("Download and join completed for: {} and saved to: {}".format(
             self.get_dataset().name, data_file.file.path))
         return data_file
         # return self.download_file(self.download_endpoint, file_name=file_name)
@@ -120,6 +186,10 @@ class OCAHousingCourt(BaseDatasetModel, models.Model):
     def seed_or_update_self(self, **kwargs):
         logger.info("Seeding/Updating {}", self.__name__)
         self.bulk_seed(**kwargs, overwrite=True)
+
+    @classmethod
+    def annotate_properties(self):
+        self.annotate_all_properties_standard()
 
     def __str__(self):
         return str(self.indexnumberid)

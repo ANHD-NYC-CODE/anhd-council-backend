@@ -131,6 +131,13 @@ CACHES = {
     }
 }
 
+# Dummy cache for dev use
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+#     }
+# }
+
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
     'REFRESH_TOKEN_LIFETIME': timedelta(hours=10),
@@ -402,8 +409,13 @@ ACTIVE_MODELS = [
 
 
 # models which are referenced in the PropertyAnnotation model
-ANNOTATED_DATASETS = ['HPDViolation', 'HPDComplaint', 'DOBViolation', 'DOBComplaint',
-                      'ECBViolation', 'DOBIssuedPermit', 'DOBFiledPermit', 'Eviction', 'HousingLitigation', 'AcrisRealMaster', 'Foreclosure', 'CONHRecord', 'HPDBuildingRecord', 'PublicHousingRecord', 'RentStabilizationRecord', 'Subsidy421a', 'SubsidyJ51', 'TaxLien', 'AEPBuilding']
+ANNOTATED_DATASETS = ['HPDViolation', 'HPDComplaint', 'DOBViolation',
+                      'DOBComplaint', 'ECBViolation', 'DOBIssuedPermit',
+                      'DOBFiledPermit', 'Eviction', 'HousingLitigation',
+                      'AcrisRealMaster', 'Foreclosure', 'CONHRecord',
+                      'HPDBuildingRecord', 'PublicHousingRecord',
+                      'RentStabilizationRecord', 'Subsidy421a', 'SubsidyJ51',
+                      'TaxLien', 'AEPBuilding', 'OCAHousingCourt']
 
 
 TESTING = 'test' in sys.argv[1:]
