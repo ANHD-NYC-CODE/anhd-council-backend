@@ -49,10 +49,46 @@ class UserRequestSerializer(serializers.ModelSerializer):
         return data
 
 
-class UserBookmarkedPropertiesSerializer(serializers.ModelSerializer):
+class UserBookmarkedPropertySerializer(serializers.ModelSerializer):
     class Meta:
-        model = u.UserBookmarkedProperties
+        model = u.UserBookmarkedProperty
         fields = ('id', 'name', 'description', 'bbl')
 
     def create(self, validated_data):
-        return u.UserBookmarkedProperties.objects.create(**validated_data)
+        return u.UserBookmarkedProperty.objects.create(**validated_data)
+
+
+# class DistrictDashboardSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = u.DistrictDashboard
+#         fields = ['query_string', 'result_hash_digest']
+
+# class UserDistrictDashboardSerializer(serializers.ModelSerializer):
+#     district_dashboard_view = DistrictDashboardSerializer()
+
+#     class Meta:
+#         model = u.UserDistrictDashboard
+#         fields = ('name', 'notification_frequency', 'district_dashboard_view')
+
+#     def create(self, validated_data):
+#         return u.UserDistrictDashboard.objects.create(**validated_data)
+
+
+class UserCustomSearchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = u.UserCustomSearch
+        fields = ('id', 'name', 'notification_frequency', 'custom_search_view')
+        extra_kwargs = {'custom_search_view': {'required': False, 'allow_null': True}}
+
+    def create(self, validated_data):
+        try:
+            print(type(validated_data))
+            custom_search_view_id = validated_data['custom_search_view']
+            validated_data.pop('custom_search_view', None)
+            new_user_search = u.UserCustomSearch(**validated_data)
+            custom_search = u.CustomSearch.objects.get(id=custom_search_view_id)
+            new_user_search.custom_search_view = custom_search
+            new_user_search.save()
+            return new_user_search
+        except Exception as e:
+            raise serializers.ValidationError({'detail': e})
