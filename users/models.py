@@ -3,6 +3,7 @@ from django.db import models, transaction
 from django.dispatch import receiver
 # https://gist.github.com/haxoza/7921eaf966a16ffb95a0
 import uuid
+import hashlib
 
 
 class CustomUserManager(UserManager):
@@ -54,36 +55,75 @@ class UserRequest(models.Model):
         self.save()
 
 
-class UserBookmarkedProperties(models.Model):
+class UserBookmarkedProperty(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     name = models.CharField(blank=True, max_length=255)
-    description = models.TextField(blank=True, null=True)
     bbl = models.CharField(blank=True, max_length=10, unique=True)
 
 
 class DistrictDashboard(models.Model):
     query_string = models.TextField(blank=True, null=True)
+    query_string_hash_digest = models.CharField(blank=True, max_length=64, unique=True)
+    result_hash_digest = models.CharField(blank=True, max_length=64)
+
+    def save(self, *args, **kwargs):
+        encoded = str(self.query_string).encode("utf-8")
+        encoded_hash = hashlib.sha256(encoded)
+        self.query_string_hash_digest = encoded_hash.digest()
+        super(DistrictDashboard, self).save(*args, **kwargs)
 
 
 class UserDistrictDashboard(models.Model):
+    NEVER = 'N'
+    DAILY = 'D'
+    WEEKLY = 'W'
+    MONTHLY = 'M'
+
+    FREQUENCY_CHOICES = (
+        (NEVER, 'Never'),
+        (DAILY, 'Daily'),
+        (WEEKLY, 'Weekly'),
+        (MONTHLY, 'Monthly'),
+    )
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    name = models.CharField(blank=True, max_length=255)
-    description = models.TextField(blank=True, null=True)
+    name = models.CharField(blank=True, max_length=255, unique=True)
+    notification_frequency = models.CharField(max_length=8, choices=FREQUENCY_CHOICES, default=NEVER)
     district_dashboard_view = models.ForeignKey(DistrictDashboard, on_delete=models.CASCADE)
 
 
 class CustomSearch(models.Model):
     query_string = models.TextField(blank=True, null=True)
+    query_string_hash_digest = models.CharField(blank=True, max_length=64, unique=True)
+    result_hash_digest = models.CharField(blank=True, max_length=64)
+
+    def save(self, *args, **kwargs):
+        encoded = str(self.query_string).encode('utf-8')
+        encoded_hash = hashlib.sha256(encoded).hexdigest()
+        self.query_string_hash_digest = encoded_hash
+        super(CustomSearch, self).save(*args, **kwargs)
 
 
 class UserCustomSearch(models.Model):
+    NEVER = 'N'
+    DAILY = 'D'
+    WEEKLY = 'W'
+    MONTHLY = 'M'
+
+    FREQUENCY_CHOICES = (
+        (NEVER, 'Never'),
+        (DAILY, 'Daily'),
+        (WEEKLY, 'Weekly'),
+        (MONTHLY, 'Monthly'),
+    )
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    name = models.CharField(blank=True, max_length=255)
-    description = models.TextField(blank=True, null=True)
-    district_dashboard_view = models.ForeignKey(CustomSearch, on_delete=models.CASCADE)
+    name = models.CharField(blank=True, max_length=255, unique=True)
+    notification_frequency = models.CharField(max_length=8, choices=FREQUENCY_CHOICES, default=NEVER)
+    custom_search_view = models.ForeignKey(CustomSearch, on_delete=models.CASCADE)
 
 
 @receiver(models.signals.post_save, sender=CustomUser)
