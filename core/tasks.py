@@ -3,6 +3,7 @@ from django_celery_results.models import TaskResult
 from celery import chain
 from app.celery import app
 from core import models as c
+from users import models as u
 from django.conf import settings
 from app.mailer import send_update_error_mail, send_update_success_mail, send_general_task_error_mail
 from core.utils.cache import cache_council_property_summaries_full, cache_community_property_summaries_full, cache_stateassembly_property_summaries_full, cache_statesenate_property_summaries_full, cache_zipcode_property_summaries_full
@@ -11,6 +12,9 @@ from app.celery import FaultTolerantTask
 
 import os
 import uuid
+import requests
+import hashlib
+import json
 
 import logging
 
@@ -294,6 +298,38 @@ def async_download_all_dob_construction(self):
         dob_legacy_issued.download()
         dob_now_issued.download()
 
+    except Exception as e:
+        logger.error('Error during task: {}'.format(e))
+        async_send_general_task_error_mail.delay(str(e))
+        raise e
+
+
+def get_query_result_hash(query_string):
+    token = settings.CACHE_REQUEST_KEY
+    auth_headers = {'whoisit': token}
+    root_url = 'http://app:8000/' if settings.DEBUG else 'https://api.displacementalert.org/'
+    # Run query on server and hash results
+    r = requests.get(root_url + query_string, headers=auth_headers)
+    result = r.json()
+    result_json = json.dumps(result, sort_keys=True).encode('utf-8')
+    result_hash = hashlib.sha256(result_json).hexdigest()
+    return result_hash
+
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', acks_late=True, max_retries=1)
+def async_update_custom_search_result_hash(self, custom_search_id, just_created=False):
+    try:
+        custom_search = u.CustomSearch.objects.filter(id=custom_search_id).first()
+        query = custom_search.query_string
+        logger.info(
+            'Starting query for this custom search: {}'.format(custom_search.id))
+        if custom_search:
+            result_hash = get_query_result_hash(query)
+            custom_search.result_hash_digest = result_hash
+            custom_search.save()
+        else:
+            logger.error(
+                '*ERROR* - Task Failure - No custom search found in async_update_custom_search_result_hash')
+            raise Exception('No custom search.')
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
         async_send_general_task_error_mail.delay(str(e))
