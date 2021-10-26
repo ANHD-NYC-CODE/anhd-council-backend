@@ -5,4 +5,4 @@
 # otherwise build size will be too large
 docker-compose -f docker-compose.yml -f docker-compose.dev.yml restart
 
-echo "Dev build down"
+echo "Dev build restarted"
