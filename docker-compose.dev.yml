@@ -22,6 +22,7 @@ services:
     links:
       - redis
       - postgres
+      - app
     depends_on:
       - postgres
       - redis
@@ -57,6 +58,7 @@ services:
     links:
       - postgres
       - redis
+      - app
     env_file:
       - .env.dev
     entrypoint: "celery -A app worker -E -Q update -l debug -n update_worker --concurrency=8 --logfile=./celery/logs/update.log"
