@@ -3,10 +3,12 @@ from django.http import QueryDict
 from rest_framework import viewsets
 from datasets.helpers.api_helpers import ApplicationViewSet
 from rest_framework.permissions import IsAuthenticated
+from core.tasks import get_query_result_hash
 from users import models as u
 from users import serializers as serial
 from rest_framework.response import Response
 from rest_framework import generics, mixins, status
+
 import hashlib
 
 
@@ -154,9 +156,14 @@ class UserCustomSearchCollection(mixins.ListModelMixin,
         if u.CustomSearch.objects.filter(query_string_hash_digest=query_hash_digest).exists():
             custom_search = u.CustomSearch.objects.get(query_string_hash_digest=query_hash_digest)
         else:
-            custom_search = u.CustomSearch(query_string=custom_search_query)
+            try:
+                result_hash = get_query_result_hash(custom_search_query)
+            except Exception as e:
+                Response('The query submitted is not valid', status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+            custom_search = u.CustomSearch(query_string=custom_search_query, result_hash_digest=result_hash)
             custom_search.save()
         mutable_query_dict.__setitem__('custom_search_view', custom_search.id)
+        mutable_query_dict.__setitem__('last_notified_hash', custom_search.result_hash_digest)
 
         serializer = self.get_serializer(data=mutable_query_dict)
         serializer.is_valid(raise_exception=True)

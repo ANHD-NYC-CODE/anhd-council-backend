@@ -91,6 +91,7 @@ class UserDistrictDashboard(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     name = models.CharField(blank=True, max_length=255, unique=True)
     notification_frequency = models.CharField(max_length=8, choices=FREQUENCY_CHOICES, default=NEVER)
+    last_notified_hash = models.CharField(blank=True, max_length=64)
     district_dashboard_view = models.ForeignKey(DistrictDashboard, on_delete=models.CASCADE)
 
 
@@ -123,6 +124,7 @@ class UserCustomSearch(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     name = models.CharField(blank=True, max_length=255, unique=True)
     notification_frequency = models.CharField(max_length=8, choices=FREQUENCY_CHOICES, default=NEVER)
+    last_notified_hash = models.CharField(blank=True, max_length=64)
     custom_search_view = models.ForeignKey(CustomSearch, on_delete=models.CASCADE)
 
 
