@@ -5,6 +5,7 @@ from django.contrib import admin
 from django.contrib.auth import admin as auth_admin
 from users.models import CustomUser, CustomSearch, UserCustomSearch, UserRequest, UserBookmarkedProperty, DistrictDashboard, UserDistrictDashboard
 from users.forms import CustomUserChangeForm, CustomUserCreationForm
+from core.tasks import async_update_custom_search_result_hash
 from django.contrib import messages
 from django.http import HttpResponseRedirect
 
@@ -93,7 +94,16 @@ class UserDistrictDashboardAdmin(admin.ModelAdmin):
 
 @admin.register(CustomSearch)
 class CustomSearchAdmin(admin.ModelAdmin):
-    pass
+    def response_change(self, request, obj):
+        if "_update-result-hash" in request.POST:
+            async_update_custom_search_result_hash.delay(obj.id)
+
+            messages.info(request,
+                          "Updating result hash now, may take minute please leave this page and come back")
+
+            return HttpResponseRedirect(".")
+        return super().response_change(request, obj)
+
 
 @admin.register(UserCustomSearch)
 class UserCustomSearchAdmin(admin.ModelAdmin):
