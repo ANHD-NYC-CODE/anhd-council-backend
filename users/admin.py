@@ -5,7 +5,7 @@ from django.contrib import admin
 from django.contrib.auth import admin as auth_admin
 from users.models import CustomUser, CustomSearch, UserCustomSearch, UserRequest, UserBookmarkedProperty, DistrictDashboard, UserDistrictDashboard
 from users.forms import CustomUserChangeForm, CustomUserCreationForm
-from core.tasks import async_update_custom_search_result_hash
+from app.tasks import async_update_custom_search_result_hash
 from django.contrib import messages
 from django.http import HttpResponseRedirect
 

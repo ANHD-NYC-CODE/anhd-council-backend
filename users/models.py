@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models, transaction
 from django.dispatch import receiver
+from django.utils import timezone
 # https://gist.github.com/haxoza/7921eaf966a16ffb95a0
 import uuid
 import hashlib
@@ -125,6 +126,8 @@ class UserCustomSearch(models.Model):
     name = models.CharField(blank=True, max_length=255, unique=True)
     notification_frequency = models.CharField(max_length=8, choices=FREQUENCY_CHOICES, default=NEVER)
     last_notified_hash = models.CharField(blank=True, max_length=64)
+    last_notified_date = models.DateTimeField(default=timezone.now)
+    last_number_of_results = models.IntegerField(default=0, blank=True)
     custom_search_view = models.ForeignKey(CustomSearch, on_delete=models.CASCADE)
 
 

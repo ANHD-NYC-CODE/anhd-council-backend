@@ -3,7 +3,7 @@ from django.http import QueryDict
 from rest_framework import viewsets
 from datasets.helpers.api_helpers import ApplicationViewSet
 from rest_framework.permissions import IsAuthenticated
-from core.tasks import get_query_result_hash
+from app.tasks import get_query_result_hash_and_length
 from users import models as u
 from users import serializers as serial
 from rest_framework.response import Response
@@ -157,7 +157,7 @@ class UserCustomSearchCollection(mixins.ListModelMixin,
             custom_search = u.CustomSearch.objects.get(query_string_hash_digest=query_hash_digest)
         else:
             try:
-                result_hash = get_query_result_hash(custom_search_query)
+                result_hash = get_query_result_hash_and_length(custom_search_query)['hash']
             except Exception as e:
                 Response('The query submitted is not valid', status=status.HTTP_422_UNPROCESSABLE_ENTITY)
             custom_search = u.CustomSearch(query_string=custom_search_query, result_hash_digest=result_hash)
@@ -174,11 +174,42 @@ class UserCustomSearchCollection(mixins.ListModelMixin,
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 class UserCustomSearchMember(mixins.DestroyModelMixin,
-                                generics.GenericAPIView):
+                             mixins.UpdateModelMixin,
+                             generics.GenericAPIView):
 
     queryset = u.UserCustomSearch.objects.all()
     serializer_class = serial.UserCustomSearchSerializer
     permission_classes = (IsAuthenticated,)
+
+    def patch(self, request, *args, **kwargs):
+        data_dict = request.data
+        mutable_query_dict = QueryDict(mutable=True)
+        mutable_query_dict.update(data_dict)
+        mutable_query_dict.__setitem__('user_id', request.user.id)
+
+        instance = self.get_object()
+
+        if 'custom_search_view' in mutable_query_dict.keys():
+            custom_search_query = mutable_query_dict.__getitem__('custom_search_view')
+            query_hash_digest = hashlib.sha256(custom_search_query.encode('utf-8')).hexdigest()
+
+            if u.CustomSearch.objects.filter(query_string_hash_digest=query_hash_digest).exists():
+                custom_search = u.CustomSearch.objects.get(query_string_hash_digest=query_hash_digest)
+            else:
+                try:
+                    result_hash = get_query_result_hash_and_length(custom_search_query)['hash']
+                except Exception as e:
+                    Response('The query submitted is not valid', status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+                custom_search = u.CustomSearch(query_string=custom_search_query, result_hash_digest=result_hash)
+                custom_search.save()
+            mutable_query_dict.__setitem__('custom_search_view', custom_search.id)
+            mutable_query_dict.__setitem__('last_notified_hash', custom_search.result_hash_digest)
+
+        serializer = self.get_serializer(instance, data=mutable_query_dict)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
