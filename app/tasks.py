@@ -6,7 +6,7 @@ from rest_framework_simplejwt.token_blacklist.management.commands import flushex
 from django.core.cache import cache
 from core.utils.cache import create_async_cache_workers
 import celery
-from app.mailer import send_new_user_email, send_new_user_request_email, send_user_message_email
+from app.mailer import send_new_user_email, send_new_user_request_email, send_user_message_email, send_mail
 from users.models import CustomUser, UserRequest
 from core.models import UserMessage
 from django.db import connection, transaction
@@ -16,6 +16,11 @@ from django_celery_results.models import TaskResult
 from app.celery import FaultTolerantTask
 import logging
 import os
+from datasets.utils.advanced_filter import convert_query_string_to_mapping
+from django.utils import timezone
+from urllib.parse import urlparse, parse_qs
+from django.db.models import Q
+from django.apps import apps
 
 logger = logging.getLogger('app')
 
@@ -128,3 +133,158 @@ def async_send_user_message_email(self, bug_report_id):
 def async_test_rollbar(self):
     # should error when called and trigger a rollbar notification
     return test_rollbar_bad_variable
+
+def get_query_result_hash_and_length(query_string):
+    token = settings.CACHE_REQUEST_KEY
+    auth_headers = {'whoisit': token}
+    root_url = 'http://app:8000' if settings.DEBUG else 'https://api.displacementalert.org'
+    # Run query on server and hash results
+    r = requests.get(root_url + query_string, headers=auth_headers)
+    result = r.json()
+    result_json = json.dumps(result, sort_keys=True).encode('utf-8')
+    result_hash = hashlib.sha256(result_json).hexdigest()
+    result_length = len(result)
+    return {
+        'hash': result_hash,
+        'length': result_length
+    }
+
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', acks_late=True, max_retries=1)
+def async_update_custom_search_result_hash(self, custom_search_id, just_created=False):
+    try:
+        custom_search = u.CustomSearch.objects.filter(id=custom_search_id).first()
+        query = custom_search.query_string
+        logger.info(
+            'Starting query for this custom search: {}'.format(custom_search.id))
+        if custom_search:
+            result_hash = get_query_result_hash_and_length(query)['hash']
+            custom_search.result_hash_digest = result_hash
+            custom_search.save()
+        else:
+            logger.error(
+                '*ERROR* - Task Failure - No custom search found in async_update_custom_search_result_hash')
+            raise Exception('No custom search.')
+    except Exception as e:
+        logger.error('Error during task: {}'.format(e))
+        async_send_general_task_error_mail.delay(str(e))
+        raise e
+
+
+def replace_date_in_url(url):
+    parsed_url = urlparse(url)
+    url_params = parse_qs(parsed_url.query)
+    query_string = url_params['q'][0]
+
+    mapping = convert_query_string_to_mapping(query_string)
+
+    for parsed_f in mapping['0']['filters']:
+        # print(raw_f)
+        model_name = parsed_f['model']
+        model_class = apps.get_model(app_label='datasets', model_name=model_name)
+        query_date_key = model_class.QUERY_DATE_KEY
+
+        date_start = '{model_name}s__{query_date_key}__gte='.format(
+            model_name=model_name,
+            query_date_key=query_date_key,
+        )
+        date_start_index = url.find(date_start)
+
+        date_end = '{model_name}s__{query_date_key}__lte='.format(
+            model_name=model_name,
+            query_date_key=query_date_key,
+        )
+        date_end_index = url.find(date_end)
+
+        if date_start_index > 0:
+            if date_end_index > 0:
+                # Handle queries with date in between
+                print('doing between')
+            # date = re.search(r"[\d]{4}-[\d]{1,2}-[\d]{1,2}", url[date_start_index + len(date_start):])
+            # print(date.start())
+
+            url_before_date = url[:date_start_index + len(date_start)]
+            url_after_date = url[date_start_index + len(date_start) + len('0000-00-00'):]
+            now = timezone.now().strftime('%Y-%m-%d')
+            url = f'{url_before_date}{now}{url_after_date}'
+        else:
+            # Handle the case of user has only cases before
+            print('doing before')
+    return url
+
+
+def check_notifications_custom_search(notification_frequency):
+    custom_searches = u.CustomSearch.objects.all()
+    for custom_search in custom_searches:
+        query = custom_search.query_string
+        past_result_hash = custom_search.result_hash_digest
+        # Get new hash for result
+        result_hash_length = get_query_result_hash_and_length(query)
+        new_result_hash = result_hash_length['hash']
+        new_result_length = result_hash_length['length']
+        if past_result_hash != new_result_hash:
+            logger.info(
+                'Change detected. Updating custom search with id:{}'.format(custom_search.id))
+            async_update_custom_search_result_hash.delay(custom_search.id)
+            # Alert users of the change
+            user_custom_searches = custom_search.usercustomsearch_set.filter(notification_frequency=notification_frequency)
+            if user_custom_searches.exists():
+                for user_custom_search in user_custom_searches:
+                    # If user hasn't been alerted about this update
+                    if user_custom_search.last_notified_hash != new_result_hash:
+                        user_custom_search.last_notified_hash = new_result_hash
+                        user_custom_search.last_notified_date = timezone.now()
+                        user_custom_search.save()
+                        user = user_custom_search.user
+                        subject = 'Your Custom Search Updated'
+                        content = f'<h3>Hello {user.first_name}!</h3>'
+                        
+                        root_url = 'http://app:8000' if settings.DEBUG else 'https://api.displacementalert.org'
+                        full_url = root_url + query
+                        content += f'<p>Your saved custom search {user_custom_search.name} has updated. <a href="{full_url}">Click here</a> to view </p>'
+
+                        last_number_of_results = user_custom_search.last_number_of_results
+                        if last_number_of_results != new_result_length:
+                            user_custom_search.last_number_of_results = new_result_length
+                            user_custom_search.save()
+                            new_results_url = replace_date_in_url(full_url)
+                            content += f'<p>There are {new_result_length - last_number_of_results} new results. To view new results <a href="{new_results_url}">Click here</a> to view </p>'
+
+                        content += 'If you would like to stop receiving these emails from DAP Portal, visit your dashboard to manage/unsubscribe from notifications.'
+                        try:
+                            if settings.DEBUG:
+                                logger.info('Not emailing {}'.format(user.email))
+                            else:
+                                send_mail(user.email, subject, content)
+                        except:
+                            logger.info(
+                                'Emailing {} failed'.format(user.username))
+
+
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', acks_late=True, max_retries=1)
+def async_check_notifications_custom_search_daily(self):
+    try:
+        check_notifications_custom_search('D')
+    except Exception as e:
+        logger.error('Error during task: {}'.format(e))
+        async_send_general_task_error_mail.delay(str(e))
+        raise e
+
+
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', acks_late=True, max_retries=1)
+def async_check_notifications_custom_search_weekly(self):
+    try:
+        check_notifications_custom_search('W')
+    except Exception as e:
+        logger.error('Error during task: {}'.format(e))
+        async_send_general_task_error_mail.delay(str(e))
+        raise e
+
+
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', acks_late=True, max_retries=1)
+def async_check_notifications_custom_search_monthly(self):
+    try:
+        check_notifications_custom_search('M')
+    except Exception as e:
+        logger.error('Error during task: {}'.format(e))
+        async_send_general_task_error_mail.delay(str(e))
+        raise e
