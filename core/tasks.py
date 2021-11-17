@@ -12,9 +12,6 @@ from app.celery import FaultTolerantTask
 
 import os
 import uuid
-import requests
-import hashlib
-import json
 
 import logging
 

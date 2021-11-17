@@ -11,6 +11,7 @@ from users.models import CustomUser, UserRequest
 from core.models import UserMessage
 from django.db import connection, transaction
 from core import models as c
+from users import models as u
 from django.conf import settings
 from django_celery_results.models import TaskResult
 from app.celery import FaultTolerantTask
@@ -21,8 +22,17 @@ from django.utils import timezone
 from urllib.parse import urlparse, parse_qs
 from django.db.models import Q
 from django.apps import apps
+import requests
+import hashlib
+import json
+import pytz
 
-logger = logging.getLogger('app')
+from celery.utils.log import get_task_logger
+
+logger = get_task_logger(__name__)
+
+
+# logger = logging.getLogger('app')
 
 
 @app.task(bind=True, queue='celery', base=FaultTolerantTask)
@@ -128,6 +138,18 @@ def async_send_user_message_email(self, bug_report_id):
     bug_report = UserMessage.objects.get(id=bug_report_id)
     return send_user_message_email(bug_report=bug_report)
 
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=30, max_retries=3)
+def async_send_user_notification_email(self, user_id, save_name, save_url, new_result_num, new_results_url):
+    user = CustomUser.objects.get(id=user_id)
+    subject = 'Custom Search Updated'
+    content = f'<h3>Hello {user.username}!</h3>'
+
+    content += f'<p>Your saved custom search {save_name} has updated. <a href="{save_url}">Click here</a> to view </p>'
+
+    if new_result_num > 0 and len(new_results_url) > 0:
+        content += f'<p>There are {new_result_num} new results. To view new results <a href="{new_results_url}">Click here</a> to view </p>'
+    content += '<p>If you would like to stop receiving these emails from DAP Portal, visit your dashboard to manage/unsubscribe from notifications.</p>'
+    send_mail(user.email, subject, content)
 
 @app.task(bind=True, queue='celery')
 def async_test_rollbar(self):
@@ -170,7 +192,7 @@ def async_update_custom_search_result_hash(self, custom_search_id, just_created=
         raise e
 
 
-def replace_date_in_url(url):
+def replace_date_in_url(url, last_date):
     parsed_url = urlparse(url)
     url_params = parse_qs(parsed_url.query)
     query_string = url_params['q'][0]
@@ -178,7 +200,6 @@ def replace_date_in_url(url):
     mapping = convert_query_string_to_mapping(query_string)
 
     for parsed_f in mapping['0']['filters']:
-        # print(raw_f)
         model_name = parsed_f['model']
         model_class = apps.get_model(app_label='datasets', model_name=model_name)
         query_date_key = model_class.QUERY_DATE_KEY
@@ -198,17 +219,15 @@ def replace_date_in_url(url):
         if date_start_index > 0:
             if date_end_index > 0:
                 # Handle queries with date in between
-                print('doing between')
-            # date = re.search(r"[\d]{4}-[\d]{1,2}-[\d]{1,2}", url[date_start_index + len(date_start):])
-            # print(date.start())
-
-            url_before_date = url[:date_start_index + len(date_start)]
-            url_after_date = url[date_start_index + len(date_start) + len('0000-00-00'):]
-            now = timezone.now().strftime('%Y-%m-%d')
-            url = f'{url_before_date}{now}{url_after_date}'
+                pass
+            else:
+                url_before_date = url[:date_start_index + len(date_start)]
+                url_after_date = url[date_start_index + len(date_start) + len('0000-00-00'):]
+                now = last_date.strftime('%Y-%m-%d')
+                url = f'{url_before_date}{now}{url_after_date}'
         else:
             # Handle the case of user has only cases before
-            print('doing before')
+            pass
     return url
 
 
@@ -217,6 +236,7 @@ def check_notifications_custom_search(notification_frequency):
     for custom_search in custom_searches:
         query = custom_search.query_string
         past_result_hash = custom_search.result_hash_digest
+
         # Get new hash for result
         result_hash_length = get_query_result_hash_and_length(query)
         new_result_hash = result_hash_length['hash']
@@ -225,44 +245,62 @@ def check_notifications_custom_search(notification_frequency):
             logger.info(
                 'Change detected. Updating custom search with id:{}'.format(custom_search.id))
             async_update_custom_search_result_hash.delay(custom_search.id)
-            # Alert users of the change
-            user_custom_searches = custom_search.usercustomsearch_set.filter(notification_frequency=notification_frequency)
-            if user_custom_searches.exists():
-                for user_custom_search in user_custom_searches:
-                    # If user hasn't been alerted about this update
-                    if user_custom_search.last_notified_hash != new_result_hash:
-                        user_custom_search.last_notified_hash = new_result_hash
+
+        # Alert users of the change
+        user_custom_searches = custom_search.usercustomsearch_set.filter(notification_frequency=notification_frequency)
+        if user_custom_searches.exists():
+            for user_custom_search in user_custom_searches:
+                # If user hasn't been alerted about this update
+                if user_custom_search.last_notified_hash != new_result_hash:
+                    user_custom_search.last_notified_hash = new_result_hash
+                    user_custom_search.save()
+                    user = user_custom_search.user
+                    
+                    root_url = 'http://app:8000' if settings.DEBUG else 'https://api.displacementalert.org'
+                    full_url = root_url + query
+
+                    last_number_of_results = user_custom_search.last_number_of_results
+                    new_results_url = ''
+                    if last_number_of_results != new_result_length:
+                        user_custom_search.last_number_of_results = new_result_length
+                        est = pytz.timezone('America/New_York')
+                        last_date = user_custom_search.last_notified_date.astimezone(est)
                         user_custom_search.last_notified_date = timezone.now()
                         user_custom_search.save()
-                        user = user_custom_search.user
-                        subject = 'Your Custom Search Updated'
-                        content = f'<h3>Hello {user.first_name}!</h3>'
-                        
-                        root_url = 'http://app:8000' if settings.DEBUG else 'https://api.displacementalert.org'
-                        full_url = root_url + query
-                        content += f'<p>Your saved custom search {user_custom_search.name} has updated. <a href="{full_url}">Click here</a> to view </p>'
-
-                        last_number_of_results = user_custom_search.last_number_of_results
-                        if last_number_of_results != new_result_length:
-                            user_custom_search.last_number_of_results = new_result_length
-                            user_custom_search.save()
-                            new_results_url = replace_date_in_url(full_url)
-                            content += f'<p>There are {new_result_length - last_number_of_results} new results. To view new results <a href="{new_results_url}">Click here</a> to view </p>'
-
-                        content += 'If you would like to stop receiving these emails from DAP Portal, visit your dashboard to manage/unsubscribe from notifications.'
                         try:
-                            if settings.DEBUG:
-                                logger.info('Not emailing {}'.format(user.email))
-                            else:
-                                send_mail(user.email, subject, content)
-                        except:
-                            logger.info(
-                                'Emailing {} failed'.format(user.username))
+                            new_results_url = replace_date_in_url(full_url, last_date)
+                            if full_url == new_results_url:
+                                new_results_url = ''
+                        except Exception:
+                            new_results_url = ''
+
+                    try:
+                        if settings.DEBUG:
+                            logger.info('Not emailing {}'.format(user.email))
+                            async_send_user_notification_email.delay(
+                                user.id,
+                                user_custom_search.name,
+                                full_url,
+                                new_result_length - last_number_of_results,
+                                new_results_url
+                            )
+                        else:
+                            async_send_user_notification_email.delay(
+                                user.id,
+                                user_custom_search.name,
+                                full_url,
+                                new_result_length - last_number_of_results,
+                                new_results_url
+                            )
+                    except Exception as e:
+                        logger.info('Emailing {} failed'.format(user.username))
+                        async_send_general_task_error_mail.delay(str(e))
 
 
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', acks_late=True, max_retries=1)
 def async_check_notifications_custom_search_daily(self):
     try:
+        logger.info('test')
         check_notifications_custom_search('D')
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
