@@ -314,3 +314,10 @@
     model_name: AEPBuilding
     automated: false
     update_schedule: "when needed"
+- model: core.dataset
+  pk: 44
+  fields:
+    name: OCA Housing Court
+    model_name: OCAHousingCourt
+    automated: true
+    update_schedule: "when needed"
