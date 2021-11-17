@@ -52,7 +52,7 @@ class UserRequestSerializer(serializers.ModelSerializer):
 class UserBookmarkedPropertySerializer(serializers.ModelSerializer):
     class Meta:
         model = u.UserBookmarkedProperty
-        fields = ('id', 'name', 'description', 'bbl')
+        fields = ('id', 'name', 'bbl')
 
     def create(self, validated_data):
         return u.UserBookmarkedProperty.objects.create(**validated_data)

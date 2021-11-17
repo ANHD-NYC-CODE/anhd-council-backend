@@ -39,7 +39,7 @@ class UserBookmarkedPropertyCollection(mixins.ListModelMixin,
 
     def get(self, request, *args, **kwargs):
         user = request.user
-        queryset = user.userbookmarkedproperties_set.all()
+        queryset = u.UserBookmarkedProperty.objects.filter(user_id=user)
 
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -50,7 +50,7 @@ class UserBookmarkedPropertyCollection(mixins.ListModelMixin,
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
-        data_dict = request.data.dict()
+        data_dict = request.data
         mutable_query_dict = QueryDict(mutable=True)
         mutable_query_dict.update(data_dict)
         mutable_query_dict.__setitem__('user_id', request.user.id)
@@ -144,7 +144,7 @@ class UserCustomSearchCollection(mixins.ListModelMixin,
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
-        data_dict = request.data.dict()
+        data_dict = request.data
         mutable_query_dict = QueryDict(mutable=True)
         mutable_query_dict.update(data_dict)
         mutable_query_dict.__setitem__('user_id', request.user.id)
@@ -153,15 +153,18 @@ class UserCustomSearchCollection(mixins.ListModelMixin,
         # Get custom search or create
         # Search for CustomSearch by hash
         query_hash_digest = hashlib.sha256(custom_search_query.encode('utf-8')).hexdigest()
+        try:
+            result_hash_length = get_query_result_hash_and_length(custom_search_query)
+            result_hash = result_hash_length['hash']
+        except Exception as e:
+            Response('The query submitted is not valid', status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
         if u.CustomSearch.objects.filter(query_string_hash_digest=query_hash_digest).exists():
             custom_search = u.CustomSearch.objects.get(query_string_hash_digest=query_hash_digest)
         else:
-            try:
-                result_hash = get_query_result_hash_and_length(custom_search_query)['hash']
-            except Exception as e:
-                Response('The query submitted is not valid', status=status.HTTP_422_UNPROCESSABLE_ENTITY)
             custom_search = u.CustomSearch(query_string=custom_search_query, result_hash_digest=result_hash)
             custom_search.save()
+        mutable_query_dict.__setitem__('last_number_of_results', result_hash_length['length'])
         mutable_query_dict.__setitem__('custom_search_view', custom_search.id)
         mutable_query_dict.__setitem__('last_notified_hash', custom_search.result_hash_digest)
 
@@ -193,17 +196,20 @@ class UserCustomSearchMember(mixins.DestroyModelMixin,
             custom_search_query = mutable_query_dict.__getitem__('custom_search_view')
             query_hash_digest = hashlib.sha256(custom_search_query.encode('utf-8')).hexdigest()
 
+            try:
+                result_hash_length = get_query_result_hash_and_length(custom_search_query)
+                result_hash = result_hash_length['hash']
+            except Exception as e:
+                Response('The query submitted is not valid', status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
             if u.CustomSearch.objects.filter(query_string_hash_digest=query_hash_digest).exists():
                 custom_search = u.CustomSearch.objects.get(query_string_hash_digest=query_hash_digest)
             else:
-                try:
-                    result_hash = get_query_result_hash_and_length(custom_search_query)['hash']
-                except Exception as e:
-                    Response('The query submitted is not valid', status=status.HTTP_422_UNPROCESSABLE_ENTITY)
                 custom_search = u.CustomSearch(query_string=custom_search_query, result_hash_digest=result_hash)
                 custom_search.save()
             mutable_query_dict.__setitem__('custom_search_view', custom_search.id)
             mutable_query_dict.__setitem__('last_notified_hash', custom_search.result_hash_digest)
+            mutable_query_dict.__setitem__('last_number_of_results', result_hash_length['length'])
 
         serializer = self.get_serializer(instance, data=mutable_query_dict)
         serializer.is_valid(raise_exception=True)
