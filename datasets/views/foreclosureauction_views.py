@@ -9,6 +9,7 @@ from datasets import serializers as serial
 from datasets import models as ds
 
 from rest_framework.permissions import IsAuthenticated
+from users.permission import IsTrustedUser
 
 
 class ForeclosureAuctionViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
@@ -16,7 +17,7 @@ class ForeclosureAuctionViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets
         api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
     queryset = ds.PSForeclosure.objects.all().order_by('pk')
     serializer_class = serial.ForeclosureAuctionSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsTrustedUser,)
 
     @cache_request_path()
     def list(self, request, *args, **kwargs):
