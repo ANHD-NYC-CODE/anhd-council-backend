@@ -1,11 +1,12 @@
 from django.contrib import admin
 
 # Register your models here.
-from django.contrib import admin
+# from django.contrib import admin
 from django.contrib.auth import admin as auth_admin
 from users.models import CustomUser, UserRequest
 from users.forms import CustomUserChangeForm, CustomUserCreationForm
 from django.contrib import messages
+from django.contrib.auth.models import Group
 from django.http import HttpResponseRedirect
 
 from django.contrib.admin import AdminSite
@@ -39,6 +40,20 @@ class UserRequestAdmin(admin.ModelAdmin):
     actions = []
 
 
+# @admin.action(description='Adds user to trusted')
+def add_user_to_trusted(modeladmin, request, queryset):
+    trusted_group = Group.objects.get(name='trusted')
+    for user in queryset:
+        trusted_group.user_set.add(user)
+add_user_to_trusted.short_description = 'Adds user to trusted'
+
+# @admin.action(description='Removes user to trusted')
+def remove_user_to_trusted(modeladmin, request, queryset):
+    trusted_group = Group.objects.get(name='trusted')
+    for user in queryset:
+        trusted_group.user_set.remove(user)
+remove_user_to_trusted.short_description = 'Removes user to trusted'
+
 class CustomUserAdmin(auth_admin.UserAdmin):
     def get_urls(self):
         urls = super(CustomUserAdmin, self).get_urls()
@@ -47,6 +62,14 @@ class CustomUserAdmin(auth_admin.UserAdmin):
                  self.admin_site.admin_view(self.user_change_password), name='admin-user-change-password'),
         ]
         return password_url + urls
+
+    def group(self, user):
+        groups = []
+        for group in user.groups.all():
+            groups.append(group.name)
+        return ' '.join(groups)
+    group.short_description = 'Groups'
+
 
     fieldsets = (
         (None, {'fields': ('username', 'email', 'password')}),
@@ -70,11 +93,12 @@ class CustomUserAdmin(auth_admin.UserAdmin):
     add_form = CustomUserCreationForm
     change_password_form = auth_admin.AdminPasswordChangeForm
     list_display = ('email', 'username', 'first_name',
-                    'last_name', 'is_superuser')
+                    'last_name', 'is_superuser', 'group')
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups')
     search_fields = ('first_name', 'last_name', 'email')
     ordering = ('email',)
     readonly_fields = ('last_login', 'date_joined',)
+    actions = [add_user_to_trusted, remove_user_to_trusted]
 
 
 admin.site.register(CustomUser, CustomUserAdmin)
