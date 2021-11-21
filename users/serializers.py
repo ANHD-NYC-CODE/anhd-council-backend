@@ -80,6 +80,11 @@ class UserCustomSearchSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'notification_frequency', 'custom_search_view')
         extra_kwargs = {'custom_search_view': {'required': False, 'allow_null': True}}
 
+    def to_representation(self, obj):
+        rep = super(serializers.ModelSerializer, self).to_representation(obj)
+        rep['custom_search_view'] = obj.custom_search_view.frontend_url
+        return rep
+
     def create(self, validated_data):
         try:
             print(type(validated_data))
