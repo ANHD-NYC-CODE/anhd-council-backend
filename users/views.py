@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import QueryDict
 from rest_framework import viewsets
 from datasets.helpers.api_helpers import ApplicationViewSet
+from datasets.utils.advanced_filter import fe_to_be_url
 from rest_framework.permissions import IsAuthenticated
 from app.tasks import get_query_result_hash_and_length
 from users import models as u
@@ -148,7 +149,8 @@ class UserCustomSearchCollection(mixins.ListModelMixin,
         mutable_query_dict = QueryDict(mutable=True)
         mutable_query_dict.update(data_dict)
         mutable_query_dict.__setitem__('user_id', request.user.id)
-        custom_search_query = mutable_query_dict.__getitem__('custom_search_view')
+        custom_search_query_fe = mutable_query_dict.__getitem__('custom_search_view')
+        custom_search_query = fe_to_be_url(custom_search_query_fe)
 
         # Get custom search or create
         # Search for CustomSearch by hash
@@ -162,7 +164,11 @@ class UserCustomSearchCollection(mixins.ListModelMixin,
         if u.CustomSearch.objects.filter(query_string_hash_digest=query_hash_digest).exists():
             custom_search = u.CustomSearch.objects.get(query_string_hash_digest=query_hash_digest)
         else:
-            custom_search = u.CustomSearch(query_string=custom_search_query, result_hash_digest=result_hash)
+            custom_search = u.CustomSearch(
+                frontend_url=custom_search_query_fe,
+                query_string=custom_search_query,
+                result_hash_digest=result_hash
+            )
             custom_search.save()
         mutable_query_dict.__setitem__('last_number_of_results', result_hash_length['length'])
         mutable_query_dict.__setitem__('custom_search_view', custom_search.id)
@@ -193,7 +199,9 @@ class UserCustomSearchMember(mixins.DestroyModelMixin,
         instance = self.get_object()
 
         if 'custom_search_view' in mutable_query_dict.keys():
-            custom_search_query = mutable_query_dict.__getitem__('custom_search_view')
+            custom_search_query_fe = mutable_query_dict.__getitem__('custom_search_view')
+            custom_search_query = fe_to_be_url(custom_search_query_fe)
+
             query_hash_digest = hashlib.sha256(custom_search_query.encode('utf-8')).hexdigest()
 
             try:
@@ -205,7 +213,11 @@ class UserCustomSearchMember(mixins.DestroyModelMixin,
             if u.CustomSearch.objects.filter(query_string_hash_digest=query_hash_digest).exists():
                 custom_search = u.CustomSearch.objects.get(query_string_hash_digest=query_hash_digest)
             else:
-                custom_search = u.CustomSearch(query_string=custom_search_query, result_hash_digest=result_hash)
+                custom_search = u.CustomSearch(
+                    frontend_url=custom_search_query_fe,
+                    query_string=custom_search_query,
+                    result_hash_digest=result_hash
+                )
                 custom_search.save()
             mutable_query_dict.__setitem__('custom_search_view', custom_search.id)
             mutable_query_dict.__setitem__('last_notified_hash', custom_search.result_hash_digest)

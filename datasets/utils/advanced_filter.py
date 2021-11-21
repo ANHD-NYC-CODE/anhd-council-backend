@@ -4,6 +4,7 @@ from django.db.models import Count, Q, ExpressionWrapper, F, FloatField, Prefetc
 from django.db.models.functions import Cast
 from django.conf import settings
 from rest_framework.exceptions import APIException
+from urllib.parse import urlparse
 
 import re
 import collections
@@ -297,3 +298,27 @@ def convert_condition_to_q(condition_key, mapping, filter_pass='query1_filters')
                 elif filter_pass == 'query1_filters':
                     q |= construct_and_q(c_filter[filter_pass])
     return q
+
+def fe_to_be_url(frontend_url):
+    fe_to_be_geo_types = {
+        'city': 'city',
+        'borough': 'borough',
+        'council': 'councils',
+        'community': 'communities',
+        'state-assembly': 'stateassemblies',
+        'state-senate': 'statesenates',
+        'zipcode': 'zipcodes',
+    }
+    parsed_url = urlparse(frontend_url)
+    geography_type = fe_to_be_geo_types[parsed_url.path.split('/')[1]]
+    geography_id = parsed_url.path.split('/')[2]
+    query = parsed_url.query
+
+    backend_url = ''
+    if geography_type == 'city':
+        backend_url = f'/properties/?format=json&{query}&summary=true&summary-type=custom-search'
+    if geography_type == 'borough':
+        backend_url = f'/properties/?format=json&{query}&summary=true&summary-type=custom-search&borough={geography_id}'
+    else:
+        backend_url = f'/{geography_type}/{geography_id}/properties/?format=json&{query}&summary=true&summary-type=custom-search'
+    return backend_url
