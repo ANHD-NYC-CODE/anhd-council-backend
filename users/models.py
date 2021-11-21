@@ -97,6 +97,7 @@ class UserDistrictDashboard(models.Model):
 
 
 class CustomSearch(models.Model):
+    frontend_url = models.TextField(blank=True, null=True)
     query_string = models.TextField(blank=True, null=True)
     query_string_hash_digest = models.CharField(blank=True, max_length=64, unique=True)
     result_hash_digest = models.CharField(blank=True, max_length=64)
