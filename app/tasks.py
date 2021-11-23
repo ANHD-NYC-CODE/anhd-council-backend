@@ -236,6 +236,7 @@ def check_notifications_custom_search(notification_frequency):
     for custom_search in custom_searches:
         query = custom_search.query_string
         past_result_hash = custom_search.result_hash_digest
+        frontend_url = custom_search.frontend_url
 
         # Get new hash for result
         result_hash_length = get_query_result_hash_and_length(query)
@@ -255,9 +256,9 @@ def check_notifications_custom_search(notification_frequency):
                     user_custom_search.last_notified_hash = new_result_hash
                     user_custom_search.save()
                     user = user_custom_search.user
-                    
+
                     root_url = 'http://app:8000' if settings.DEBUG else 'https://api.displacementalert.org'
-                    full_url = root_url + query
+                    full_url = root_url + frontend_url
 
                     last_number_of_results = user_custom_search.last_number_of_results
                     new_results_url = ''
