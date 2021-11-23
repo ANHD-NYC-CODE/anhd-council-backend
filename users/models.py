@@ -56,6 +56,31 @@ class UserRequest(models.Model):
         self.save()
 
 
+class AccessRequest(models.Model):
+    user = models.OneToOneField('CustomUser', db_column='customuser', db_constraint=False,
+                                on_delete=models.SET_NULL, null=True, blank=True)
+
+    # Should be either "member organization", "government", "personal"
+    access_type = models.CharField(max_length=25, blank=True, null=True)
+    organization_email = models.TextField(unique=True, blank=True, null=True)
+    organization = models.TextField(blank=True, null=True)
+    position = models.TextField(blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+
+    date_created = models.DateTimeField(
+        auto_now_add=True, blank=True, null=True)
+    approved = models.BooleanField(blank=True, null=True, default=False)
+
+    def approve(self):
+        user = CustomUser.objects.create(email=self.email, username=self.username,
+                                         first_name=self.first_name, last_name=self.last_name)
+
+        user.user_request = self
+        user.save()
+        self.approved = True
+        self.save()
+
+
 class UserBookmarkedProperty(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)

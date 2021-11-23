@@ -19,6 +19,8 @@ urlpatterns = [
     *custom_routes,
     path('', include(router.urls)),
 
+    path('users/access-request/', v.AccessRequestCollection.as_view()),
+
     path('users/bookmarks/', v.UserBookmarkedPropertyCollection.as_view()),
     path('users/bookmarks/<uuid:pk>/', v.UserBookmarkedPropertyMember.as_view()),
 

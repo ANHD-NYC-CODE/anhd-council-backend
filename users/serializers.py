@@ -49,6 +49,28 @@ class UserRequestSerializer(serializers.ModelSerializer):
         return data
 
 
+class AccessRequestSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(many=False, read_only=True)
+
+    class Meta:
+        model = u.AccessRequest
+        fields = ('user', 'access_type', 'organization_email', 'organization',
+                  'position', 'description')
+
+    def validate(self, data):
+        """
+        Check that the start is before the stop.
+        """
+        errors = []
+        if len(data['organization_email']) > 0 and (len(u.CustomUser.objects.filter(email=data['organization_email'])) > 0 or len(u.AccessRequest.objects.filter(organization_email=data['organization_email'])) > 0):
+            errors.append(
+                "This email is already taken. Please choose another.")
+
+        if len(errors) > 0:
+            raise serializers.ValidationError({"errors": errors})
+        return data
+
+
 class UserBookmarkedPropertySerializer(serializers.ModelSerializer):
     class Meta:
         model = u.UserBookmarkedProperty

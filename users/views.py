@@ -30,9 +30,39 @@ class UserRequestViewSet(ApplicationViewSet,
     serializer_class = serial.UserRequestSerializer
 
 
+class AccessRequestViewSet(ApplicationViewSet,
+                           mixins.CreateModelMixin,
+                           viewsets.GenericViewSet):
+    queryset = u.AccessRequest.objects.all()
+    serializer_class = serial.AccessRequestSerializer
+
+
+class AccessRequestCollection(mixins.CreateModelMixin,
+                              generics.GenericAPIView):
+
+    queryset = u.AccessRequest.objects.all()
+    serializer_class = serial.AccessRequestSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, *args, **kwargs):
+        data_dict = request.data
+        mutable_query_dict = QueryDict(mutable=True)
+        mutable_query_dict.update(data_dict)
+        mutable_query_dict.__setitem__('user_id', request.user.id)
+
+        if u.AccessRequest.objects.filter(user_id=request.user.id):
+            return Response('A user can only make one access request', status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+        serializer = self.get_serializer(data=mutable_query_dict)
+        serializer.is_valid(raise_exception=True)
+        serializer.create(validated_data=mutable_query_dict.dict())
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
 class UserBookmarkedPropertyCollection(mixins.ListModelMixin,
-                                         mixins.CreateModelMixin,
-                                         generics.GenericAPIView):
+                                       mixins.CreateModelMixin,
+                                       generics.GenericAPIView):
 
     queryset = u.UserBookmarkedProperty.objects.all()
     serializer_class = serial.UserBookmarkedPropertySerializer
