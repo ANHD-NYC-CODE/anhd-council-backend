@@ -9,6 +9,7 @@ from datasets import serializers as serial
 from datasets import models as ds
 
 from rest_framework.permissions import IsAuthenticated
+from users.permission import IsTrustedUser
 
 
 class LisPendenViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
@@ -16,7 +17,7 @@ class LisPendenViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnly
     queryset = ds.LisPenden.objects.filter(type="foreclosure").prefetch_related(
         'lispendencomment_set').all().order_by('pk')
     serializer_class = serial.LisPendenSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsTrustedUser,)
 
     @cache_request_path()
     def list(self, request, *args, **kwargs):

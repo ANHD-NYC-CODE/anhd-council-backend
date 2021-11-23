@@ -65,11 +65,16 @@ class PropertyAnnotationSerializer(serializers.ModelSerializer):
 
     def to_representation(self, obj):
         rep = super(serializers.ModelSerializer, self).to_representation(obj)
-        if not self.context['request'].user.is_authenticated:
+        if not is_authenticated(self.context['request']):
             del rep['foreclosures_last30']
             del rep['foreclosures_lastyear']
             del rep['foreclosures_last3years']
             del rep['foreclosures_lastupdated']
+
+            del rep['ocahousingcourts_last30']
+            del rep['ocahousingcourts_lastyear']
+            del rep['ocahousingcourts_last3years']
+            del rep['ocahousingcourts_lastupdated']
         return rep
 
 

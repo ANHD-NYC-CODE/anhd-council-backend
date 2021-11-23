@@ -9,13 +9,14 @@ from datasets import serializers as serial
 from datasets import models as ds
 
 from rest_framework.permissions import IsAuthenticated
+from users.permission import IsTrustedUser
 
 
 class ForeclosureViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
     queryset = ds.Foreclosure.objects.all().order_by('pk')
     serializer_class = serial.ForeclosureSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsTrustedUser,)
 
     @cache_request_path()
     def list(self, request, *args, **kwargs):

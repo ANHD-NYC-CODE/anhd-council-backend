@@ -11,13 +11,14 @@ from datasets import serializers as serial
 from datasets import models as ds
 
 from rest_framework.permissions import IsAuthenticated
+from users.permission import IsTrustedUser
 
 
 class OCAHousingCourtViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES) + (rf_csv.CSVRenderer, )
     queryset = ds.OCAHousingCourt.objects.all().order_by('pk')
     serializer_class = serial.OCAHousingCourtSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsTrustedUser,)
 
     def check_bbl_unitsres(self, bbl):
         prop = ds.Property.objects.get(bbl=bbl)
@@ -27,7 +28,7 @@ class OCAHousingCourtViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.Re
     @cache_request_path()
     def list(self, request, *args, **kwargs):
         try:
-            self.check_bbl_unitsres(kwargs['parent_lookup_bbl'])
+            # self.check_bbl_unitsres(kwargs['parent_lookup_bbl'])
 
             response = super().list(request, *args, **kwargs)
             return response
