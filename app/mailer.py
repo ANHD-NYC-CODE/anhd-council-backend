@@ -43,6 +43,38 @@ def send_new_user_email(user=None):
     send_mail(to, subject, content)
 
 
+def send_new_access_email(user=None):
+    to = user.email
+    subject = "DAP Portal - Data access granted!"
+
+    content = ''.join((
+        '<h3>Your new account has been granted access!</h3>',
+        "<p>Your request to access housing court and foreclosures data has been approved! You will now see these changes reflected when you <a href='https://portal.displacementalert.org/login' target='_blank'>log in to DAP Portal</a>.</p>",
+        '<p>This email was sent from the ANHD DAP Portal. If you have questions, email dapadmin@anhd.org.</p>'
+    ))
+
+    send_mail(to, subject, content)
+
+
+def send_user_verification_email(access_request=None, verification_token=None):
+    root_url = 'http://localhost:8000/' if settings.DEBUG else 'https://api.displacementalert.org/'
+    to = access_request.organization_email
+    subject = "DAP Portal - Please verify your new email"
+    content = ''.join((
+        '<h3>Your account has been granted access pending verification</h3>',
+        f"<p>Your request to access housing court and foreclosures data has been approved! Please <a href='https://api.displacementalert.org/users/verify/{access_request.user.username}/{verification_token}/' target='_blank'>click this link</a> to verify that you submitted this request and to access the data.</p>",
+        '<iframe name="dummyframe" id="dummyframe" style="display: none;"></iframe>',
+        f'<form method="post" action="{root_url}user-messages/" class="inline" target="dummyframe" onsubmit="alert(\'Thanks, your report has been noted.\');">',
+        f'<input type="hidden" name="from_email" value="{access_request.organization_email}">',
+        '<input type="hidden" name="description" value="Auto: I was asked to verify an email unprompted.">',
+        '<button type="submit" name="submit_param" value="submit_value" class="link-button">If this wasn’t you, click here to let us know.</button>',
+        '</form>',
+        '<p>This email was sent from the ANHD DAP Portal. If you have questions, email dapadmin@anhd.org.</p>'
+    ))
+
+    send_mail(to, subject, content)
+
+
 def send_user_message_email(bug_report=None):
     subject = "DAP Portal - * New DAP message received."
     content = "<p>Hello!</p><p>We've received a new message from {}</p><p>Please <a href='https://api.displacementalert.org/admin/core/usermessage/{}/change' target='_blank'>visit this link</a> and update its status.</p><p>Have a nice day!</p><p>- DAP Portal Admin</p><hr><p><b>Details</b></p><p><b>From:</b> {}</p><p><b>Description:</b> {}</p><p><b>Status:</b> {}</p><p><b>Date created:</b> {}</p>".format(
@@ -57,6 +89,31 @@ def send_new_user_request_email(user_request):
     subject = "DAP Portal - New user request received."
     content = "<p>Hello!</p><p>We've received a request for a user account from {}</p><p>Please <a href='https://api.displacementalert.org/admin/users/userrequest/{}/change' target='_blank'>visit this link</a> and approve the request to send them a registration email.</p><p>Have a nice day!</p><p>- DAP Portal Admin</p><hr><p><b>Details</b></p><p><b>Email:</b> {}</p><p><b>Username:</b> {}</p><p><b>Organization:</b> {}</p><p><b>Position:</b> {}</p><p><b>Description:</b> {}</p><p><b>First name:</b> {}</p><p><b>Last name:</b> {}</p>".format(
         user_request.email, user_request.id, user_request.email, user_request.username, user_request.organization, user_request.description, user_request.long_description, user_request.first_name, user_request.last_name)
+
+    for user in us.CustomUser.objects.filter(is_staff=True):
+        to = user.email
+        send_mail(to, subject, content)
+
+
+def send_new_user_access_request_email(access_request):
+    root_url = 'http://localhost:8000/' if settings.DEBUG else 'https://api.displacementalert.org/'
+    subject = "DAP Portal - New user access request received."
+    content = ''.join((
+        '<p>Hello!</p>',
+        f"<p>We've received a request for a access from {access_request.user.email}</p>",
+        f"<p>Please <a href='{root_url}admin/users/accessrequest/{access_request.id}/change' target='_blank'>visit this link</a> and approve the request to send them a registration email.</p>",
+        '<p>Have a nice day!</p>',
+        '<p>- DAP Portal Admin</p>',
+        '<hr><p><b>Details</b></p>',
+        f'<p><b>Email:</b> {access_request.user.email}</p>',
+        f'<p><b>Organizational Email:</b> {access_request.organization_email}</p>',
+        f'<p><b>Username:</b> {access_request.user.username}</p>',
+        f'<p><b>Organization:</b> {access_request.organization}</p>',
+        f'<p><b>Position:</b> {access_request.position}</p>',
+        f'<p><b>Description:</b> {access_request.description}</p>',
+        f'<p><b>First name:</b> {access_request.user.first_name}</p>',
+        f'<p><b>Last name:</b> {access_request.user.last_name}</p>'
+    ))
 
     for user in us.CustomUser.objects.filter(is_staff=True):
         to = user.email

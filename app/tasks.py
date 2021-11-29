@@ -6,8 +6,8 @@ from rest_framework_simplejwt.token_blacklist.management.commands import flushex
 from django.core.cache import cache
 from core.utils.cache import create_async_cache_workers
 import celery
-from app.mailer import send_new_user_email, send_new_user_request_email, send_user_message_email, send_mail
-from users.models import CustomUser, UserRequest
+from app.mailer import send_new_user_email, send_new_user_request_email, send_user_message_email, send_mail, send_new_access_email, send_new_user_access_request_email, send_user_verification_email
+from users.models import CustomUser, UserRequest, AccessRequest
 from core.models import UserMessage
 from django.db import connection, transaction
 from core import models as c
@@ -128,9 +128,27 @@ def async_send_new_user_email(self, user_id):
 
 
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=30, max_retries=3)
+def async_send_new_access_email(self, user_id):
+    user = CustomUser.objects.get(id=user_id)
+    return send_new_access_email(user=user)
+
+
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=30, max_retries=3)
+def async_send_user_verification_email(self, access_request_id, verification_token):
+    access_request = AccessRequest.objects.get(id=access_request_id)
+    return send_user_verification_email(access_request=access_request, verification_token=verification_token)
+
+
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=30, max_retries=3)
 def async_send_new_user_request_email(self, user_request_id):
     user_request = UserRequest.objects.get(id=user_request_id)
     return send_new_user_request_email(user_request=user_request)
+
+
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=30, max_retries=3)
+def async_send_new_user_access_email(self, access_request_id):
+    access_request = AccessRequest.objects.get(id=access_request_id)
+    return send_new_user_access_request_email(access_request=access_request)
 
 
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=30, max_retries=3)
