@@ -41,8 +41,8 @@ class UserRegisterView(mixins.CreateModelMixin,
     def post(self, request, *args, **kwargs):
         data_dict = request.data
 
-        if not ('username' in data_dict and 'email' in data_dict):
-            return Response('Your request must include username and email.', status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+        if not ('username' in data_dict and 'email' in data_dict and 'first_name' in data_dict and 'last_name' in data_dict):
+            return Response('Your request must include username, email, first_name, last_name.', status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
         if u.CustomUser.objects.filter(username=request.data):
             return Response('This username is already taken', status=status.HTTP_422_UNPROCESSABLE_ENTITY)
@@ -50,6 +50,8 @@ class UserRegisterView(mixins.CreateModelMixin,
         new_user = u.CustomUser(
             username=data_dict['username'],
             email=data_dict['email'],
+            first_name=data_dict['first_name'],
+            last_name=data_dict['last_name'],
             is_staff=False
         )
         new_user.save()
