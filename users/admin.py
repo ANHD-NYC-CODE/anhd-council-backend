@@ -3,7 +3,7 @@ from django.contrib import admin
 # Register your models here.
 # from django.contrib import admin
 from django.contrib.auth import admin as auth_admin
-from users.models import CustomUser, CustomSearch, UserCustomSearch, UserRequest, UserBookmarkedProperty, DistrictDashboard, UserDistrictDashboard
+from users.models import CustomUser, CustomSearch, UserCustomSearch, UserRequest, AccessRequest, UserBookmarkedProperty, DistrictDashboard, UserDistrictDashboard
 from users.forms import CustomUserChangeForm, CustomUserCreationForm
 from app.tasks import async_update_custom_search_result_hash
 from django.contrib import messages
@@ -41,14 +41,35 @@ class UserRequestAdmin(admin.ModelAdmin):
     actions = []
 
 
-# @admin.action(description='Adds user to trusted')
+class AccessRequestAdmin(admin.ModelAdmin):
+    def response_change(self, request, obj):
+        if "_approve-request" in request.POST:
+            obj.approve()
+            messages.info(request,
+                          "This request has been approved and a registration email has been sent including a generated password.")
+
+            return HttpResponseRedirect(".")
+        return super().response_change(request, obj)
+
+    list_display = ('access_type', 'organization_email', 'organization', 'position', 'description', 'approved', 'date_created')
+
+    list_filter = ('approved', 'organization_email', 'organization',
+                   'description', 'date_created')
+
+    search_fields = ('approved', 'organization', 'organization_email', 'description')
+
+    ordering = ['-date_created']
+    readonly_fields = ('access_type', 'organization', 'position',
+                       'description', 'approved', 'date_created', 'user')
+    actions = []
+
+
 def add_user_to_trusted(modeladmin, request, queryset):
     trusted_group = Group.objects.get(name='trusted')
     for user in queryset:
         trusted_group.user_set.add(user)
 add_user_to_trusted.short_description = 'Adds user to trusted'
 
-# @admin.action(description='Removes user to trusted')
 def remove_user_to_trusted(modeladmin, request, queryset):
     trusted_group = Group.objects.get(name='trusted')
     for user in queryset:
@@ -135,3 +156,4 @@ class UserCustomSearchAdmin(admin.ModelAdmin):
 
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(UserRequest, UserRequestAdmin)
+admin.site.register(AccessRequest, AccessRequestAdmin)

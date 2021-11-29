@@ -19,7 +19,9 @@ urlpatterns = [
     *custom_routes,
     path('', include(router.urls)),
 
+    path('users/register/', v.UserRegisterView.as_view(), name='signup'),
     path('users/access-request/', v.AccessRequestCollection.as_view()),
+    path('users/verify/<str:username>/<str:verification_token>/', v.UserVerifyView.as_view()),
 
     path('users/bookmarks/', v.UserBookmarkedPropertyCollection.as_view()),
     path('users/bookmarks/<uuid:pk>/', v.UserBookmarkedPropertyMember.as_view()),

@@ -2,6 +2,8 @@ from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models, transaction
 from django.dispatch import receiver
 from django.utils import timezone
+from django.contrib.auth.models import Group
+from users.tokens import password_reset_token
 # https://gist.github.com/haxoza/7921eaf966a16ffb95a0
 import uuid
 import hashlib
@@ -62,7 +64,7 @@ class AccessRequest(models.Model):
 
     # Should be either "member organization", "government", "personal"
     access_type = models.CharField(max_length=25, blank=True, null=True)
-    organization_email = models.TextField(unique=True, blank=True, null=True)
+    organization_email = models.TextField(blank=True, null=True)
     organization = models.TextField(blank=True, null=True)
     position = models.TextField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
@@ -72,13 +74,22 @@ class AccessRequest(models.Model):
     approved = models.BooleanField(blank=True, null=True, default=False)
 
     def approve(self):
-        user = CustomUser.objects.create(email=self.email, username=self.username,
-                                         first_name=self.first_name, last_name=self.last_name)
+        if len(self.organization_email) > 0:
+            # Verify the user
+            verification_token = password_reset_token.make_token(self.user)
+            from app.tasks import async_send_user_verification_email
+            async_send_user_verification_email.delay(self.id, verification_token)
+        else:
+            self.add_user_to_trusted()
 
-        user.user_request = self
-        user.save()
         self.approved = True
         self.save()
+
+    def add_user_to_trusted(self):
+        trusted_group = Group.objects.get(name='trusted')
+        trusted_group.user_set.add(self.user)
+        from app.tasks import async_send_new_access_email
+        async_send_new_access_email.delay(self.user.id)
 
 
 class UserBookmarkedProperty(models.Model):
@@ -157,33 +168,44 @@ class UserCustomSearch(models.Model):
     custom_search_view = models.ForeignKey(CustomSearch, on_delete=models.CASCADE)
 
 
-@receiver(models.signals.post_save, sender=CustomUser)
-def create_profile_on_save(sender, instance, created, **kwargs):
+@receiver(models.signals.post_save, sender=AccessRequest)
+def send_new_user_access_request_email_on_save(sender, instance, created, **kwargs):
+    from app.tasks import async_send_new_user_access_email
 
     def on_commit():
         if created == True:
-            UserProfile.objects.create(user=instance)
+            async_send_new_user_access_email.delay(instance.id)
 
     transaction.on_commit(lambda: on_commit())
 
 
-@receiver(models.signals.post_save, sender=CustomUser)
-def send_email_on_save(sender, instance, created, **kwargs):
-    from app.tasks import async_send_new_user_email
+# @receiver(models.signals.post_save, sender=CustomUser)
+# def create_profile_on_save(sender, instance, created, **kwargs):
 
-    def on_commit():
-        if created == True:
-            async_send_new_user_email.delay(instance.id)
+#     def on_commit():
+#         if created == True:
+#             UserProfile.objects.create(user=instance)
 
-    transaction.on_commit(lambda: on_commit())
+#     transaction.on_commit(lambda: on_commit())
 
 
-@receiver(models.signals.post_save, sender=UserRequest)
-def send_new_user_request_email_on_save(sender, instance, created, **kwargs):
-    from app.tasks import async_send_new_user_request_email
+# @receiver(models.signals.post_save, sender=CustomUser)
+# def send_email_on_save(sender, instance, created, **kwargs):
+#     from app.tasks import async_send_new_user_email
 
-    def on_commit():
-        if created == True:
-            async_send_new_user_request_email.delay(instance.id)
+#     def on_commit():
+#         if created == True:
+#             async_send_new_user_email.delay(instance.id)
 
-    transaction.on_commit(lambda: on_commit())
+#     transaction.on_commit(lambda: on_commit())
+
+
+# @receiver(models.signals.post_save, sender=UserRequest)
+# def send_new_user_request_email_on_save(sender, instance, created, **kwargs):
+#     from app.tasks import async_send_new_user_request_email
+
+#     def on_commit():
+#         if created == True:
+#             async_send_new_user_request_email.delay(instance.id)
+
+#     transaction.on_commit(lambda: on_commit())

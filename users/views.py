@@ -1,5 +1,7 @@
 from django.shortcuts import render
 from django.http import QueryDict
+from django.shortcuts import get_object_or_404, redirect
+from django.conf import settings
 from rest_framework import viewsets
 from datasets.helpers.api_helpers import ApplicationViewSet
 from datasets.utils.advanced_filter import fe_to_be_url
@@ -9,8 +11,51 @@ from users import models as u
 from users import serializers as serial
 from rest_framework.response import Response
 from rest_framework import generics, mixins, status
+from users.tokens import password_reset_token
 
 import hashlib
+
+
+class UserVerifyView(generics.GenericAPIView):
+    serializer_class = serial.UserSerializer
+
+    def get(self, request, username, verification_token):
+        user = get_object_or_404(u.CustomUser, username=username)
+        if password_reset_token.check_token(user, verification_token):
+            access_request = u.AccessRequest.objects.filter(user_id=user.id)[0]
+            access_request.add_user_to_trusted()
+            user.email = access_request.organization_email
+            user.save()
+
+            root_url = 'http://localhost:8000/' if settings.DEBUG else 'https://portal.displacementalert.org/'
+            return redirect(root_url)
+        else:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+class UserRegisterView(mixins.CreateModelMixin,
+                       generics.GenericAPIView):
+
+    serializer_class = serial.UserSerializer
+
+    def post(self, request, *args, **kwargs):
+        data_dict = request.data
+
+        if not ('username' in data_dict and 'email' in data_dict):
+            return Response('Your request must include username and email.', status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+        if u.CustomUser.objects.filter(username=request.data):
+            return Response('This username is already taken', status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+        new_user = u.CustomUser(
+            username=data_dict['username'],
+            email=data_dict['email'],
+            is_staff=False
+        )
+        new_user.save()
+        from app.tasks import async_send_new_user_email
+        async_send_new_user_email.delay(new_user.id)
+        return Response('User created successfully. Check your email for verification.', status=status.HTTP_201_CREATED)
 
 
 class UserViewSet(ApplicationViewSet, viewsets.ReadOnlyModelViewSet):
