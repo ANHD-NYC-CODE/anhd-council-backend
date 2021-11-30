@@ -5,11 +5,13 @@ from users import models as u
 
 
 class UserSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = u.CustomUser
-        fields = ('id', 'username', 'email', 'profile')
+        fields = ('id', 'username', 'email', 'profile', 'groups')
 
     profile = serializers.SerializerMethodField()
+    groups = serializers.StringRelatedField(many=True)
 
     def get_profile(self, obj):
         profile = obj.userprofile
