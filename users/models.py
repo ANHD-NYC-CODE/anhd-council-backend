@@ -179,14 +179,14 @@ def send_new_user_access_request_email_on_save(sender, instance, created, **kwar
     transaction.on_commit(lambda: on_commit())
 
 
-# @receiver(models.signals.post_save, sender=CustomUser)
-# def create_profile_on_save(sender, instance, created, **kwargs):
+@receiver(models.signals.post_save, sender=CustomUser)
+def create_profile_on_save(sender, instance, created, **kwargs):
 
-#     def on_commit():
-#         if created == True:
-#             UserProfile.objects.create(user=instance)
+    def on_commit():
+        if created == True:
+            UserProfile.objects.create(user=instance)
 
-#     transaction.on_commit(lambda: on_commit())
+    transaction.on_commit(lambda: on_commit())
 
 
 # @receiver(models.signals.post_save, sender=CustomUser)
