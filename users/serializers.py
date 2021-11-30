@@ -64,7 +64,7 @@ class AccessRequestSerializer(serializers.ModelSerializer):
         Check that the start is before the stop.
         """
         errors = []
-        if len(data['organization_email']) > 0 and (len(u.CustomUser.objects.filter(email=data['organization_email'])) > 0 or len(u.AccessRequest.objects.filter(organization_email=data['organization_email'])) > 0):
+        if 'organization_email' in data and len(data['organization_email']) > 0 and (len(u.CustomUser.objects.filter(email=data['organization_email'])) > 0 or len(u.AccessRequest.objects.filter(organization_email=data['organization_email'])) > 0):
             errors.append(
                 "This email is already taken. Please choose another.")
 
