@@ -49,7 +49,7 @@ def send_new_access_email(user=None):
 
     content = ''.join((
         '<h3>Your new account has been granted access!</h3>',
-        "<p>Your request to access housing court and foreclosures data has been approved! You will now see these changes reflected when you <a href='https://portal.displacementalert.org/login' target='_blank'>log in to DAP Portal</a>.</p>",
+        "<p>Your request to access housing court and foreclosures data has been approved! You will now see these changes reflected when you <a href='https://portal.displacementalert.org' target='_blank'>log in to DAP Portal</a>.</p>",
         '<p>This email was sent from the ANHD DAP Portal. If you have questions, email dapadmin@anhd.org.</p>'
     ))
 
