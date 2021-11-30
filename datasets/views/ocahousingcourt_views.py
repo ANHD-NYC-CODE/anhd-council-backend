@@ -28,7 +28,7 @@ class OCAHousingCourtViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.Re
     @cache_request_path()
     def list(self, request, *args, **kwargs):
         try:
-            # self.check_bbl_unitsres(kwargs['parent_lookup_bbl'])
+            self.check_bbl_unitsres(kwargs['parent_lookup_bbl'])
 
             response = super().list(request, *args, **kwargs)
             return response
