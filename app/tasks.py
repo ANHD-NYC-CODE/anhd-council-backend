@@ -275,7 +275,7 @@ def check_notifications_custom_search(notification_frequency):
                     user_custom_search.save()
                     user = user_custom_search.user
 
-                    root_url = 'http://app:8000' if settings.DEBUG else 'https://api.displacementalert.org'
+                    root_url = 'http://app:8000' if settings.DEBUG else 'https://portal.displacementalert.org/search'
                     full_url = root_url + frontend_url
 
                     last_number_of_results = user_custom_search.last_number_of_results
