@@ -120,6 +120,7 @@ DATABASES = {
     }
 }
 
+
 CACHES = {
     "default": {
         'BACKEND': 'django_redis.cache.RedisCache',
@@ -131,12 +132,6 @@ CACHES = {
     }
 }
 
-# Dummy cache for dev use
-# CACHES = {
-#     'default': {
-#         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
-#     }
-# }
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),

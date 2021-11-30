@@ -9,6 +9,7 @@ import urllib
 from functools import wraps
 import base64
 from rest_framework import status
+from users.permission import _has_group_permission
 
 import logging
 
@@ -79,7 +80,7 @@ def compress_cache(cached_value):
 
 
 def is_authenticated(request):
-    return request.user.is_authenticated or 'whoisit' in request.headers and request.headers['whoisit'] == settings.CACHE_REQUEST_KEY
+    return (request.user.is_authenticated and _has_group_permission(request.user, ['trusted'])) or 'whoisit' in request.headers and request.headers['whoisit'] == settings.CACHE_REQUEST_KEY
 
 
 def construct_cache_key(request, params):
@@ -99,8 +100,9 @@ def cache_request_path():
             params = deepcopy(request.query_params)
             cache_key = construct_cache_key(request, params)
 
-            if not request.user.is_authenticated and 'q' in params and ('lispenden' in params['q'] or 'foreclosure' in params['q']):
-                return original_args[0].finalize_response(request, Response({'detail': 'Please login to view foreclosure results'}, status=status.HTTP_401_UNAUTHORIZED))
+            # User must be logged in and trusted to view protected sets
+            if not is_authenticated(request) and 'q' in params and ('lispenden' in params['q'] or 'foreclosure' in params['q'] or 'ocahousingcourt' in params['q']):
+                return original_args[0].finalize_response(request, Response({'detail': 'Please login and request access to view results'}, status=status.HTTP_401_UNAUTHORIZED))
 
             if cache_key in cache and has_cachable_format(request):
                 logger.debug('Serving cache: {}'.format(cache_key))

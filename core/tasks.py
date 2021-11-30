@@ -3,6 +3,7 @@ from django_celery_results.models import TaskResult
 from celery import chain
 from app.celery import app
 from core import models as c
+from users import models as u
 from django.conf import settings
 from app.mailer import send_update_error_mail, send_update_success_mail, send_general_task_error_mail
 from core.utils.cache import cache_council_property_summaries_full, cache_community_property_summaries_full, cache_stateassembly_property_summaries_full, cache_statesenate_property_summaries_full, cache_zipcode_property_summaries_full
@@ -298,3 +299,4 @@ def async_download_all_dob_construction(self):
         logger.error('Error during task: {}'.format(e))
         async_send_general_task_error_mail.delay(str(e))
         raise e
+
