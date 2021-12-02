@@ -106,7 +106,7 @@ class UserCustomSearchSerializer(serializers.ModelSerializer):
 
     def to_representation(self, obj):
         rep = super(serializers.ModelSerializer, self).to_representation(obj)
-        rep['custom_search_view'] = obj.custom_search_view.frontend_url
+        rep['custom_search_view'] = ''
         return rep
 
     def create(self, validated_data):
