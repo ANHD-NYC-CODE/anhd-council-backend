@@ -136,6 +136,9 @@ class UserBookmarkedPropertyCollection(mixins.ListModelMixin,
         mutable_query_dict.update(data_dict)
         mutable_query_dict.__setitem__('user_id', request.user.id)
 
+        if u.UserBookmarkedProperty.objects.filter(user_id=request.user.id, bbl=data_dict['bbl']):
+            return Response("User has already bookmarked this property", status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
         serializer = self.get_serializer(data=mutable_query_dict)
         serializer.is_valid(raise_exception=True)
         serializer.create(validated_data=mutable_query_dict.dict())

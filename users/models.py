@@ -107,7 +107,10 @@ class UserBookmarkedProperty(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     name = models.CharField(blank=True, max_length=255)
-    bbl = models.CharField(blank=True, max_length=10, unique=True)
+    bbl = models.CharField(blank=True, max_length=10)
+
+    class Meta:
+        unique_together = ('user', 'bbl',)
 
 
 class DistrictDashboard(models.Model):
