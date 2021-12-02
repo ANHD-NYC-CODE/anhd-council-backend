@@ -77,13 +77,6 @@ class UserRequestViewSet(ApplicationViewSet,
     serializer_class = serial.UserRequestSerializer
 
 
-class AccessRequestViewSet(ApplicationViewSet,
-                           mixins.CreateModelMixin,
-                           viewsets.GenericViewSet):
-    queryset = u.AccessRequest.objects.all()
-    serializer_class = serial.AccessRequestSerializer
-
-
 class AccessRequestCollection(mixins.CreateModelMixin,
                               generics.GenericAPIView):
 
@@ -105,6 +98,16 @@ class AccessRequestCollection(mixins.CreateModelMixin,
         serializer.create(validated_data=mutable_query_dict.dict())
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def delete(self, request, *args, **kwargs):
+        user_id = request.user.id
+
+        if u.AccessRequest.objects.filter(user_id=request.user.id):
+            access_request = u.AccessRequest.objects.get(user_id=request.user.id)
+            access_request.delete()
+            return Response('The user access request has been deleted', status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response('This user has no pending request', status=status.HTTP_404_NOT_FOUND)
 
 
 class UserBookmarkedPropertyCollection(mixins.ListModelMixin,
