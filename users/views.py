@@ -67,7 +67,19 @@ class UserViewSet(ApplicationViewSet, viewsets.ReadOnlyModelViewSet):
 
     def get_current_user(self, request, *args, **kwargs):
         serializer = serial.UserSerializer(request.user)
-        return Response(serializer.data)
+        response_data = serializer.data
+
+        # Add access request status
+        if u.AccessRequest.objects.filter(user_id=request.user.id):
+            access_request = u.AccessRequest.objects.filter(user_id=request.user.id)[0]
+            if access_request.approved:
+                response_data['accessRequestStatus'] = 'approved'
+            else:
+                response_data['accessRequestStatus'] = 'pending'
+        else:
+            response_data['accessRequestStatus'] = None
+
+        return Response(response_data)
 
 
 class UserRequestViewSet(ApplicationViewSet,
