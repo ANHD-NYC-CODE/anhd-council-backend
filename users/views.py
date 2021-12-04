@@ -274,8 +274,7 @@ class UserCustomSearchCollection(mixins.ListModelMixin,
 
         serializer.create(validated_data=mutable_query_dict.dict())
 
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(status=status.HTTP_201_CREATED)
 
 class UserCustomSearchMember(mixins.DestroyModelMixin,
                              mixins.UpdateModelMixin,
