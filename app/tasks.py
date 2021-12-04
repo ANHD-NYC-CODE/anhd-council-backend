@@ -166,6 +166,9 @@ def async_send_user_notification_email(self, user_id, save_name, save_url, new_r
 
     if new_result_num > 0 and len(new_results_url) > 0:
         content += f'<p>There are {new_result_num} new results since the last notification on {last_notified_date}. To view new results <a href="{new_results_url}">Click here</a></p>'
+
+    content += f'<p><a href="{save_url}">Click here</a> to view your original search, including new results.</p>'
+
     content += '<p>If you would like to stop receiving these emails from DAP Portal, <a href="https://portal.displacementalert.org/me">visit your dashboard</a> to manage/unsubscribe from notifications.</p>'
     send_mail(user.email, subject, content)
 
