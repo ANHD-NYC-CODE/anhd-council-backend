@@ -37,9 +37,16 @@ def send_new_user_email(user=None):
     new_password = CustomUser.objects.make_random_password()
     user.set_password(new_password)
     user.save()
+    reset_password_link = user.get_password_reset_url()
     subject = "Welcome to DAP Portal!"
-    content = "<h3>Your new account has been created!</h3><p>Please reset your password at your earliest convenience at <a href='https://api.displacementalert.org/password_reset' target='_blank'>here</a></p><p><b>Username:</b> {}</p><p><b>Password:</b> {}</p><p>Thank you for signing up and please reach out to dapadmin@anhd.org if you have any questions or feedback.</p><p>- ANHD</p>".format(
-        user.username, new_password)
+    content = ''.join((
+        '<h3>Your new account has been created!</h3>',
+        f"<p>Please reset your password at your earliest convenience at <a href='{reset_password_link}' target='_blank'>here</a></p>",
+        f"<p><b>Username:</b> {user.username}</p>",
+        f"<p><b>Temporary Password:</b> {new_password}</p>",
+        "<p>Thank you for signing up and please reach out to dapadmin@anhd.org if you have any questions or feedback.</p>",
+        "<p>- ANHD</p>"
+    ))
     send_mail(to, subject, content)
 
 

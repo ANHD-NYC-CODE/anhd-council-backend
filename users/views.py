@@ -67,7 +67,19 @@ class UserViewSet(ApplicationViewSet, viewsets.ReadOnlyModelViewSet):
 
     def get_current_user(self, request, *args, **kwargs):
         serializer = serial.UserSerializer(request.user)
-        return Response(serializer.data)
+        response_data = serializer.data
+
+        # Add access request status
+        if u.AccessRequest.objects.filter(user_id=request.user.id):
+            access_request = u.AccessRequest.objects.filter(user_id=request.user.id)[0]
+            if access_request.approved:
+                response_data['accessRequestStatus'] = 'approved'
+            else:
+                response_data['accessRequestStatus'] = 'pending'
+        else:
+            response_data['accessRequestStatus'] = None
+
+        return Response(response_data)
 
 
 class UserRequestViewSet(ApplicationViewSet,
@@ -75,13 +87,6 @@ class UserRequestViewSet(ApplicationViewSet,
                          viewsets.GenericViewSet):
     queryset = u.UserRequest.objects.all()
     serializer_class = serial.UserRequestSerializer
-
-
-class AccessRequestViewSet(ApplicationViewSet,
-                           mixins.CreateModelMixin,
-                           viewsets.GenericViewSet):
-    queryset = u.AccessRequest.objects.all()
-    serializer_class = serial.AccessRequestSerializer
 
 
 class AccessRequestCollection(mixins.CreateModelMixin,
@@ -105,6 +110,16 @@ class AccessRequestCollection(mixins.CreateModelMixin,
         serializer.create(validated_data=mutable_query_dict.dict())
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def delete(self, request, *args, **kwargs):
+        user_id = request.user.id
+
+        if u.AccessRequest.objects.filter(user_id=request.user.id):
+            access_request = u.AccessRequest.objects.get(user_id=request.user.id)
+            access_request.delete()
+            return Response('The user access request has been deleted', status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response('This user has no pending request', status=status.HTTP_404_NOT_FOUND)
 
 
 class UserBookmarkedPropertyCollection(mixins.ListModelMixin,
@@ -132,6 +147,9 @@ class UserBookmarkedPropertyCollection(mixins.ListModelMixin,
         mutable_query_dict = QueryDict(mutable=True)
         mutable_query_dict.update(data_dict)
         mutable_query_dict.__setitem__('user_id', request.user.id)
+
+        if u.UserBookmarkedProperty.objects.filter(user_id=request.user.id, bbl=data_dict['bbl']):
+            return Response("User has already bookmarked this property", status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
         serializer = self.get_serializer(data=mutable_query_dict)
         serializer.is_valid(raise_exception=True)

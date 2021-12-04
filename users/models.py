@@ -1,8 +1,10 @@
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models, transaction
 from django.dispatch import receiver
-from django.utils import timezone
+from django.utils import timezone, http, encoding
 from django.contrib.auth.models import Group
+from django.urls import reverse
+from django.conf import settings
 from users.tokens import password_reset_token
 # https://gist.github.com/haxoza/7921eaf966a16ffb95a0
 import uuid
@@ -21,6 +23,15 @@ class CustomUser(AbstractUser):
     user_request = models.OneToOneField('UserRequest', db_column='user_request', db_constraint=False,
                                         on_delete=models.SET_NULL, null=True, blank=True)
     objects = CustomUserManager()
+
+    def get_password_reset_url(self):
+        base64_encoded_id = http.urlsafe_base64_encode(encoding.force_bytes(self.id))
+        token = password_reset_token.make_token(self)
+        reset_url_args = {'uidb64': base64_encoded_id, 'token': token}
+        reset_path = reverse('password_reset_confirm', kwargs=reset_url_args)
+        base_url = 'http://localhost:8000' if settings.DEBUG else 'https://api.displacementalert.org'
+        reset_url = f'{base_url}{reset_path}'
+        return reset_url
 
     def __str__(self):
         return self.email
@@ -96,7 +107,10 @@ class UserBookmarkedProperty(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     name = models.CharField(blank=True, max_length=255)
-    bbl = models.CharField(blank=True, max_length=10, unique=True)
+    bbl = models.CharField(blank=True, max_length=10)
+
+    class Meta:
+        unique_together = ('user', 'bbl',)
 
 
 class DistrictDashboard(models.Model):
