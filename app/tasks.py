@@ -157,16 +157,19 @@ def async_send_user_message_email(self, bug_report_id):
     return send_user_message_email(bug_report=bug_report)
 
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=30, max_retries=3)
-def async_send_user_notification_email(self, user_id, save_name, save_url, new_result_num, new_results_url):
+def async_send_user_notification_email(self, user_id, save_name, save_url, new_result_num, new_results_url, last_notified_date):
     user = CustomUser.objects.get(id=user_id)
     subject = 'Custom Search Updated'
     content = f'<h3>Hello {user.username}!</h3>'
 
-    content += f'<p>Your saved custom search {save_name} has updated. <a href="{save_url}">Click here</a> to view </p>'
+    content += f'<p>Your saved custom search, "{save_name}" has new results.'
 
     if new_result_num > 0 and len(new_results_url) > 0:
-        content += f'<p>There are {new_result_num} new results. To view new results <a href="{new_results_url}">Click here</a> to view </p>'
-    content += '<p>If you would like to stop receiving these emails from DAP Portal, visit your dashboard to manage/unsubscribe from notifications.</p>'
+        content += f'<p>There are {new_result_num} new results since the last notification on {last_notified_date}. To view new results <a href="{new_results_url}">Click here</a></p>'
+
+    content += f'<p><a href="{save_url}">Click here</a> to view your original search, including new results.</p>'
+
+    content += '<p>If you would like to stop receiving these emails from DAP Portal, <a href="https://portal.displacementalert.org/me">visit your dashboard</a> to manage/unsubscribe from notifications.</p>'
     send_mail(user.email, subject, content)
 
 @app.task(bind=True, queue='celery')
@@ -301,7 +304,8 @@ def check_notifications_custom_search(notification_frequency):
                                 user_custom_search.name,
                                 full_url,
                                 new_result_length - last_number_of_results,
-                                new_results_url
+                                new_results_url,
+                                last_date.strftime('%B %-d, %Y')
                             )
                         else:
                             async_send_user_notification_email.delay(
@@ -309,7 +313,8 @@ def check_notifications_custom_search(notification_frequency):
                                 user_custom_search.name,
                                 full_url,
                                 new_result_length - last_number_of_results,
-                                new_results_url
+                                new_results_url,
+                                last_date.strftime('%B %-d, %Y')
                             )
                     except Exception as e:
                         logger.info('Emailing {} failed'.format(user.username))
