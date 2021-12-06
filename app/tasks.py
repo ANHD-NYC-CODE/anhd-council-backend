@@ -26,6 +26,8 @@ import requests
 import hashlib
 import json
 import pytz
+from datetime import timedelta
+
 
 from celery.utils.log import get_task_logger
 
@@ -278,15 +280,15 @@ def check_notifications_custom_search(notification_frequency):
                     user_custom_search.save()
                     user = user_custom_search.user
 
-                    root_url = 'http://app:8000' if settings.DEBUG else 'https://portal.displacementalert.org/search'
+                    root_url = 'https://staging.portal.displacementalert.org/search' if settings.DEBUG else 'https://portal.displacementalert.org/search'
                     full_url = root_url + frontend_url
 
                     last_number_of_results = user_custom_search.last_number_of_results
                     new_results_url = ''
+                    est = pytz.timezone('America/New_York')
+                    last_date = user_custom_search.last_notified_date.astimezone(est) - timedelta(days=1)
                     if last_number_of_results != new_result_length:
                         user_custom_search.last_number_of_results = new_result_length
-                        est = pytz.timezone('America/New_York')
-                        last_date = user_custom_search.last_notified_date.astimezone(est)
                         user_custom_search.last_notified_date = timezone.now()
                         user_custom_search.save()
                         try:
