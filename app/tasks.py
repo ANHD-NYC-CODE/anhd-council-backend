@@ -161,13 +161,13 @@ def async_send_user_message_email(self, bug_report_id):
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=30, max_retries=3)
 def async_send_user_notification_email(self, user_id, save_name, save_url, new_result_num, new_results_url, last_notified_date):
     user = CustomUser.objects.get(id=user_id)
-    subject = 'Custom Search Updated'
+    subject = 'Notification: New results for your custom search, "{save_name}"'
     content = f'<h3>Hello {user.username}!</h3>'
 
     content += f'<p>Your saved custom search, "{save_name}" has new results.'
 
     if new_result_num > 0 and len(new_results_url) > 0:
-        content += f'<p>There are {new_result_num} new results since the last notification on {last_notified_date}. To view new results <a href="{new_results_url}">Click here</a></p>'
+        content += f'<p>There are {new_result_num} new results since the last notification on {last_notified_date}. To view new results, <a href="{new_results_url}">click here</a>.</p>'
 
     content += f'<p><a href="{save_url}">Click here</a> to view your original search, including new results.</p>'
 
