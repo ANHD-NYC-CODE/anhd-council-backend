@@ -114,7 +114,6 @@ class UserCustomSearchSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         try:
-            print(type(validated_data))
             custom_search_view_id = validated_data['custom_search_view']
             validated_data.pop('custom_search_view', None)
             new_user_search = u.UserCustomSearch(**validated_data)

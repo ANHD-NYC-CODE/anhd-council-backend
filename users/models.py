@@ -140,10 +140,13 @@ class UserDistrictDashboard(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    name = models.CharField(blank=True, max_length=255, unique=True)
+    name = models.CharField(blank=True, max_length=255)
     notification_frequency = models.CharField(max_length=8, choices=FREQUENCY_CHOICES, default=NEVER)
     last_notified_hash = models.CharField(blank=True, max_length=64)
     district_dashboard_view = models.ForeignKey(DistrictDashboard, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('user', 'name',)
 
 
 class CustomSearch(models.Model):
@@ -174,12 +177,15 @@ class UserCustomSearch(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    name = models.CharField(blank=True, max_length=255, unique=True)
+    name = models.CharField(blank=True, max_length=255)
     notification_frequency = models.CharField(max_length=8, choices=FREQUENCY_CHOICES, default=NEVER)
     last_notified_hash = models.CharField(blank=True, max_length=64)
     last_notified_date = models.DateTimeField(default=timezone.now)
     last_number_of_results = models.IntegerField(default=0, blank=True)
     custom_search_view = models.ForeignKey(CustomSearch, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('user', 'name',)
 
 
 @receiver(models.signals.post_save, sender=AccessRequest)
