@@ -104,7 +104,7 @@ def send_new_user_request_email(user_request):
 
 def send_new_user_access_request_email(access_request):
     root_url = 'http://localhost:8000/' if settings.DEBUG else 'https://api.displacementalert.org/'
-    subject = "DAP Portal - New user access request received."
+    subject = f"DAP Portal - New user access request received for {access_request.user.username}"
     content = ''.join((
         '<p>Hello!</p>',
         f"<p>We've received a request for a access from {access_request.user.email}</p>",

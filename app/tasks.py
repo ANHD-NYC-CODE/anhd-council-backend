@@ -161,7 +161,7 @@ def async_send_user_message_email(self, bug_report_id):
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=30, max_retries=3)
 def async_send_user_notification_email(self, user_id, save_name, save_url, new_result_num, new_results_url, last_notified_date):
     user = CustomUser.objects.get(id=user_id)
-    subject = 'Notification: New results for your custom search, "{save_name}"'
+    subject = f'Notification: New results for your custom search, "{save_name}"'
     content = f'<h3>Hello {user.username}!</h3>'
 
     content += f'<p>Your saved custom search, "{save_name}" has new results.'
