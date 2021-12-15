@@ -215,7 +215,7 @@ def async_update_custom_search_result_hash(self, custom_search_id, just_created=
         raise e
 
 
-def replace_date_in_url(url, last_date):
+def replace_date_in_url(url, last_date, now_date):
     parsed_url = urlparse(url)
     url_params = parse_qs(parsed_url.query)
     query_string = url_params['q'][0]
@@ -247,7 +247,8 @@ def replace_date_in_url(url, last_date):
                 url_before_date = url[:date_start_index + len(date_start)]
                 url_after_date = url[date_start_index + len(date_start) + len('0000-00-00'):]
                 now = last_date.strftime('%Y-%m-%d')
-                url = f'{url_before_date}{now}{url_after_date}'
+                end_date = now_date.strftime('%Y-%m-%d')
+                url = f'{url_before_date}{now},{model_name}s__{query_date_key}__lte={end_date}{url_after_date}'
         else:
             # Handle the case of user has only cases before
             pass
@@ -285,6 +286,7 @@ def check_notifications_custom_search(notification_frequency):
 
                     last_number_of_results = user_custom_search.last_number_of_results
                     new_results_url = ''
+                    new_results_count = 0
                     est = pytz.timezone('America/New_York')
                     last_date = user_custom_search.last_notified_date.astimezone(est) - timedelta(days=1)
                     if last_number_of_results != new_result_length:
@@ -292,11 +294,15 @@ def check_notifications_custom_search(notification_frequency):
                         user_custom_search.last_notified_date = timezone.now()
                         user_custom_search.save()
                         try:
-                            new_results_url = replace_date_in_url(full_url, last_date)
-                            if full_url == new_results_url:
+                            new_results_url = replace_date_in_url(full_url, last_date, timezone.now().astimezone(est) - timedelta(days=1))
+                            new_backend_query = replace_date_in_url(query, last_date, timezone.now().astimezone(est) - timedelta(days=1))
+                            new_result_hash_length = get_query_result_hash_and_length(new_backend_query)
+                            if new_result_hash_length['length'] <= 0:
                                 new_results_url = ''
+                            new_results_count = new_result_hash_length['length']
                         except Exception:
                             new_results_url = ''
+                            new_results_count = 0
 
                     try:
                         if settings.DEBUG:
@@ -305,7 +311,7 @@ def check_notifications_custom_search(notification_frequency):
                                 user.id,
                                 user_custom_search.name,
                                 full_url,
-                                new_result_length - last_number_of_results,
+                                new_results_count,
                                 new_results_url,
                                 last_date.strftime('%B %-d, %Y')
                             )
@@ -314,7 +320,7 @@ def check_notifications_custom_search(notification_frequency):
                                 user.id,
                                 user_custom_search.name,
                                 full_url,
-                                new_result_length - last_number_of_results,
+                                new_results_count,
                                 new_results_url,
                                 last_date.strftime('%B %-d, %Y')
                             )
