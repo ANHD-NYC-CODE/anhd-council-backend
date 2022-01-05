@@ -47,6 +47,9 @@ class UserRegisterView(mixins.CreateModelMixin,
         if u.CustomUser.objects.filter(username=data_dict['username'].lower()):
             return Response('This username is already taken', status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
+        if u.CustomUser.objects.filter(email=data_dict['email'].lower()):
+            return Response('This email is already taken', status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
         new_user = u.CustomUser(
             username=data_dict['username'],
             email=data_dict['email'],
@@ -104,6 +107,9 @@ class AccessRequestCollection(mixins.CreateModelMixin,
 
         if u.AccessRequest.objects.filter(user_id=request.user.id):
             return Response('A user can only make one access request', status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+        if 'organization_email' in data_dict and u.CustomUser.objects.filter(email=data_dict['organization_email'].lower()):
+            return Response('This email is already taken', status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
         serializer = self.get_serializer(data=mutable_query_dict)
         serializer.is_valid(raise_exception=True)
