@@ -34,7 +34,7 @@ class CustomUser(AbstractUser):
         return reset_url
 
     def __str__(self):
-        return self.email
+        return f'{self.username} ({self.email})'
 
 
 class UserProfile(models.Model):
