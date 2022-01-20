@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.utils.safestring import mark_safe
+
 
 # Register your models here.
 # from django.contrib import admin
@@ -59,6 +61,14 @@ class AccessRequestAdmin(admin.ModelAdmin):
     requestor_username.allow_tags = True
     requestor_username.short_description = 'Requestor Username'
 
+    def user_link(self, obj):
+        if obj.user:
+            url = f'/admin/users/customuser/{obj.user.id}/change/'
+            link = f'<a href="{url}">{obj.user.username}</a>'
+            return mark_safe(link)
+        else:
+            return 'Error no user'
+
     list_display = ('requestor_username', 'access_type', 'organization_email', 'organization', 'position', 'description', 'approved', 'date_created')
 
     list_filter = ('approved', 'organization_email', 'organization',
@@ -68,7 +78,7 @@ class AccessRequestAdmin(admin.ModelAdmin):
 
     ordering = ['-date_created']
     readonly_fields = ('access_type', 'organization', 'position',
-                       'description', 'approved', 'date_created', 'user')
+                       'description', 'approved', 'date_created', 'user_link')
     actions = []
 
 
