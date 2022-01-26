@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.utils.safestring import mark_safe
+
 
 # Register your models here.
 # from django.contrib import admin
@@ -51,7 +53,23 @@ class AccessRequestAdmin(admin.ModelAdmin):
             return HttpResponseRedirect(".")
         return super().response_change(request, obj)
 
-    list_display = ('access_type', 'organization_email', 'organization', 'position', 'description', 'approved', 'date_created')
+    def requestor_username(self, obj):
+        if obj.user:
+            return obj.user.username
+        else:
+            return 'Error no user'
+    requestor_username.allow_tags = True
+    requestor_username.short_description = 'Requestor Username'
+
+    def user_link(self, obj):
+        if obj.user:
+            url = f'/admin/users/customuser/{obj.user.id}/change/'
+            link = f'<a href="{url}">{obj.user.username}</a>'
+            return mark_safe(link)
+        else:
+            return 'Error no user'
+
+    list_display = ('requestor_username', 'access_type', 'organization_email', 'organization', 'position', 'description', 'approved', 'date_created')
 
     list_filter = ('approved', 'organization_email', 'organization',
                    'description', 'date_created')
@@ -60,7 +78,7 @@ class AccessRequestAdmin(admin.ModelAdmin):
 
     ordering = ['-date_created']
     readonly_fields = ('access_type', 'organization', 'position',
-                       'description', 'approved', 'date_created', 'user')
+                       'description', 'approved', 'date_created', 'user_link')
     actions = []
 
 
@@ -92,6 +110,17 @@ class CustomUserAdmin(auth_admin.UserAdmin):
         return ' '.join(groups)
     group.short_description = 'Groups'
 
+    def request_status(self, obj):
+        try:
+            access_request = obj.accessrequest
+            if access_request.approved:
+                return 'Approved'
+            else:
+                return 'Pending'
+        except CustomUser.DoesNotExist:
+            return 'No request'
+    request_status.allow_tags = True
+    request_status.short_description = 'Request Status'
 
     fieldsets = (
         (None, {'fields': ('username', 'email', 'password')}),
@@ -115,7 +144,8 @@ class CustomUserAdmin(auth_admin.UserAdmin):
     add_form = CustomUserCreationForm
     change_password_form = auth_admin.AdminPasswordChangeForm
     list_display = ('email', 'username', 'first_name',
-                    'last_name', 'is_superuser', 'group')
+                    'last_name', 'is_superuser', 'request_status',
+                    'group')
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups')
     search_fields = ('first_name', 'last_name', 'email')
     ordering = ('email',)

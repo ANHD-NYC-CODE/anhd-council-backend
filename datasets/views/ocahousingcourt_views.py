@@ -6,6 +6,7 @@ from datasets.helpers.cache_helpers import cache_request_path
 from datasets.helpers.api_helpers import ApplicationViewSet
 from rest_framework.response import Response
 from rest_framework import status
+from datasets.filters import OCAHousingCourtFilter
 
 from datasets import serializers as serial
 from datasets import models as ds
@@ -19,6 +20,7 @@ class OCAHousingCourtViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.Re
     queryset = ds.OCAHousingCourt.objects.all().order_by('pk')
     serializer_class = serial.OCAHousingCourtSerializer
     permission_classes = (IsTrustedUser,)
+    filterset_class = OCAHousingCourtFilter
 
     def check_bbl_unitsres(self, bbl):
         prop = ds.Property.objects.get(bbl=bbl)
