@@ -113,11 +113,11 @@ class CustomUserAdmin(auth_admin.UserAdmin):
     def request_status(self, obj):
         try:
             access_request = obj.accessrequest
-            if access_request.approved:
-                return 'Approved'
-            else:
-                return 'Pending'
-        except CustomUser.DoesNotExist:
+            url = f'/admin/users/accessrequest/{access_request.id}/change/'
+            status = 'Approved' if access_request.approved else 'Pending'
+            link = f'<a href="{url}">{status}</a>'
+            return mark_safe(link)
+        except AccessRequest.DoesNotExist:
             return 'No request'
     request_status.allow_tags = True
     request_status.short_description = 'Request Status'
@@ -125,7 +125,7 @@ class CustomUserAdmin(auth_admin.UserAdmin):
     fieldsets = (
         (None, {'fields': ('username', 'email', 'password')}),
         ('Personal info', {'fields': ('first_name', 'last_name')}),
-        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser',
+        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'request_status'
                                     )}),
         ('Important dates', {'fields': ('last_login', 'date_joined')}),
     )
@@ -149,7 +149,7 @@ class CustomUserAdmin(auth_admin.UserAdmin):
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups')
     search_fields = ('first_name', 'last_name', 'email')
     ordering = ('email',)
-    readonly_fields = ('last_login', 'date_joined',)
+    readonly_fields = ('last_login', 'date_joined', 'request_status')
     actions = [add_user_to_trusted, remove_user_to_trusted]
 
 
