@@ -48,6 +48,7 @@ class PSForeclosure(BaseDatasetModel, models.Model):
     foreclosuretype = models.TextField(blank=True, null=True)
     legalprocess = models.TextField(blank=True, null=True)
     hasphoto = models.TextField(blank=True, null=True)
+    unitnumber = models.TextField(blank=True, null=True)
 
     @classmethod
     def create_async_update_worker(self, endpoint=None, file_name=None):
