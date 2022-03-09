@@ -125,6 +125,9 @@ class DOBPermitIssuedLegacy(BaseDatasetModel, models.Model):
     @classmethod
     def seed_or_update_self(self, **kwargs):
         logger.info("Seeding/Updating {}", self.__name__)
+        from django.db import connection
+        with connection.cursor() as cursor:
+            cursor.execute('TRUNCATE TABLE datasets_dobpermitissuedlegacy RESTART IDENTITY')
         self.seed_with_upsert(**kwargs, overwrite=True)
 
     def __str__(self):
