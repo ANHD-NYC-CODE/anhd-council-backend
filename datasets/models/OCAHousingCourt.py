@@ -75,7 +75,10 @@ class OCAHousingCourt(BaseDatasetModel, models.Model):
     firstpaper = models.TextField(blank=True, null=True)
     primaryclaimtotal = models.DecimalField(decimal_places=8, max_digits=16, blank=True, null=True)
     dateofjurydemand = models.TextField(blank=True, null=True)
-
+    bct2020 = models.CharField(max_length=25, blank=True, null=True)
+    bctcb2020 = models.CharField(max_length=25, blank=True, null=True)
+    ct2010 = models.CharField(max_length=25, blank=True, null=True)
+    cb2010 = models.CharField(max_length=25, blank=True, null=True)
 
     @classmethod
     def create_async_update_worker(self, endpoint=None, file_name=None):
