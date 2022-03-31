@@ -129,6 +129,5 @@ class DOBPermitIssuedLegacy(BaseDatasetModel, models.Model):
         with connection.cursor() as cursor:
             cursor.execute('TRUNCATE TABLE datasets_dobpermitissuedlegacy RESTART IDENTITY')
         self.seed_with_upsert(**kwargs, overwrite=True)
-
     def __str__(self):
         return str(self.job)
