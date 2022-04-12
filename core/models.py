@@ -6,7 +6,7 @@ from django.conf import settings
 from django_celery_results.models import TaskResult
 from core.tasks import async_seed_file, async_seed_table, async_send_update_success_mail, async_download_and_update
 from datasets import models as ds
-from django.utils import timezone
+
 
 import time
 import datetime
