@@ -9,6 +9,8 @@ from app.mailer import send_update_error_mail, send_update_success_mail, send_ge
 from core.utils.cache import cache_council_property_summaries_full, cache_community_property_summaries_full, cache_stateassembly_property_summaries_full, cache_statesenate_property_summaries_full, cache_zipcode_property_summaries_full
 from datasets.utils.gmail_utils import get_property_shark_links
 from app.celery import FaultTolerantTask
+from datetime import timedelta
+from django.utils import timezone
 
 import os
 import uuid
@@ -300,3 +302,38 @@ def async_download_all_dob_construction(self):
         async_send_general_task_error_mail.delay(str(e))
         raise e
 
+
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', acks_late=True, max_retries=1)
+def async_check_on_updates(self):
+    try:
+        now = timezone.now()
+        yesterday = now - timedelta(days=1)
+        logger.info(
+            "Checking tasks between: {} and {}".format(str(yesterday), str(now)))
+        updates = c.Update.objects.filter(created_date__gt=yesterday)
+        if updates.count() == 0:
+            logger.error(
+                "*ERROR* - No updates ran yesterday")
+            async_send_general_task_error_mail.delay(f'No updates recorded from {yesterday} to {now}')
+        else:
+            for update in updates:
+                errors = []
+                if update.task_result.status == 'FAILURE':
+                    errors.append('the task failed')
+                if update.rows_updated == 0 and update.rows_created == 0:
+                    errors.append('no rows were created or updated')
+                if update.total_rows == 0:
+                    errors.append('no rows were detected in update file')
+
+                if len(errors) > 0:
+                    async_send_general_task_error_mail.delay(
+                        'Update {} failed with the following errors: {}.'.format(
+                            update.id,
+                            ', '.join(errors)
+                        )
+                    )
+
+    except Exception as e:
+        logger.error('Error during task: {}'.format(e))
+        async_send_general_task_error_mail.delay(str(e))
+        raise e
