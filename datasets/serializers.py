@@ -386,12 +386,16 @@ class PropertyCustomSearchSerializer(serializers.ModelSerializer):
                 filter_search_str = f'filter_([0-9])+_{serializer_count_key}'
                 if hasattr(obj, serializer_count_key):
                     # annotated from api_helpers.py #prefetch_annotated_datasets
-                    filter_counts = [elem for elem in dir(obj) if bool(re.search(filter_search_str, elem))]
-                    rep[get_context_field(dataset_prefix)] = getattr(
-                        obj, filter_counts[0])
-                    for filter_count in filter_counts[1:]:
-                        rep[get_context_field(dataset_prefix)] += getattr(
-                            obj, filter_count)
+                    try:
+                        filter_counts = [elem for elem in dir(obj) if bool(re.search(filter_search_str, elem))]
+                        rep[get_context_field(dataset_prefix)] = getattr(
+                            obj, filter_counts[0])
+                        for filter_count in filter_counts[1:]:
+                            rep[get_context_field(dataset_prefix)] += getattr(
+                                obj, filter_count)
+                    except IndexError:
+                        rep[get_context_field(dataset_prefix)] = getattr(
+                        obj, serializer_count_key)
 
             except ds.PropertyAnnotation.DoesNotExist:
                 logger.warning('No property annotation for {}'.format(obj.bbl))
