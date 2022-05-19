@@ -318,12 +318,13 @@ def async_check_on_updates(self):
         else:
             for update in updates:
                 errors = []
-                if update.task_result.status == 'FAILURE':
-                    errors.append('the task failed')
-                if update.rows_updated == 0 and update.rows_created == 0:
-                    errors.append('no rows were created or updated')
-                if update.total_rows == 0:
-                    errors.append('no rows were detected in update file')
+                if update.task_result:
+                    if update.task_result.status == 'FAILURE':
+                        errors.append('the task failed')
+                    if update.rows_updated == 0 and update.rows_created == 0:
+                        errors.append('no rows were created or updated')
+                    if update.total_rows == 0:
+                        errors.append('no rows were detected in update file')
 
                 if len(errors) > 0:
                     async_send_general_task_error_mail.delay(
