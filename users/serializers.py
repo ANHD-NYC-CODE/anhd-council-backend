@@ -101,7 +101,7 @@ class UserBookmarkedPropertySerializer(serializers.ModelSerializer):
 class UserCustomSearchSerializer(serializers.ModelSerializer):
     class Meta:
         model = u.UserCustomSearch
-        fields = ('id', 'name', 'notification_frequency', 'custom_search_view')
+        fields = ('id', 'name', 'notification_frequency', 'custom_search_view', 'created_date')
         extra_kwargs = {'custom_search_view': {'required': False, 'allow_null': True}}
 
     def to_representation(self, obj):
