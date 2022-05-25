@@ -235,7 +235,7 @@ class UserCustomSearchCollection(mixins.ListModelMixin,
 
     def get(self, request, *args, **kwargs):
         user = request.user
-        queryset = user.usercustomsearch_set.all()
+        queryset = u.UserCustomSearch.objects.filter(user_id=user.id).order_by('-created_date')
 
         page = self.paginate_queryset(queryset)
         if page is not None:
