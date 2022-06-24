@@ -8,7 +8,7 @@ from core.utils.transform import from_geojson
 # Update strategy: Upsert
 #
 # Copy data from:
-# http://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/nyad/FeatureServer/0/query?where=1=1&outFields=*&outSR=4326&f=geojson
+# https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/nyad/FeatureServer/0/query?where=1=1&outFields=*&outSR=4326&f=geojson
 # Paste into a .geojson file, upload file through admin, update
 
 class StateAssembly(BaseDatasetModel, models.Model):
