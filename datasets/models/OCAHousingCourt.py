@@ -149,7 +149,11 @@ class OCAHousingCourt(BaseDatasetModel, models.Model):
                 if base_row[15] == '':
                     continue
 
-                oca_index_row = oca_index.loc[indexnumberid].tolist()
+                try:
+                    oca_index_row = oca_index.loc[indexnumberid].tolist()
+                except KeyError:
+                    logger.error("indexnumber id {} not found".format(indexnumberid))
+                    continue
 
                 # Remove spaces from classification (3) and status (5)
                 oca_index_row[3] = oca_index_row[3].replace(' ', '-')
