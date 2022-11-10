@@ -52,10 +52,9 @@
 3. Run this command to copy the data - `gzip -d dap.gz && cat dap | docker exec -i postgres psql -U anhd -d anhd`
 4. If the site does not run as is, run `docker exec -it app /bin/bash` to connect to the running docker container, and then run `python manage.py migrate`
 
-
 ## Migrations
-To add a migration, run `docker exec -it app /bin/bash` and then run `python manag.py makemigrations`
 
+To add a migration, run `docker exec -it app /bin/bash` and then run `python manage.py makemigrations`
 
 ## Dev Startup (post setup)
 
