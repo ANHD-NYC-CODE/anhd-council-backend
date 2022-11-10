@@ -223,6 +223,8 @@ class Property(BaseDatasetModel, models.Model):
                                       db_column='stateassembly', db_constraint=False)
     statesenate = models.ForeignKey('StateSenate', on_delete=models.SET_NULL, null=True,
                                     db_column='statesenate', db_constraint=False)
+    bct2020 = models.TextField(blank=True, null=True)
+    bctcb2020 = models.TextField(blank=True, null=True)
     ct2010 = models.TextField(blank=True, null=True)
     cb2010 = models.TextField(blank=True, null=True)
     
@@ -289,8 +291,7 @@ class Property(BaseDatasetModel, models.Model):
     yearalter2 = models.SmallIntegerField(blank=True, null=True)
     histdist = models.TextField(blank=True, null=True)
     landmark = models.TextField(blank=True, null=True)
-    bct2020 = models.TextField(blank=True, null=True)
-    bctcb2020 = models.TextField(blank=True, null=True)
+ 
     builtfar = models.DecimalField(
         decimal_places=2, max_digits=8, blank=True, null=True)
     residfar = models.DecimalField(
