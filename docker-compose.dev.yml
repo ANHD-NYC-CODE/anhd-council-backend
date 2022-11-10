@@ -172,7 +172,7 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-  #nginx:
+#nginx:
  #certbot:
 volumes:
   pg_vol1:

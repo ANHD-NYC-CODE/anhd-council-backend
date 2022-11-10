@@ -225,6 +225,7 @@ class Property(BaseDatasetModel, models.Model):
                                     db_column='statesenate', db_constraint=False)
     ct2010 = models.TextField(blank=True, null=True)
     cb2010 = models.TextField(blank=True, null=True)
+    
     schooldist = models.SmallIntegerField(blank=True, null=True)
     firecomp = models.TextField(blank=True, null=True)
     policeprct = models.TextField(blank=True, null=True)
@@ -288,6 +289,8 @@ class Property(BaseDatasetModel, models.Model):
     yearalter2 = models.SmallIntegerField(blank=True, null=True)
     histdist = models.TextField(blank=True, null=True)
     landmark = models.TextField(blank=True, null=True)
+    bct2020 = models.TextField(blank=True, null=True)
+    bctcb2020 = models.TextField(blank=True, null=True)
     builtfar = models.DecimalField(
         decimal_places=2, max_digits=8, blank=True, null=True)
     residfar = models.DecimalField(
@@ -436,13 +439,13 @@ class Property(BaseDatasetModel, models.Model):
     @classmethod
     def add_state_geographies(self):
         logger.info('Adding State Assembly associations via geoshape')
-        status1 = self.queryset_foreach(self.objects.filter(stateassembly__isnull=True, latitude__isnull=False,
+        status1 = self.queryset_foreach(self.objects.filter(latitude__isnull=False,
                                                             longitude__isnull=False).order_by('pk'), self.create_state_assembly_association, 'stateassembly', batch_size=1000)
 
         logger.info(status1)
 
         logger.info('Adding State Senate associations via geoshape')
-        status2 = self.queryset_foreach(self.objects.filter(statesenate__isnull=True, latitude__isnull=False,
+        status2 = self.queryset_foreach(self.objects.filter(latitude__isnull=False,
                                                             longitude__isnull=False).order_by('pk'), self.create_state_senate_association, 'statesenate', batch_size=1000)
         logger.info(status2)
 
