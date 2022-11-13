@@ -444,7 +444,7 @@ class Property(BaseDatasetModel, models.Model):
         logger.info(status1)
 
         logger.info('Adding State Senate associations via geoshape')
-        status2 = self.queryset_foreach(self.objects.filter(statesenate__isnull=True;latitude__isnull=False,
+        status2 = self.queryset_foreach(self.objects.filter(statesenate__isnull=True, latitude__isnull=False,
                                                             longitude__isnull=False).order_by('pk'), self.create_state_senate_association, 'statesenate', batch_size=100)
         logger.info(status2)
 
