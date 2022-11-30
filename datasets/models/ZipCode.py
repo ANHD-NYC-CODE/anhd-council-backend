@@ -7,9 +7,10 @@ from core.utils.transform import from_geojson
 # Update process: Manual
 # Update strategy: Upsert
 #
-# Copy data from:
-# https://github.com/fedhere/PUI2015_EC/tree/master/mam1612_EC
-# Paste into a .geojson file, upload file through admin, update
+# 
+# First Step: When importing new geojson dataset, Please ensure 'postalCode' is column/id name, and not zipcode for coding purposes. 
+# Second Step: After updating the dataset, make sure to update or create a new map on https://studio.mapbox.com/ by uploading the shapefile dataset/zipfiles and then update the api link on the front end app "/src/LeafletMap/index.js" for the zipcode api with the new mapbox map.
+# Make sure to clear cache after. If you see overlapping layers or old dataset data still even after updating, please make sure your browser cache is cleared or test in a private browser.
 
 class ZipCode(BaseDatasetModel, models.Model):
     id = models.CharField(primary_key=True, max_length=5, blank=False, null=False)

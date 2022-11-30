@@ -196,7 +196,7 @@ class Property(BaseDatasetModel, models.Model):
     SHORT_SUMMARY_FIELDS = ('bbl', 'council', 'cd', 'zipcode', 'yearbuilt', 'unitsres', 'unitstotal',
                             'address', 'latitude', 'longitude', 'stateassembly', 'statesenate')
 
-    # DEPRECATED - now the versin is pulled from the Dataset "Version" field - make sure to include this
+    # DEPRECATED - now the version is pulled from the Dataset "Version" field - make sure to include this
     # when creating a Property Update from pluto
     current_version = '20v1'
     objects = PropertyManager()
