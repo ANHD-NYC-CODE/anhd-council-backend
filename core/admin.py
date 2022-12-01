@@ -54,7 +54,7 @@ class DatasetAdmin(admin.ModelAdmin):
         return inst.update_set.count()
 
     def has_delete_permission(self, request, obj=None):
-        return False
+        return True
 
     def has_change_permission(self, request, obj=None):
         return False
