@@ -173,7 +173,7 @@ class Eviction(BaseDatasetModel, models.Model):
         cleaned_address_with_borough = "{}, {}".format(
             cleaned_address, eviction.borough)
         response = requests.get(
-            "https://geosearch.planninglabs.nyc/v1/search?text={}".format(cleaned_address_with_borough))
+            "https://geosearch.planninglabs.nyc/v2/search?text={}".format(cleaned_address_with_borough))
         try:
             parsed = json.loads(response.text)
         except Exception as e:
@@ -194,7 +194,7 @@ class Eviction(BaseDatasetModel, models.Model):
         # next compare the house and street numbers
         if match and self.validate_geosearch_match(match, cleaned_address_with_borough):
             try:
-                bbl = ds.Property.objects.get(bbl=match['pad_bbl'])
+                bbl = ds.Property.objects.get(bbl=match['bbl'])
 
                 self.save_eviction(eviction=eviction, bbl=bbl,
                                    geosearch_address=match['label'])
@@ -202,7 +202,7 @@ class Eviction(BaseDatasetModel, models.Model):
                 self.save_eviction(eviction=eviction,
                                    geosearch_address=match['label'])
                 logger.warning(
-                    'unable to match response bbl {} to a db record'.format(match['pad_bbl']))
+                    'unable to match response bbl {} to a db record'.format(match['bbl']))
                 return None
         elif eviction.borough != "QUEENS" and "-" in get_house_number(cleaned_address):
             # try entirely new geosearch with the range of hyphenated numbers
