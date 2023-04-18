@@ -157,7 +157,7 @@
     model_name: RentStabilizationRecord
     automated: False
     update_schedule: "when needed"
-    update_instructions: "1) Download joined.csv file http://taxbills.nyc/joined.csv 2) Upload file to app. 3) Create update. -- Current app supports new columns up to 2020"
+    update_instructions: "1) Lucy or user downloads most recent version of 'rentstab_v2' etc from NYCDB [GitHub - nycdb/nycdb: Database of NYC Housing Data] and gives it to developers as a CSV. 2) Remove all columns in csv that don't start with 'uc20' and make sure most recent column is on right (ie. uc2023 if most recent year is 2023). Do NOT remove "uc" from column names - the app will filter it automatically. 2) Upload file to app. 3) Create update to this dataset with that file. App will only accept years with 'uc20' as the prefix (ie. 'uc2025'). 4) If you do not automatically see new data when viewing property, run 'reset cache' task at https://api.displacementalert.org/admin/django_celery_beat/periodictask/."
 - model: core.dataset
   pk: 23
   fields:
