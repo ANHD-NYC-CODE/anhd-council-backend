@@ -61,6 +61,8 @@ class CoreSubsidyRecord(BaseDatasetModel, models.Model):
     taxdelinquency2018 = models.SmallIntegerField(blank=True, null=True)
     serviolation2019 = models.SmallIntegerField(blank=True, null=True)
     taxdelinquency2019 = models.SmallIntegerField(blank=True, null=True)
+    serviolation2021 = models.SmallIntegerField(blank=True, null=True)
+    taxdelinquency2021 = models.SmallIntegerField(blank=True, null=True)
     dataoutputdate = models.DateField(blank=True, null=True)
     longitude = models.DecimalField(
         decimal_places=8, max_digits=16, blank=True, null=True)
