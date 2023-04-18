@@ -44,6 +44,9 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
             models.Index(fields=['ucbbl', 'uc2022']),
             models.Index(fields=['ucbbl', 'uc2023']),
             models.Index(fields=['ucbbl', 'uc2024']),
+            models.Index(fields=['ucbbl', 'uc2025']),
+            models.Index(fields=['ucbbl', 'uc2026']),
+            models.Index(fields=['ucbbl', 'uc2027']),
             models.Index(fields=['uc2007', 'ucbbl']),
             models.Index(fields=['uc2008', 'ucbbl']),
             models.Index(fields=['uc2009', 'ucbbl']),
@@ -62,6 +65,9 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
             models.Index(fields=['uc2022', 'ucbbl']),
             models.Index(fields=['uc2023', 'ucbbl']),
             models.Index(fields=['uc2024', 'ucbbl']),
+            models.Index(fields=['uc2025', 'ucbbl']),
+            models.Index(fields=['uc2026', 'ucbbl']),
+            models.Index(fields=['uc2027', 'ucbbl']),
         ]
     id = models.TextField(primary_key=True, blank=False, null=False)
     ucbbl = models.OneToOneField('Property', db_column='ucbbl', db_constraint=False,
