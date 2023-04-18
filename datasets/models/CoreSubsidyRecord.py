@@ -18,6 +18,7 @@ logger = logging.getLogger('app')
 # Download Core Data "Full Property and Subsidy Dataset"
 # https://nyu.box.com/shared/static/a3zb4u588l06jmz1jwuep400womyc85q.zip
 # Extract ZIP and upload xlsx file through admin, then update
+# Please make sure to add new fields to this model and migrate to live site when needed, ie "serviolation2021" and "taxdelinquency2021" as it changes yearly
 
 class CoreSubsidyRecord(BaseDatasetModel, models.Model):
     class Meta:

@@ -50,7 +50,7 @@
     model_name: CoreSubsidyRecord
     automated: False
     update_schedule: "when needed"
-    update_instructions: "Consult developer when latest version is released."
+    update_instructions: "Consult developer when latest version is released. Dev Note: Please make sure to add new fields to the python model and migrate to live server when needed, (ie. "serviolation2021" to "serviolation2022" as it changes yearly)"
 - model: core.dataset
   pk: 8
   fields:
