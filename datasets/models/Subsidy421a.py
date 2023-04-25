@@ -33,6 +33,7 @@ class Subsidy421a(BaseDatasetModel, models.Model):
     block = models.IntegerField(blank=True, null=True)
     lot = models.IntegerField(blank=True, null=True)
     buildingclassatpresent = models.TextField(blank=True, null=True)
+    buildingclass = models.TextField(blank=True, null=True)
     address = models.TextField(blank=True, null=True)
     zipcode = models.TextField(blank=True, null=True)
     residentialunits = models.SmallIntegerField(blank=True, null=True)
