@@ -23,7 +23,7 @@ logger = logging.getLogger('app')
 
 class SubsidyJ51(BaseDatasetModel, models.Model):
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
-                            on_delete=models.SET_NULL, null=True, blank=False)
+    on_delete=models.SET_NULL, null=True, blank=False)
     borough = models.SmallIntegerField(blank=True, null=True)
     neighborhood = models.TextField(blank=True, null=True)
     buildingclasscategory = models.TextField(blank=True, null=True)
