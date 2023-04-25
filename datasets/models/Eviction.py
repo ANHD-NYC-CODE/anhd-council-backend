@@ -134,39 +134,46 @@ class Eviction(BaseDatasetModel, models.Model):
 
     @classmethod
     def link_eviction_to_pluto_by_address(self):
-
         evictions = self.objects.filter(bbl__isnull=True)
         for eviction in evictions:
-            # matches STREET or STREET EAST / WEST etc
+        # matches STREET or STREET EAST / WEST etc
             match = match_address_within_string(eviction.evictionaddress)
 
-            if match:
-                cleaned_address = match.group(0)
-                # TODO: remove house letter from cleaned address
+        if match:
+            cleaned_address = match.group(0)
+            # TODO: remove house letter from cleaned address
+            self.save_eviction(eviction=eviction,
+                               cleaned_address=cleaned_address)
+            address_match = ds.AddressRecord.objects.filter(
+                address=cleaned_address + ' {}'.format(eviction.borough))
+            if len(address_match) == 1:
                 self.save_eviction(eviction=eviction,
-                                   cleaned_address=cleaned_address)
-                address_match = ds.AddressRecord.objects.filter(
-                    address=cleaned_address + ' {}'.format(eviction.borough))
-                if len(address_match) == 1:
-                    self.save_eviction(eviction=eviction,
-                                       bbl=address_match[0].bbl)
+                                   bbl=address_match[0].bbl)
 
-                elif len(address_match) > 1:
-                    # not a super generic query like 123 STREET or 45 AVENUE
-                    if not re.match(r"(\d+ (\bSTREET\b|\bAVENUE))", cleaned_address):
-                        self.save_eviction(
-                            eviction=eviction, bbl=address_match[0].bbl)
-                    else:
-                        # logger.debug(
-                        #     "no eviction match - multiple matches found on generic address: {}".format(eviction.evictionaddress))
-                        self.get_geosearch_address(cleaned_address, eviction)
+            elif len(address_match) > 1:
+                # not a super generic query like 123 STREET or 45 AVENUE
+                if not re.match(r"(\d+ (\bSTREET\b|\bAVENUE))", cleaned_address):
+                    self.save_eviction(
+                        eviction=eviction, bbl=address_match[0].bbl)
                 else:
-                    # logger.debug("no eviction match - no address matches: {}".format(eviction.evictionaddress))
-                    self.get_geosearch_address(cleaned_address, eviction)
-
+                    # logger.debug(
+                    #     "no eviction match - multiple matches found on generic address: {}".format(eviction.evictionaddress))
+                    try:
+                        self.get_geosearch_address(cleaned_address, eviction)
+                    except IndexError:
+                        logger.debug(
+                            "error getting geosearch address for eviction: {}".format(eviction.evictionaddress))
             else:
-                logger.debug(
-                    "no eviction match - no regex matches: {}".format(eviction.evictionaddress))
+                # logger.debug("no eviction match - no address matches: {}".format(eviction.evictionaddress))
+                try:
+                    self.get_geosearch_address(cleaned_address, eviction)
+                except IndexError:
+                    logger.debug(
+                        "error getting geosearch address for eviction: {}".format(eviction.evictionaddress))
+        else:
+            logger.debug(
+                "no eviction match - no regex matches: {}".format(eviction.evictionaddress))
+
 
     @classmethod
     def get_geosearch_address(self, cleaned_address, eviction):
