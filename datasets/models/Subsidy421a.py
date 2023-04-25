@@ -29,6 +29,7 @@ class Subsidy421a(BaseDatasetModel, models.Model):
     neighborhood = models.TextField(blank=True, null=True)
     buildingclasscategory = models.TextField(blank=True, null=True)
     taxclassatpresent = models.TextField(blank=True, null=True)
+    taxclass = models.TextField(blank=True, null=True)
     block = models.IntegerField(blank=True, null=True)
     lot = models.IntegerField(blank=True, null=True)
     buildingclassatpresent = models.TextField(blank=True, null=True)
