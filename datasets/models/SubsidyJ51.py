@@ -16,7 +16,10 @@ logger = logging.getLogger('app')
 #
 # Combine all borough files downloaded from DOF into single CSV file
 # https://www1.nyc.gov/site/finance/benefits/benefits-j51.page
-# upload file through admin, then update
+# upload file through admin, then update. 
+# Please make sure all headers are fully capitalized and match the FOLLOWING variables exactly: BOROUGH,NEIGHBORHOOD,BUILDINGCLASSCATEGORY,TAXCLASSATPRESENT,BLOCK,LOT,BUILDINGCLASSATPRESENT,ADDRESS,ZIPCODE,RESIDENTIALUNITS,COMMERCIALUNITS,TOTALUNITS,LANDSQUAREFEET,GROSSSQUAREFEET,YEARBUILT
+# If import/update fails, try to truncate the full J51 table from the database.
+
 
 class SubsidyJ51(BaseDatasetModel, models.Model):
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
