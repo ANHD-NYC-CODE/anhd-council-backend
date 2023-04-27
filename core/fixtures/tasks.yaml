@@ -81,6 +81,14 @@
     date_changed: "2019-04-25"
 - model: django_celery_beat.periodictask
   fields:
+    name: "Check and Update Properties/Pluto"
+    description: "Checks api for Properties/PLUTO update and updates."
+    task: "core.tasks.async_check_api_for_update_and_update"
+    crontab: 21 # once a month on the 6th
+    args: "[2]"
+    kwargs: "{}"
+- model: django_celery_beat.periodictask
+  fields:
     name: "Check and Update HousingLitigations"
     description: "Checks api for HousingLitigations update and updates."
     task: "core.tasks.async_check_api_for_update_and_update"

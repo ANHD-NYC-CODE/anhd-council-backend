@@ -17,8 +17,8 @@ logger = logging.getLogger('app')
 # Combine all borough files downloaded from DOF into single CSV file
 # https://www1.nyc.gov/site/finance/benefits/benefits-421a.page
 # upload file through admin, then update
-# Please make sure all headers are fully capitalized and match the following headers:
-# BOROUGH,NEIGHBORHOOD,BUILDINGCLASSCATEGORY,TAXCLASS,BLOCK,LOT,BUILDINGCLASS,ADDRESS,ZIPCODE,RESIDENTIALUNITS,COMMERCIALUNITS,TOTALUNITS,LANDSQUAREFEET,GROSSSQUAREFEET,YEARBUILT
+# Please make sure all headers are fully capitalized and match the following headers defined in the dictionary below:
+# ie. BOROUGH,NEIGHBORHOOD,BUILDINGCLASSCATEGORY,TAXCLASSATPRESENT,BLOCK,LOT,BUILDINGCLASSATPRESENT,ADDRESS,ZIPCODE,RESIDENTIALUNITS,COMMERCIALUNITS,TOTALUNITS,LANDSQUAREFEET,GROSSSQUAREFEET,YEARBUILT
 # If import/update fails, try to truncate the full 421a table from the database first.
 
 
