@@ -58,12 +58,13 @@ To add a migration, run `docker exec -it app /bin/bash` and then run `python man
 
 ## Dev Startup (post setup)
 
-1. After setting up the dev environment you can always restat it with `docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d` however you may want to have a non-dockerized and non-daemonized version of the app running for debugging purposes. (Note: PDB debugging is possible if you attach to the app container w/ `docker attach app` )
+1. After setting up the dev environment you can always restart it with `docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d` however you may want to have a non-dockerized and non-daemonized version of the app running for debugging purposes. (Note: PDB debugging is possible if you attach to the app container w/ `docker attach app` )
 2. (optional) To detach for local debugging, stop the docker app `docker-compose stop app`
 3. (optional) If the app is ejected, you'll need to eject the celery workers too if you plan on using them: `docker-compose stop app celery_default celery_update`.
 4. (optional) start the `celery_update` worker manually with the shell script `sh celery1.sh`
 5. (optional) start the `celery_default` worker manually with the shell script `sh celery2.sh`
 6. (optional) start the app in terminal `python manage.py runserver`
+7. Reset cache at: http://localhost:8000/admin/django_celery_beat/periodictask/
 
 **You can view logs in production with `docker-compose logs -f app`**
 

@@ -51,13 +51,26 @@ class HPDContact(BaseDatasetModel, models.Model):
     def update_set_filter(self, csv_reader, headers):
         return csv_reader
 
+    # adding code to remove any entries not present in the new dataset being downloaded. It will use the registrationcontactid (it assumes each is unique.) 
     @classmethod
-    def transform_self(self, file_path, update=None):
-        return self.pre_validation_filters(with_bbl(from_csv_file_to_gen(file_path, update), allow_blank=True))
+    def remove_outdated_entries(cls, new_entry_ids):
+        cls.objects.exclude(registrationcontactid__in=new_entry_ids).delete()
+
+    
+    # When you sync/download the data from the API and call this updated transform_self, it will remove any entries from the HPDContact table that are not present in the new data.
+    @classmethod
+    def transform_self(cls, file_path, update=None):
+        new_entry_ids = set()
+        for row in cls.pre_validation_filters(with_bbl(from_csv_file_to_gen(file_path, update), allow_blank=True)):
+            new_entry_ids.add(row['registrationcontactid'])
+            yield row
+        cls.remove_outdated_entries(new_entry_ids)
+
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
         self.seed_with_upsert(**kwargs)
+
 
     def __str__(self):
         return str(self.registrationcontactid)
