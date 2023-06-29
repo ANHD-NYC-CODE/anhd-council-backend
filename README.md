@@ -226,3 +226,7 @@ docker exec postgres pg_dump -U anhd anhd -t datasets_council > dap.sql
 docker exec -t postgres pg_dump --column-inserts -v -t datasets_council -c -U anhd | gzip > dap.gz
 
 gzip -d dap.gz && cat dap | docker exec -i postgres psql -U anhd -d anhd
+
+### CRON / Periodic Tasks Not Running
+
+- If the Flower Periodic Tasks fail to automatically run, like the cache reset or automatic updates: 1. log into the droplet / remote server 2. delete the celerybeat PID file, 3. redeploy the backend

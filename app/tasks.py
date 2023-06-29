@@ -179,6 +179,12 @@ def async_test_rollbar(self):
     # should error when called and trigger a rollbar notification
     return test_rollbar_bad_variable
 
+@app.task(bind=True, queue='celery')
+def async_test_celery(self):
+    # should error when called and trigger a rollbar notification
+    return Weekly_Celery_Tasks_Running
+
+
 def get_query_result_hash_and_length(query_string):
     token = settings.CACHE_REQUEST_KEY
     auth_headers = {'whoisit': token}
