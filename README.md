@@ -234,4 +234,3 @@ gzip -d dap.gz && cat dap | docker exec -i postgres psql -U anhd -d anhd
 - 1. log into the droplet / remote server via terminal or digitalocean console
 - 2. delete the celerybeat PID file from its backend folder
 - 3. redeploy the backend
-
