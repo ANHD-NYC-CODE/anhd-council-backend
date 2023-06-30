@@ -49,6 +49,7 @@ class CONHRecord(BaseDatasetModel, models.Model):
     ntaneighborhoodtabulationarea = models.TextField(blank=True, null=True)
     dischargedaep = models.TextField(blank=True, null=True)
     discharged7a = models.TextField(blank=True, null=True)
+    censustract2020 = models.TextField(blank=True, null=True)
 
     slim_query_fields = ["id", 'bbl']
 
