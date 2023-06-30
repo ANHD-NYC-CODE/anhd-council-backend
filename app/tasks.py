@@ -55,12 +55,12 @@ def sanity_check(self):
     logger.info('Sanity check running.')
 
 
-@app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=60, max_retries=1)
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=120, max_retries=2)
 def async_ensure_update_task_results(self):
     c.Update.ensure_update_task_results()
 
 
-@app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=60, max_retries=1)
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=120, max_retries=2)
 def clean_temp_directory(self):
     try:
         flushexpiredtokens.Command().handle()
@@ -81,7 +81,7 @@ def clean_temp_directory(self):
 # clears cache
 
 
-@app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=60, max_retries=1)
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=120, max_retries=2)
 def reset_cache(self, token):
     try:
         cache.clear()
@@ -94,7 +94,7 @@ def reset_cache(self, token):
 # does not clear cache
 
 
-@app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=60, max_retries=1)
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=120, max_retries=2)
 def recache(self, token):
     try:
         create_async_cache_workers(token)
@@ -104,7 +104,7 @@ def recache(self, token):
         raise e
 
 
-@app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=60, max_retries=1)
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=120, max_retries=2)
 def clean_database(self):
     try:
         with transaction.atomic():
@@ -123,31 +123,31 @@ def clean_database(self):
         raise e
 
 
-@app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=30, max_retries=3)
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=60, max_retries=5)
 def async_send_new_user_email(self, user_id):
     user = CustomUser.objects.get(id=user_id)
     return send_new_user_email(user=user)
 
 
-@app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=30, max_retries=3)
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=60, max_retries=5)
 def async_send_new_access_email(self, user_id):
     user = CustomUser.objects.get(id=user_id)
     return send_new_access_email(user=user)
 
 
-@app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=30, max_retries=3)
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=60, max_retries=5)
 def async_send_user_verification_email(self, access_request_id, verification_token):
     access_request = AccessRequest.objects.get(id=access_request_id)
     return send_user_verification_email(access_request=access_request, verification_token=verification_token)
 
 
-@app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=30, max_retries=3)
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=50, max_retries=5)
 def async_send_new_user_request_email(self, user_request_id):
     user_request = UserRequest.objects.get(id=user_request_id)
     return send_new_user_request_email(user_request=user_request)
 
 
-@app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=30, max_retries=3)
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=60, max_retries=5)
 def async_send_new_user_access_email(self, access_request_id):
     access_request = AccessRequest.objects.get(id=access_request_id)
     return send_new_user_access_request_email(access_request=access_request)
