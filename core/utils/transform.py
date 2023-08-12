@@ -144,8 +144,7 @@ def convert_xls_to_xlsx_workbook(file_path):
         for row in range(0, sheet_xls.nrows):
             for col in range(0, sheet_xls.ncols):
                 sheet_xlsx.cell(row=row + 1, column=col +
-                                1).value = sheet_xls.cell_value(row, col)
-
+                                1).value = clean_string(sheet_xls.cell_value(row, col))
     return book_xlsx
 
 
