@@ -19,6 +19,10 @@ from openpyxl.reader.excel import load_workbook, InvalidFileException
 
 import logging
 
+def clean_string(value):
+    return ''.join(char for char in value if 9 <= ord(char) <= 13 or 32 <= ord(char) <= 126)
+
+
 logger = logging.getLogger('app')
 
 
@@ -160,7 +164,7 @@ def from_xlsx_file_to_gen(file_path, worksheet, update, skip_rows=0):
         headers = clean_headers(','.join([c.value for c in next(rows)]))
 
     for row in rows:
-        values = [c.value for c in row]
+        values = [clean_string(c.value) if isinstance(c.value, str) else c.value for c in row]
         yield dict(zip(headers, values))
 
     if update:
