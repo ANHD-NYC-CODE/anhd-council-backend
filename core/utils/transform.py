@@ -20,8 +20,9 @@ from openpyxl.reader.excel import load_workbook, InvalidFileException
 import logging
 
 def clean_string(value):
-    return ''.join(char for char in value if 9 <= ord(char) <= 13 or 32 <= ord(char) <= 126)
-
+    if isinstance(value, str):
+        return ''.join(char for char in value if 9 <= ord(char) <= 13 or 32 <= ord(char) <= 126)
+    return value
 
 logger = logging.getLogger('app')
 
