@@ -227,10 +227,23 @@ docker exec -t postgres pg_dump --column-inserts -v -t datasets_council -c -U an
 
 gzip -d dap.gz && cat dap | docker exec -i postgres psql -U anhd -d anhd
 
-
 ### CRON / Periodic Tasks Not Running
 
-- If the Flower Periodic Tasks fail to automatically run, like the nightly cache reset or any automatic updates: 
+- If the Flower Periodic Tasks fail to automatically run, like the nightly cache reset or any automatic updates:
 - 1. log into the droplet / remote server via terminal or digitalocean console
 - 2. delete the celerybeat PID file from its backend folder
 - 3. redeploy the backend
+
+### Viewing the OCA Housing Raw Data (As of 8/15/23)
+
+- If you need to view the two files that are being joined to update the OCA Housing Dataset, here are the instructions:
+  - After installing Amazon CLI, run "aws configure" in your command line, typing in the credentials from the env.
+  - It will prompt you for the following:
+    AWS Access Key ID - Enter your OCA_AWS_SECRET_KEY_ID.  
+     AWS Secret Access Key - Enter your OCA_AWS_SECRET_ACCESS_KEY.
+    Default region name - Default.
+    Default output format - You can leave this as the default (blank)
+    - Download the Files by directly accessing the buckets: You can use the following commands to download to the current directory you're in on your local device:
+      aws s3 cp s3://BUCKET_NAME/oca_addresses_with_bbl.csv .
+      aws s3 cp s3://BUCKET_NAME/oca_index.csv .
+- Note: Prior to August 2023, the bucket name used was different. Please consult a dev and make sure it's updated to the most recent bucket in any backend ENV and commands you issue. The IP may also need to be whitelisted via OCA as the S3 is not part of this portal.
