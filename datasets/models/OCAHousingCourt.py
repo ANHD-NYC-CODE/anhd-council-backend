@@ -105,11 +105,11 @@ class OCAHousingCourt(BaseDatasetModel, models.Model):
             oca_base_tf = tempfile.NamedTemporaryFile()
             logger.info("Download started for: {} at aws".format(
                 dataset.name))
-            client.download_fileobj(AWS_BUCKET_NAME, 'oca_addresses_with_bbl.csv', oca_base_tf)
+            client.download_fileobj(AWS_BUCKET_NAME, '/public/oca_addresses_with_bbl.csv', oca_base_tf)
 
             oca_index_tf = tempfile.NamedTemporaryFile()
             logger.info("Download started for: oca index at aws")
-            client.download_fileobj(AWS_BUCKET_NAME, 'oca_index.csv', oca_index_tf)
+            client.download_fileobj(AWS_BUCKET_NAME, '/public/oca_index.csv', oca_index_tf)
         except Exception as e:
             logger.error(
                 "* ERROR * AWS OCA download failed")
