@@ -244,6 +244,6 @@ gzip -d dap.gz && cat dap | docker exec -i postgres psql -U anhd -d anhd
     Default region name - Default.
     Default output format - You can leave this as the default (blank)
     - Download the Files by directly accessing the buckets: You can use the following commands to download to the current directory you're in on your local device:
-      aws s3 cp s3://BUCKET_NAME/oca_addresses_with_bbl.csv .
-      aws s3 cp s3://BUCKET_NAME/oca_index.csv .
-- Note: Prior to August 2023, the bucket name used was different. Please consult a dev and make sure it's updated to the most recent bucket in any backend ENV and commands you issue. The IP may also need to be whitelisted via OCA as the S3 is not part of this portal.
+      aws s3 cp s3://BUCKET_NAME/public/oca_addresses_with_bbl.csv .
+      aws s3 cp s3://BUCKET_NAME/public/oca_index.csv .
+- Note: Prior to August 2023, the bucket name used was different and also didn't use the /public/ directory. Please consult a dev and make sure it's updated to the most recent bucket in any backend ENV and commands you issue. The access is being given on AWS under the IAM settings - and not via IP whitelist.
