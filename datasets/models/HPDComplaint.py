@@ -23,36 +23,93 @@ class HPDComplaint(BaseDatasetModel, models.Model):
     download_endpoint = "https://data.cityofnewyork.us/resource/ygpa-z7cr.csv"
     QUERY_DATE_KEY = 'receiveddate'
     RECENT_DATE_PINNED = True
+    
+
+
+
+
+# PRIOR HPD COMPLAINT MODEL DEFS:
+    #  complaintid = models.IntegerField(
+    #     primary_key=True, blank=False, null=False)
+    # bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
+    #                         on_delete=models.SET_NULL, null=True, blank=False)
+    # bin = models.ForeignKey('Building', db_column='bin', db_constraint=False,
+    #                         on_delete=models.SET_NULL, null=True, blank=True)
+    # buildingid = models.ForeignKey('HPDBuildingRecord', db_column='buildingid', db_constraint=False,
+    #                                on_delete=models.SET_NULL, null=True, blank=True)
+    # boroughid = models.IntegerField(blank=True, null=True)
+    # borough = models.TextField(blank=True, null=True)
+    # housenumber = models.TextField(blank=True, null=True)
+    # streetname = models.TextField(blank=True, null=True)
+    # zip = models.TextField(blank=True, null=True)
+    # block = models.IntegerField(blank=True, null=True)
+    # lot = models.IntegerField(blank=True, null=True)
+    # apartment = models.TextField(blank=True, null=True)
+    # communityboard = models.IntegerField(blank=True, null=True)
+    # receiveddate = models.DateField(blank=True, null=True)
+    # statusid = models.IntegerField(blank=True, null=True)
+    # status = models.TextField(db_index=True, blank=True, null=True)
+    # statusdate = models.DateField(blank=True, null=True)
+
+# OLD PROBLEM DEFS:
+#     problemid = models.IntegerField(primary_key=True, blank=False, null=False)
+#     complaintid = models.ForeignKey('HPDComplaint', db_column='complaintid', db_constraint=False,on_delete=models.SET_NULL, null=True, blank=False)
+#     unittypeid = models.SmallIntegerField(blank=True, null=True)
+#     unittype = models.TextField(blank=True, null=True)
+#     spacetypeid = models.SmallIntegerField(blank=True, null=True)
+#     spacetype = models.TextField(blank=True, null=True)
+#     typeid = models.SmallIntegerField(blank=True, null=True)
+#     type = models.TextField(blank=True, null=True)
+#     majorcategoryid = models.SmallIntegerField(blank=True, null=True)
+#     majorcategory = models.TextField(blank=True, null=True)
+#     minorcategoryid = models.SmallIntegerField(blank=True, null=True)
+#     minorcategory = models.TextField(blank=True, null=True)
+#     codeid = models.SmallIntegerField(blank=True, null=True)
+#     code = models.TextField(blank=True, null=True)
+#     statusid = models.IntegerField(db_index=True, blank=True, null=True)
+#     status = models.TextField(db_index=True, blank=True, null=True)
+#     statusdate = models.DateField(db_index=True, blank=True, null=True)
+#     statusdescription = models.TextField(blank=True, null=True)
+
+    # Updated Model Fields
+    zip = models.TextField(null=True,verbose_name="Complaint zip code")
     receiveddate = models.DateField(blank=True, null=True, verbose_name="Date when the complaint was received")
-    problem_id = models.IntegerField(primary_key=True, blank=False, null=False, verbose_name="Unique identifier of this problem")
-    complaint_id = models.IntegerField(blank=True, null=True, verbose_name="Unique identifier of the complaint this problem is associated with")
-    building_id = models.ForeignKey('HPDBuildingRecord', db_column='buildingid', db_constraint=False, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Unique identifier given to a building record")
+    problemid = models.IntegerField(primary_key=True, blank=False, null=False, verbose_name="Unique identifier of this problem") 
+    complaintid = models.IntegerField(blank=True, null=True, verbose_name="identifier of the complaint this problem is associated with") #This was previously a primary key in the HPDComplaint table
+    council_district = models.IntegerField(null=True, blank=True, verbose_name="Council district of the complaint location")
+    census_tract = models.IntegerField(null=True, blank=True, verbose_name="Census tract of the complaint location")
+    nta = models.TextField(null=True, blank=True, verbose_name="Neighborhood Tabulation Area of the complaint location")
+    bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
+                            on_delete=models.SET_NULL, null=True, blank=False)
+    bin = models.ForeignKey('Building', db_column='bin', db_constraint=False,
+                            on_delete=models.SET_NULL, null=True, blank=True)
+    buildingid = models.ForeignKey('HPDBuildingRecord', db_column='buildingid', db_constraint=False, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Unique identifier given to a building record")
     borough = models.TextField(choices=[('Manhattan', 'Manhattan'), ('Bronx', 'Bronx'), ('Brooklyn', 'Brooklyn'), ('Queens', 'Queens'), ('Staten Island', 'Staten Island')])
-    house_number = models.TextField(verbose_name="Complaint house number")
-    street_name = models.TextField(verbose_name="Complaint street name")
-    zip = models.TextField(verbose_name="Complaint zip code")
-    block = models.TextField(verbose_name="Number assigned by the NYC Dept of Finance identifying the tax block the lot is on")
-    lot = models.TextField(verbose_name="Unique number assigned by the NYC Dept of Finance within a Block identifying a lot")
+    housenumber = models.TextField(null=True,verbose_name="Complaint house number")
+    streetname = models.TextField(null=True,verbose_name="Complaint street name")
+    latitude = models.DecimalField(max_digits=20, decimal_places=15, null=True, blank=True, verbose_name="Latitude of the complaint location")
+    longitude = models.DecimalField(max_digits=20, decimal_places=15, null=True, blank=True, verbose_name="Longitude of the complaint location")
+    block = models.TextField(null=True,verbose_name="Number assigned by the NYC Dept of Finance identifying the tax block the lot is on")
+    lot = models.TextField(null=True,verbose_name="Unique number assigned by the NYC Dept of Finance within a Block identifying a lot")
     apartment = models.TextField(null=True,verbose_name="Number of the unit or apartment in a building")
-    community_board = models.IntegerField(choices=[(i, i) for i in range(1, 19)], null=True, verbose_name="Unique number identifying a  Community District/Board, which is a political geographical area within a borough of the City of NY")
-    unit_type = models.TextField(choices=[('Apartment', 'Apartment'), ('Building', 'Building'), ('Building-Wide', 'Building-Wide'), ('Public area', 'Public area')], null=True,verbose_name="Type of space where the problem was reported")
-    space_type = models.TextField(null=True,verbose_name="Type of space where the problem was reported")
+    communityboard = models.IntegerField(choices=[(i, i) for i in range(1, 19)], null=True, verbose_name="Unique number identifying a  Community District/Board, which is a political geographical area within a borough of the City of NY")
+    unittype = models.TextField(choices=[('Apartment', 'Apartment'), ('Building', 'Building'), ('Building-Wide', 'Building-Wide'), ('Public area', 'Public area')], null=True,verbose_name="Type of space where the problem was reported")
+    spacetype = models.TextField(null=True,verbose_name="Type of space where the problem was reported")
     type = models.TextField(choices=[('Emergency', 'Emergency'), ('Hazardous', 'Hazardous'), ('Immediate Emergency', 'Immediate Emergency'), ('Non emergency', 'Non emergency')], null=True,verbose_name="Code indicating the problem type")
-    major_category = models.TextField(null=True,verbose_name="The major category of the problem")
-    minor_category = models.TextField(null=True, verbose_name="The minor category of the problem")
-    problem_code = models.TextField(null=True, verbose_name="The problem code")
-    complaint_status = models.TextField(choices=[('Close', 'Close'), ('Open', 'Open')], null=True, verbose_name="The status of the complaint")
-    complaint_status_date = models.DateField(blank=True, null=True, verbose_name="Date when the complaint status was updated")
+    majorcategory = models.TextField(null=True,verbose_name="The major category of the problem")
+    minorcategory = models.TextField(null=True, verbose_name="The minor category of the problem")
+    code = models.TextField(null=True, verbose_name="The problem code")
+    status = models.TextField(choices=[('Close', 'Close'), ('Open', 'Open')], null=True, verbose_name="The status of the complaint")
+    statusdate = models.DateField(blank=True, null=True, verbose_name="Date when the complaint status was updated")
     problem_status = models.TextField(choices=[('Close', 'Close'), ('Open', 'Open')], null=True, verbose_name="The status of the problem")
     problem_status_date = models.DateField(blank=True, null=True, verbose_name="Date when the problem status was updated")
-    status_description = models.TextField(null=True, verbose_name="Status description")
+    statusdescription = models.TextField(null=True, verbose_name="Status description")
     problem_duplicate_flag = models.TextField(choices=[('N', 'No'), ('Y', 'Yes')], null=True, verbose_name="Duplicate complaint Indicator")
     complaint_anonymous_flag = models.TextField(choices=[('N', 'No'), ('Y', 'Yes')], null=True, verbose_name="Anonymous complaint Indicator")
     unique_key = models.IntegerField(blank=True, null=True, verbose_name="Unique identifier of a Service Request (SR) in the open data set")
+
+    # complaint status is still mapped to this table's "status", but the prior "status" from the HPDProblem table has become "problem_status" and "problem_status_date" and will need to be mapped to the those fields across the app instead of HPD Problems.
     
-    # Foreign keys from previous datasets
-    bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False, on_delete=models.SET_NULL, null=True, blank=False)
-    bin = models.ForeignKey('Building', db_column='bin', db_constraint=False, on_delete=models.SET_NULL, null=True, blank=True)
     
     slim_query_fields = ["complaintid", "bbl", "receiveddate"]
 
@@ -81,9 +138,40 @@ class HPDComplaint(BaseDatasetModel, models.Model):
                 continue
             yield row
 
+    #remapping new csv column names to old column names to preserve app structure
+    COLUMN_NAME_MAPPING = {
+    "complaintid": "complaint_id",
+    "buildingid": "building_id",
+    "borough": "borough",
+    "housenumber": "house_number",
+    "streetname": "street_name",
+    "communityboard": "community_board",
+    "receiveddate": "received_date",
+    "status": "complaint_status",
+    "statusdate": "complaint_status_date",
+    "problemid": "problem_id",
+    "unittype": "unit_type",
+    "spacetype": "space_type",
+    "type": "type",
+    "majorcategory": "major_category",
+    "minorcategory": "minor_category",
+    "code": "problem_code",
+    "statusdescription": "status_description", #this is the status description that was previously in the HPDProblem table
+    "zip": "post_code",
+    }
+
     @classmethod
     def transform_self(self, file_path, update=None):
-        return self.pre_validation_filters(with_bbl(from_csv_file_to_gen(file_path, update), allow_blank=True))
+        rows = self.pre_validation_filters(with_bbl(from_csv_file_to_gen(file_path, update), allow_blank=True))
+        # Transforming column names on the fly based on the new CSV mapping
+        for row in rows:
+            for new_col, old_col in COLUMN_NAME_MAPPING.items():
+                if new_col in row:
+                   if old_col:
+                      row[old_col] = row.pop(new_col)
+                   else:
+                    row.pop(new_col, None)
+        yield row
 
     @classmethod
     def add_bins_from_buildingid(self):

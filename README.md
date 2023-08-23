@@ -247,3 +247,108 @@ gzip -d dap.gz && cat dap | docker exec -i postgres psql -U anhd -d anhd
       aws s3 cp s3://BUCKET_NAME/public/oca_addresses_with_bbl.csv .
       aws s3 cp s3://BUCKET_NAME/public/oca_index.csv .
 - Note: Prior to August 2023, the bucket name used was different and also didn't use the /public/ directory. Please consult a dev and make sure it's updated to the most recent bucket in any backend ENV and commands you issue. The access is being given on AWS under the IAM settings - and not via IP whitelist.
+
+## Further Troubleshooting and Q&As:
+
+Backend Local setup
+May need to Comment out lines 175 and 176 on docker-compose.yml - NGINX and CERBOT
+Copy .env.dev and file named .env to root directory
+
+Run build script
+sh build.dev.sh
+
+Setup/Access docker container
+docker exec -it app bash (may need sudo)
+must run all commands in container\*
+Import fixtures (within container)
+python manage.py loaddata core/fixtures/
+Include all: crontabs.yaml, datasets.yaml, tasks.yaml
+Create superuser to access admin page (within container)
+python manage.py createsuperuser
+(NOTE: check your email because the app will auto-generate a password despite you creating one in the wizard)
+Login to Local Admin DB @ http://localhost:8000/admin/login/?next=/admin/core/
+
+For local testing:
+comment out: #REACT_APP_API_URL=https://api.displacementalert.org
+comment in: REACT_APP_API_URL=http://localhost:8000
+Update dataset on admin page (that you're testing)
+Check flower that it's done updating (localhost:8888)
+
+Connect local via PSQL / Postgres
+docker exec -it postgres psql -U anhd
+\dt to list tables
+SELECT \* FROM datasets_eviction; (to see eviction data)
+
+(Note: DBeaver or POSTGRESQL command line are recommended to view raw data )
+
+Manual dataset updates:
+Check dataset models for specific instructions\*
+
+Using DBeaver
+Stop postgres (if necessary) brew services stop postgresql
+Connect to database (host anhd, user anhd)
+
+To Stop Docker/Reset
+docker-compose stop app
+
+Staging URL: staging.portal.displacementalert.org
+
+Deployment
+Deployed via “deploy.sh”
+
+Troubleshooting
+Check logs for the containers
+To see names of containers
+docker ps
+docker-compose logs -f app
+docker-compose logs -f postgres
+
+Updating State Senate Districts Map:
+At https://www1.nyc.gov/site/planning/data-maps/open-data/districts-download-metadata.page, download the State Senate Districts (Clipped to Shoreline) as a .GeoJSON file, and then update the dataset on the admin panel (most likely, https://api.displacementalert.org/admin/core/update/?dataset=42)
+Troubleshooting FAQ:
+Q: I get an error when running my react build that certain node modules or scss cannot be accessed.
+A: Please ensure ENV file is in the root directory and also hidden (appended with “.” in the filename). The env.dev is for the backend, env.development.local is for the front end.
+Q: View raw data/set files on server:
+
+1. ssh to server `ssh anhd@45.55.44.160`
+2. `cd /var/www/`
+3. To see datasets, go to anhd-council-backend/data
+4. View raw dataset: ‘sudo cat filename’
+   Q: I’m getting Postgres errors. What do I do?
+   Please make sure your postgress is running ( brew services start postgresql)
+   (it should also show up in your docker)
+
+Q: CeleryBeat is stuck. What do I do?
+A: Delete the celerybeat.pid file and restart the stack (via sh restart.dev.sh)
+
+Q: How do I restart (or start up) the Backend Dev DB?
+A: via “sh restart.dev.sh”
+
+Q: How do I shut down the local dev environment
+A: This can be down via down.dev.sh
+
+Q: How do I add my email to receive notifications?
+A: if you go to app > settings > development.py you can change it. “(Development)...” emails are only sent when the application is in debug mode (settings.DEBUG set to True).
+
+Q: Where do I update datasets on the live front end?
+A: From dashboard - specifically https://API.Displacementalert.org/admin/core/updates
+
+Q: What kinds of tasks does CeleryWorker run?
+A: Pulling Data, Custom Search Notifications, Sending Notifications, etc.
+It has separate workers for notifications and updates
+
+Q: I can’t connect to the DigitalOcean droplet(s)
+A: Please ensure your ip is whitelisted under the droplet’s firewall settings on Digital Ocean’s dashboard.
+
+Q: Is the application cached?
+A: Yes, It uses Redis.
+
+Q: Where can I view Celery Tasks on Production? What about “scheduled” or caching tasks?
+A. Via the dashboard at https://tasks.displacementalert.org/dashboard or https://api.displacementalert.org/admin/django_celery_beat/periodictask/ for the scheduled tasks
+
+Q: What languages/frameworks does the app use?
+React, SASS, Celery, Docker (Compose), Postgres, Python, Django, Reddis
+
+Q: How do I access the Database via PostgresQL in the local environment?
+Once inside docker, and postgresql:
+psql -h localhost -U anhd -d anhd
