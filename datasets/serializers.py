@@ -604,7 +604,7 @@ class PadRecordSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-#
+# PRIOR SERIALIZER BEFORE DATASET MERGE
 # class BuildingSearchSerializer(serializers.BaseSerializer):
 #     def to_representation(self, obj):
 #         return {
@@ -643,10 +643,10 @@ class HPDViolationSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class HPDProblemSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ds.HPDProblem
-        fields = '__all__'
+# class HPDProblemSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = ds.HPDProblem
+#         fields = '__all__'
 
 
 class HPDComplaintCsvSerializer(serializers.ModelSerializer):
@@ -654,15 +654,30 @@ class HPDComplaintCsvSerializer(serializers.ModelSerializer):
         model = ds.HPDComplaint
         fields = '__all__'
 
+#Replacing this serializer with merged serializer below
+# class HPDComplaintSerializer(serializers.ModelSerializer):
+#     hpdproblems = HPDProblemSerializer(
+#         source='hpdproblem_set', many=True, read_only=True)
+
+#     class Meta:
+#         model = ds.HPDComplaint
+#         fields = ('complaintid', 'hpdproblems', 'status', 'statusid',
+#                   'statusdate', 'apartment', 'receiveddate')
 
 class HPDComplaintSerializer(serializers.ModelSerializer):
-    hpdproblems = HPDProblemSerializer(
-        source='hpdproblem_set', many=True, read_only=True)
-
     class Meta:
         model = ds.HPDComplaint
-        fields = ('complaintid', 'hpdproblems', 'status', 'statusid',
-                  'statusdate', 'apartment', 'receiveddate')
+        fields = (
+            'received_date', 'problem_id', 'complaint_id', 'building_id',
+            'borough', 'house_number', 'street_name', 'zip',
+            'block', 'lot', 'apartment', 'community_board',
+            'unit_type', 'space_type', 'type', 'major_category',
+            'minor_category', 'problem_code', 'complaint_status',
+            'complaint_status_date', 'problem_status', 'problem_status_date',
+            'status_description', 'problem_duplicate_flag', 'complaint_anonymous_flag',
+            'unique_key', 'bbl', 'bin'
+        )
+       
 
 
 class DOBViolationSerializer(serializers.ModelSerializer):

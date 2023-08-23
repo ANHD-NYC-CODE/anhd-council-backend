@@ -380,7 +380,6 @@ ACTIVE_MODELS = [
     'HousingLitigation',
     'HPDBuildingRecord',
     'HPDComplaint',
-    'HPDProblem',
     'HPDContact',
     'HPDRegistration',
     'HPDViolation',

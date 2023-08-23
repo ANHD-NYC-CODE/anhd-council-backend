@@ -19,33 +19,41 @@ class HPDComplaint(BaseDatasetModel, models.Model):
             models.Index(fields=['-receiveddate']),
 
         ]
-    API_ID = 'uwyv-629c'
-    download_endpoint = "https://data.cityofnewyork.us/api/views/uwyv-629c/rows.csv?accessType=DOWNLOAD"
+    API_ID = 'ygpa-z7cr'
+    download_endpoint = "https://data.cityofnewyork.us/resource/ygpa-z7cr.csv"
     QUERY_DATE_KEY = 'receiveddate'
     RECENT_DATE_PINNED = True
-
-    complaintid = models.IntegerField(
-        primary_key=True, blank=False, null=False)
-    bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
-                            on_delete=models.SET_NULL, null=True, blank=False)
-    bin = models.ForeignKey('Building', db_column='bin', db_constraint=False,
-                            on_delete=models.SET_NULL, null=True, blank=True)
-    buildingid = models.ForeignKey('HPDBuildingRecord', db_column='buildingid', db_constraint=False,
-                                   on_delete=models.SET_NULL, null=True, blank=True)
-    boroughid = models.IntegerField(blank=True, null=True)
-    borough = models.TextField(blank=True, null=True)
-    housenumber = models.TextField(blank=True, null=True)
-    streetname = models.TextField(blank=True, null=True)
-    zip = models.TextField(blank=True, null=True)
-    block = models.IntegerField(blank=True, null=True)
-    lot = models.IntegerField(blank=True, null=True)
-    apartment = models.TextField(blank=True, null=True)
-    communityboard = models.IntegerField(blank=True, null=True)
-    receiveddate = models.DateField(blank=True, null=True)
-    statusid = models.IntegerField(blank=True, null=True)
-    status = models.TextField(db_index=True, blank=True, null=True)
-    statusdate = models.DateField(blank=True, null=True)
-
+    received_date = models.DateField(blank=True, null=True, verbose_name="Date when the complaint was received")
+    problem_id = models.IntegerField(primary_key=True, blank=False, null=False, verbose_name="Unique identifier of this problem")
+    complaint_id = models.IntegerField(blank=True, null=True, verbose_name="Unique identifier of the complaint this problem is associated with")
+    building_id = models.ForeignKey('HPDBuildingRecord', db_column='buildingid', db_constraint=False, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Unique identifier given to a building record")
+    borough = models.TextField(choices=[('Manhattan', 'Manhattan'), ('Bronx', 'Bronx'), ('Brooklyn', 'Brooklyn'), ('Queens', 'Queens'), ('Staten Island', 'Staten Island')])
+    house_number = models.TextField(verbose_name="Complaint house number")
+    street_name = models.TextField(verbose_name="Complaint street name")
+    zip = models.TextField(verbose_name="Complaint zip code")
+    block = models.TextField(verbose_name="Number assigned by the NYC Dept of Finance identifying the tax block the lot is on")
+    lot = models.TextField(verbose_name="Unique number assigned by the NYC Dept of Finance within a Block identifying a lot")
+    apartment = models.TextField(verbose_name="Number of the unit or apartment in a building")
+    community_board = models.IntegerField(choices=[(i, i) for i in range(1, 19)], verbose_name="Unique number identifying a Community District/Board, which is a political geographical area within a borough of the City of NY")
+    unit_type = models.TextField(choices=[('Apartment', 'Apartment'), ('Building', 'Building'), ('Building-Wide', 'Building-Wide'), ('Public area', 'Public area')], verbose_name="Type of space where the problem was reported")
+    space_type = models.TextField(verbose_name="Type of space where the problem was reported")
+    type = models.TextField(choices=[('Emergency', 'Emergency'), ('Hazardous', 'Hazardous'), ('Immediate Emergency', 'Immediate Emergency'), ('Non emergency', 'Non emergency')], verbose_name="Code indicating the problem type")
+    major_category = models.TextField(verbose_name="The major category of the problem")
+    minor_category = models.TextField(verbose_name="The minor category of the problem")
+    problem_code = models.TextField(verbose_name="The problem code")
+    complaint_status = models.TextField(choices=[('Close', 'Close'), ('Open', 'Open')], verbose_name="The status of the complaint")
+    complaint_status_date = models.DateField(blank=True, null=True, verbose_name="Date when the complaint status was updated")
+    problem_status = models.TextField(choices=[('Close', 'Close'), ('Open', 'Open')], verbose_name="The status of the problem")
+    problem_status_date = models.DateField(blank=True, null=True, verbose_name="Date when the problem status was updated")
+    status_description = models.TextField(verbose_name="Status description")
+    problem_duplicate_flag = models.TextField(choices=[('N', 'No'), ('Y', 'Yes')], verbose_name="Duplicate complaint Indicator")
+    complaint_anonymous_flag = models.TextField(choices=[('N', 'No'), ('Y', 'Yes')], verbose_name="Anonymous complaint Indicator")
+    unique_key = models.IntegerField(blank=True, null=True, verbose_name="Unique identifier of a Service Request (SR) in the open data set")
+    
+    # Foreign keys from previous datasets
+    bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False, on_delete=models.SET_NULL, null=True, blank=False)
+    bin = models.ForeignKey('Building', db_column='bin', db_constraint=False, on_delete=models.SET_NULL, null=True, blank=True)
+    
     slim_query_fields = ["complaintid", "bbl", "receiveddate"]
 
     @classmethod

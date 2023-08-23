@@ -118,15 +118,8 @@
 - model: core.dataset
   pk: 17
   fields:
-    name: HPD Complaints
+    name: HPD Complaints & Problems
     model_name: HPDComplaint
-    automated: True
-    update_schedule: "monthly"
-- model: core.dataset
-  pk: 18
-  fields:
-    name: HPD Problems
-    model_name: HPDProblem
     automated: True
     update_schedule: "monthly"
 - model: core.dataset
