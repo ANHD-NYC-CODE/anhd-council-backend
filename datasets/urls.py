@@ -457,10 +457,7 @@ hpdbuildings_router.register(
 )
 
 router.register(r'hpdviolations', v.hpdviolation_views.HPDViolationViewSet)
-hpdcomplaints_router = router.register(
-    r'hpdcomplaints', v.hpdcomplaint_views.HPDComplaintViewSet)
 router.register(r'hpdcomplaints', v.hpdcomplaint_views.HPDComplaintViewSet)
-
 router.register(r'dobviolations', v.dobviolation_views.DOBViolationViewSet)
 router.register(r'dobcomplaints', v.dobcomplaint_views.DOBComplaintViewSet)
 router.register(r'ecbviolations', v.ecbviolation_views.ECBViolationViewSet)
