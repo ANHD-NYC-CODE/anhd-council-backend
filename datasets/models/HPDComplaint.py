@@ -34,7 +34,7 @@ class HPDComplaint(BaseDatasetModel, models.Model):
     block = models.TextField(verbose_name="Number assigned by the NYC Dept of Finance identifying the tax block the lot is on")
     lot = models.TextField(verbose_name="Unique number assigned by the NYC Dept of Finance within a Block identifying a lot")
     apartment = models.TextField(verbose_name="Number of the unit or apartment in a building")
-    community_board = models.IntegerField(choices=[(i, i) for i in range(1, 19)], verbose_name="Unique number identifying a Community District/Board, which is a political geographical area within a borough of the City of NY")
+    community_board = models.IntegerField(choices=[(i, i) for i in range(1, 19)], null=True, verbose_name="Unique number identifying a  Community District/Board, which is a political geographical area within a borough of the City of NY")
     unit_type = models.TextField(choices=[('Apartment', 'Apartment'), ('Building', 'Building'), ('Building-Wide', 'Building-Wide'), ('Public area', 'Public area')], verbose_name="Type of space where the problem was reported")
     space_type = models.TextField(verbose_name="Type of space where the problem was reported")
     type = models.TextField(choices=[('Emergency', 'Emergency'), ('Hazardous', 'Hazardous'), ('Immediate Emergency', 'Immediate Emergency'), ('Non emergency', 'Non emergency')], verbose_name="Code indicating the problem type")
