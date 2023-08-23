@@ -23,7 +23,7 @@ class HPDComplaint(BaseDatasetModel, models.Model):
     download_endpoint = "https://data.cityofnewyork.us/resource/ygpa-z7cr.csv"
     QUERY_DATE_KEY = 'receiveddate'
     RECENT_DATE_PINNED = True
-    received_date = models.DateField(blank=True, null=True, verbose_name="Date when the complaint was received")
+    receiveddate = models.DateField(blank=True, null=True, verbose_name="Date when the complaint was received")
     problem_id = models.IntegerField(primary_key=True, blank=False, null=False, verbose_name="Unique identifier of this problem")
     complaint_id = models.IntegerField(blank=True, null=True, verbose_name="Unique identifier of the complaint this problem is associated with")
     building_id = models.ForeignKey('HPDBuildingRecord', db_column='buildingid', db_constraint=False, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Unique identifier given to a building record")
