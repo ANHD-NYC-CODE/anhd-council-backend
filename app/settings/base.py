@@ -323,6 +323,9 @@ LOGGING = {
         },
     },
     'loggers': {
+         'celery.pidbox': {
+            'level': 'INFO',
+        },
         'django': {
             'handlers': ['console'],
             'level': 'INFO',

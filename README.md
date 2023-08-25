@@ -350,5 +350,16 @@ Q: What languages/frameworks does the app use?
 React, SASS, Celery, Docker (Compose), Postgres, Python, Django, Reddis
 
 Q: How do I access the Database via PostgresQL in the local environment?
-Once inside docker, and postgresql:
+Once inside docker, and postgresql CL:
+log in with:
 psql -h localhost -U anhd -d anhd
+
+view all tables:
+\dt
+
+View all columns of a table (note:table name is case sensitive).
+ie:
+SELECT \* FROM information_schema.columns WHERE table_name='datasets_hpdcomplaint';
+
+Postgres Error when trying to deploy locally? Make sure it's part of your docker container:
+docker exec -i postgres psql -U anhd -d anhd

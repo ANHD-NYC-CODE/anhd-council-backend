@@ -6,6 +6,7 @@ from django.db.models import OuterRef, Subquery
 from datasets import models as ds
 from django.dispatch import receiver
 from core.tasks import async_download_and_update
+from core.utils.typecast import HPDComplaintTypecast
 
 
 import logging
@@ -20,13 +21,12 @@ class HPDComplaint(BaseDatasetModel, models.Model):
 
         ]
     API_ID = 'ygpa-z7cr'
-    download_endpoint = "https://data.cityofnewyork.us/resource/ygpa-z7cr.csv"
+    # download_endpoint = "https://anhd.bpbuild.com/sample.csv"
+    # download_endpoint = "https://data.cityofnewyork.us/resource/ygpa-z7cr.csv?$query=SELECT%0A%20%20%60received_date%60%2C%0A%20%20%60problem_id%60%2C%0A%20%20%60complaint_id%60%2C%0A%20%20%60building_id%60%2C%0A%20%20%60borough%60%2C%0A%20%20%60house_number%60%2C%0A%20%20%60street_name%60%2C%0A%20%20%60post_code%60%2C%0A%20%20%60block%60%2C%0A%20%20%60lot%60%2C%0A%20%20%60apartment%60%2C%0A%20%20%60community_board%60%2C%0A%20%20%60unit_type%60%2C%0A%20%20%60space_type%60%2C%0A%20%20%60type%60%2C%0A%20%20%60major_category%60%2C%0A%20%20%60minor_category%60%2C%0A%20%20%60problem_code%60%2C%0A%20%20%60complaint_status%60%2C%0A%20%20%60complaint_status_date%60%2C%0A%20%20%60problem_status%60%2C%0A%20%20%60problem_status_date%60%2C%0A%20%20%60status_description%60%2C%0A%20%20%60problem_duplicate_flag%60%2C%0A%20%20%60complaint_anonymous_flag%60%2C%0A%20%20%60unique_key%60%2C%0A%20%20%60latitude%60%2C%0A%20%20%60longitude%60%2C%0A%20%20%60council_district%60%2C%0A%20%20%60census_tract%60%2C%0A%20%20%60bin%60%2C%0A%20%20%60bbl%60%2C%0A%20%20%60nta%60%0AWHERE%0A%20%20%60received_date%60%0A%20%20%20%20BETWEEN%20%222023-08-10T23%3A46%3A15%22%20%3A%3A%20floating_timestamp%0A%20%20%20%20AND%20%222023-08-23T23%3A46%3A15%22%20%3A%3A%20floating_timestamp"
+    download_endpoint = "https://data.cityofnewyork.us/api/views/ygpa-z7cr/rows.csv?accessType=DOWNLOAD"
     QUERY_DATE_KEY = 'receiveddate'
     RECENT_DATE_PINNED = True
     
-
-
-
 
 # PRIOR HPD COMPLAINT MODEL DEFS:
     #  complaintid = models.IntegerField(
@@ -81,8 +81,7 @@ class HPDComplaint(BaseDatasetModel, models.Model):
     nta = models.TextField(null=True, blank=True, verbose_name="Neighborhood Tabulation Area of the complaint location")
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
-    bin = models.ForeignKey('Building', db_column='bin', db_constraint=False,
-                            on_delete=models.SET_NULL, null=True, blank=True)
+    bin = models.ForeignKey('Building', db_column='bin', db_constraint=False, default=0, on_delete=models.SET_NULL, null=True, blank=True)
     buildingid = models.ForeignKey('HPDBuildingRecord', db_column='buildingid', db_constraint=False, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Unique identifier given to a building record")
     borough = models.TextField(choices=[('Manhattan', 'Manhattan'), ('Bronx', 'Bronx'), ('Brooklyn', 'Brooklyn'), ('Queens', 'Queens'), ('Staten Island', 'Staten Island')])
     housenumber = models.TextField(null=True,verbose_name="Complaint house number")
@@ -101,12 +100,12 @@ class HPDComplaint(BaseDatasetModel, models.Model):
     code = models.TextField(null=True, verbose_name="The problem code")
     status = models.TextField(choices=[('Close', 'Close'), ('Open', 'Open')], null=True, verbose_name="The status of the complaint")
     statusdate = models.DateField(blank=True, null=True, verbose_name="Date when the complaint status was updated")
-    problem_status = models.TextField(choices=[('Close', 'Close'), ('Open', 'Open')], null=True, verbose_name="The status of the problem")
-    problem_status_date = models.DateField(blank=True, null=True, verbose_name="Date when the problem status was updated")
+    problemstatus = models.TextField(choices=[('Close', 'Close'), ('Open', 'Open')], null=True, verbose_name="The status of the problem")
+    problemstatusdate = models.DateField(blank=True, null=True, verbose_name="Date when the problem status was updated")
     statusdescription = models.TextField(null=True, verbose_name="Status description")
-    problem_duplicate_flag = models.TextField(choices=[('N', 'No'), ('Y', 'Yes')], null=True, verbose_name="Duplicate complaint Indicator")
-    complaint_anonymous_flag = models.TextField(choices=[('N', 'No'), ('Y', 'Yes')], null=True, verbose_name="Anonymous complaint Indicator")
-    unique_key = models.IntegerField(blank=True, null=True, verbose_name="Unique identifier of a Service Request (SR) in the open data set")
+    problemduplicateflag = models.TextField(choices=[('N', 'No'), ('Y', 'Yes')], null=True, verbose_name="Duplicate complaint Indicator")
+    complaintanonymousflag = models.TextField(choices=[('N', 'No'), ('Y', 'Yes')], null=True, verbose_name="Anonymous complaint Indicator")
+    uniquekey = models.IntegerField(blank=True, null=True, verbose_name="Unique identifier of a Service Request (SR) in the open data set")
 
     # complaint status is still mapped to this table's "status", but the prior "status" from the HPDProblem table has become "problem_status" and "problem_status_date" and will need to be mapped to the those fields across the app instead of HPD Problems.
     
@@ -124,19 +123,21 @@ class HPDComplaint(BaseDatasetModel, models.Model):
 
     @classmethod
     def pre_validation_filters(self, gen_rows):
+        typecaster = HPDComplaintTypecast(HPDComplaint)
         for row in gen_rows:
-            if is_null(row['complaintid']):
-                continue
-            yield row
-
+            if not is_null(row['complaintid']):
+                yield typecaster.cast_row(row)
+            
     # trims down new update files to preserve memory
     # uses original header values
     @classmethod
     def update_set_filter(self, csv_reader, headers):
+        typecaster = HPDComplaintTypecast(HPDComplaint)
         for row in csv_reader:
             if headers.index('StatusDate') and is_older_than(row[headers.index('StatusDate')], 4):
                 continue
-            yield row
+            yield typecaster.cast_row(row)
+            
 
     #remapping new csv column names to old column names to preserve app structure
     COLUMN_NAME_MAPPING = {
@@ -156,38 +157,56 @@ class HPDComplaint(BaseDatasetModel, models.Model):
     "majorcategory": "major_category",
     "minorcategory": "minor_category",
     "code": "problem_code",
-    "statusdescription": "status_description", #this is the status description that was previously in the HPDProblem table
+    "statusdescription": "status_description", #previously in HPDProblem
     "zip": "post_code",
     }
 
     @classmethod
-    def transform_self(self, file_path, update=None):
-        rows = self.pre_validation_filters(with_bbl(from_csv_file_to_gen(file_path, update), allow_blank=True))
-        # Transforming column names on the fly based on the new CSV mapping
-        for row in rows:
-            for new_col, old_col in COLUMN_NAME_MAPPING.items():
-                if new_col in row:
-                   if old_col:
-                      row[old_col] = row.pop(new_col)
-                   else:
-                    row.pop(new_col, None)
-        yield row
+    def update_set_filter(cls, csv_reader, headers):
+        typecaster = HPDComplaintTypecast(HPDComplaint)
+        for row in csv_reader:
+            if headers.index('problem_status_date') and is_older_than(row[headers.index('problem_status_date')], 4):
+                continue
+            yield typecaster.cast_row(row)
 
     @classmethod
+    def transform_self(self, file_path, update=None):
+        rows = self.pre_validation_filters(with_bbl(from_csv_file_to_gen(file_path, update), allow_blank=True))
+        typecaster = HPDComplaintTypecast(HPDComplaint)
+        for row in rows:
+            for new_col, old_col in HPDComplaint.COLUMN_NAME_MAPPING.items():
+                if new_col in row:
+                    if old_col:
+                        row[old_col] = row.pop(new_col)
+                    else:
+                        row.pop(new_col, None)
+            yield typecaster.cast_row(row)
+
+
+   
+    @classmethod
     def add_bins_from_buildingid(self):
+        logger.info("Starting adding bins from building id.")
         logger.debug(" * Adding BINs through building for HPD Complaints.")
         bin = ds.HPDBuildingRecord.objects.filter(
             buildingid=OuterRef('buildingid')).values_list('bin')[:1]
         self.objects.prefetch_related(
             'buildingid').all().update(bin=Subquery(bin))
+        logger.info("Completed adding bins.")
+
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
+        logger.info("Starting seed_with_upsert.")
         self.seed_with_upsert(callback=self.add_bins_from_buildingid, **kwargs)
+        logger.info("Completed seed_with_upsert.")
+
 
     @classmethod
     def annotate_properties(self):
+        logger.info("Starting annotation.")
         self.annotate_all_properties_month_offset()
+        logger.info("Completed annotation.")
 
     def __str__(self):
         return str(self.complaintid)

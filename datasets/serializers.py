@@ -668,14 +668,14 @@ class HPDComplaintSerializer(serializers.ModelSerializer):
     class Meta:
         model = ds.HPDComplaint
         fields = (
-            'received_date', 'problem_id', 'complaint_id', 'building_id',
-            'borough', 'house_number', 'street_name', 'zip',
-            'block', 'lot', 'apartment', 'community_board',
-            'unit_type', 'space_type', 'type', 'major_category',
-            'minor_category', 'problem_code', 'complaint_status',
-            'complaint_status_date', 'problem_status', 'problem_status_date',
-            'status_description', 'problem_duplicate_flag', 'complaint_anonymous_flag',
-            'unique_key', 'bbl', 'bin'
+            'receiveddate', 'problemid', 'complaintid', 'buildingid',
+            'borough', 'housenumber', 'streetname', 'zip',
+            'block', 'lot', 'apartment', 'communityboard',
+            'unittype', 'spacetype', 'type', 'majorcategory',
+            'minorcategory', 'code', 'status', 'statusdate',
+            'problemstatus', 'problemstatusdate', 'statusdescription', 
+            'problemduplicateflag', 'complaintanonymousflag', 'uniquekey', 
+            'bbl', 'bin'
         )
        
 

@@ -9,7 +9,7 @@ EMAIL_USE_TLS = True
 
 ADMINS = (
     ('Dev', 'anhd.tech@gmail.com'),
-    ('Jack T. (Conceptual)', 'jack@conceptu.al'),
+    ('Blueprint', 'dev@blueprintinteractive.com'),
     ('Anhd admin', 'dapadmin@anhd.org')
 )
 
