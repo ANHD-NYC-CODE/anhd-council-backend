@@ -8,7 +8,7 @@ from core.utils.transform import from_geojson
 # Update strategy: Upsert
 #
 # 
-# First Step: When importing new geojson dataset, Please ensure 'postalCode' is column/id name, and not zipcode for coding purposes. 
+# First Step: When importing geojson dataset, Please ensure 'postalCode' is the column/id name, and not zipcode (or "GEOID20") for coding purposes. If you must, replace all references to GEOID20 to 'postalCode' in the geojson prior to import. Alternatively, update this model to accept alternatives in the GEOJSON to 'postalCode' for imports (ie 'GEOID20') for the pk. 
 # Second Step: After updating the dataset, make sure to update or create a new map on https://studio.mapbox.com/ by uploading the shapefile dataset/zipfiles and then update the api link on the front end app "/src/LeafletMap/index.js" for the zipcode api with the new mapbox map.
 # Make sure to clear cache after. If you see overlapping layers or old dataset data still even after updating, please make sure your browser cache is cleared or test in a private browser.
 
