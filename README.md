@@ -247,3 +247,28 @@ gzip -d dap.gz && cat dap | docker exec -i postgres psql -U anhd -d anhd
       aws s3 cp s3://BUCKET_NAME/public/oca_addresses_with_bbl.csv .
       aws s3 cp s3://BUCKET_NAME/public/oca_index.csv .
 - Note: Prior to August 2023, the bucket name used was different and also didn't use the /public/ directory. Please consult a dev and make sure it's updated to the most recent bucket in any backend ENV and commands you issue. The access is being given on AWS under the IAM settings - and not via IP whitelist.
+
+### To connect using DBeaver:
+
+- Use localhost as the host (assuming you're running Docker on your local machine).
+- Use 5432 as the port (assuming you've mapped this port from your Docker container to your host, as mentioned in the previous steps).
+
+If this doesn't work, it might be because port mapping or other restrictions.
+
+1.         Disable your local host's version of postgres if it's running via osx or bash (brew services stop postgresql)
+2.          You can verify the port mapping by running this in bash:
+        docker ps | grep postgres
+        - This will show you the running PostgreSQL container and its port mappings. Ensure that 5432 inside the container is mapped to 5432 (or another port) on your host machine.
+            ie. "e4ce2dc31284 postgres:11 "docker-entrypoint.s…" 5 hours ago Up 11 minutes 0.0.0.0:5432->5432/tcp postgres"
+
+3.  If it's still not working:
+    1. Edit the config filesfor the postgres container
+       docker exec -it postgres bash -c "echo 'host all all 0.0.0.0/0 trust' >> /var/lib/postgresql/data/pg*hba.conf"
+       docker exec -it postgres bash -c "sed -i 's/^#listen_addresses =.*/listen*addresses = '*'/' /var/lib/postgresql/data/postgresql.conf"
+    2. restart postgresql
+
+### Database error on docker restart or deploy:
+
+    To check the status of the postgres database, you may type:
+        docker logs postgres
+    This will return the most recent log entry - ie. "the database system is starting up"
