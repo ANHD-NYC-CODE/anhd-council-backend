@@ -84,6 +84,7 @@ celerybeat-schedule
 *.sage.py
 
 # Environments
+Dockerfile
 docker-compose.env.yml
 gmail_credentials.json
 gmail_token.pickle
