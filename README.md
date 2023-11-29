@@ -247,3 +247,8 @@ gzip -d dap.gz && cat dap | docker exec -i postgres psql -U anhd -d anhd
       aws s3 cp s3://BUCKET_NAME/public/oca_addresses_with_bbl.csv .
       aws s3 cp s3://BUCKET_NAME/public/oca_index.csv .
 - Note: Prior to August 2023, the bucket name used was different and also didn't use the /public/ directory. Please consult a dev and make sure it's updated to the most recent bucket in any backend ENV and commands you issue. The access is being given on AWS under the IAM settings - and not via IP whitelist.
+
+### Receiving error "failed to solve: python:3.6.14: error getting credentials - err: exec: "docker-credential-desktop": executable file not found in $PATH, out" on build
+
+- Just goto config sudo nano ~/.docker/config.json
+  rename credsStore to credStore and save. This actually fixed mine (arch).
