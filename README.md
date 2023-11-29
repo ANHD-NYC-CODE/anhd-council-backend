@@ -248,13 +248,15 @@ gzip -d dap.gz && cat dap | docker exec -i postgres psql -U anhd -d anhd
       aws s3 cp s3://BUCKET_NAME/public/oca_index.csv .
 - Note: Prior to August 2023, the bucket name used was different and also didn't use the /public/ directory. Please consult a dev and make sure it's updated to the most recent bucket in any backend ENV and commands you issue. The access is being given on AWS under the IAM settings - and not via IP whitelist.
 
-<<<<<<< HEAD
 ### Receiving error "failed to solve: python:3.6.14: error getting credentials - err: exec: "docker-credential-desktop": executable file not found in $PATH, out" on build
 
-- Just goto config sudo nano ~/.docker/config.json
-  rename credsStore to credStore and save. This actually fixed mine (arch).
+- In terminal on your system, type:
+  sudo nano ~/.docker/config.json
+  in that file, rename `credsStore` to `credStore` and save.
+  
 =======
-### To connect using DBeaver:
+
+### To connect to local postgres db / backend using DBeaver:
 
 - Use localhost as the host (assuming you're running Docker on your local machine).
 - Use 5432 as the port (assuming you've mapped this port from your Docker container to your host, as mentioned in the previous steps).
@@ -278,4 +280,4 @@ If this doesn't work, it might be because port mapping or other restrictions.
     To check the status of the postgres database, you may type:
         docker logs postgres
     This will return the most recent log entry - ie. "the database system is starting up"
->>>>>>> 67fc91bf37207d414f8fbcd5b33d5fbe2e8c8d94
+
