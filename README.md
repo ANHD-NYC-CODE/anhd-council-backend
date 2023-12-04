@@ -13,11 +13,13 @@
 1. Install docker https://docs.docker.com/install/linux/docker-ce/ubuntu/#install-docker-ce and docker compose `sudo apt-get install docker-compose`
 2. Install git, clone repo
 
-## Restarting server
+## Restarting / Rebuilding Server (Not Database Content)
 
 1. ssh in
 2. `cd /var/www/anhd-council-backend`
 3. `sudo docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d`
+
+- `sh build.dev.sh` to restart the local server
 
 ## setup dev local
 
@@ -256,7 +258,7 @@ gzip -d dap.gz && cat dap | docker exec -i postgres psql -U anhd -d anhd
 
 Backend Local setup
 May need to Comment out lines 175 and 176 on docker-compose.yml - NGINX and CERBOT
-Copy .env.dev and file named .env to root directory
+Copy .env.dev and file named .env to root directory (make sure they have the "." in front of them - and that the files are hidden)
 
 Run build script
 sh build.dev.sh
@@ -386,10 +388,16 @@ view all tables:
 ie:
 SELECT \* FROM information_schema.columns WHERE table_name='datasets_hpdcomplaint';
 
-Postgres Error when trying to deploy locally? Make sure it's part of your docker container:
+# Q: Postgres Error when trying to deploy locally?
+
+Make sure it's part of your docker container:
 docker exec -i postgres psql -U anhd -d anhd
 
 # Q: I get a Docker Ownership error when trying my docker commands
 
 Reset the docker image permissions: 'sudo chown -R $USER /Users/YOUR-APPLE-HOME-FOLDER-NAME-HERE/.docker/'
 .ie: 'sudo chown -R $USER /Users/scottkutler/.docker/'
+
+# How long does 'async_annotate_properties_with_all_datasets' task take locally?
+
+About 15-30 minutes if succesful

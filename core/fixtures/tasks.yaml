@@ -36,8 +36,8 @@
     date_changed: "2019-04-25"
 - model: django_celery_beat.periodictask
   fields:
-    name: "Check and Update HPDComplaints/Problems"
-    description: "Checks api for HPDComplaint/Problems update and updates."
+    name: "Check and Update HPDComplaints & Problems"
+    description: "Checks api for HPDComplaint & Problems update and updates."
     task: "core.tasks.async_check_api_for_update_and_update"
     crontab: 11 # every 8pm
     args: "[17]"

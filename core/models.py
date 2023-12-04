@@ -41,17 +41,21 @@ class Dataset(models.Model):
         max_length=255, choices=UPDATE_SCHEDULE_CHOICES, blank=True, null=True)
 
     @classmethod
-    def annotate_properties_all(self):
+    def annotate_properties_all(cls):
+        current_model_name = None  # Initialize variable to keep track of the current model name
         try:
             for model_name in settings.ANNOTATED_DATASETS:
+                current_model_name = model_name  # Update the current model name
                 if model_name == 'AcrisRealMaster':
                     model_name = 'AcrisRealLegal'
-                dataset = self.objects.get(model_name=model_name)
+                dataset = cls.objects.get(model_name=model_name)
                 dataset.model().annotate_properties()
         except Exception as e:
-            logger.error(
-                'Error during task: {} with assumed model name: {}'.format(e, model_name))
-            raise e
+            if current_model_name:
+                logger.error(
+                    f'Error during task for model_name "{current_model_name}": {e}')
+            else:
+                logger.error(f'Error during task: {e}')
 
     def model(self):
         return getattr(ds, self.model_name)

@@ -18,11 +18,8 @@ class HPDComplaint(BaseDatasetModel, models.Model):
         indexes = [
             models.Index(fields=['bbl', '-receiveddate']),
             models.Index(fields=['-receiveddate']),
-
         ]
     API_ID = 'ygpa-z7cr'
-    # download_endpoint = "https://anhd.bpbuild.com/sample.csv"
-    # download_endpoint = "https://data.cityofnewyork.us/resource/ygpa-z7cr.csv?$query=SELECT%0A%20%20%60received_date%60%2C%0A%20%20%60problem_id%60%2C%0A%20%20%60complaint_id%60%2C%0A%20%20%60building_id%60%2C%0A%20%20%60borough%60%2C%0A%20%20%60house_number%60%2C%0A%20%20%60street_name%60%2C%0A%20%20%60post_code%60%2C%0A%20%20%60block%60%2C%0A%20%20%60lot%60%2C%0A%20%20%60apartment%60%2C%0A%20%20%60community_board%60%2C%0A%20%20%60unit_type%60%2C%0A%20%20%60space_type%60%2C%0A%20%20%60type%60%2C%0A%20%20%60major_category%60%2C%0A%20%20%60minor_category%60%2C%0A%20%20%60problem_code%60%2C%0A%20%20%60complaint_status%60%2C%0A%20%20%60complaint_status_date%60%2C%0A%20%20%60problem_status%60%2C%0A%20%20%60problem_status_date%60%2C%0A%20%20%60status_description%60%2C%0A%20%20%60problem_duplicate_flag%60%2C%0A%20%20%60complaint_anonymous_flag%60%2C%0A%20%20%60unique_key%60%2C%0A%20%20%60latitude%60%2C%0A%20%20%60longitude%60%2C%0A%20%20%60council_district%60%2C%0A%20%20%60census_tract%60%2C%0A%20%20%60bin%60%2C%0A%20%20%60bbl%60%2C%0A%20%20%60nta%60%0AWHERE%0A%20%20%60received_date%60%0A%20%20%20%20BETWEEN%20%222023-08-10T23%3A46%3A15%22%20%3A%3A%20floating_timestamp%0A%20%20%20%20AND%20%222023-08-23T23%3A46%3A15%22%20%3A%3A%20floating_timestamp"
     download_endpoint = "https://data.cityofnewyork.us/api/views/ygpa-z7cr/rows.csv?accessType=DOWNLOAD"
     QUERY_DATE_KEY = 'receiveddate'
     RECENT_DATE_PINNED = True
