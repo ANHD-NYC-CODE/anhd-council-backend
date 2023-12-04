@@ -19,8 +19,6 @@
 2. `cd /var/www/anhd-council-backend`
 3. `sudo docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d`
 
-- `sh build.dev.sh` to restart the local server
-
 ## setup dev local
 
 run "sudo docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d"
@@ -29,7 +27,7 @@ run "sudo docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d"
 
 1. Clone repo
 2. Get `.env` file from dev.
-3. Run build script `sh build.prod.sh` or `sh build.dev.sh` depending on your environment
+3. Run build script `sh build.prod.sh` or `sh build.dev.sh` depending on your environment (only need to run this once at startup)
 4. (first time startup) Shell into app container `docker exec -i -t app /bin/bash` and
 
 - create super user `python manage.py createsuperuser` (NOTE: check your email because the app will auto-generate a password despite you creating one in the wizard)
@@ -252,8 +250,11 @@ gzip -d dap.gz && cat dap | docker exec -i postgres psql -U anhd -d anhd
     - Download the Files by directly accessing the buckets: You can use the following commands to download to the current directory you're in on your local device (make sure it's not the app's directory or it may add to the repo)
       aws s3 cp s3://BUCKET_NAME/public/oca_addresses_with_bbl.csv . <!-- Bucketname is in .env file -->
       aws s3 cp s3://BUCKET_NAME/public/oca_index.csv . <!-- Bucketname is in .env file -->
-      <!-- ie: `aws s3 cp s3://oca-2-dev/public/oca_index.csv .` and `aws s3 cp s3://oca-2-dev/public/oca_addresses_with_bbl.csv . `  -->
-      - Note: Prior to August 2023, the bucket name used was different and also didn't use the /public/ directory. Please consult a dev and make sure it's updated to the most recent bucket in any backend ENV and commands you issue. The access is being given on AWS under the IAM settings - and not via IP whitelist.
+      <!-- ie:
+          `aws s3 cp s3://oca-2-dev/public/oca_index.csv .` 
+      and `aws s3 cp s3://oca-2-dev/public/oca_addresses_with_bbl.csv . `
+            NOTE:  make sure the ' .' is included or relevant destination for the downloaded files
+      - Note: Prior to August 2023, the bucket name used was different and also didn't use the /public/ directory. Please consult a dev and make sure it's updated to the most recent bucket in any backend ENV and commands you issue. The access is being given on AWS under the IAM settings - and not via IP whitelist. The aws was moved to 'oca-2-dev' bucket in 2023. Please verify your .env AND .env.dev have that
 
 ## Further Troubleshooting and Q&As:
 
@@ -318,6 +319,12 @@ Updating State Senate Districts Map:
 At https://www1.nyc.gov/site/planning/data-maps/open-data/districts-download-metadata.page, download the State Senate Districts (Clipped to Shoreline) as a .GeoJSON file, and then update the dataset on the admin panel (most likely, https://api.displacementalert.org/admin/core/update/?dataset=42)
 
 ## Troubleshooting FAQ:
+
+# Q How do I download dataset files from the remote ssh server?
+
+You may use the SCP command and point to the file/directory path on the remote server:
+ie. `scp anhd@45.55.44.160:/var/www/anhd-council-backend/data/FILE-NAME-HERE.csv .`
+Ensure you have the ` .` at the end, or a different destination in your local device. Please do not run this command in your anhd-council-backend folder (the repo folder) or any of it's subsequent folders - as it will then add the CSV to the repo.
 
 # Q I get an error when running my react build that certain node modules or scss cannot be accessed.
 
@@ -406,3 +413,9 @@ About 15-30 minutes if succesful
 # OCA Housing Court Data has API errors locally when trying to update / access AWS. How can I resolve?
 
 Please download the dataset locally as the API is firewalled. Instructions above in this document.
+
+# I'm getting an error when trying a dataset update that says it downloads correctly (as seen in Celery), but when seeding it can't find the file in the /app/data directory (may only occur on M1 Dockerized apps). `ie. FileNotFoundError: [Errno 2] No such file or directory: '/app/data/temp/clean_csv_6626886.csv'```
+
+Open the 'app' container in Docker via the terminal option in Docker. Type
+`mkdir -p /app/data/temp && chmod 777 /app/data/temp`
+This will create the temp folder and also ensure it's permissions are correct.
