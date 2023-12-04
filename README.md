@@ -246,13 +246,14 @@ gzip -d dap.gz && cat dap | docker exec -i postgres psql -U anhd -d anhd
   - After installing Amazon CLI, run "aws configure" in your command line, typing in the credentials from the env.
   - It will prompt you for the following:
     AWS Access Key ID - Enter your OCA_AWS_SECRET_KEY_ID.  
-     AWS Secret Access Key - Enter your OCA_AWS_SECRET_ACCESS_KEY.
+    AWS Secret Access Key - Enter your OCA_AWS_SECRET_ACCESS_KEY.
     Default region name - Default.
     Default output format - You can leave this as the default (blank)
-    - Download the Files by directly accessing the buckets: You can use the following commands to download to the current directory you're in on your local device:
-      aws s3 cp s3://BUCKET_NAME/public/oca_addresses_with_bbl.csv .
-      aws s3 cp s3://BUCKET_NAME/public/oca_index.csv .
-- Note: Prior to August 2023, the bucket name used was different and also didn't use the /public/ directory. Please consult a dev and make sure it's updated to the most recent bucket in any backend ENV and commands you issue. The access is being given on AWS under the IAM settings - and not via IP whitelist.
+    - Download the Files by directly accessing the buckets: You can use the following commands to download to the current directory you're in on your local device (make sure it's not the app's directory or it may add to the repo)
+      aws s3 cp s3://BUCKET_NAME/public/oca_addresses_with_bbl.csv . <!-- Bucketname is in .env file -->
+      aws s3 cp s3://BUCKET_NAME/public/oca_index.csv . <!-- Bucketname is in .env file -->
+      <!-- ie: `aws s3 cp s3://oca-2-dev/public/oca_index.csv .` and `aws s3 cp s3://oca-2-dev/public/oca_addresses_with_bbl.csv . `  -->
+      - Note: Prior to August 2023, the bucket name used was different and also didn't use the /public/ directory. Please consult a dev and make sure it's updated to the most recent bucket in any backend ENV and commands you issue. The access is being given on AWS under the IAM settings - and not via IP whitelist.
 
 ## Further Troubleshooting and Q&As:
 
@@ -401,3 +402,7 @@ Reset the docker image permissions: 'sudo chown -R $USER /Users/YOUR-APPLE-HOME-
 # How long does 'async_annotate_properties_with_all_datasets' task take locally?
 
 About 15-30 minutes if succesful
+
+# OCA Housing Court Data has API errors locally when trying to update / access AWS. How can I resolve?
+
+Please download the dataset locally as the API is firewalled. Instructions above in this document.
