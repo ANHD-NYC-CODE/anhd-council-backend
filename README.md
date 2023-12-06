@@ -15,19 +15,26 @@
 
 ## Restarting / Rebuilding Server (Not Database Content)
 
-1. ssh in
+# PRODUCTION RESTART/REBUILD:
+
+1. ssh in via `ssh anhd@45.55.44.160` in terminal (Make sure your device is whitelisted with digitalocean)
 2. `cd /var/www/anhd-council-backend`
 3. `sudo docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d`
 
-## setup dev local
+# DEV REBUILD/RESTART
 
-run "sudo docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d"
+In terminal, navigate to the 'anhd-council-backend' root folder on your local device and type:
+`sudo docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d`
+The dev restart progress should also appear in docker.
+(Build with sh build.dev.sh)
 
-## Production Startup
+## Production / Dev Startup
 
 1. Clone repo
 2. Get `.env` file from dev.
-3. Run build script `sh build.prod.sh` or `sh build.dev.sh` depending on your environment (only need to run this once at startup)
+3. Run build script `sh build.prod.sh` or `sudo sh build.dev.sh` depending on your environment
+   If the build fails with an error regarding the database starting up, you may run
+   `sudo docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d` to restart it
 4. (first time startup) Shell into app container `docker exec -i -t app /bin/bash` and
 
 - create super user `python manage.py createsuperuser` (NOTE: check your email because the app will auto-generate a password despite you creating one in the wizard)
@@ -105,7 +112,7 @@ To add a migration, run `docker exec -it app /bin/bash` and then run `python man
 
 You can load tasks with `python manage.py loaddata crontabs` and `python manage.py loaddata tasks` or add them manually in the `periodic tasks` section of the admin panel.
 
-I recommend going through the admin panel and adding it in manually because rewriting all the tasks with a new bulk upload using the `loaddata` command has run into problems.
+I recommend going through the admin panel and adding it in manually because rewriting all the tasks with a new bulk upload using the `loaddata` command has run into problems. Please also make sure to add them to the cron yaml if you add them manually to the backend.
 
 ### Manually triggering tasks
 
@@ -113,7 +120,7 @@ I recommend going through the admin panel and adding it in manually because rewr
 2. go to https://api.displacementalert.org/admin/django_celery_beat/periodictask/
 3. Select the task
 4. in the "action" dropdown, select "run selected tasks" and click "go".
-5. monitor tasks in flower https://tasks.displacementalert.org
+5. monitor tasks in flower https://tasks.displacementalert.org (or localhost:8888 on dev)
 
 ### Updating Pluto or PAD
 
@@ -131,7 +138,8 @@ If you update Pluto / `Property`, you also need to update `Buildings`, `PADRecor
 1. Login to admin
 2. go to https://api.displacementalert.org/admin/core/dataset/
 3. select a dataset
-4. click "Download File"
+4. click "Download CSV"
+<!-- DEV NOTE: The download source button may not work, and the download data-file from updates history doesn't work at all. Error "Not Found. The requested resource was not found on this server." will occur -->
 
 ### Manually updating datasets
 
@@ -213,6 +221,7 @@ Please view the test suite `PropertyAdvancedFilterTests` in `datasets/tests/filt
 
 1. bash into the app `docker exec -it app bash`
 2. run `python manage.py test`
+<!-- Dev Note: Most likely, these tests will fail as they may not have been updated since inception of app -->
 
 ### Database Dumps
 
@@ -233,7 +242,8 @@ gzip -d dap.gz && cat dap | docker exec -i postgres psql -U anhd -d anhd
 
 ### CRON / Periodic Tasks Not Running
 
-- If the Flower Periodic Tasks fail to automatically run, like the nightly cache reset or any automatic updates:
+If the Flower Periodic Tasks fail to automatically run, like the nightly cache reset or any automatic updates:
+
 - 1. log into the droplet / remote server via terminal or digitalocean console
 - 2. delete the celerybeat PID file from its backend folder
 - 3. redeploy the backend
@@ -300,23 +310,22 @@ Check dataset models for specific instructions\*
 Stop postgres (if necessary) brew services stop postgresql
 Connect to database (host anhd, user anhd)
 
-To Stop Docker/Reset
+# To Stop Docker from Command Line
+
 docker-compose stop app
 
-Staging URL: staging.portal.displacementalert.org
+# Frontend Staging URL: staging.portal.displacementalert.org
 
 Deployment
 Deployed via “deploy.sh”
 
-Troubleshooting
+# Troubleshooting
+
 Check logs for the containers
-To see names of containers
+To see names of containers (or just open Docker if dev envirnoment)
 docker ps
 docker-compose logs -f app
 docker-compose logs -f postgres
-
-Updating State Senate Districts Map:
-At https://www1.nyc.gov/site/planning/data-maps/open-data/districts-download-metadata.page, download the State Senate Districts (Clipped to Shoreline) as a .GeoJSON file, and then update the dataset on the admin panel (most likely, https://api.displacementalert.org/admin/core/update/?dataset=42)
 
 ## Troubleshooting FAQ:
 
@@ -341,9 +350,13 @@ A: Please ensure ENV file is in the root directory and also hidden (appended wit
 
 Please make sure your postgress is running (it should also show up in your docker)
 
+# Q Updating State Senate Districts Map:
+
+At https://www1.nyc.gov/site/planning/data-maps/open-data/districts-download-metadata.page, download the State Senate Districts (Clipped to Shoreline) as a .GeoJSON file, and then update the dataset on the admin panel (most likely, https://api.displacementalert.org/admin/core/update/?dataset=42)
+
 # Q CeleryBeat is stuck. What do I do?
 
-A: Delete the celerybeat.pid file and restart the stack (via sh restart.dev.sh)
+A: Delete the celerybeat.pid file and restart the stack (via sudo sh restart.dev.sh)
 
 # Q How do I restart (or start up) the Backend Dev DB?
 
@@ -410,12 +423,25 @@ Reset the docker image permissions: 'sudo chown -R $USER /Users/YOUR-APPLE-HOME-
 
 About 15-30 minutes if succesful
 
-# OCA Housing Court Data has API errors locally when trying to update / access AWS. How can I resolve?
+# OCA Housing Court Data has API errors locally when trying to update / access AWS on dev. How can I resolve?
 
-Please download the dataset locally as the API is firewalled. Instructions above in this document.
+Please make sure your device ip is whitelisted with oca / route53. You can test it by doing the `Viewing the OCA Housing Raw Data (As of 8/15/23)` instructions from your terminal
 
 # I'm getting an error when trying a dataset update that says it downloads correctly (as seen in Celery), but when seeding it can't find the file in the /app/data directory (may only occur on M1 Dockerized apps). `ie. FileNotFoundError: [Errno 2] No such file or directory: '/app/data/temp/clean_csv_6626886.csv'```
 
 Open the 'app' container in Docker via the terminal option in Docker. Type
 `mkdir -p /app/data/temp && chmod 777 /app/data/temp`
 This will create the temp folder and also ensure it's permissions are correct.
+
+# When I go to http://localhost:8000/ocahousingcourts/ or https://api.displacementalert.org/ocahousingcourts/, it says `{"detail": "Authentication credentials were not provided."}` and has no results.
+
+This is the correct action since this API is not open. You may view the raw data via postgres or the portal.
+
+# The # of results / count for my dataset is wrong for results in search/filter, even though I know that the dataset seeded and updated correctly.
+
+Dev Note: As far as I can tell, each dataset attempts to annotate the properties affected by it when the individual dataset has imported and is done seeding. I believe if the annotation fails, you may need to run "annotate properties all" from the periodic tasks dashboard (dev: http://localhost:8000/admin/django_celery_beat/periodictask/, production: http://api.displacementalert.org/admin/django_celery_beat/periodictask/) or re-run the update. Without updated property annotations, though the data may be present when looking at the raw dataset table - or even an individual property (as it pulls the data directly from the table), the counts / results per property (and thus all counts in filters/results) may be wrong or oudated. Also consider looking at the error during the annotation - as it may be due to other datasets missing data that this dataset relies on (ie. bbls, etc).
+
+# There seems to be an orphaned / failed CeleryWorker that I cannot remove that is stopping further tasks and deleting the task doesn't work or has an error.
+
+You can reboot the celeryworker via command line:
+`sudo docker exec -it app celery -A app worker -Q update -l debug -n update_worker --concurrency=8 --logfile=./celery/logs/update.log``

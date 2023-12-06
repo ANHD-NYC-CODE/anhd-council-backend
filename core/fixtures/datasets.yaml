@@ -11,7 +11,7 @@
   fields:
     name: Properties
     model_name: Property
-    automated: False
+    automated: True
     update_schedule: "when needed"
     update_instructions: "1) Visit https://www1.nyc.gov/site/planning/data-maps/open-data/dwn-pluto-mappluto.page 2) Download latest Pluto version in CSV format (comes in zipfile). 3) Upload zipfile to app. 4) Create an update. 5) Update the version number in the codebase."
 - model: core.dataset
