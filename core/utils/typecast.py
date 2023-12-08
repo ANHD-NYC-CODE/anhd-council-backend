@@ -238,3 +238,54 @@ class Typecast():
             else:
                 d[field.name] = lambda x: x
         return d
+
+class HPDComplaintTypecast(Typecast):
+    def cast_row(self, row):
+        if 'post_code' in row:
+            row['zip'] = row.pop('post_code')
+        if 'postcode' in row:
+            row['zip'] = row.pop('postcode')
+        if 'problemcode' in row:
+            row['code'] = row.pop('problemcode')
+        if 'problem_code' in row:
+            row['code'] = row.pop('problem_code')
+        if 'complaintstatus' in row:
+            row['status'] = row.pop('complaintstatus')
+        if 'complaint_status' in row:
+            row['status'] = row.pop('complaint_status')
+        if 'complaintstatusdate' in row:
+            row['statusdate'] = row.pop('complaintstatusdate')
+        if 'councildistrict' in row:
+            row['council_district'] = row.pop('councildistrict')
+        if 'censustract' in row:
+            row['census_tract'] = row.pop('censustract')
+        if 'complaint_status_date' in row:
+            row['statusdate'] = row.pop('complaint_status_date')
+        if 'council_district' in row:
+            row['council_district'] = row.pop('council_district')
+        if 'complaint_id' in row:
+            row['complaintid'] = row.pop('complaint_id')
+        if 'building_id' in row:
+            row['buildingid'] = row.pop('building_id')
+        if 'house_number' in row:
+            row['housenumber'] = row.pop('house_number')
+        if 'street_name' in row:
+            row['streetname'] = row.pop('street_name')
+        if 'community_board' in row:
+            row['communityboard'] = row.pop('community_board')
+        if 'unit_type' in row:
+            row['unittype'] = row.pop('unit_type')
+        if 'space_type' in row:
+            row['spacetype'] = row.pop('space_type')
+        if 'received_date' in row:
+            row['receiveddate'] = row.pop('received_date')
+        if 'problem_id' in row:
+            row['problemid'] = row.pop('problem_id')
+        if 'major_category' in row:
+            row['majorcategory'] = row.pop('major_category')
+        if 'minor_category' in row:
+            row['minorcategory'] = row.pop('minor_category')
+        if 'status_description' in row:
+            row['statusdescription'] = row.pop('status_description')
+        # Now proceed with the normal casting
+        return super().cast_row(row)

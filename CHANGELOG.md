@@ -1,4 +1,4 @@
-# API CHANGELOG
+# API CHANGELOG (Outdated. Please use GIT LOG for version updates)
 
 ### V1.0.11
 

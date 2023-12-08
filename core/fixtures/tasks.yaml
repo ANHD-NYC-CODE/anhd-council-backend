@@ -36,22 +36,13 @@
     date_changed: "2019-04-25"
 - model: django_celery_beat.periodictask
   fields:
-    name: "Check and Update HPDComplaint"
-    description: "Checks api for HPDComplaint update and updates."
+    name: "Check and Update HPDComplaints & Problems"
+    description: "Checks api for HPDComplaint & Problems update and updates."
     task: "core.tasks.async_check_api_for_update_and_update"
     crontab: 11 # every 8pm
     args: "[17]"
     kwargs: "{}"
-    date_changed: "2019-04-25"
-- model: django_celery_beat.periodictask
-  fields:
-    name: "Check and Update HPDProblem"
-    description: "Checks api for HPDProblem update and updates."
-    task: "core.tasks.async_check_api_for_update_and_update"
-    crontab: 11 # every 8pm
-    args: "[18]"
-    kwargs: "{}"
-    date_changed: "2019-04-25"
+    date_changed: "2022-04-25"
 - model: django_celery_beat.periodictask
   fields:
     name: "Check and Update HPDRegistration"
@@ -132,6 +123,15 @@
     args: "[11]"
     kwargs: "{}"
     date_changed: "2019-04-25"
+- model: django_celery_beat.periodictask
+  fields:
+    name: "Check and Update Properties / Pluto (Monthly)"
+    description: "Check and Update Properties / Pluto automatically"
+    task: "core.tasks.async_check_api_for_update_and_update"
+    crontab: 21 # once a month on the 6th
+    args: "[2]"
+    kwargs: "{}"
+    date_changed: "2023-06-25"
 - model: django_celery_beat.periodictask
   fields:
     name: "Check and Update DOBFiledPermit"
@@ -222,6 +222,7 @@
     args: "[]"
     kwargs: "{}"
     date_changed: "2019-04-25"
+
 - model: django_celery_beat.periodictask
   fields:
     name: "Recount Property Annotations"

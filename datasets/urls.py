@@ -136,12 +136,8 @@ properties_router.register(
     parents_query_lookups=['bbl']
 )
 
-properties_router.register(
-    'hpdproblems',
-    v.hpdproblem_views.HPDProblemViewSet,
-    base_name='property-hpdproblems',
-    parents_query_lookups=['complaintid__bbl']
-)
+
+
 
 properties_router.register(
     'dobviolations',
@@ -461,16 +457,7 @@ hpdbuildings_router.register(
 )
 
 router.register(r'hpdviolations', v.hpdviolation_views.HPDViolationViewSet)
-hpdcomplaints_router = router.register(
-    r'hpdcomplaints', v.hpdcomplaint_views.HPDComplaintViewSet)
-hpdcomplaints_router.register(
-    'hpdproblems',
-    v.hpdproblem_views.HPDProblemViewSet,
-    base_name='building-hpdproblems',
-    parents_query_lookups=['complaintid']
-)
-
-router.register(r'hpdproblems', v.hpdproblem_views.HPDProblemViewSet)
+router.register(r'hpdcomplaints', v.hpdcomplaint_views.HPDComplaintViewSet)
 router.register(r'dobviolations', v.dobviolation_views.DOBViolationViewSet)
 router.register(r'dobcomplaints', v.dobcomplaint_views.DOBComplaintViewSet)
 router.register(r'ecbviolations', v.ecbviolation_views.ECBViolationViewSet)

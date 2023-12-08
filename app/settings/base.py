@@ -323,6 +323,9 @@ LOGGING = {
         },
     },
     'loggers': {
+         'celery.pidbox': {
+            'level': 'INFO',
+        },
         'django': {
             'handlers': ['console'],
             'level': 'INFO',
@@ -380,7 +383,6 @@ ACTIVE_MODELS = [
     'HousingLitigation',
     'HPDBuildingRecord',
     'HPDComplaint',
-    'HPDProblem',
     'HPDContact',
     'HPDRegistration',
     'HPDViolation',

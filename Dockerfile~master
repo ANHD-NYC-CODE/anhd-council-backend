@@ -7,10 +7,10 @@ ADD Pipfile Pipfile
 RUN pipenv install --deploy --system
 EXPOSE 8000
 
-# NEW VERSION (DOCKERIZED for m1)
 
+# NEW VERSION (DOCKERIZED)
 # # Use the specified base image
-# FROM python:3.6.14  
+# FROM python:3.6.14
 
 # # Update and install system dependencies
 # RUN apt-get update && apt-get install -y \

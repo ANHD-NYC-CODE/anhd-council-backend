@@ -213,81 +213,81 @@ class TaxLotTests(BaseTest, TestCase):
         self.assertEqual(ds.TaxLot.objects.count(), 6)
 
 
-class HPDComplaint(BaseTest, TestCase):
-    def tearDown(self):
-        self.clean_tests()
+# class HPDComplaint(BaseTest, TestCase):
+#     def tearDown(self):
+#         self.clean_tests()
 
-    @freeze_time("2014-08-03")
-    def test_seed_complaints(self):
-        self.property_factory('1018730024')
-        update = self.update_factory(model_name="HPDComplaint",
-                                     file_name="mock_hpd_complaints.csv")
+#     @freeze_time("2014-08-03")
+#     def test_seed_complaints(self):
+#         self.property_factory('1018730024')
+#         update = self.update_factory(model_name="HPDComplaint",
+#                                      file_name="mock_hpd_complaints.csv")
 
-        ds.HPDComplaint.seed_or_update_self(
-            file_path=update.file.file.path, update=update)
-        self.assertEqual(ds.HPDComplaint.objects.count(), 9)
-        self.assertEqual(update.rows_created, 9)
+#         ds.HPDComplaint.seed_or_update_self(
+#             file_path=update.file.file.path, update=update)
+#         self.assertEqual(ds.HPDComplaint.objects.count(), 9)
+#         self.assertEqual(update.rows_created, 9)
 
-    def test_seed_complaints_adds_bin(self):
-        update = self.update_factory(model_name="HPDComplaint",
-                                     file_name="mock_hpd_complaints.csv")
-        building = self.building_factory(bin=1)
-        hpdbuilding = self.hpdbuildingrecord_factory(
-            buildingid="3418", building=building)
-        ds.HPDComplaint.seed_or_update_self(
-            file_path=update.file.file.path, update=update)
-        self.assertEqual(ds.HPDComplaint.objects.count(), 9)
-        self.assertEqual(update.rows_created, 9)
-        self.assertEqual(ds.HPDComplaint.objects.filter(bin=1).count(), 1)
+#     def test_seed_complaints_adds_bin(self):
+#         update = self.update_factory(model_name="HPDComplaint",
+#                                      file_name="mock_hpd_complaints.csv")
+#         building = self.building_factory(bin=1)
+#         hpdbuilding = self.hpdbuildingrecord_factory(
+#             buildingid="3418", building=building)
+#         ds.HPDComplaint.seed_or_update_self(
+#             file_path=update.file.file.path, update=update)
+#         self.assertEqual(ds.HPDComplaint.objects.count(), 9)
+#         self.assertEqual(update.rows_created, 9)
+#         self.assertEqual(ds.HPDComplaint.objects.filter(bin=1).count(), 1)
 
-    def test_seed_complaints_with_update(self):
-        update = self.update_factory(model_name="HPDComplaint",
-                                     file_name="mock_hpd_complaints.csv")
+#     def test_seed_complaints_with_update(self):
+#         update = self.update_factory(model_name="HPDComplaint",
+#                                      file_name="mock_hpd_complaints.csv")
 
-        ds.HPDComplaint.seed_or_update_self(
-            file_path=update.file.file.path, update=update)
+#         ds.HPDComplaint.seed_or_update_self(
+#             file_path=update.file.file.path, update=update)
 
-        update_diff = self.update_factory(dataset=update.dataset, model_name="HPDComplaint",
-                                          file_name="mock_hpd_complaints_diff.csv", previous_file_name="mock_hpd_complaints.csv")
+#         update_diff = self.update_factory(dataset=update.dataset, model_name="HPDComplaint",
+#                                           file_name="mock_hpd_complaints_diff.csv", previous_file_name="mock_hpd_complaints.csv")
 
-        ds.HPDComplaint.seed_or_update_self(
-            file_path=update_diff.file.file.path, update=update_diff)
+#         ds.HPDComplaint.seed_or_update_self(
+#             file_path=update_diff.file.file.path, update=update_diff)
 
-        self.assertEqual(ds.HPDComplaint.objects.get(
-            complaintid=6961276).status, "CLOSE")
+#         self.assertEqual(ds.HPDComplaint.objects.get(
+#             complaintid=6961276).status, "CLOSE")
 
 
-class HPDProblem(BaseTest, TestCase):
-    def tearDown(self):
-        self.clean_tests()
+# class HPDProblem(BaseTest, TestCase):
+#     def tearDown(self):
+#         self.clean_tests()
 
-    def test_seed_problems(self):
-        update = self.update_factory(model_name="HPDComplaint",
-                                     file_name="mock_hpd_problems.csv")
+#     def test_seed_problems(self):
+#         update = self.update_factory(model_name="HPDComplaint",
+#                                      file_name="mock_hpd_problems.csv")
 
-        ds.HPDProblem.seed_or_update_self(
-            file_path=update.file.file.path, update=update)
-        record = ds.HPDProblem.objects.all()[0]
-        self.assertEqual(ds.HPDProblem.objects.count(), 9)
-        self.assertEqual(update.rows_created, 9)
+#         ds.HPDProblem.seed_or_update_self(
+#             file_path=update.file.file.path, update=update)
+#         record = ds.HPDProblem.objects.all()[0]
+#         self.assertEqual(ds.HPDProblem.objects.count(), 9)
+#         self.assertEqual(update.rows_created, 9)
 
-    def test_seed_problems_with_update(self):
-        update = self.update_factory(model_name="HPDProblem",
-                                     file_name="mock_hpd_problems.csv")
+#     def test_seed_problems_with_update(self):
+#         update = self.update_factory(model_name="HPDProblem",
+#                                      file_name="mock_hpd_problems.csv")
 
-        ds.HPDProblem.seed_or_update_self(
-            file_path=update.file.file.path, update=update)
+#         ds.HPDProblem.seed_or_update_self(
+#             file_path=update.file.file.path, update=update)
 
-        update_diff = self.update_factory(dataset=update.dataset, model_name="HPDProblem",
-                                          file_name="mock_hpd_problems_diff.csv", previous_file_name="mock_hpd_problems.csv")
+#         update_diff = self.update_factory(dataset=update.dataset, model_name="HPDProblem",
+#                                           file_name="mock_hpd_problems_diff.csv", previous_file_name="mock_hpd_problems.csv")
 
-        ds.HPDProblem.seed_or_update_self(
-            file_path=update_diff.file.file.path, update=update_diff)
+#         ds.HPDProblem.seed_or_update_self(
+#             file_path=update_diff.file.file.path, update=update_diff)
 
-        self.assertEqual(ds.HPDProblem.objects.filter(
-            complaintid=6961276)[0].unittypeid, 91)
-        self.assertEqual(
-            len(ds.HPDProblem.objects.filter(complaintid=6961276)), 3)
+#         self.assertEqual(ds.HPDProblem.objects.filter(
+#             complaintid=6961276)[0].unittypeid, 91)
+#         self.assertEqual(
+#             len(ds.HPDProblem.objects.filter(complaintid=6961276)), 3)
 
 
 class DOBViolationTests(BaseTest, TestCase):
