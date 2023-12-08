@@ -121,7 +121,7 @@
     name: HPD Complaints & Problems
     model_name: HPDComplaint
     automated: True
-    update_schedule: "monthly"
+    update_schedule: "daily"
 - model: core.dataset
   pk: 19
   fields:

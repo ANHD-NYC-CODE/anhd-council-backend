@@ -317,7 +317,7 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         )
         return factory
 
-    # HPD COmplaints and Problems have been merged to one api endpoint/dataset as of 8/2023
+    # HPD Complaints and Problems have been merged to one api endpoint/dataset as of 8/2023
     # def hpdcomplaint_factory(self, complaintid=None, property=None, building=None, hpdbuilding=None, **kwargs):
     #     name = 'HPDComplaint'
     #     if not complaintid:
@@ -341,7 +341,6 @@ class BaseTest(APITestCase, URLPatternsTestCase):
     #         **kwargs
     #     )
     #     return factory
-
 
     # def hpdproblem_factory(self, problemid=None, complaint=None, **kwargs):
     #     name = 'HPDProblem'

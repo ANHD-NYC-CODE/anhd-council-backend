@@ -15,18 +15,22 @@
 
 ## Restarting / Rebuilding Server (Not Database Content)
 
-# PRODUCTION RESTART/REBUILD:
+# PRODUCTION RESTART
 
 1. ssh in via `ssh anhd@45.55.44.160` in terminal (Make sure your device is whitelisted with digitalocean)
 2. `cd /var/www/anhd-council-backend`
 3. `sudo docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d`
 
-# DEV REBUILD/RESTART
+# DEV RESTART
 
 In terminal, navigate to the 'anhd-council-backend' root folder on your local device and type:
 `sudo docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d`
 The dev restart progress should also appear in docker.
 (Build with sh build.dev.sh)
+
+# DEV REBUILD
+
+Run: sudo sh build.dev.sh
 
 ## Production / Dev Startup
 
@@ -480,3 +484,9 @@ A: It's possible the cache needs to be reset on the backend. You may do so (dev:
 If it's still an issue, I'd recommend making sure the data is in the raw database in postgres. If the data is present, but still not showing up in search results or the property table - ensure that other datasets that may be dependent on that data are up to date - ie. creating Address Records depends on the PAD record which depends on the Building record which depends on the Properties being up to date.
 
 Other issues may be occuring like a failed join / merge of the source csv or a failed data cleaning upon updating from the datasets. You may consider checking the celery logs for specific errors in this regard (in the celery folder) or if dev and dockerized, you may look in the containers themselves.
+
+## Error 'failed to solve: python:3.6.14: error getting credentials - err: exec: "docker-credential-desktop": executable file not found in \$PATH, out...' when trying to make dev build or restart it.
+
+1. Please make sure you have the correct Dockerfile in your backend root directory
+2. If the issue persists and your Dockerfile and env are correct, navigate to ~/.docker/config.json change `credsStore` to `credStore` (plural to singular)
+3. As a note: you may have to do this sometimes when you rebuild the app's docker container. There seems to be a bug reverting it.

@@ -387,7 +387,8 @@ class PropertyCustomSearchSerializer(serializers.ModelSerializer):
                 if hasattr(obj, serializer_count_key):
                     # annotated from api_helpers.py #prefetch_annotated_datasets
                     try:
-                        filter_counts = [elem for elem in dir(obj) if bool(re.search(filter_search_str, elem))]
+                        filter_counts = [elem for elem in dir(obj) if bool(
+                            re.search(filter_search_str, elem))]
                         rep[get_context_field(dataset_prefix)] = getattr(
                             obj, filter_counts[0])
                         for filter_count in filter_counts[1:]:
@@ -395,7 +396,7 @@ class PropertyCustomSearchSerializer(serializers.ModelSerializer):
                                 obj, filter_count)
                     except IndexError:
                         rep[get_context_field(dataset_prefix)] = getattr(
-                        obj, serializer_count_key)
+                            obj, serializer_count_key)
 
             except ds.PropertyAnnotation.DoesNotExist:
                 logger.warning('No property annotation for {}'.format(obj.bbl))
@@ -654,7 +655,7 @@ class HPDComplaintCsvSerializer(serializers.ModelSerializer):
         model = ds.HPDComplaint
         fields = '__all__'
 
-#Replacing this serializer with merged serializer below
+# Replacing this serializer with merged serializer below
 # class HPDComplaintSerializer(serializers.ModelSerializer):
 #     hpdproblems = HPDProblemSerializer(
 #         source='hpdproblem_set', many=True, read_only=True)
@@ -663,6 +664,7 @@ class HPDComplaintCsvSerializer(serializers.ModelSerializer):
 #         model = ds.HPDComplaint
 #         fields = ('complaintid', 'hpdproblems', 'status', 'statusid',
 #                   'statusdate', 'apartment', 'receiveddate')
+
 
 class HPDComplaintSerializer(serializers.ModelSerializer):
     class Meta:
@@ -673,11 +675,10 @@ class HPDComplaintSerializer(serializers.ModelSerializer):
             'block', 'lot', 'apartment', 'communityboard',
             'unittype', 'spacetype', 'type', 'majorcategory',
             'minorcategory', 'code', 'status', 'statusdate',
-            'problemstatus', 'problemstatusdate', 'statusdescription', 
-            'problemduplicateflag', 'complaintanonymousflag', 'uniquekey', 
+            'problemstatus', 'problemstatusdate', 'statusdescription',
+            'problemduplicateflag', 'complaintanonymousflag', 'uniquekey',
             'bbl', 'bin'
         )
-       
 
 
 class DOBViolationSerializer(serializers.ModelSerializer):

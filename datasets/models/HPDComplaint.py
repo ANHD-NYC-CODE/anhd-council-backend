@@ -156,7 +156,6 @@ class HPDComplaint(BaseDatasetModel, models.Model):
                 yield typecaster.cast_row(row)
 
     # trims down new update files to preserve memory
-    # uses original header values
     @classmethod
     def update_set_filter(self, csv_reader, headers):
         typecaster = HPDComplaintTypecast(HPDComplaint)
@@ -187,6 +186,7 @@ class HPDComplaint(BaseDatasetModel, models.Model):
         "zip": "post_code",
     }
 
+    # This function needs to be verified to see that it still works
     @classmethod
     def update_set_filter(cls, csv_reader, headers):
         typecaster = HPDComplaintTypecast(HPDComplaint)
