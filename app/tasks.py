@@ -199,6 +199,24 @@ def get_query_result_hash_and_length(query_string):
         'hash': result_hash,
         'length': result_length
     }
+    
+# We created this function to resolve the issue with current date appearing in search results.
+def get_query_result_hash_and_length_bbl(query_string):
+    token = settings.CACHE_REQUEST_KEY
+    auth_headers = {'whoisit': token}
+    root_url = 'http://app:8000' if settings.DEBUG else 'https://api.displacementalert.org'
+    # Run query on server and hash results
+    r = requests.get(root_url + query_string, headers=auth_headers)
+    result = r.json()
+    bbls = [item['bbl'] for item in result]
+    bbls_string = json.dumps(bbls, sort_keys=True).encode('utf-8')
+    result_hash = hashlib.sha256(bbls_string).hexdigest()
+    result_length = len(bbls)
+
+    return {
+        'hash': result_hash,
+        'length': result_length,
+    }
 
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', acks_late=True, max_retries=1)
 def async_update_custom_search_result_hash(self, custom_search_id, just_created=False):
@@ -208,7 +226,7 @@ def async_update_custom_search_result_hash(self, custom_search_id, just_created=
         logger.info(
             'Starting query for this custom search: {}'.format(custom_search.id))
         if custom_search:
-            result_hash = get_query_result_hash_and_length(query)['hash']
+            result_hash = get_query_result_hash_and_length_bbl(query)['hash']
             custom_search.result_hash_digest = result_hash
             custom_search.save()
         else:
@@ -269,7 +287,7 @@ def check_notifications_custom_search(notification_frequency):
         frontend_url = custom_search.frontend_url
 
         # Get new hash for result
-        result_hash_length = get_query_result_hash_and_length(query)
+        result_hash_length = get_query_result_hash_and_length_bbl(query)
         new_result_hash = result_hash_length['hash']
         new_result_length = result_hash_length['length']
         if past_result_hash != new_result_hash:
@@ -302,7 +320,7 @@ def check_notifications_custom_search(notification_frequency):
                         try:
                             new_results_url = replace_date_in_url(full_url, last_date, timezone.now().astimezone(est) - timedelta(days=1))
                             new_backend_query = replace_date_in_url(query, last_date, timezone.now().astimezone(est) - timedelta(days=1))
-                            new_result_hash_length = get_query_result_hash_and_length(new_backend_query)
+                            new_result_hash_length = get_query_result_hash_and_length_bbl(new_backend_query)
                             if new_result_hash_length['length'] <= 0:
                                 new_results_url = ''
                             new_results_count = new_result_hash_length['length']
