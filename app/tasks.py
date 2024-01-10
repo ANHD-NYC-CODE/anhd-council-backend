@@ -211,11 +211,14 @@ def get_query_result_hash_and_length_bbl(query_string):
     if not result:
         bbls = []
     else:
-        bbls = [item['bbl'] for item in result]
+        try:
+            bbls = [item['bbl'] for item in result]
+        except Exception as e:
+            bbls = []
+    
     bbls_string = json.dumps(bbls, sort_keys=True).encode('utf-8')
     result_hash = hashlib.sha256(bbls_string).hexdigest()
     result_length = len(bbls)
-
     return {
         'hash': result_hash,
         'length': result_length,
