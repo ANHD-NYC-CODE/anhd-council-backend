@@ -208,17 +208,9 @@ def get_query_result_hash_and_length_bbl(query_string):
     # Run query on server and hash results
     r = requests.get(root_url + query_string, headers=auth_headers)
     result = r.json()
-    if(len(result) > 0):
-        date_removed = [
-            {k: v for k, v in item.items() if not k.startswith('evictions__') and not k.startswith('ocahousingcourts__') and not k.startswith('hpdviolations__') and not k.startswith('hpdcomplaints__') and not k.startswith('housinglitigations__') and not k.startswith('foreclosures__') and not k.startswith('acrisrealmasters__') and not k.startswith('dobcomplaints__')}
-            for item in result
-        ]
-    else:
-        date_removed = result
-    cleaned_string = json.dumps(date_removed, sort_keys=True).encode('utf-8')
-    result_hash = hashlib.sha256(cleaned_string).hexdigest()
-    result_length = len(date_removed)
-
+    result_json = json.dumps(result, sort_keys=True).encode('utf-8')
+    result_hash = hashlib.sha256(result_json).hexdigest()
+    result_length = len(result)
     return {
         'hash': result_hash,
         'length': result_length
