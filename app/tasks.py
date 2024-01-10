@@ -297,8 +297,9 @@ def check_notifications_custom_search(notification_frequency):
         result_hash_length = get_query_result_hash_and_length_bbl(query)
         new_result_hash = result_hash_length['hash']
         new_result_length = result_hash_length['length']
-        print(result_hash_length)
-        print("-------------------------")
+        
+        # print(result_hash_length)
+        # print("-------------------------")
         if past_result_hash != new_result_hash:
             logger.info(
                 'Change detected. Updating custom search with id:{}'.format(custom_search.id))
