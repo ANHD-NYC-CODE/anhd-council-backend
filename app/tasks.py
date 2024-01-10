@@ -209,7 +209,7 @@ def get_query_result_hash_and_length_bbl(query_string):
     r = requests.get(root_url + query_string, headers=auth_headers)
     result = r.json()
     if len(result) > 0:
-        if isinstance(result[0], dict):
+        if result and isinstance(result[0], dict):
             date_removed = [
                 {k: v for k, v in item.items() if not any(k.startswith(prefix) for prefix in ['evictions__', 'ocahousingcourts__', 'hpdviolations__', 'hpdcomplaints__', 'housinglitigations__', 'foreclosures__', 'acrisrealmasters__', 'dobcomplaints__'])}
                 for item in result
