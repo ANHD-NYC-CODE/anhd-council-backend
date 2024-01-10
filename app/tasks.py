@@ -208,24 +208,18 @@ def get_query_result_hash_and_length_bbl(query_string):
     # Run query on server and hash results
     r = requests.get(root_url + query_string, headers=auth_headers)
     result = r.json()
-    if len(result) > 0:
-        if result and isinstance(result[0], dict):
-            date_removed = [
-                {k: v for k, v in item.items() if not any(k.startswith(prefix) for prefix in ['evictions__', 'ocahousingcourts__', 'hpdviolations__', 'hpdcomplaints__', 'housinglitigations__', 'foreclosures__', 'acrisrealmasters__', 'dobcomplaints__'])}
-                for item in result
-            ]
-        else:
-            date_removed = []
+    if not result:
+        bbls = []
     else:
-        date_removed = result
-        
-    cleaned_string = json.dumps(date_removed, sort_keys=True).encode('utf-8')
-    result_hash = hashlib.sha256(cleaned_string).hexdigest()
-    result_length = len(date_removed)
+        bbls = [item['bbl'] for item in result]
+    bbls_string = json.dumps(bbls, sort_keys=True).encode('utf-8')
+    result_hash = hashlib.sha256(bbls_string).hexdigest()
+    result_length = len(bbls)
 
     return {
         'hash': result_hash,
-        'length': result_length
+        'length': result_length,
+        'result': bbls
     }
 
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', acks_late=True, max_retries=1)
@@ -300,6 +294,8 @@ def check_notifications_custom_search(notification_frequency):
         result_hash_length = get_query_result_hash_and_length_bbl(query)
         new_result_hash = result_hash_length['hash']
         new_result_length = result_hash_length['length']
+        print(result_hash_length)
+        print("-------------------------")
         if past_result_hash != new_result_hash:
             logger.info(
                 'Change detected. Updating custom search with id:{}'.format(custom_search.id))
