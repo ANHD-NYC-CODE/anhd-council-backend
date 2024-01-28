@@ -160,8 +160,12 @@ class HPDComplaint(BaseDatasetModel, models.Model):
     def update_set_filter(self, csv_reader, headers):
         typecaster = HPDComplaintTypecast(HPDComplaint)
         for row in csv_reader:
-            if headers.index('StatusDate') and is_older_than(row[headers.index('StatusDate')], 4):
-                continue
+            # Check and handle complaint status date
+            complaint_status_date_key = 'complaint_status_date' if 'complaint_status_date' in headers else 'statusdate'
+            if complaint_status_date_key in headers:
+                status_date_index = headers.index(complaint_status_date_key)
+                if is_older_than(row[status_date_index], 4):
+                    continue
             yield typecaster.cast_row(row)
 
     # remapping new csv column names to old column names to preserve app structure
@@ -191,8 +195,11 @@ class HPDComplaint(BaseDatasetModel, models.Model):
     def update_set_filter(cls, csv_reader, headers):
         typecaster = HPDComplaintTypecast(HPDComplaint)
         for row in csv_reader:
-            if headers.index('problem_status_date') and is_older_than(row[headers.index('problem_status_date')], 4):
-                continue
+            # Check and handle problem status date
+            if 'problemstatusdate' in headers:
+                problem_status_date_index = headers.index('problemstatusdate')
+                if is_older_than(row[problem_status_date_index], 1):
+                    continue
             yield typecaster.cast_row(row)
 
     @classmethod

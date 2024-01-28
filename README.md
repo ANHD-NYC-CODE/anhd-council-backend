@@ -13,7 +13,7 @@
 1. Install docker https://docs.docker.com/install/linux/docker-ce/ubuntu/#install-docker-ce and docker compose `sudo apt-get install docker-compose`
 2. Install git, clone repo
 
-## Restarting / Rebuilding Server (Not Database Content)
+## Restarting Server (Not Database Content)
 
 # PRODUCTION RESTART
 
@@ -25,20 +25,25 @@
 
 In terminal, navigate to the 'anhd-council-backend' root folder on your local device and type:
 `sudo docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d`
-The dev restart progress should also appear in docker.
+The dev restart progress should also appear in docker (you'll be able to see the resources restart, etc)
 (Build with sh build.dev.sh)
 
 # DEV REBUILD
 
 Run: sudo sh build.dev.sh
 
+(May have to restart dev after rebuild if DB hasn't finished loading)
+
 ## Production / Dev Startup
 
 1. Clone repo
 2. Get `.env` file from dev.
 3. Run build script `sh build.prod.sh` or `sudo sh build.dev.sh` depending on your environment
+
+   DEV:
    If the build fails with an error regarding the database starting up, you may run
    `sudo docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d` to restart it
+
 4. (first time startup) Shell into app container `docker exec -i -t app /bin/bash` and
 
 - create super user `python manage.py createsuperuser` (NOTE: check your email because the app will auto-generate a password despite you creating one in the wizard)
@@ -366,7 +371,11 @@ Please make sure your postgress is running (it should also show up in your docke
 
 # Q Updating State Senate Districts Map:
 
-At https://www1.nyc.gov/site/planning/data-maps/open-data/districts-download-metadata.page, download the State Senate Districts (Clipped to Shoreline) as a .GeoJSON file, and then update the dataset on the admin panel (most likely, https://api.displacementalert.org/admin/core/update/?dataset=42)
+At https://www1.nyc.gov/site/planning/data-maps/open-data/districts-download-metadata.page, download the State Senate Districts (Clipped to Shoreline) as a .GeoJSON file, and then update the dataset on the admin panel (most likely, https://api.displacementalert.org/admin/core/update/?dataset=42). You will also need to update the mapbox dataset (see pdf in root re: this).
+
+# Q After updating a geojson / shapefile on MAPBOX, I now see overlays of the OLD and NEW boundaries on the portal.
+
+This is a LOCAL bug that occurs because of caching/cookies. We found you can resolve this by clearing all site data from your browser. The issue persisted in other browsers and even in incognito mode.
 
 # Q CeleryBeat seems to be restarting constantly - even after a backend redeploy or system restart. What can I do?
 
@@ -488,11 +497,16 @@ Other issues may be occuring like a failed join / merge of the source csv or a f
 ## Error 'failed to solve: python:3.6.14: error getting credentials - err: exec: "docker-credential-desktop": executable file not found in \$PATH, out...' when trying to make dev build or restart it.
 
 1. Please make sure you have the correct Dockerfile in your backend root directory
-2. If the issue persists and your Dockerfile and env are correct, navigate to ~/.docker/config.json change `credsStore` to `credStore` (plural to singular)
+2. If the issue persists and your Dockerfile and env are correct:
+   `nano ~/.docker/config.json`
+   and change `credsStore` to `credStore` (plural to singular)
 3. As a note: you may have to do this sometimes when you rebuild the app's docker container. There seems to be a bug reverting it.
-   - Download the Files by directly accessing the buckets: You can use the following commands to download to the current directory you're in on your local device:
-     aws s3 cp s3://BUCKET_NAME/public/oca_addresses_with_bbl.csv .
-     aws s3 cp s3://BUCKET_NAME/public/oca_index.csv .
+
+## For S3 Buckets
+
+- Download the Files by directly accessing the buckets: You can use the following commands to download to the current directory you're in on your local device:
+  aws s3 cp s3://BUCKET_NAME/public/oca_addresses_with_bbl.csv .
+  aws s3 cp s3://BUCKET_NAME/public/oca_index.csv .
 
 - Note: Prior to August 2023, the bucket name used was different and also didn't use the /public/ directory. Please consult a dev and make sure it's updated to the most recent bucket in any backend ENV and commands you issue. The access is being given on AWS under the IAM settings - and not via IP whitelist.
 
@@ -511,8 +525,8 @@ Other issues may be occuring like a failed join / merge of the source csv or a f
 
 If this doesn't work, it might be because port mapping or other restrictions.
 
-1.          Disable your local host's version of postgres if it's running via osx or bash (brew services stop postgresql)
-2.           You can verify the port mapping by running this in bash:
+1.                                Disable your local host's version of postgres if it's running via osx or bash (brew services stop postgresql)
+2.                                 You can verify the port mapping by running this in bash:
         docker ps | grep postgres
         - This will show you the running PostgreSQL container and its port mappings. Ensure that 5432 inside the container is mapped to 5432 (or another port) on your host machine.
             ie. "e4ce2dc31284 postgres:11 "docker-entrypoint.s…" 5 hours ago Up 11 minutes 0.0.0.0:5432->5432/tcp postgres"
@@ -528,3 +542,34 @@ If this doesn't work, it might be because port mapping or other restrictions.
     To check the status of the postgres database, you may type:
         docker logs postgres
     This will return the most recent log entry - ie. "the database system is starting up"
+
+## After a DigitalOcean restart, the app is unable to rebuild with errors regarding port:8000. Why? For example:
+
+1. ERROR: for app Cannot start service app: driver failed programming external connectivity on endpoint app
+2. Error starting userland proxy: listen tcp 0.0.0.0:8000: bind: address already in use
+3. ERROR: Encountered errors while bringing up the project.
+4. Error response from daemon: Container f207d39251754777eade6641b69cd4b634140247f124dc395fead4012a3ce8a2 is not running
+
+We found that NGINX may automatically start prior to the project rebuild and use port 8000. Use `lsof -i tcp:8000` in the root of the production folder: root@anhdnyc:/var/www/anhd-council-backend# lsof -i tcp:8000
+You should see a table like this:
+
+<!-- COMMAND PID USER FD TYPE DEVICE SIZE/OFF NODE NAME
+nginx 1226 root 6u IPv4 22104 0t0 TCP _:8000 (LISTEN)
+nginx 1228 www-data 6u IPv4 22104 0t0 TCP _:8000 (LISTEN)
+nginx 1229 www-data 6u IPv4 22104 0t0 TCP _:8000 (LISTEN)
+nginx 1231 www-data 6u IPv4 22104 0t0 TCP _:8000 (LISTEN)
+nginx 1232 www-data 6u IPv4 22104 0t0 TCP _:8000 (LISTEN)
+nginx 1233 www-data 6u IPv4 22104 0t0 TCP _:8000 (LISTEN)
+nginx 1234 www-data 6u IPv4 22104 0t0 TCP \*:8000 (LISTEN) -->
+
+If you see a table like this with TCP as 8000 set, run `sudo service nginx stop` to stop NGINX. It should redeploy dockered automatically when the app is created and run. You may then proceed with rebuilding the app.
+
+# I'm getting python migration errors after table changes and cannot build the app. What do I do?
+
+WARNING: Make sure you have a backup before doing these steps.
+
+1. If you're 100% sure that you need to skip certain migration steps (like if they're already been done) you may navigate to the specific migration causing the issue (ie. `root@anhdnyc:/var/www/anhd-council-backend# nano ./datasets/migrations/0112_auto_20230822_2217.py `) and edit the migration file. After this, re-run `docker exec -it app /bin/bash` in the root of the project and then re-create the migration: ie.
+   root@anhdnyc:/var/www/anhd-council-backend# `docker exec -it app /bin/bash`
+   root@7fd4271bcdd8:/app# python `manage.py makemigrations`
+   Then re-run `sh build.prod.sh`
+   Alternatively, you may skip the entire migration (not recommended) by logging into the postgres db (via docker exec) and faking that migration as complete. ie `python manage.py migrate --fake datasets 0118_delete_hpdproblem`

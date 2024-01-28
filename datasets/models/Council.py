@@ -12,6 +12,9 @@ from core.utils.transform import from_geojson
 # https://www1.nyc.gov/site/planning/data-maps/open-data/districts-download-metadata.page
 # Paste into a .geojson file, upload file through admin, update
 
+# You will also have to update the map on mapbox studio with the new geojson file. See PDF and README for details.
+
+
 class Council(BaseDatasetModel, models.Model):
     id = models.IntegerField(primary_key=True, blank=False, null=False)
     data = JSONField(blank=True, null=True)

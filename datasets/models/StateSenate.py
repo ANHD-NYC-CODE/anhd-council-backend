@@ -15,7 +15,7 @@ from core.utils.transform import from_geojson
 
 # Make sure to clear cache after. If you see overlapping layers or old dataset data still even after updating, please make sure your browser cache is cleared or test in a private browser.
 
-# As a note, a property will NOT currently update its state senate, assembly, etc unless it doesn't currently have one ('null') or is a new property. I assume it was coded this way because it takes 2-3 seconds to calculate each state senate, etc, based on its geoshape location and long/latitude. To update in 2022, I null'd each  state senate entry as I updated the properties to ensure they updated. The entire process took about 4-5 days to recalculate each properties new District based on it's map location.
+# As a note, a property will NOT currently update its state senate, assembly, etc unless it doesn't currently have one ('null') or is a new property. I assume it was coded this way because it takes 2-3 seconds to calculate each state senate, etc, based on its geoshape location and long/latitude. To update in 2022, I null'd each state senate entry as I updated the properties to ensure they updated. The entire process took about 4-5 days to recalculate each properties new entry based on its map location.
 
 class StateSenate(BaseDatasetModel, models.Model):
     id = models.IntegerField(primary_key=True, blank=False, null=False)
