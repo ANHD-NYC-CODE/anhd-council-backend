@@ -135,7 +135,7 @@ class HPDComplaint(BaseDatasetModel, models.Model):
     uniquekey = models.IntegerField(
         blank=True, null=True, verbose_name="Unique identifier of a Service Request (SR) in the open data set")
 
-    # complaint status is still mapped to this table's "status", but the prior "status" from the HPDProblem table has become "problem_status" and "problem_status_date" and will need to be mapped to the those fields across the app instead of HPD Problems.
+    # complaint status is still mapped to this table's "status", but the prior "status" from the HPDProblem table has become "problem_status" and "problem_status_date" and have been mapped to the those fields across the app instead of HPD Problems.
 
     slim_query_fields = ["complaintid", "bbl", "receiveddate"]
 
@@ -159,13 +159,22 @@ class HPDComplaint(BaseDatasetModel, models.Model):
     @classmethod
     def update_set_filter(self, csv_reader, headers):
         typecaster = HPDComplaintTypecast(HPDComplaint)
+
+        # Check if 'Problem Status Date' header exists
+        if 'Problem Status Date' not in headers:
+            # Skip processing as 'Problem Status Date' header is missing
+            return
+
         for row in csv_reader:
-            # Check and handle complaint status date
-            complaint_status_date_key = 'complaint_status_date' if 'complaint_status_date' in headers else 'statusdate'
-            if complaint_status_date_key in headers:
-                status_date_index = headers.index(complaint_status_date_key)
-                if is_older_than(row[status_date_index], 4):
-                    continue
+            # Get index of 'Problem Status Date' in headers
+            problem_status_date_index = headers.index('Problem Status Date')
+
+            # Check if the 'Problem Status Date' is older than 0.01 years
+            if is_older_than(row[problem_status_date_index], 0.01):
+                # Skip this row as it's older than the specified time
+                continue
+
+            # Process and yield the row
             yield typecaster.cast_row(row)
 
     # remapping new csv column names to old column names to preserve app structure
@@ -189,18 +198,6 @@ class HPDComplaint(BaseDatasetModel, models.Model):
         "statusdescription": "status_description",  # previously in HPDProblem
         "zip": "post_code",
     }
-
-    # This function needs to be verified to see that it still works
-    @classmethod
-    def update_set_filter(cls, csv_reader, headers):
-        typecaster = HPDComplaintTypecast(HPDComplaint)
-        for row in csv_reader:
-            # Check and handle problem status date
-            if 'problemstatusdate' in headers:
-                problem_status_date_index = headers.index('problemstatusdate')
-                if is_older_than(row[problem_status_date_index], 1):
-                    continue
-            yield typecaster.cast_row(row)
 
     @classmethod
     def transform_self(self, file_path, update=None):

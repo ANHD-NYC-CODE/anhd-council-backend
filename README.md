@@ -20,13 +20,15 @@
 1. ssh in via `ssh anhd@45.55.44.160` in terminal (Make sure your device is whitelisted with digitalocean)
 2. `cd /var/www/anhd-council-backend`
 3. `sudo docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d`
+   Note: May need to rebuild/redeploy app (instead of the above restart command) if model changes have been made
 
 # DEV RESTART
 
 In terminal, navigate to the 'anhd-council-backend' root folder on your local device and type:
 `sudo docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d`
 The dev restart progress should also appear in docker (you'll be able to see the resources restart, etc)
-(Build with sh build.dev.sh)
+(Build with sh build.dev.sh). A migration typically will only need to be done if a dataset structure has changed (ie. new fields added or removed)
+Note: May need to rebuild app (instead of the above restart command) if model changes have been made (`sudo sh build.dev.sh`)
 
 # DEV REBUILD
 
@@ -98,9 +100,14 @@ To add a migration, run `docker exec -it app /bin/bash` and then run `python man
 - Run this remote task to update the production server.
 - Updating the server will interrupt any running workers and clear the redis cache. Keep this in mind if any long running tasks are currently running.
 
+IMPORTANT NOTE: Please do not deploy while any tasks are in progress. You can check the status at https://tasks.displacementalert.org/.
+If an update must be done, you may revoke the dataset updates in progress - but note that if it's an automated updated - ie. a monthly periodic task - if it will not run again until the following day/month, etc - or manually ran under periodic tasks. As well, if the seeding has already began, you may need to clear the "API LAST CHECKED" value for that dataset in the production database, so it tries to re-import the data (otherwise if API date is same to current data being imported, it may skip the import).
+
 1. `sh deploy.sh`
 
 - or if already SSHed inside, Run the build script `sh build.prod.sh`
+
+Note: If deploy runs fast, the db may need time to start up. You can also restart the server (ie on dev `sudo docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d` after deployment)
 
 2. cache is preserved on deploy
 
@@ -502,6 +509,19 @@ Other issues may be occuring like a failed join / merge of the source csv or a f
    and change `credsStore` to `credStore` (plural to singular)
 3. As a note: you may have to do this sometimes when you rebuild the app's docker container. There seems to be a bug reverting it.
 
+## I have an automated dataset update with the correct "API LAST CHECKED" date, but the data is not up to date for that dataset
+
+1. Please reset the site cache to verify if the data is truly not updated - OR -
+2. Look at the live data on the Production Database to see if the missing data is actually present
+3. Check the UPDATES log to see if the last update failed for the dataset - OR
+4. Check the Celery Tasks log on tasks.displacementalert.org to see if such update failed.
+5. If it's been determined the update failed - or you'd simply like to re-run it - it's best to do so from the Periodic Tasks at api.displacementalert.org/admin
+6. If the Data has not changed since the last update, it's likely the periodic task will not run. This can be circumvented by truncating the API LAST CHECKED value for that dataset in the production table. Alternately, you may wait for the next API update of the data.
+
+## My update failed with a ' deadlock detected ' error.
+
+This is likely because another dataset update is already in progress for the current dataset - or a related one. Please check tasks.displacementalert.org prior to updates to ensure one is not already in progress for the same dataset. It's recommended to let an update fail or timeout before trying the dataset update again.
+
 ## For S3 Buckets
 
 - Download the Files by directly accessing the buckets: You can use the following commands to download to the current directory you're in on your local device:
@@ -525,8 +545,8 @@ Other issues may be occuring like a failed join / merge of the source csv or a f
 
 If this doesn't work, it might be because port mapping or other restrictions.
 
-1.                                Disable your local host's version of postgres if it's running via osx or bash (brew services stop postgresql)
-2.                                 You can verify the port mapping by running this in bash:
+1.             Disable your local host's version of postgres if it's running via osx or bash (brew services stop postgresql)
+2.             You can verify the port mapping by running this in bash:
         docker ps | grep postgres
         - This will show you the running PostgreSQL container and its port mappings. Ensure that 5432 inside the container is mapped to 5432 (or another port) on your host machine.
             ie. "e4ce2dc31284 postgres:11 "docker-entrypoint.s…" 5 hours ago Up 11 minutes 0.0.0.0:5432->5432/tcp postgres"
@@ -573,3 +593,16 @@ WARNING: Make sure you have a backup before doing these steps.
    root@7fd4271bcdd8:/app# python `manage.py makemigrations`
    Then re-run `sh build.prod.sh`
    Alternatively, you may skip the entire migration (not recommended) by logging into the postgres db (via docker exec) and faking that migration as complete. ie `python manage.py migrate --fake datasets 0118_delete_hpdproblem`
+
+# How can I see the network usage?
+
+- `sudo iftop` can be run in the DigitalOcean console or locally
+- To see what is using which sockets, you can do: `sudo netstat -tulpn`
+
+# How can I view what system resources are running on the app?
+
+- To check the usage of a specific CPU core `mpstat -P ALL 1` - which continuously updates CPU usage data every second  
+   (To exit while the command is running, press Ctrl + C on your keyboard)
+- Identify High CPU Usage Processes:`ps -eo pid,psr,comm,%cpu,%mem --sort=-%cpu`
+  - To investigate processes further, you can use the following command in your terminal, using the PIDs of the tasks you'd like to investigate in place of 25508 and 748 -> `ps -p 25508,748 -o %cpu,%mem,cmd`
+- To get more real-time data, use: `vmstat 1`
