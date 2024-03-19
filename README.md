@@ -545,8 +545,8 @@ This is likely because another dataset update is already in progress for the cur
 
 If this doesn't work, it might be because port mapping or other restrictions.
 
-1.             Disable your local host's version of postgres if it's running via osx or bash (brew services stop postgresql)
-2.             You can verify the port mapping by running this in bash:
+1.               Disable your local host's version of postgres if it's running via osx or bash (brew services stop postgresql)
+2.               You can verify the port mapping by running this in bash:
         docker ps | grep postgres
         - This will show you the running PostgreSQL container and its port mappings. Ensure that 5432 inside the container is mapped to 5432 (or another port) on your host machine.
             ie. "e4ce2dc31284 postgres:11 "docker-entrypoint.s…" 5 hours ago Up 11 minutes 0.0.0.0:5432->5432/tcp postgres"
@@ -606,3 +606,14 @@ WARNING: Make sure you have a backup before doing these steps.
 - Identify High CPU Usage Processes:`ps -eo pid,psr,comm,%cpu,%mem --sort=-%cpu`
   - To investigate processes further, you can use the following command in your terminal, using the PIDs of the tasks you'd like to investigate in place of 25508 and 748 -> `ps -p 25508,748 -o %cpu,%mem,cmd`
 - To get more real-time data, use: `vmstat 1`
+
+# Upon restarting the anhd production server, re-deployment is failing with error "ERROR: for app Cannot start service app: driver failed programming external connectivity on endpoint app (etc): Error starting userland proxy: listen tcp 0.0.0.0:8000: bind: address already in use, ERROR: Encountered errors while bringing up the project.
+
+This is LIKELY because NGINX is already running upon system boot or a prior docker image/conatiner is running.
+
+1.  Log into the server via SSH: Ssh anhd@45.55.44.160
+2.  Check if NGINX already running is the issue `sudo lsof -i :8000`
+    A. If it is running, stop NGINX (It will start up again during deployment)
+3.  If that didn't resolve it, while still in the server, delete all current images (no data will be lost)
+    `docker rm -f $(docker ps -aq)
+    (Please make sure Database YAML files are up to date prior to this, or it could alter data)
