@@ -13,32 +13,39 @@
 1. Install docker https://docs.docker.com/install/linux/docker-ce/ubuntu/#install-docker-ce and docker compose `sudo apt-get install docker-compose`
 2. Install git, clone repo
 
-## Restarting / Rebuilding Server (Not Database Content)
+## Restarting Server (Not Database Content)
 
 # PRODUCTION RESTART
 
 1. ssh in via `ssh anhd@45.55.44.160` in terminal (Make sure your device is whitelisted with digitalocean)
 2. `cd /var/www/anhd-council-backend`
 3. `sudo docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d`
+   Note: May need to rebuild/redeploy app (instead of the above restart command) if model changes have been made
 
 # DEV RESTART
 
 In terminal, navigate to the 'anhd-council-backend' root folder on your local device and type:
 `sudo docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d`
-The dev restart progress should also appear in docker.
-(Build with sh build.dev.sh)
+The dev restart progress should also appear in docker (you'll be able to see the resources restart, etc)
+(Build with sh build.dev.sh). A migration typically will only need to be done if a dataset structure has changed (ie. new fields added or removed)
+Note: May need to rebuild app (instead of the above restart command) if model changes have been made (`sudo sh build.dev.sh`)
 
 # DEV REBUILD
 
 Run: sudo sh build.dev.sh
+
+(May have to restart dev after rebuild if DB hasn't finished loading)
 
 ## Production / Dev Startup
 
 1. Clone repo
 2. Get `.env` file from dev.
 3. Run build script `sh build.prod.sh` or `sudo sh build.dev.sh` depending on your environment
+
+   DEV:
    If the build fails with an error regarding the database starting up, you may run
    `sudo docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d` to restart it
+
 4. (first time startup) Shell into app container `docker exec -i -t app /bin/bash` and
 
 - create super user `python manage.py createsuperuser` (NOTE: check your email because the app will auto-generate a password despite you creating one in the wizard)
@@ -93,9 +100,14 @@ To add a migration, run `docker exec -it app /bin/bash` and then run `python man
 - Run this remote task to update the production server.
 - Updating the server will interrupt any running workers and clear the redis cache. Keep this in mind if any long running tasks are currently running.
 
+IMPORTANT NOTE: Please do not deploy while any tasks are in progress. You can check the status at https://tasks.displacementalert.org/.
+If an update must be done, you may revoke the dataset updates in progress - but note that if it's an automated updated - ie. a monthly periodic task - if it will not run again until the following day/month, etc - or manually ran under periodic tasks. As well, if the seeding has already began, you may need to clear the "API LAST CHECKED" value for that dataset in the production database, so it tries to re-import the data (otherwise if API date is same to current data being imported, it may skip the import).
+
 1. `sh deploy.sh`
 
 - or if already SSHed inside, Run the build script `sh build.prod.sh`
+
+Note: If deploy runs fast, the db may need time to start up. You can also restart the server (ie on dev `sudo docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d` after deployment)
 
 2. cache is preserved on deploy
 
@@ -366,7 +378,11 @@ Please make sure your postgress is running (it should also show up in your docke
 
 # Q Updating State Senate Districts Map:
 
-At https://www1.nyc.gov/site/planning/data-maps/open-data/districts-download-metadata.page, download the State Senate Districts (Clipped to Shoreline) as a .GeoJSON file, and then update the dataset on the admin panel (most likely, https://api.displacementalert.org/admin/core/update/?dataset=42)
+At https://www1.nyc.gov/site/planning/data-maps/open-data/districts-download-metadata.page, download the State Senate Districts (Clipped to Shoreline) as a .GeoJSON file, and then update the dataset on the admin panel (most likely, https://api.displacementalert.org/admin/core/update/?dataset=42). You will also need to update the mapbox dataset (see pdf in root re: this).
+
+# Q After updating a geojson / shapefile on MAPBOX, I now see overlays of the OLD and NEW boundaries on the portal.
+
+This is a LOCAL bug that occurs because of caching/cookies. We found you can resolve this by clearing all site data from your browser. The issue persisted in other browsers and even in incognito mode.
 
 # Q CeleryBeat seems to be restarting constantly - even after a backend redeploy or system restart. What can I do?
 
@@ -488,11 +504,29 @@ Other issues may be occuring like a failed join / merge of the source csv or a f
 ## Error 'failed to solve: python:3.6.14: error getting credentials - err: exec: "docker-credential-desktop": executable file not found in \$PATH, out...' when trying to make dev build or restart it.
 
 1. Please make sure you have the correct Dockerfile in your backend root directory
-2. If the issue persists and your Dockerfile and env are correct, navigate to ~/.docker/config.json change `credsStore` to `credStore` (plural to singular)
+2. If the issue persists and your Dockerfile and env are correct:
+   `nano ~/.docker/config.json`
+   and change `credsStore` to `credStore` (plural to singular)
 3. As a note: you may have to do this sometimes when you rebuild the app's docker container. There seems to be a bug reverting it.
-   - Download the Files by directly accessing the buckets: You can use the following commands to download to the current directory you're in on your local device:
-     aws s3 cp s3://BUCKET_NAME/public/oca_addresses_with_bbl.csv .
-     aws s3 cp s3://BUCKET_NAME/public/oca_index.csv .
+
+## I have an automated dataset update with the correct "API LAST CHECKED" date, but the data is not up to date for that dataset
+
+1. Please reset the site cache to verify if the data is truly not updated - OR -
+2. Look at the live data on the Production Database to see if the missing data is actually present
+3. Check the UPDATES log to see if the last update failed for the dataset - OR
+4. Check the Celery Tasks log on tasks.displacementalert.org to see if such update failed.
+5. If it's been determined the update failed - or you'd simply like to re-run it - it's best to do so from the Periodic Tasks at api.displacementalert.org/admin
+6. If the Data has not changed since the last update, it's likely the periodic task will not run. This can be circumvented by truncating the API LAST CHECKED value for that dataset in the production table. Alternately, you may wait for the next API update of the data.
+
+## My update failed with a ' deadlock detected ' error.
+
+This is likely because another dataset update is already in progress for the current dataset - or a related one. Please check tasks.displacementalert.org prior to updates to ensure one is not already in progress for the same dataset. It's recommended to let an update fail or timeout before trying the dataset update again.
+
+## For S3 Buckets
+
+- Download the Files by directly accessing the buckets: You can use the following commands to download to the current directory you're in on your local device:
+  aws s3 cp s3://BUCKET_NAME/public/oca_addresses_with_bbl.csv .
+  aws s3 cp s3://BUCKET_NAME/public/oca_index.csv .
 
 - Note: Prior to August 2023, the bucket name used was different and also didn't use the /public/ directory. Please consult a dev and make sure it's updated to the most recent bucket in any backend ENV and commands you issue. The access is being given on AWS under the IAM settings - and not via IP whitelist.
 
@@ -511,8 +545,8 @@ Other issues may be occuring like a failed join / merge of the source csv or a f
 
 If this doesn't work, it might be because port mapping or other restrictions.
 
-1.          Disable your local host's version of postgres if it's running via osx or bash (brew services stop postgresql)
-2.           You can verify the port mapping by running this in bash:
+1.               Disable your local host's version of postgres if it's running via osx or bash (brew services stop postgresql)
+2.               You can verify the port mapping by running this in bash:
         docker ps | grep postgres
         - This will show you the running PostgreSQL container and its port mappings. Ensure that 5432 inside the container is mapped to 5432 (or another port) on your host machine.
             ie. "e4ce2dc31284 postgres:11 "docker-entrypoint.s…" 5 hours ago Up 11 minutes 0.0.0.0:5432->5432/tcp postgres"
@@ -528,3 +562,58 @@ If this doesn't work, it might be because port mapping or other restrictions.
     To check the status of the postgres database, you may type:
         docker logs postgres
     This will return the most recent log entry - ie. "the database system is starting up"
+
+## After a DigitalOcean restart, the app is unable to rebuild with errors regarding port:8000. Why? For example:
+
+1. ERROR: for app Cannot start service app: driver failed programming external connectivity on endpoint app
+2. Error starting userland proxy: listen tcp 0.0.0.0:8000: bind: address already in use
+3. ERROR: Encountered errors while bringing up the project.
+4. Error response from daemon: Container f207d39251754777eade6641b69cd4b634140247f124dc395fead4012a3ce8a2 is not running
+
+We found that NGINX may automatically start prior to the project rebuild and use port 8000. Use `lsof -i tcp:8000` in the root of the production folder: root@anhdnyc:/var/www/anhd-council-backend# lsof -i tcp:8000
+You should see a table like this:
+
+<!-- COMMAND PID USER FD TYPE DEVICE SIZE/OFF NODE NAME
+nginx 1226 root 6u IPv4 22104 0t0 TCP _:8000 (LISTEN)
+nginx 1228 www-data 6u IPv4 22104 0t0 TCP _:8000 (LISTEN)
+nginx 1229 www-data 6u IPv4 22104 0t0 TCP _:8000 (LISTEN)
+nginx 1231 www-data 6u IPv4 22104 0t0 TCP _:8000 (LISTEN)
+nginx 1232 www-data 6u IPv4 22104 0t0 TCP _:8000 (LISTEN)
+nginx 1233 www-data 6u IPv4 22104 0t0 TCP _:8000 (LISTEN)
+nginx 1234 www-data 6u IPv4 22104 0t0 TCP \*:8000 (LISTEN) -->
+
+If you see a table like this with TCP as 8000 set, run `sudo service nginx stop` to stop NGINX. It should redeploy dockered automatically when the app is created and run. You may then proceed with rebuilding the app.
+
+# I'm getting python migration errors after table changes and cannot build the app. What do I do?
+
+WARNING: Make sure you have a backup before doing these steps.
+
+1. If you're 100% sure that you need to skip certain migration steps (like if they're already been done) you may navigate to the specific migration causing the issue (ie. `root@anhdnyc:/var/www/anhd-council-backend# nano ./datasets/migrations/0112_auto_20230822_2217.py `) and edit the migration file. After this, re-run `docker exec -it app /bin/bash` in the root of the project and then re-create the migration: ie.
+   root@anhdnyc:/var/www/anhd-council-backend# `docker exec -it app /bin/bash`
+   root@7fd4271bcdd8:/app# python `manage.py makemigrations`
+   Then re-run `sh build.prod.sh`
+   Alternatively, you may skip the entire migration (not recommended) by logging into the postgres db (via docker exec) and faking that migration as complete. ie `python manage.py migrate --fake datasets 0118_delete_hpdproblem`
+
+# How can I see the network usage?
+
+- `sudo iftop` can be run in the DigitalOcean console or locally
+- To see what is using which sockets, you can do: `sudo netstat -tulpn`
+
+# How can I view what system resources are running on the app?
+
+- To check the usage of a specific CPU core `mpstat -P ALL 1` - which continuously updates CPU usage data every second  
+   (To exit while the command is running, press Ctrl + C on your keyboard)
+- Identify High CPU Usage Processes:`ps -eo pid,psr,comm,%cpu,%mem --sort=-%cpu`
+  - To investigate processes further, you can use the following command in your terminal, using the PIDs of the tasks you'd like to investigate in place of 25508 and 748 -> `ps -p 25508,748 -o %cpu,%mem,cmd`
+- To get more real-time data, use: `vmstat 1`
+
+# Upon restarting the anhd production server, re-deployment is failing with error "ERROR: for app Cannot start service app: driver failed programming external connectivity on endpoint app (etc): Error starting userland proxy: listen tcp 0.0.0.0:8000: bind: address already in use, ERROR: Encountered errors while bringing up the project.
+
+This is LIKELY because NGINX is already running upon system boot or a prior docker image/conatiner is running.
+
+1.  Log into the server via SSH: Ssh anhd@45.55.44.160
+2.  Check if NGINX already running is the issue `sudo lsof -i :8000`
+    A. If it is running, stop NGINX (It will start up again during deployment)
+3.  If that didn't resolve it, while still in the server, delete all current images (no data will be lost)
+    `docker rm -f $(docker ps -aq)
+    (Please make sure Database YAML files are up to date prior to this, or it could alter data)
