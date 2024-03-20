@@ -1,4 +1,4 @@
-# DAP Council Reports
+# DAP Council Backend ReadMe
 
 ## Important urls
 
@@ -563,7 +563,7 @@ If this doesn't work, it might be because port mapping or other restrictions.
         docker logs postgres
     This will return the most recent log entry - ie. "the database system is starting up"
 
-## After a DigitalOcean restart, the app is unable to rebuild with errors regarding port:8000. Why? For example:
+### After a DigitalOcean restart, the app is unable to rebuild with errors regarding port:8000. Why? For example:
 
 1. ERROR: for app Cannot start service app: driver failed programming external connectivity on endpoint app
 2. Error starting userland proxy: listen tcp 0.0.0.0:8000: bind: address already in use
@@ -584,22 +584,24 @@ nginx 1234 www-data 6u IPv4 22104 0t0 TCP \*:8000 (LISTEN) -->
 
 If you see a table like this with TCP as 8000 set, run `sudo service nginx stop` to stop NGINX. It should redeploy dockered automatically when the app is created and run. You may then proceed with rebuilding the app.
 
-# I'm getting python migration errors after table changes and cannot build the app. What do I do?
+### I'm getting python migration errors after table changes and cannot build the app. What do I do?
 
 WARNING: Make sure you have a backup before doing these steps.
 
-1. If you're 100% sure that you need to skip certain migration steps (like if they're already been done) you may navigate to the specific migration causing the issue (ie. `root@anhdnyc:/var/www/anhd-council-backend# nano ./datasets/migrations/0112_auto_20230822_2217.py `) and edit the migration file. After this, re-run `docker exec -it app /bin/bash` in the root of the project and then re-create the migration: ie.
+1. If you're 100% sure that you need to skip certain migration steps (like if they're already been done) you may navigate to the specific migration causing the issue (ie. `root@anhdnyc:/var/www/anhd-council-backend# nano ./datasets/migrations/0112_auto_20230822_2217.py `) and edit the migration file.
+
+ After this, re-run `docker exec -it app /bin/bash` in the root of the project and then re-create the migration: ie.
    root@anhdnyc:/var/www/anhd-council-backend# `docker exec -it app /bin/bash`
    root@7fd4271bcdd8:/app# python `manage.py makemigrations`
    Then re-run `sh build.prod.sh`
    Alternatively, you may skip the entire migration (not recommended) by logging into the postgres db (via docker exec) and faking that migration as complete. ie `python manage.py migrate --fake datasets 0118_delete_hpdproblem`
 
-# How can I see the network usage?
+### How can I see the network usage?
 
 - `sudo iftop` can be run in the DigitalOcean console or locally
 - To see what is using which sockets, you can do: `sudo netstat -tulpn`
 
-# How can I view what system resources are running on the app?
+### How can I view what system resources are running on the app?
 
 - To check the usage of a specific CPU core `mpstat -P ALL 1` - which continuously updates CPU usage data every second  
    (To exit while the command is running, press Ctrl + C on your keyboard)
@@ -607,7 +609,7 @@ WARNING: Make sure you have a backup before doing these steps.
   - To investigate processes further, you can use the following command in your terminal, using the PIDs of the tasks you'd like to investigate in place of 25508 and 748 -> `ps -p 25508,748 -o %cpu,%mem,cmd`
 - To get more real-time data, use: `vmstat 1`
 
-# Upon restarting the anhd production server, re-deployment is failing with error "ERROR: for app Cannot start service app: driver failed programming external connectivity on endpoint app (etc): Error starting userland proxy: listen tcp 0.0.0.0:8000: bind: address already in use, ERROR: Encountered errors while bringing up the project.
+### Upon restarting the anhd production server, re-deployment is failing with error "ERROR: for app Cannot start service app: driver failed programming external connectivity on endpoint app (etc): Error starting userland proxy: listen tcp 0.0.0.0:8000: bind: address already in use, ERROR: Encountered errors while bringing up the project.
 
 This is LIKELY because NGINX is already running upon system boot or a prior docker image/conatiner is running.
 
