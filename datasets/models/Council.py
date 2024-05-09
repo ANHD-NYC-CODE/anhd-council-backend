@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.postgres.fields import JSONField
+from django.db.models import JSONField
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.transform import from_geojson
 

@@ -15,14 +15,17 @@ from .utility import merge
 from core.utils.csv_helpers import count_csv_rows
 from openpyxl.workbook import Workbook
 from openpyxl.reader.excel import load_workbook, InvalidFileException
+from pyproj import Transformer
 
 
 import logging
+
 
 def clean_string(value):
     if isinstance(value, str):
         return ''.join(char for char in value if 9 <= ord(char) <= 13 or 32 <= ord(char) <= 126)
     return value
+
 
 logger = logging.getLogger('app')
 
@@ -92,6 +95,7 @@ def clean_headers(headers):
         else:
             fixed_headers.append(col_name)
     return fixed_headers
+
 
 def from_geojson(file_path, pk='CounDist'):
     if isinstance(file_path, str):
@@ -164,7 +168,8 @@ def from_xlsx_file_to_gen(file_path, worksheet, update, skip_rows=0):
         headers = clean_headers(','.join([c.value for c in next(rows)]))
 
     for row in rows:
-        values = [clean_string(c.value) if isinstance(c.value, str) else c.value for c in row]
+        values = [clean_string(c.value) if isinstance(
+            c.value, str) else c.value for c in row]
         yield dict(zip(headers, values))
 
     if update:
@@ -240,12 +245,26 @@ def with_bbl(table, borough='borough', block='block', lot='lot', allow_blank=Fal
 
 p4j = '+proj=lcc +lat_1=40.66666666666666 +lat_2=41.03333333333333 +lat_0=40.16666666666666 +lon_0=-74 +x_0=300000 +y_0=0 +datum=NAD83 +units=us-ft +no_defs '
 ny_state_plane = pyproj.Proj(p4j, preserve_units=True)
-wgs84 = pyproj.Proj(init="epsg:4326", preserve_units=True)
+wgs84 = pyproj.Proj("epsg:4326", preserve_units=True)
+
+
+# Updating transformation as pyproj.Transformer is deprecated
+
+# def ny_state_coords_to_lat_lng(xcoord=0, ycoord=0):
+#     # returns (LNG, LAT)
+#     return pyproj.transform(ny_state_plane, wgs84, xcoord, ycoord)
+
+transformer = Transformer.from_proj(
+    proj_from=ny_state_plane,  # Source projection
+    proj_to=wgs84,  # Destination projection
+    always_xy=True  # Ensures x, y order for coordinates
+)
 
 
 def ny_state_coords_to_lat_lng(xcoord=0, ycoord=0):
     # returns (LNG, LAT)
-    return pyproj.transform(ny_state_plane, wgs84, xcoord, ycoord)
+    lng, lat = transformer.transform(xcoord, ycoord)
+    return lng, lat
 
 
 def get_geo(row):

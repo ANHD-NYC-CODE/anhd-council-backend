@@ -24,7 +24,6 @@ BATCH_SIZE = 100000
 BASE_DIR = os.path.dirname(os.path.dirname(
     os.path.dirname(os.path.abspath(__file__))))
 SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY', '')
-
 CACHE_REQUEST_KEY = os.environ.get('CACHE_REQUEST_KEY', '')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
@@ -37,6 +36,16 @@ SECRET_KEY = os.environ.get(
 # SECURITY WARNING: don't run with debug turned on in production!
 
 ALLOWED_HOSTS = ['*']
+
+# whitelist for jwt
+CSRF_COOKIE_DOMAIN = '.displacementalert.org'
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.displacementalert.org',
+    'http://*.displacementalert.org'
+]
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+
 
 # Application definition
 
@@ -75,7 +84,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
-    'rollbar.contrib.django.middleware.RollbarNotifierMiddleware',
+    # 'rollbar.contrib.django.middleware.RollbarNotifierMiddleware',
 ]
 
 INTERNAL_IPS = [
@@ -86,6 +95,12 @@ CORS_ORIGIN_ALLOW_ALL = True
 
 CORS_ORIGIN_WHITELIST = (
     "localhost:3000",
+    "localhost:8888",
+    "localhost:8000",
+    "localhost:6379",
+    "localhost",
+    "api.displacementalert.org",
+    "tasks.displacementalert.org",
     "portal.displacementalert.org"
 )
 
@@ -116,6 +131,7 @@ DATABASES = {
         'NAME': 'anhd',
         'HOST':  os.environ.get('DATABASE_HOST', 'localhost'),
         'USER': 'anhd',
+        'PASSWORD':  os.environ.get('DATABASE_PASSWORD'),
         'PORT':  os.environ.get('DATABASE_PORT', 5432)
     }
 }
@@ -124,7 +140,7 @@ DATABASES = {
 CACHES = {
     "default": {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': os.environ.get('REDIS_URL', 'redis://localhost:6378'),
+        'LOCATION': os.environ.get('REDIS_URL', 'redis://localhost:6379'),
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         },
@@ -149,12 +165,8 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ],
-    'EXCEPTION_HANDLER': 'rollbar.contrib.django_rest_framework.post_exception_handler'
-    # 'DEFAULT_PAGINATION_CLASS': 'apps.core.pagination.StandardResultsSetPagination'
-    # 'DEFAULT_RENDERER_CLASSES': (
-    #     'rest_framework_csv.renderers.CSVRenderer',
-    # ),
+    ]
+    # 'EXCEPTION_HANDLER': custom_exception_handler
 }
 
 
@@ -234,7 +246,7 @@ CELERY_QUEUES = (
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
-CELERY_BROKER_URL = os.environ.get('REDIS_URL', "redis://localhost:6378")
+CELERY_BROKER_URL = os.environ.get('REDIS_URL', "redis://localhost:6379")
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_BACKEND = 'rpc://'
 # Sensible settings for celery
@@ -323,7 +335,7 @@ LOGGING = {
         },
     },
     'loggers': {
-         'celery.pidbox': {
+        'celery.pidbox': {
             'level': 'INFO',
         },
         'django': {
@@ -430,3 +442,5 @@ if TESTING:
             return None
 
     MIGRATION_MODULES = DisableMigrations()
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

@@ -1,46 +1,54 @@
-{% extends "admin/base_site.html" %}
-
-{% block branding %}
+{% extends "admin/base_site.html" %} {% block branding %}
 <h1 id="site-name">Displacement Alert Project Admin</h1>
-{% endblock %}
-
-
-{% block extrastyle %}
+{% endblock %} {% block extrastyle %}
 <style>
-#header {
-  background-color: #343a40;
-}
+  #header {
+    background-color: #343a40;
+  }
 
-#branding h1 {
-  color: white;
-}
+  body {
+    border: 3px solid red;
+  }
+  #branding h1 {
+    color: white;
+  }
 
-div.breadcrumbs {
-  background-color: #111;
-  color: lightgray;
-}
+  div.breadcrumbs {
+    background-color: #111;
+    color: lightgray;
+  }
 
-.module caption {
-  background-color: dimgray;
-}
+  .module caption {
+    background-color: dimgray;
+  }
 
+  a:link,
+  a:visited {
+    color: cornflowerblue;
+  }
 
-a:link, a:visited {
-  color: cornflowerblue;
-}
+  th {
+    font-size: 16px;
+  }
 
-th {
-  font-size: 16px;
-}
+  button,
+  input[type="submit"],
+  .button,
+  input[type="submit"],
+  input[type="button"],
+  .submit-row input,
+  a.button {
+    background-color: cornflowerblue;
+  }
 
-button, input[type=submit], .button, input[type=submit], input[type=button], .submit-row input, a.button {
-  background-color: cornflowerblue;
-}
-
-button:hover, input[type=submit]:hover, .button, input[type=submit]:hover, input[type=button]:hover, .submit-row input:hover, a.button:hover {
-  background-color: turquoise;
-}
-
-
+  button:hover,
+  input[type="submit"]:hover,
+  .button,
+  input[type="submit"]:hover,
+  input[type="button"]:hover,
+  .submit-row input:hover,
+  a.button:hover {
+    background-color: turquoise;
+  }
 </style>
 {% endblock %}
