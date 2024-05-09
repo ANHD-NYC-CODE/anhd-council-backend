@@ -57,7 +57,7 @@ class DatasetAdmin(admin.ModelAdmin):
         return True
 
     def has_change_permission(self, request, obj=None):
-        return False
+        return request.user.has_perm('core.change_dataset')
 
     def download_csv(self, request, obj):
         import csv

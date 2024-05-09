@@ -179,7 +179,4 @@ class Migration(migrations.Migration):
             name='zip',
             field=models.TextField(null=True, verbose_name='Complaint zip code'),
         ),
-        migrations.DeleteModel(
-            name='HPDProblem',
-        ),
-    ]
+     ]

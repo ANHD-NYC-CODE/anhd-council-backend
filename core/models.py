@@ -163,11 +163,19 @@ class Dataset(models.Model):
         return self.name
 
 
+# Creating new path function to avoid traversal errors
+# def construct_directory_path(instance, filename):
+#     split_filename = filename.split('.')
+#     name = split_filename[0]
+#     extension = split_filename[1]
+#     return '{0}/{1}'.format(settings.MEDIA_ROOT, "{0}__{1}.{2}".format(name, make_aware(datetime.datetime.now()).strftime("%m%d%Y%H%M%S"), extension))
+
+
 def construct_directory_path(instance, filename):
-    split_filename = filename.split('.')
-    name = split_filename[0]
-    extension = split_filename[1]
-    return '{0}/{1}'.format(settings.MEDIA_ROOT, "{0}__{1}.{2}".format(name, make_aware(datetime.datetime.now()).strftime("%m%d%Y%H%M%S"), extension))
+    now = datetime.datetime.now()
+    name, extension = os.path.splitext(filename)
+    extension = extension.lstrip('.')
+    return "{0}__{1}.{2}".format(name, now.strftime("%m%d%Y%H%M%S"), extension)
 
 
 class DataFile(models.Model):

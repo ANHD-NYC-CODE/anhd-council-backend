@@ -7,7 +7,7 @@ services:
       - postgres
     stdin_open: true # for debugging w/ "docker attach app"
     tty: true # for debugging w/ "docker attach app"
-    entrypoint: ["sh", "/app/docker-entrypoint.dev.sh"]
+    entrypoint: [ "sh", "/app/docker-entrypoint.dev.sh" ]
     env_file:
       - .env.dev
     environment:
@@ -97,7 +97,7 @@ services:
     ports:
       - "6379:6379"
   postgres:
-    image: postgres:11
+    image: postgres:15
     container_name: "postgres"
     restart: on-failure
       # https://blog.2ndquadrant.com/basics-of-tuning-checkpoints/
@@ -155,7 +155,7 @@ services:
         "-c",
         "log_min_duration_statement=10000",
         "-c",
-        "log_temp_files=1",
+        "log_temp_files=1"
       ]
     shm_size: "2GB"
     environment:
@@ -173,6 +173,6 @@ services:
         max-size: "10m"
         max-file: "3"
 #nginx:
- #certbot:
+#certbot:
 volumes:
   pg_vol1:

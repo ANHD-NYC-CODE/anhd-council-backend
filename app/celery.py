@@ -14,7 +14,8 @@ import logging
 logger = logging.getLogger('app')
 
 # set the default Django settings module for the 'celery' program.
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "app.settings.development")
+# os.environ.setdefault("DJANGO_SETTINGS_MODULE", "app.settings.development")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "app.settings.production")
 
 app = celery.Celery('app', include=['app.tasks'])
 

@@ -17,7 +17,7 @@
 
 # PRODUCTION RESTART
 
-1. ssh in via `ssh anhd@45.55.44.160` in terminal (Make sure your device is whitelisted with digitalocean)
+1. ssh in via `ssh anhd@138.197.79.10` in terminal (Make sure your device is whitelisted with digitalocean)
 2. `cd /var/www/anhd-council-backend`
 3. `sudo docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d`
 
@@ -346,7 +346,7 @@ docker-compose logs -f postgres
 # Q How do I download dataset files from the remote ssh server?
 
 You may use the SCP command and point to the file/directory path on the remote server:
-ie. `scp anhd@45.55.44.160:/var/www/anhd-council-backend/data/FILE-NAME-HERE.csv .`
+ie. `scp anhd@138.197.79.10:/var/www/anhd-council-backend/data/FILE-NAME-HERE.csv .`
 Ensure you have the ` .` at the end, or a different destination in your local device. Please do not run this command in your anhd-council-backend folder (the repo folder) or any of it's subsequent folders - as it will then add the CSV to the repo.
 
 # Q I get an error when running my react build that certain node modules or scss cannot be accessed.
@@ -355,7 +355,7 @@ A: Please ensure ENV file is in the root directory and also hidden (appended wit
 
 # Q View raw data/set files on server:
 
-1. ssh to server `ssh anhd@45.55.44.160`
+1. ssh to server `ssh anhd@138.197.79.10`
 2. `cd /var/www/`
 3. To see datasets, go to anhd-council-backend/data
 4. View raw dataset: ‘sudo cat filename’
@@ -511,8 +511,8 @@ Other issues may be occuring like a failed join / merge of the source csv or a f
 
 If this doesn't work, it might be because port mapping or other restrictions.
 
-1.          Disable your local host's version of postgres if it's running via osx or bash (brew services stop postgresql)
-2.           You can verify the port mapping by running this in bash:
+1.           Disable your local host's version of postgres if it's running via osx or bash (brew services stop postgresql)
+2.            You can verify the port mapping by running this in bash:
         docker ps | grep postgres
         - This will show you the running PostgreSQL container and its port mappings. Ensure that 5432 inside the container is mapped to 5432 (or another port) on your host machine.
             ie. "e4ce2dc31284 postgres:11 "docker-entrypoint.s…" 5 hours ago Up 11 minutes 0.0.0.0:5432->5432/tcp postgres"

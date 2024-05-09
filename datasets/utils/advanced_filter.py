@@ -1,4 +1,4 @@
-from django.db.models import FieldDoesNotExist
+from django.core.exceptions import FieldDoesNotExist
 from datasets import models as ds
 from django.db.models import Count, Q, ExpressionWrapper, F, FloatField, Prefetch, FilteredRelation, OuterRef, Exists
 from django.db.models.functions import Cast
@@ -298,6 +298,7 @@ def convert_condition_to_q(condition_key, mapping, filter_pass='query1_filters')
                 elif filter_pass == 'query1_filters':
                     q |= construct_and_q(c_filter[filter_pass])
     return q
+
 
 def fe_to_be_url(frontend_url):
     fe_to_be_geo_types = {
