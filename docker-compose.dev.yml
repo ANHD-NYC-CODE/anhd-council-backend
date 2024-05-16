@@ -12,6 +12,7 @@ services:
       - .env.dev
     environment:
       - DJANGO_SETTINGS_MODULE=app.settings.development
+      - TZ=America/New_York
   celery_default:
     restart: always
     build: .
@@ -35,6 +36,8 @@ services:
     env_file:
       - .env.dev
     entrypoint: "celery -A app worker -E -Q celery -l debug -n celery_worker --concurrency=8 --logfile=./celery/logs/default.log"
+    environment:
+      - TZ=America/New_York
     logging:
       options:
         max-size: "10m"
@@ -62,6 +65,8 @@ services:
     env_file:
       - .env.dev
     entrypoint: "celery -A app worker -E -Q update -l debug -n update_worker --concurrency=8 --logfile=./celery/logs/update.log"
+    environment:
+      - TZ=America/New_York
     logging:
       options:
         max-size: "10m"
@@ -85,6 +90,8 @@ services:
       - ./celery:/app/celery
     env_file:
       - .env.dev
+    environment:
+      - TZ=America/New_York
     # https://www.distributedpython.com/2018/10/13/flower-docker/
     logging:
       options:
@@ -93,7 +100,11 @@ services:
   flower:
     ports:
       - "8888:8888"
+    environment:
+      - TZ=America/New_York
   redis:
+    environment:
+      - TZ=America/New_York
     ports:
       - "6379:6379"
   postgres:
@@ -162,6 +173,7 @@ services:
       POSTGRES_DB: anhd
       POSTGRES_USER: anhd
       POSTGRES_HOST_AUTH_METHOD: trust # fixes error: “Error: Database is uninitialized and superuser password is not specified.”
+      TZ: America/New_York
     ports:
       - "5432:5432"
     networks:

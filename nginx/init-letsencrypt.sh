@@ -1,6 +1,6 @@
 #!/bin/bash
 
-domains=(staging.portal.displacementalert.org)
+domains=(staging.portal.displacementalert.org portal.displacementalert.org tasks.displacementalert.org api.displacementalert.org)
 rsa_key_size=4096
 data_path="./nginx/certbot"
 email="anhd.tech@gmail.com" # Adding a valid address is strongly recommended

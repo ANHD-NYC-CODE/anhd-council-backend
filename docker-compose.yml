@@ -24,6 +24,7 @@ services:
       - .env
     environment:
       - DJANGO_SETTINGS_MODULE=app.settings.production
+      - TZ=America/New_York
     logging:
       options:
         max-size: "10m"
@@ -35,6 +36,7 @@ services:
     expose:
       - "8888"
     environment:
+      - TZ=America/New_York
       - CELERY_BROKER_URL=redis://redis
       - FLOWER_PORT=8888
     networks:
@@ -46,6 +48,8 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+    user: root
+    command: sh -c "apk add --no-cache tzdata && cp /usr/share/zoneinfo/America/New_York /etc/localtime && echo 'America/New_York' > /etc/timezone && apk del tzdata"
   redis:
     restart: always
     hostname: redis
@@ -59,6 +63,8 @@ services:
       - network1
     env_file:
       - .env
+    environment:
+      - TZ=America/New_York
     logging:
       options:
         max-size: "10m"
@@ -71,6 +77,8 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+    environment:
+      - TZ=America/New_York
   certbot:
     container_name: "certbot"
     image: certbot/certbot
@@ -79,10 +87,14 @@ services:
       - ./nginx/certbot/www:/var/www/certbot
     depends_on:
       - nginx
+    environment:
+      - TZ=America/New_York
     logging:
       options:
         max-size: "10m"
         max-file: "3"
+    user: root
+    command: sh -c "apk add --no-cache tzdata && cp /usr/share/zoneinfo/America/New_York /etc/localtime && echo 'America/New_York' > /etc/timezone && apk del tzdata"
 volumes:
   redis_data:
   static_volume:

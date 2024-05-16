@@ -5,7 +5,28 @@ services:
       - celerybeat
     env_file:
       - .env
+    environment:
+      - TZ=America/New_York
   # https://www.digitalocean.com/community/tutorials/how-to-secure-a-containerized-node-js-application-with-nginx-let-s-encrypt-and-docker-compose
+  flower:
+    image: mher/flower
+    container_name: "flower"
+    expose:
+      - "8888"
+    environment:
+      - CELERY_BROKER_URL=redis://redis
+      - FLOWER_PORT=8888
+      - TZ=America/New_York
+    networks:
+      - network1
+      - nginx_network
+    depends_on:
+      - redis
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+    command: sh -c "apk add --no-cache tzdata && cp /usr/share/zoneinfo/America/New_York /etc/localtime && echo 'America/New_York' > /etc/timezone && apk del tzdata"
   nginx:
     restart: always
     ports:
@@ -19,6 +40,8 @@ services:
       - ../anhd-council-client/build_publish:/client
       - ../staging-anhd-council-client/build_publish:/staging-client
       - static_volume:/static
+    environment:
+      - TZ=America/New_York
     depends_on:
       - app
       - flower
@@ -45,6 +68,8 @@ services:
     env_file:
       - .env
     entrypoint: "celery -A app worker -E -Q celery -l debug -n celery_worker --concurrency=8 --logfile=./celery/logs/default.log"
+    environment:
+      - TZ=America/New_York
     logging:
       options:
         max-size: "10m"
@@ -68,6 +93,8 @@ services:
       - redis
     env_file:
       - .env
+    environment:
+      - TZ=America/New_York
     entrypoint: "celery -A app worker -E -Q update -l debug -n update_worker --concurrency=8 --logfile=./celery/logs/update.log"
     logging:
       options:
@@ -85,6 +112,8 @@ services:
       - redis
     links:
       - redis
+    environment:
+      - TZ=America/New_York
     volumes:
       - ./:/app
       - ./celery:/app/celery
@@ -97,3 +126,6 @@ services:
         max-file: "3"
   certbot:
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    environment:
+      - TZ=America/New_York
+    command: sh -c "apk add --no-cache tzdata && cp /usr/share/zoneinfo/America/New_York /etc/localtime && echo 'America/New_York' > /etc/timezone && apk del tzdata"

@@ -98,6 +98,7 @@ CORS_ORIGIN_WHITELIST = (
     "localhost:8888",
     "localhost:8000",
     "localhost:6379",
+    "localhost:6378",
     "localhost",
     "api.displacementalert.org",
     "tasks.displacementalert.org",
@@ -140,7 +141,7 @@ DATABASES = {
 CACHES = {
     "default": {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': os.environ.get('REDIS_URL', 'redis://localhost:6379'),
+        'LOCATION': os.environ.get('REDIS_URL', 'redis://localhost:6378'),
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         },
@@ -246,7 +247,7 @@ CELERY_QUEUES = (
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
-CELERY_BROKER_URL = os.environ.get('REDIS_URL', "redis://localhost:6379")
+CELERY_BROKER_URL = os.environ.get('REDIS_URL', "redis://localhost:6378")
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_BACKEND = 'rpc://'
 # Sensible settings for celery
