@@ -247,13 +247,19 @@ def batch_upsert_from_gen(model, rows, batch_size, **kwargs):
     table_name = model._meta.db_table
     update = kwargs['update'] if 'update' in kwargs else None
     ignore_conflict = kwargs['ignore_conflict'] if 'ignore_conflict' in kwargs else None
-
+    initial_total = model.objects.count()
     with connection.cursor() as curs:
         try:
             count = 0
             while True:
                 batch = list(itertools.islice(rows, 0, batch_size))
                 if len(batch) == 0:
+                    new_total_rows = model.objects.count()
+                    update.total_rows = new_total_rows
+                    update.rows_created = new_total_rows - initial_total
+                    update.rows_updated = update.rows_updated - update.rows_created
+                    update.save()
+                    
                     logger.info("Database - Batch upserts completed for {}.".format(model.__name__))
                     if 'callback' in kwargs and kwargs['callback']:
                         kwargs['callback']()
@@ -273,25 +279,25 @@ def batch_upsert_from_gen(model, rows, batch_size, **kwargs):
 # No Conflict = True means DO NOTHING on conflict. False means update on conflict.
 def batch_upsert_rows(model, rows, batch_size, update=None, ignore_conflict=False):
     table_name = model._meta.db_table
-    primary_key = model._meta.pk.name
-    """ Inserts many row, all in the same transaction"""
-    rows_length = len(rows)
-
+    primary_key = model._meta.pk.name    
     with connection.cursor() as curs:
         try:
-            starting_count = model.objects.count()
-            with transaction.atomic():
-                curs.executemany(upsert_query(table_name, rows[0], primary_key, ignore_conflict=ignore_conflict), tuple(
-                    build_row_values(row) for row in rows))
+            # Execute the upsert query
+            query = upsert_query(table_name, rows[0], primary_key, ignore_conflict=ignore_conflict)
+            prepared_values = tuple(build_row_values(row) for row in rows)
+            curs.executemany(query, prepared_values)
 
+            # Get the number of rows affected
+            affected_rows = curs.rowcount
+
+            # Update logging or status objects as necessary
             if update:
-                rows_created = model.objects.count() - starting_count
-                update.rows_created = update.rows_created + rows_created
-                update.rows_updated = update.rows_updated + (rows_length - rows_created)
+                logger.info('Database - upserted rows. Updating update object.')
+                update.rows_updated = update.rows_updated + affected_rows
                 update.save()
-
         except Exception as e:
-            logger.info('Database - error upserting rows. Doing single row upsert. - Error: {}'.format(e))
+            logger.error(f'Database - error upserting rows. Error: {e}')
+            # Optionally handle retries or single row upserts as fallback
             upsert_single_rows(model, rows, update=update, ignore_conflict=ignore_conflict)
 
 
