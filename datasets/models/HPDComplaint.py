@@ -160,7 +160,7 @@ class HPDComplaint(BaseDatasetModel, models.Model):
     def update_set_filter(self, csv_reader, headers):
         typecaster = HPDComplaintTypecast(HPDComplaint)
         for row in csv_reader:
-            if headers.index('Problem Status Date') and is_older_than(row[headers.index('Problem Status Date')], 4):
+            if headers.index('Problem Status Date') and is_older_than(row[headers.index('Problem Status Date')], 1):
                 continue
             yield typecaster.cast_row(row)
 
