@@ -7,6 +7,7 @@ from datasets import models as ds
 from django.dispatch import receiver
 from core.tasks import async_download_and_update
 from core.utils.typecast import HPDComplaintTypecast
+from django.utils import timezone
 
 
 import logging
@@ -138,7 +139,7 @@ class HPDComplaint(BaseDatasetModel, models.Model):
     # complaint status is still mapped to this table's "status", but the prior "status" from the HPDProblem table has become "problem_status" and "problem_status_date" and will need to be mapped to the those fields across the app instead of HPD Problems.
 
     slim_query_fields = ["complaintid", "bbl", "receiveddate"]
-
+    
     @classmethod
     def create_async_update_worker(self, endpoint=None, file_name=None):
         async_download_and_update.delay(
@@ -154,13 +155,12 @@ class HPDComplaint(BaseDatasetModel, models.Model):
         for row in gen_rows:
             if not is_null(row['complaintid']):
                 yield typecaster.cast_row(row)
-
-    # trims down new update files to preserve memory
-    @classmethod
+            
+    @classmethod                
     def update_set_filter(self, csv_reader, headers):
         typecaster = HPDComplaintTypecast(HPDComplaint)
         for row in csv_reader:
-            if headers.index('StatusDate') and is_older_than(row[headers.index('StatusDate')], 4):
+            if headers.index('Problem Status Date') and is_older_than(row[headers.index('Problem Status Date')], 1):
                 continue
             yield typecaster.cast_row(row)
 
@@ -186,15 +186,6 @@ class HPDComplaint(BaseDatasetModel, models.Model):
         "zip": "post_code",
     }
 
-    # This function needs to be verified to see that it still works
-    @classmethod
-    def update_set_filter(cls, csv_reader, headers):
-        typecaster = HPDComplaintTypecast(HPDComplaint)
-        for row in csv_reader:
-            if headers.index('problem_status_date') and is_older_than(row[headers.index('problem_status_date')], 4):
-                continue
-            yield typecaster.cast_row(row)
-
     @classmethod
     def transform_self(self, file_path, update=None):
         rows = self.pre_validation_filters(
@@ -211,12 +202,23 @@ class HPDComplaint(BaseDatasetModel, models.Model):
 
     @classmethod
     def add_bins_from_buildingid(self):
-        logger.info("Starting adding bins from building id.")
-        logger.debug(" * Adding BINs through building for HPD Complaints.")
-        bin = ds.HPDBuildingRecord.objects.filter(
-            buildingid=OuterRef('buildingid')).values_list('bin')[:1]
-        self.objects.prefetch_related(
-            'buildingid').all().update(bin=Subquery(bin))
+        one_year_ago = timezone.now() - timezone.timedelta(days=365)
+        logger.info("Starting to add bins from building id.")
+
+        bin_subquery = ds.HPDBuildingRecord.objects.filter(
+            buildingid=OuterRef('buildingid')
+        ).values('bin')[:1]
+
+        # Ensuring that only recent records are updated
+        objects_to_update = self.objects.filter(
+            problemstatusdate__gte=one_year_ago,
+            buildingid__isnull=False,
+            bin__isnull=True
+        )
+            
+        logger.info(
+            f"Updating bins for {objects_to_update.count()} records from the last year.")
+        objects_to_update.update(bin=Subquery(bin_subquery))
         logger.info("Completed adding bins.")
 
     @classmethod
