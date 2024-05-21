@@ -67,6 +67,7 @@ def create_gen_from_csv_diff(original_file_path, new_file_path):
 
 
 def write_gen_to_temp_file(gen_rows):
+
     temp_file_path = os.path.join(settings.MEDIA_TEMP_ROOT, str(
         'set_diff' + str(random.randint(1, 10000000))) + '.mock' if settings.TESTING else '.csv')
     headers = iter(next(gen_rows))
@@ -136,6 +137,7 @@ def bulk_insert_from_file(model, file_path, **kwargs):
 
 
 def copy_file(model, file_path=None, **kwargs):
+
     table_name = model._meta.db_table
     with open(file_path, 'r') as file:
         columns = file.readline().replace('"', '').replace('\n', '')
@@ -218,10 +220,11 @@ def batch_upsert_from_gen(model, rows, batch_size, **kwargs):
                 batch = list(itertools.islice(rows, 0, batch_size))
                 if len(batch) == 0:
                     new_total_rows = model.objects.count()
-                    update.total_rows = new_total_rows
-                    update.rows_created = new_total_rows - initial_total
-                    update.rows_updated = update.rows_updated - update.rows_created
-                    update.save()
+                    if update:
+                        update.total_rows = new_total_rows
+                        update.rows_created = new_total_rows - initial_total
+                        update.rows_updated = update.rows_updated - update.rows_created
+                        update.save()
                     logger.info(f"Database - Batch upserts completed for {model.__name__}.")
                     if 'callback' in kwargs and kwargs['callback']:
                         kwargs['callback']()
@@ -290,12 +293,6 @@ def upsert_single_rows(model, rows, update=None, ignore_conflict=False):
         update.save()
 
 
-import time
-import traceback
-import logging
-import sys
-
-
 class Status(object):
     def __init__(self):
         self.num_successful = 0
@@ -310,7 +307,8 @@ class Status(object):
             self.num_failed)
 
     @property
-    def num_failed(self): return len(self.failed_ids)
+    def num_failed(self):
+        return len(self.failed_ids)
 
     def start(self):
         self.start_time = time.time()
@@ -322,18 +320,18 @@ class Status(object):
 
     @property
     def rate(self):
-        if self done:
+        if self.done:
             end_time = self.end_time
         else:
             end_time = time.time()
-        return self.cur_idx / (end_time - self start_time)
+        return self.cur_idx / (end_time - self.start_time)
 
     @property
     def time_left(self):
         rate = self.rate
         if rate == 0:
             return 0
-        return (self total - self.cur_idx) / self.rate
+        return (self.total - self.cur_idx) / self.rate
 
 
 def progress_callback(status):
