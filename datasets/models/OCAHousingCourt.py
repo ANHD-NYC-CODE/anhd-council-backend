@@ -73,7 +73,7 @@ class OCAHousingCourt(BaseDatasetModel, models.Model):
     disposeddate = models.DateField(blank=True, null=True)
     disposedreason = models.TextField(blank=True, null=True)
     firstpaper = models.TextField(blank=True, null=True)
-    primaryclaimtotal = models.DecimalField(decimal_places=8, max_digits=16, blank=True, null=True)
+    primaryclaimtotal = models.DecimalField(decimal_places=8, max_digits=30, blank=True, null=True)
     dateofjurydemand = models.TextField(blank=True, null=True)
     bct2020 = models.CharField(max_length=25, blank=True, null=True)
     bctcb2020 = models.CharField(max_length=25, blank=True, null=True)
