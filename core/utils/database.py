@@ -209,21 +209,19 @@ def build_pkey_tuple(row, pkey):
 def batch_upsert_from_gen(model, rows, batch_size, **kwargs):
     table_name = model._meta.db_table
     update = kwargs.get('update')
-    ignore_conflict = kwargs.get('ignore_conflict', False)
+    ignore_conflict = kwargs.get('ignore_conflict')
     initial_total = model.objects.count()
     with connection.cursor() as curs:
         try:
             count = 0
             while True:
                 batch = list(itertools.islice(rows, 0, batch_size))
-                if not batch:
+                if len(batch) == 0:
                     new_total_rows = model.objects.count()
-                    if update:
-                        update.total_rows = new_total_rows
-                        update.rows_created = new_total_rows - initial_total
-                        update.rows_updated = update.rows_updated - update.rows_created
-                        update.save()
-                    
+                    update.total_rows = new_total_rows
+                    update.rows_created = new_total_rows - initial_total
+                    update.rows_updated = update.rows_updated - update.rows_created
+                    update.save()
                     logger.info(f"Database - Batch upserts completed for {model.__name__}.")
                     if 'callback' in kwargs and kwargs['callback']:
                         kwargs['callback']()
@@ -234,7 +232,6 @@ def batch_upsert_from_gen(model, rows, batch_size, **kwargs):
                         batch_upsert_rows(model, batch, batch_size, update=update, ignore_conflict=ignore_conflict)
                         count += batch_size
                         logger.debug(f"Rows touched: {count}")
-
         except Exception as e:
             logger.warning(f"Unable to batch upsert: {e}")
             raise e
@@ -242,32 +239,26 @@ def batch_upsert_from_gen(model, rows, batch_size, **kwargs):
 
 def batch_upsert_rows(model, rows, batch_size, update=None, ignore_conflict=False):
     table_name = model._meta.db_table
-    unique_cols = [field.name for field in model._meta.fields if field.unique or field.primary_key]
+    unique_cols = [field.name for field in model._meta.fields if field.unique]
     with connection.cursor() as curs:
         try:
             query = upsert_query(table_name, rows[0], unique_cols, ignore_conflict=ignore_conflict)
             prepared_values = tuple(build_row_values(row) for row in rows)
             curs.executemany(query, prepared_values)
-
             affected_rows = curs.rowcount
 
             if update:
-                for row in rows:
-                    curs.execute(upsert_query(table_name, row, unique_cols, ignore_conflict=ignore_conflict), build_row_values(row))
-                    if curs.rowcount == 1:
-                        update.rows_created += 1
-                    else:
-                        update.rows_updated += 1
-
+                logger.info('Database - upserted rows. Updating update object.')
+                update.rows_updated += affected_rows
                 update.save()
         except Exception as e:
-            logger.error(f"Database - error upserting rows. Error: {e}")
+            logger.error(f'Database - error upserting rows. Error: {e}')
             upsert_single_rows(model, rows, update=update, ignore_conflict=ignore_conflict)
 
 
 def upsert_single_rows(model, rows, update=None, ignore_conflict=False):
     table_name = model._meta.db_table
-    unique_cols = [field.name for field in model._meta.fields if field.unique or field.primary_key]
+    unique_cols = [field.name for field in model._meta.fields if field.unique]
     rows_created = 0
     rows_updated = 0
 
@@ -277,19 +268,17 @@ def upsert_single_rows(model, rows, update=None, ignore_conflict=False):
                 with transaction.atomic():
                     curs.execute(upsert_query(table_name, row, unique_cols, ignore_conflict=ignore_conflict),
                                  build_row_values(row))
-                    if curs.rowcount == 1:
-                        rows_created += 1
-                    else:
-                        rows_updated += 1
+                    rows_updated += 1
+                    rows_created += 1
 
-                    if (rows_created + rows_updated) % settings.BATCH_SIZE == 0:
-                        logger.debug(f"{table_name} - seeded {rows_created + rows_updated}")
+                    if rows_created % settings.BATCH_SIZE == 0:
+                        logger.debug(f"{table_name} - seeded {rows_created}")
                         if update:
                             update.rows_created += rows_created
-                            update.rows_updated += rows_updated
+                            update.rows_updated += rows_created
                             update.save()
-                            rows_created = 0
                             rows_updated = 0
+                            rows_created = 0
 
         except Exception as e:
             logger.error(f"Database Error * - unable to upsert single record. Error: {e}")
@@ -297,7 +286,7 @@ def upsert_single_rows(model, rows, update=None, ignore_conflict=False):
 
     if update:
         update.rows_created += rows_created
-        update.rows_updated += rows_updated
+        update.rows_updated += rows_created
         update.save()
 
 
@@ -337,14 +326,14 @@ class Status(object):
             end_time = self.end_time
         else:
             end_time = time.time()
-        return self.cur_idx / (end_time - self.start_time)
+        return self.cur_idx / (end_time - self start_time)
 
     @property
     def time_left(self):
         rate = self.rate
         if rate == 0:
             return 0
-        return (self.total - self.cur_idx) / self rate
+        return (self total - self.cur_idx) / self.rate
 
 
 def progress_callback(status):
@@ -362,11 +351,28 @@ def progress_callback(status):
 
 def queryset_foreach(queryset, f, batch_size=1000,
                      progress_callback=progress_callback, transaction=True):
-    from django.conf import settings
+    '''
+    Call a function for each element in a queryset (actually, any list).
+
+    Features:
+    * stable memory usage (thanks to Django paginators)
+    * progress indicators
+    * wraps batches in transactions
+    * can take managers or even models (e.g., Assertion.objects)
+    * warns about DEBUG.
+    * handles failures of single items without dying in general.
+    * stable even if items are added or removed during processing
+    (gets a list of ids at the start)
+
+    Returns a Status object, with the following interesting attributes
+      total: number of items in the queryset
+      num_successful: count of successful items
+      failed_ids: list of ids of items that failed
+    '''
+
     if settings.DEBUG:
         logger.debug('Warning: DEBUG is on. django.db.connection.queries may use up a lot of memory.')
 
-    from django.shortcuts import _get_queryset
     queryset = _get_queryset(queryset)
 
     logger.debug('qs4e: Getting list of objects')
@@ -376,7 +382,6 @@ def queryset_foreach(queryset, f, batch_size=1000,
     status.total = len(ids)
 
     def do_all_objects(objects):
-        from django.db import transaction
         with transaction.atomic():
             for id, obj in objects.items():
                 try:
