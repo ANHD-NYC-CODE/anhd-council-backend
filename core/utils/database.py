@@ -6,7 +6,6 @@ from postgres_copy import CopyManager
 from io import StringIO
 from core import models as c
 
-
 import itertools
 import csv
 import random
@@ -17,7 +16,6 @@ import logging
 
 logger = logging.getLogger('app')
 
-
 def execute(sql):
     with connection.cursor() as curs:
         try:
@@ -25,7 +23,6 @@ def execute(sql):
                 curs.execute(sql)
         except Exception as e:
             logger.error("Database - Execute error: {}".format(e))
-
 
 def create_gen_from_csv_diff(original_file_path, new_file_path):
     new_file = open(new_file_path, 'r')
@@ -65,9 +62,7 @@ def create_gen_from_csv_diff(original_file_path, new_file_path):
                 yield list(csv.reader(StringIO(new_row), delimiter=',', quotechar='"',
                                       doublequote=True, quoting=csv.QUOTE_ALL, skipinitialspace=True))[0]
 
-
 def write_gen_to_temp_file(gen_rows):
-
     temp_file_path = os.path.join(settings.MEDIA_TEMP_ROOT, str(
         'set_diff' + str(random.randint(1, 10000000))) + '.mock' if settings.TESTING else '.csv')
     headers = iter(next(gen_rows))
@@ -77,7 +72,6 @@ def write_gen_to_temp_file(gen_rows):
         for row in gen_rows:
             writer.writerow(row)
     return temp_file_path
-
 
 def seed_from_csv_diff(original_file_path, new_file_path, model, **kwargs):
     original_diff_set = set()
@@ -114,7 +108,6 @@ def seed_from_csv_diff(original_file_path, new_file_path, model, **kwargs):
     if 'callback' in kwargs and kwargs['callback']:
         kwargs['callback']()
 
-
 def bulk_insert_from_file(model, file_path, **kwargs):
     table_name = model._meta.db_table
     logger.debug('creating temp csv with cleaned rows and seeding...')
@@ -135,9 +128,7 @@ def bulk_insert_from_file(model, file_path, **kwargs):
     if 'callback' in kwargs and kwargs['callback']:
         kwargs['callback']()
 
-
 def copy_file(model, file_path=None, **kwargs):
-
     table_name = model._meta.db_table
     with open(file_path, 'r') as file:
         columns = file.readline().replace('"', '').replace('\n', '')
@@ -149,7 +140,6 @@ def copy_file(model, file_path=None, **kwargs):
             logger.warning("Database - Bulk Import Error - beginning Batch seeding. Error: {}".format(e))
             rows = from_csv_file_to_gen(file_path, kwargs['update'])
             batch_upsert_from_gen(model, rows, settings.BATCH_SIZE, **kwargs)
-
 
 def copy_insert_from_csv(table_name, temp_file_path, **kwargs):
     with open(temp_file_path, 'r') as temp_file:
@@ -171,97 +161,92 @@ def copy_insert_from_csv(table_name, temp_file_path, **kwargs):
     if os.path.isfile(temp_file_path):
         os.remove(temp_file_path)
 
-
-def upsert_query(table_name, row, unique_cols, ignore_conflict=False):
+def upsert_query(table_name, row, primary_key, ignore_conflict=False):
     fields = ', '.join(row.keys())
-    upsert_fields = ', '.join([f"{k} = EXCLUDED.{k}" for k in row.keys()])
-    placeholders = ', '.join(["%s" for _ in row.values()])
-    conflict_action = "DO NOTHING" if ignore_conflict else f"DO UPDATE SET {upsert_fields}"
-    unique_constraint = ', '.join(unique_cols)
-    sql = f"INSERT INTO {table_name} ({fields}) VALUES ({placeholders}) ON CONFLICT ({unique_constraint}) {conflict_action};"
-    return sql
+    upsert_fields = ', '.join([k + "= EXCLUDED." + k for k in row.keys()])
+    placeholders = ', '.join(["%s" for v in row.values()])
+    conflict_action = "DO NOTHING" if ignore_conflict else "DO UPDATE SET {}".format(upsert_fields)
+    sql = "INSERT INTO {table_name} ({fields}) VALUES ({values}) ON CONFLICT ({primary_key}) {conflict_action};"
 
+    return sql.format(table_name=table_name, fields=fields, values=placeholders, primary_key=primary_key, conflict_action=conflict_action)
 
 def insert_query(table_name, row):
     fields = ', '.join(row.keys())
-    placeholders = ', '.join(["%s" for _ in row.values()])
-    sql = f"INSERT INTO {table_name} ({fields}) VALUES ({placeholders})"
-    return sql
-
+    placeholders = ', '.join(["%s" for v in row.values()])
+    sql = "INSERT INTO {table_name} ({fields}) VALUES ({values})"
+    return sql.format(table_name=table_name, fields=fields, values=placeholders)
 
 def update_query(table_name, row, primary_key):
-    fields = ', '.join([f'{key} = %s' for key in row.keys()])
-    keys = ' AND '.join([f'{key} = %s' for key in primary_key.split(', ')])
-    sql = f'UPDATE {table_name} SET {fields} WHERE({keys});'
-    return sql
-
+    fields = ', '.join(['{key} = %s'.format(key=key) for key in row.keys()])
+    keys = ' AND '.join(['{key} = %s'.format(key=key) for key in primary_key.split(', ')])
+    sql = 'UPDATE {table_name} SET {fields} WHERE({pk});'
+    return sql.format(table_name=table_name, fields=fields, pk=keys)
 
 def copy_query(table_name, columns):
-    return f'COPY {table_name} ({columns}) FROM STDIN WITH (format csv)'
-
+    return 'COPY {table_name} ({fields}) FROM STDIN WITH (format csv)'.format(table_name=table_name, fields=columns)
 
 def build_row_values(row):
-    return tuple(None if x == '' else x for x in row.values())
-
+    t_row = tuple(row.values())
+    return tuple(None if x == '' else x for x in t_row)
 
 def build_pkey_tuple(row, pkey):
-    return tuple(row[key] for key in pkey.split(', '))
-
+    tup = tuple()
+    for key in pkey.split(', '):
+        tup = tup + (row[key],)
+    return tup
 
 def batch_upsert_from_gen(model, rows, batch_size, **kwargs):
     table_name = model._meta.db_table
-    update = kwargs.get('update')
-    ignore_conflict = kwargs.get('ignore_conflict')
-    initial_total = model.objects.count()
+    update = kwargs['update'] if 'update' in kwargs else None
+    ignore_conflict = kwargs['ignore_conflict'] if 'ignore_conflict' in kwargs else None
+
     with connection.cursor() as curs:
         try:
             count = 0
             while True:
                 batch = list(itertools.islice(rows, 0, batch_size))
                 if len(batch) == 0:
-                    new_total_rows = model.objects.count()
-                    if update:
-                        update.total_rows = new_total_rows
-                        update.rows_created = new_total_rows - initial_total
-                        update.rows_updated = update.rows_updated - update.rows_created
-                        update.save()
-                    logger.info(f"Database - Batch upserts completed for {model.__name__}.")
+                    logger.info("Database - Batch upserts completed for {}.".format(model.__name__))
                     if 'callback' in kwargs and kwargs['callback']:
                         kwargs['callback']()
                     break
                 else:
                     with transaction.atomic():
-                        logger.debug(f"Seeding next batch for {model.__name__}.")
+                        logger.debug("Seeding next batch for {}.".format(model.__name__))
                         batch_upsert_rows(model, batch, batch_size, update=update, ignore_conflict=ignore_conflict)
-                        count += batch_size
-                        logger.debug(f"Rows touched: {count}")
-        except Exception as e:
-            logger.warning(f"Unable to batch upsert: {e}")
-            raise e
+                        count = count + batch_size
+                        logger.debug("Rows touched: {}".format(count))
 
+        except Exception as e:
+            logger.warning("Unable to batch upsert: {}".format(e))
+            raise e
 
 def batch_upsert_rows(model, rows, batch_size, update=None, ignore_conflict=False):
     table_name = model._meta.db_table
-    unique_cols = [field.name for field in model._meta.fields if field.unique]
+    primary_key = model._meta.pk.name
+    """ Inserts many row, all in the same transaction"""
+    rows_length = len(rows)
+
     with connection.cursor() as curs:
         try:
-            query = upsert_query(table_name, rows[0], unique_cols, ignore_conflict=ignore_conflict)
-            prepared_values = tuple(build_row_values(row) for row in rows)
-            curs.executemany(query, prepared_values)
-            affected_rows = curs.rowcount
+            starting_count = model.objects.count()
+            with transaction.atomic():
+                curs.executemany(upsert_query(table_name, rows[0], primary_key, ignore_conflict=ignore_conflict), tuple(
+                    build_row_values(row) for row in rows))
 
             if update:
-                logger.info('Database - upserted rows. Updating update object.')
-                update.rows_updated += affected_rows
+                rows_created = model.objects.count() - starting_count
+                update.rows_created = update.rows_created + rows_created
+                update.rows_updated = update.rows_updated + (rows_length - rows_created)
                 update.save()
-        except Exception as e:
-            logger.error(f'Database - error upserting rows. Error: {e}')
-            upsert_single_rows(model, rows, update=update, ignore_conflict=ignore_conflict)
 
+        except Exception as e:
+            logger.info('Database - error upserting rows. Doing single row upsert. - Error: {}'.format(e))
+            upsert_single_rows(model, rows, update=update, ignore_conflict=ignore_conflict)
 
 def upsert_single_rows(model, rows, update=None, ignore_conflict=False):
     table_name = model._meta.db_table
-    unique_cols = [field.name for field in model._meta.fields if field.unique]
+    primary_key = model._meta.pk.name
     rows_created = 0
     rows_updated = 0
 
@@ -269,29 +254,28 @@ def upsert_single_rows(model, rows, update=None, ignore_conflict=False):
         try:
             with connection.cursor() as curs:
                 with transaction.atomic():
-                    curs.execute(upsert_query(table_name, row, unique_cols, ignore_conflict=ignore_conflict),
+                    curs.execute(upsert_query(table_name, row, primary_key, ignore_conflict=ignore_conflict),
                                  build_row_values(row))
-                    rows_updated += 1
-                    rows_created += 1
+                    rows_updated = rows_updated + 1
+                    rows_created = rows_created + 1
 
                     if rows_created % settings.BATCH_SIZE == 0:
-                        logger.debug(f"{table_name} - seeded {rows_created}")
+                        logger.debug("{} - seeded {}".format(table_name, rows_created))
                         if update:
-                            update.rows_created += rows_created
-                            update.rows_updated += rows_created
+                            update.rows_created = update.rows_created + rows_created
+                            update.rows_updated = update.rows_updated + rows_created
                             update.save()
                             rows_updated = 0
                             rows_created = 0
 
         except Exception as e:
-            logger.error(f"Database Error * - unable to upsert single record. Error: {e}")
+            logger.error("Database Error * - unable to upsert single record. Error: {}".format(e))
             continue
 
     if update:
-        update.rows_created += rows_created
-        update.rows_updated += rows_created
+        update.rows_created = update.rows_created + rows_created
+        update.rows_updated = update.rows_updated + rows_created
         update.save()
-
 
 class Status(object):
     def __init__(self):
@@ -307,8 +291,7 @@ class Status(object):
             self.num_failed)
 
     @property
-    def num_failed(self):
-        return len(self.failed_ids)
+    def num_failed(self): return len(self.failed_ids)
 
     def start(self):
         self.start_time = time.time()
@@ -333,7 +316,6 @@ class Status(object):
             return 0
         return (self.total - self.cur_idx) / self.rate
 
-
 def progress_callback(status):
     message = '%d/%d failed=%d, rate~%.2f per second, left~%.2f sec    \r' % (
         status.cur_idx, status.total, status.num_failed, status.rate, status.time_left)
@@ -345,7 +327,6 @@ def progress_callback(status):
         message = "Progress - {}".format(message)
         print(message)
         logger.debug(message)
-
 
 def queryset_foreach(queryset, f, batch_size=1000,
                      progress_callback=progress_callback, transaction=True):
