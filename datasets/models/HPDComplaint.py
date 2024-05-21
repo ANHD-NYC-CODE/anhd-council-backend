@@ -1,18 +1,16 @@
 from django.db import models
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.transform import from_csv_file_to_gen, with_bbl
-from datasets.utils.validation_filters import is_null, is_older_than
+from datasets.utils.validation_filters import is_null
 from django.db.models import OuterRef, Subquery
 from datasets import models as ds
 from django.dispatch import receiver
 from core.tasks import async_download_and_update
 from core.utils.typecast import HPDComplaintTypecast
 from django.utils import timezone
-
-
 import logging
-logger = logging.getLogger('app')
 
+logger = logging.getLogger('app')
 
 class HPDComplaint(BaseDatasetModel, models.Model):
     class Meta:
@@ -25,57 +23,12 @@ class HPDComplaint(BaseDatasetModel, models.Model):
     QUERY_DATE_KEY = 'receiveddate'
     RECENT_DATE_PINNED = True
 
-
-# OLD HPD COMPLAINT MODEL DEFS:
-    #  complaintid = models.IntegerField(
-    #  primary_key=True, blank=False, null=False)
-    #  bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
-    #     on_delete=models.SET_NULL, null=True, blank=False)
-    #  bin = models.ForeignKey('Building', db_column='bin', db_constraint=False,
-    #    on_delete=models.SET_NULL, null=True, blank=True)
-    #  buildingid = models.ForeignKey('HPDBuildingRecord', db_column='buildingid', db_constraint=False,
-    #    on_delete=models.SET_NULL, null=True, blank=True)
-    #  boroughid = models.IntegerField(blank=True, null=True)
-    #  borough = models.TextField(blank=True, null=True)
-    #  housenumber = models.TextField(blank=True, null=True)
-    #  streetname = models.TextField(blank=True, null=True)
-    #  zip = models.TextField(blank=True, null=True)
-    #  block = models.IntegerField(blank=True, null=True)
-    #  lot = models.IntegerField(blank=True, null=True)
-    #  apartment = models.TextField(blank=True, null=True)
-    #  communityboard = models.IntegerField(blank=True, null=True)
-    #  receiveddate = models.DateField(blank=True, null=True)
-    #  statusid = models.IntegerField(blank=True, null=True)
-    #  status = models.TextField(db_index=True, blank=True, null=True)
-    #  statusdate = models.DateField(blank=True, null=True)
-
-# OLD HPD PROBLEM DEFS from PROBLEM model:
-#     problemid = models.IntegerField(primary_key=True, blank=False, null=False)
-#     complaintid = models.ForeignKey('HPDComplaint', db_column='complaintid', db_constraint=False,on_delete=models.SET_NULL, null=True, blank=False)
-#     unittypeid = models.SmallIntegerField(blank=True, null=True)
-#     unittype = models.TextField(blank=True, null=True)
-#     spacetypeid = models.SmallIntegerField(blank=True, null=True)
-#     spacetype = models.TextField(blank=True, null=True)
-#     typeid = models.SmallIntegerField(blank=True, null=True)
-#     type = models.TextField(blank=True, null=True)
-#     majorcategoryid = models.SmallIntegerField(blank=True, null=True)
-#     majorcategory = models.TextField(blank=True, null=True)
-#     minorcategoryid = models.SmallIntegerField(blank=True, null=True)
-#     minorcategory = models.TextField(blank=True, null=True)
-#     codeid = models.SmallIntegerField(blank=True, null=True)
-#     code = models.TextField(blank=True, null=True)
-#     statusid = models.IntegerField(db_index=True, blank=True, null=True)
-#     status = models.TextField(db_index=True, blank=True, null=True)
-#     statusdate = models.DateField(db_index=True, blank=True, null=True)
-#     statusdescription = models.TextField(blank=True, null=True)
-
     # Updated Model Fields
     zip = models.TextField(null=True, verbose_name="Complaint zip code")
     receiveddate = models.DateField(
         blank=True, null=True, verbose_name="Date when the complaint was received")
     problemid = models.IntegerField(
         primary_key=True, blank=False, null=False, verbose_name="Unique identifier of this problem")
-    # This was previously a primary key in the HPDComplaint table, and because HPD Complaint IDs are now longer unique, we will use the Problem ID as the primary key for this table.
     complaintid = models.IntegerField(
         blank=True, null=True, verbose_name="identifier of the complaint this problem is associated with")
     council_district = models.IntegerField(
@@ -136,8 +89,6 @@ class HPDComplaint(BaseDatasetModel, models.Model):
     uniquekey = models.IntegerField(
         blank=True, null=True, verbose_name="Unique identifier of a Service Request (SR) in the open data set")
 
-    # complaint status is still mapped to this table's "status", but the prior "status" from the HPDProblem table has become "problem_status" and "problem_status_date" and will need to be mapped to the those fields across the app instead of HPD Problems.
-
     slim_query_fields = ["complaintid", "bbl", "receiveddate"]
     
     @classmethod
@@ -155,13 +106,29 @@ class HPDComplaint(BaseDatasetModel, models.Model):
         for row in gen_rows:
             if not is_null(row['complaintid']):
                 yield typecaster.cast_row(row)
+    
+    @staticmethod
+    def is_within_past_year(date_str, date_format='%Y-%m-%d'):
+        try:
+            date = timezone.datetime.strptime(date_str, date_format).date()
+            one_year_ago = timezone.now().date() - timezone.timedelta(days=365)
+            return date >= one_year_ago
+        except Exception as e:
+            logger.error(f"Date parsing error: {e}")
+            return False
             
     @classmethod                
     def update_set_filter(self, csv_reader, headers):
         typecaster = HPDComplaintTypecast(HPDComplaint)
+        # Find the index of 'Problem Status Date' in the headers
+        problem_status_date_index = headers.index('Problem Status Date')
+        
         for row in csv_reader:
-            if headers.index('Problem Status Date') and is_older_than(row[headers.index('Problem Status Date')], 1):
-                continue
+            # Check if the date in the 'Problem Status Date' column is within the past year
+            if not self.is_within_past_year(row[problem_status_date_index]):
+                logger.debug(f"Skipping row with old date: {row[problem_status_date_index]}")
+                continue  # Skip rows older than one year
+            # Apply typecasting and yield the transformed row
             yield typecaster.cast_row(row)
 
     # remapping new csv column names to old column names to preserve app structure
@@ -239,7 +206,7 @@ class HPDComplaint(BaseDatasetModel, models.Model):
 
 @receiver(models.signals.post_save, sender=HPDComplaint)
 def annotate_property_on_save(sender, instance, created, **kwargs):
-    if created == True:
+    if created:
         try:
             annotation = sender.annotate_property_month_offset(
                 instance.bbl.propertyannotation)
