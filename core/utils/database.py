@@ -176,7 +176,7 @@ def batch_upsert_from_gen(model, rows, batch_size, **kwargs):
     update = kwargs.get('update')
     ignore_conflict = kwargs.get('ignore_conflict')
     initial_total = model.objects.count()
-    unique_constraints = [field.name for field in model._meta.unique_together[0]] if model._meta.unique_together else [model._meta.pk.name]
+    unique_constraints = [field.name for constraint in model._meta.unique_together for field in constraint] if model._meta.unique_together else [model._meta.pk.name]
     with connection.cursor() as curs:
         try:
             count = 0
