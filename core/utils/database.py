@@ -211,16 +211,37 @@ def batch_upsert_rows(model, rows, batch_size, update, ignore_conflict=False, un
     primary_key = model._meta.pk.name  # Ensure primary key is being used
     with connection.cursor() as curs:
         try:
-            query = upsert_query(table_name, rows[0], unique_constraints, ignore_conflict=ignore_conflict)
-            prepared_values = tuple(build_row_values(row) for row in rows)
-            curs.executemany(query, prepared_values)
-            affected_rows = curs.rowcount
-            logger.info('Database - upserted rows. Updating update object.')
-            update.rows_updated += affected_rows
-            update.save()
+            count = 0
+            while True:
+                batch = list(itertools.islice(rows, 0, batch_size))
+                if len(batch) == 0:
+                    logger.info(f"Database - Batch upserts completed for {model.__name__}.")
+                    if update:
+                        new_total_rows = model.objects.count()
+                        update.total_rows = new_total_rows
+                        update.rows_created = new_total_rows - initial_total
+                        update.rows_updated = update.rows_updated + (initial_total - new_total_rows)
+                        update.save()
+                    if 'callback' in kwargs and kwargs['callback']:
+                        kwargs['callback']()
+                    break
+                else:
+                    with transaction.atomic():
+                        logger.debug(f"Seeding next batch for {model.__name__}.")
+                        query = upsert_query(table_name, batch[0], unique_constraints, ignore_conflict=ignore_conflict)
+                        prepared_values = tuple(build_row_values(row) for row in batch)
+                        try:
+                            curs.executemany(query, prepared_values)
+                        except Exception as e:
+                            logger.warning(f"Batch upsert failed: {e}")
+                            # If batch upsert fails, fallback to single row upsert
+                            upsert_single_rows(model, batch, update=update, ignore_conflict=ignore_conflict, unique_constraints=unique_constraints)
+                        count += batch_size
+                        logger.debug(f"Rows touched: {count}")
         except Exception as e:
-            logger.error(f'Database - error upserting rows. Error: {e}')
-            upsert_single_rows(model, rows, update=update, ignore_conflict=ignore_conflict, unique_constraints=unique_constraints)
+            logger.error(f"Unable to batch upsert: {e}")
+            raise e
+
 
 def upsert_single_rows(model, rows, update, ignore_conflict=False, unique_constraints=[]):
     table_name = model._meta.db_table
@@ -229,8 +250,8 @@ def upsert_single_rows(model, rows, update, ignore_conflict=False, unique_constr
     primary_key = model._meta.pk.name  # Ensure primary key is being used
     for row in rows:
         try:
-            with connection.cursor() as curs:
-                with transaction.atomic():
+            with transaction.atomic():
+                with connection.cursor() as curs:
                     # Attempt to update the row first
                     update_query_sql = update_query(table_name, row, primary_key)
                     curs.execute(update_query_sql, build_row_values(row) + build_pkey_tuple(row, primary_key))
@@ -257,11 +278,13 @@ def upsert_single_rows(model, rows, update, ignore_conflict=False, unique_constr
                         rows_created = 0
         except Exception as e:
             logger.error(f"Database Error * - unable to upsert single record. Error: {e}")
+            # Explicitly rollback the transaction to reset the connection's state
             transaction.set_rollback(True)
             continue
     update.rows_created += rows_created
     update.rows_updated += rows_updated
     update.save()
+
 
 
 class Status(object):
