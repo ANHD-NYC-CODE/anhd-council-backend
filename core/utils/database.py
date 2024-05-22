@@ -120,7 +120,6 @@ def copy_file(model, file_path=None, **kwargs):
             logger.warning("Database - Bulk Import Error - beginning Batch seeding. Error: {}".format(e))
             rows = from_csv_file_to_gen(file_path, kwargs['update'])
             batch_upsert_from_gen(model, rows, settings.BATCH_SIZE, **kwargs)
-
 def copy_insert_from_csv(table_name, temp_file_path, **kwargs):
     with open(temp_file_path, 'r') as temp_file:
         columns = temp_file.readline().replace('"', '').replace('\n', '')
@@ -158,7 +157,7 @@ def insert_query(table_name, row):
 def update_query(table_name, row, primary_key):
     fields = ', '.join([f'{key} = %s' for key in row.keys()])
     keys = ' AND '.join([f'{key} = %s' for key in primary_key.split(', ')])
-    sql = f'UPDATE {table_name} SET {fields}) WHERE ({keys});'
+    sql = f'UPDATE {table_name} SET {fields} WHERE ({keys});'
     return sql
 
 def copy_query(table_name, columns):
@@ -209,6 +208,7 @@ def batch_upsert_from_gen(model, rows, batch_size, **kwargs):
 
 def batch_upsert_rows(model, rows, batch_size, update, ignore_conflict=False, unique_constraints=[]):
     table_name = model._meta.db_table
+    primary_key = model._meta.pk.name  # Ensure primary key is being used
     with connection.cursor() as curs:
         try:
             query = upsert_query(table_name, rows[0], unique_constraints, ignore_conflict=ignore_conflict)
@@ -226,12 +226,18 @@ def upsert_single_rows(model, rows, update, ignore_conflict=False, unique_constr
     table_name = model._meta.db_table
     rows_created = 0
     rows_updated = 0
+    primary_key = model._meta.pk.name  # Ensure primary key is being used
     for row in rows:
         try:
             with connection.cursor() as curs:
                 with transaction.atomic():
-                    curs.execute(upsert_query(table_name, row, unique_constraints, ignore_conflict=ignore_conflict),
-                                 build_row_values(row))
+                    # Attempt to update the row first
+                    update_query_sql = update_query(table_name, row, primary_key)
+                    curs.execute(update_query_sql, build_row_values(row) + build_pkey_tuple(row, primary_key))
+                    if curs.rowcount == 0:
+                        # If no rows were updated, insert the row
+                        insert_query_sql = insert_query(table_name, row)
+                        curs.execute(insert_query_sql, build_row_values(row))
                     rows_updated += 1
                     rows_created += 1
                     if rows_created % settings.BATCH_SIZE == 0:
