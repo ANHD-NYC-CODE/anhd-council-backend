@@ -235,13 +235,19 @@ def upsert_single_rows(model, rows, update, ignore_conflict=False, unique_constr
                     update_query_sql = update_query(table_name, row, primary_key)
                     curs.execute(update_query_sql, build_row_values(row) + build_pkey_tuple(row, primary_key))
                     if curs.rowcount == 0:
-                        # If no rows were updated, insert the row
-                        insert_query_sql = insert_query(table_name, row)
-                        curs.execute(insert_query_sql, build_row_values(row))
-                    rows_updated += 1
-                    rows_created += 1
-                    if rows_created % settings.BATCH_SIZE == 0:
-                        logger.debug(f"{table_name} - seeded {rows_created}")
+                        # Check if the row already exists before attempting to insert
+                        exists_query = f'SELECT 1 FROM {table_name} WHERE {primary_key} = %s'
+                        curs.execute(exists_query, (row[primary_key],))
+                        if curs.fetchone() is None:
+                            # If no rows were updated and the row does not exist, insert the row
+                            insert_query_sql = insert_query(table_name, row)
+                            curs.execute(insert_query_sql, build_row_values(row))
+                            rows_created += 1
+                    else:
+                        rows_updated += 1
+
+                    if rows_created % settings.BATCH_SIZE == 0 or rows_updated % settings.BATCH_SIZE == 0:
+                        logger.debug(f"{table_name} - seeded {rows_created} created, {rows_updated} updated")
                         update.rows_created += rows_created
                         update.rows_updated += rows_updated
                         update.save()
