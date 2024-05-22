@@ -243,6 +243,8 @@ def upsert_single_rows(model, rows, update, ignore_conflict=False, unique_constr
                             insert_query_sql = insert_query(table_name, row)
                             curs.execute(insert_query_sql, build_row_values(row))
                             rows_created += 1
+                        else:
+                            logger.debug(f"Row with primary key {row[primary_key]} already exists. Skipping insert.")
                     else:
                         rows_updated += 1
 
@@ -255,10 +257,12 @@ def upsert_single_rows(model, rows, update, ignore_conflict=False, unique_constr
                         rows_created = 0
         except Exception as e:
             logger.error(f"Database Error * - unable to upsert single record. Error: {e}")
+            transaction.set_rollback(True)
             continue
     update.rows_created += rows_created
     update.rows_updated += rows_updated
     update.save()
+
 
 class Status(object):
     def __init__(self):
