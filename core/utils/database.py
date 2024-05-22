@@ -158,7 +158,7 @@ def insert_query(table_name, row):
 def update_query(table_name, row, primary_key):
     fields = ', '.join([f'{key} = %s' for key in row.keys()])
     keys = ' AND '.join([f'{key} = %s' for key in primary_key.split(', ')])
-    sql = f'UPDATE {table_name} SET {fields} WHERE({keys});'
+    sql = f'UPDATE {table_name} SET {fields}) WHERE ({keys});'
     return sql
 
 def copy_query(table_name, columns):
@@ -173,12 +173,10 @@ def build_pkey_tuple(row, pkey):
 def batch_upsert_from_gen(model, rows, batch_size, **kwargs):
     table_name = model._meta.db_table
     update = kwargs.get('update')
-    if update is None:
-        raise ValueError("The 'update' parameter is required.")
-    ignore_conflict = kwargs.get('ignore_conflict')
+    ignore_conflict = kwargs.get('ignore_conflict', False)
     initial_total = model.objects.count()
     unique_constraints = []
-    if model._meta.unique_together:
+    if hasattr(model._meta, 'unique_together'):
         for constraint in model._meta.unique_together:
             unique_constraints.extend(constraint)
     else:
@@ -189,13 +187,13 @@ def batch_upsert_from_gen(model, rows, batch_size, **kwargs):
             while True:
                 batch = list(itertools.islice(rows, 0, batch_size))
                 if len(batch) == 0:
-                    new_total_rows = model.objects.count()
+                    logger.info(f"Database - Batch upserts completed for {model.__name__}.")
                     if update:
+                        new_total_rows = model.objects.count()
                         update.total_rows = new_total_rows
                         update.rows_created = new_total_rows - initial_total
-                        update.rows_updated -= update.rows_created
+                        update.rows_updated = update.rows_updated + (initial_total - new_total_rows)
                         update.save()
-                    logger.info(f"Database - Batch upserts completed for {model.__name__}.")
                     if 'callback' in kwargs and kwargs['callback']:
                         kwargs['callback']()
                     break
@@ -210,8 +208,6 @@ def batch_upsert_from_gen(model, rows, batch_size, **kwargs):
             raise e
 
 def batch_upsert_rows(model, rows, batch_size, update, ignore_conflict=False, unique_constraints=[]):
-    if update is None:
-        raise ValueError("The 'update' parameter is required.")
     table_name = model._meta.db_table
     with connection.cursor() as curs:
         try:
@@ -227,8 +223,6 @@ def batch_upsert_rows(model, rows, batch_size, update, ignore_conflict=False, un
             upsert_single_rows(model, rows, update=update, ignore_conflict=ignore_conflict, unique_constraints=unique_constraints)
 
 def upsert_single_rows(model, rows, update, ignore_conflict=False, unique_constraints=[]):
-    if update is None:
-        raise ValueError("The 'update' parameter is required.")
     table_name = model._meta.db_table
     rows_created = 0
     rows_updated = 0
