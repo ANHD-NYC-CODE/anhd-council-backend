@@ -206,7 +206,7 @@ def batch_upsert_from_gen(model, rows, batch_size, **kwargs):
                         logger.debug(f"Rows touched: {count}")
         except Exception as e:
             logger.warning(f"Unable to batch upsert: {e}")
-            raise e
+            upsert_single_rows(model, batch, update=update, ignore_conflict=ignore_conflict, unique_constraints=unique_constraints)
 
 def batch_upsert_rows(model, rows, batch_size, update=None, ignore_conflict=False, unique_constraints=[]):
     table_name = model._meta.db_table
