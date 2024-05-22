@@ -2,7 +2,6 @@ from django.db import connection, transaction, utils
 from core.utils.transform import from_dict_list_to_gen, from_csv_file_to_gen
 from core.utils.csv_helpers import gen_to_csv
 from django.conf import settings
-from postgres_copy import CopyManager
 from io import StringIO
 import itertools
 import csv
@@ -174,6 +173,8 @@ def build_pkey_tuple(row, pkey):
 def batch_upsert_from_gen(model, rows, batch_size, **kwargs):
     table_name = model._meta.db_table
     update = kwargs.get('update')
+    if update is None:
+        raise ValueError("The 'update' parameter is required.")
     ignore_conflict = kwargs.get('ignore_conflict')
     initial_total = model.objects.count()
     unique_constraints = []
@@ -206,9 +207,11 @@ def batch_upsert_from_gen(model, rows, batch_size, **kwargs):
                         logger.debug(f"Rows touched: {count}")
         except Exception as e:
             logger.warning(f"Unable to batch upsert: {e}")
-            upsert_single_rows(model, batch, update=update, ignore_conflict=ignore_conflict, unique_constraints=unique_constraints)
+            raise e
 
-def batch_upsert_rows(model, rows, batch_size, update=None, ignore_conflict=False, unique_constraints=[]):
+def batch_upsert_rows(model, rows, batch_size, update, ignore_conflict=False, unique_constraints=[]):
+    if update is None:
+        raise ValueError("The 'update' parameter is required.")
     table_name = model._meta.db_table
     with connection.cursor() as curs:
         try:
@@ -216,15 +219,16 @@ def batch_upsert_rows(model, rows, batch_size, update=None, ignore_conflict=Fals
             prepared_values = tuple(build_row_values(row) for row in rows)
             curs.executemany(query, prepared_values)
             affected_rows = curs.rowcount
-            if update:
-                logger.info('Database - upserted rows. Updating update object.')
-                update.rows_updated += affected_rows
-                update.save()
+            logger.info('Database - upserted rows. Updating update object.')
+            update.rows_updated += affected_rows
+            update.save()
         except Exception as e:
             logger.error(f'Database - error upserting rows. Error: {e}')
             upsert_single_rows(model, rows, update=update, ignore_conflict=ignore_conflict, unique_constraints=unique_constraints)
 
-def upsert_single_rows(model, rows, update=None, ignore_conflict=False, unique_constraints=[]):
+def upsert_single_rows(model, rows, update, ignore_conflict=False, unique_constraints=[]):
+    if update is None:
+        raise ValueError("The 'update' parameter is required.")
     table_name = model._meta.db_table
     rows_created = 0
     rows_updated = 0
@@ -238,19 +242,17 @@ def upsert_single_rows(model, rows, update=None, ignore_conflict=False, unique_c
                     rows_created += 1
                     if rows_created % settings.BATCH_SIZE == 0:
                         logger.debug(f"{table_name} - seeded {rows_created}")
-                        if update:
-                            update.rows_created += rows_created
-                            update.rows_updated += rows_created
-                            update.save()
-                            rows_updated = 0
-                            rows_created = 0
+                        update.rows_created += rows_created
+                        update.rows_updated += rows_updated
+                        update.save()
+                        rows_updated = 0
+                        rows_created = 0
         except Exception as e:
             logger.error(f"Database Error * - unable to upsert single record. Error: {e}")
             continue
-    if update:
-        update.rows_created += rows_created
-        update.rows_updated += rows_created
-        update.save()
+    update.rows_created += rows_created
+    update.rows_updated += rows_updated
+    update.save()
 
 class Status(object):
     def __init__(self):
