@@ -192,7 +192,7 @@ def batch_upsert_from_gen(model, rows, batch_size, **kwargs):
                     if update:
                         update.total_rows = new_total_rows
                         update.rows_created = new_total_rows - initial_total
-                        update.rows_updated = update.rows_updated - update.rows_created
+                        update.rows_updated -= update.rows_created
                         update.save()
                     logger.info(f"Database - Batch upserts completed for {model.__name__}.")
                     if 'callback' in kwargs and kwargs['callback']:
