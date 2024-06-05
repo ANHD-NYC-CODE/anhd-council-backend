@@ -209,51 +209,24 @@ def upsert_query(table_name, row, primary_key, ignore_conflict=False):
     placeholders = ', '.join(["%s" for v in row.values()])
     conflict_action = "DO NOTHING" if ignore_conflict else "DO UPDATE SET {}".format(upsert_fields)
     sql = "INSERT INTO {table_name} ({fields}) VALUES ({values}) ON CONFLICT ({primary_key}) {conflict_action};"
-
     return sql.format(table_name=table_name, fields=fields, values=placeholders, primary_key=primary_key, conflict_action=conflict_action)
-
-
-def insert_query(table_name, row):
-    fields = ', '.join(row.keys())
-    placeholders = ', '.join(["%s" for v in row.values()])
-    sql = "INSERT INTO {table_name} ({fields}) VALUES ({values})"
-    return sql.format(table_name=table_name, fields=fields, values=placeholders)
-
-
-def update_query(table_name, row, primary_key):
-    fields = ', '.join(['{key} = %s'.format(key=key) for key in row.keys()])
-    keys = ' AND '.join(['{key} = %s'.format(key=key) for key in primary_key.split(', ')])
-    sql = 'UPDATE {table_name} SET {fields} WHERE({pk});'
-    return sql.format(table_name=table_name, fields=fields, pk=keys)
-
-
-def copy_query(table_name, columns):
-    return 'COPY {table_name} ({fields}) FROM STDIN WITH (format csv)'.format(table_name=table_name, fields=columns)
-
 
 def build_row_values(row):
     t_row = tuple(row.values())
     return tuple(None if x == '' else x for x in t_row)
 
-
-def build_pkey_tuple(row, pkey):
-    tup = tuple()
-    for key in pkey.split(', '):
-        tup = tup + (row[key],)
-    return tup
-
-
 def batch_upsert_from_gen(model, rows, batch_size, **kwargs):
     table_name = model._meta.db_table
-    update = kwargs['update'] if 'update' in kwargs else None
-    ignore_conflict = kwargs['ignore_conflict'] if 'ignore_conflict' in kwargs else None
+    update = kwargs.get('update', None)
+    ignore_conflict = kwargs.get('ignore_conflict', False)
 
     with connection.cursor() as curs:
         try:
-            count = 0
+            starting_count = model.objects.count()
+            total_processed = 0
             while True:
                 batch = list(itertools.islice(rows, 0, batch_size))
-                if len(batch) == 0:
+                if not batch:
                     logger.info("Database - Batch upserts completed for {}.".format(model.__name__))
                     if 'callback' in kwargs and kwargs['callback']:
                         kwargs['callback']()
@@ -261,39 +234,36 @@ def batch_upsert_from_gen(model, rows, batch_size, **kwargs):
                 else:
                     with transaction.atomic():
                         logger.debug("Seeding next batch for {}.".format(model.__name__))
-                        batch_upsert_rows(model, batch, batch_size, update=update, ignore_conflict=ignore_conflict)
-                        count = count + batch_size
-                        logger.debug("Rows touched: {}".format(count))
+                        batch_upsert_rows(model, batch, update=update, ignore_conflict=ignore_conflict)
+                        total_processed += len(batch)
+                        logger.debug("Rows touched: {}".format(total_processed))
+
+            ending_count = model.objects.count()
+
+            if update:
+                rows_created = ending_count - starting_count
+                rows_updated = total_processed - rows_created
+                update.rows_created += rows_created
+                update.rows_updated += rows_updated
+                update.save()
 
         except Exception as e:
             logger.warning("Unable to batch upsert: {}".format(e))
             raise e
 
-
-# No Conflict = True means DO NOTHING on conflict. False means update on conflict.
-def batch_upsert_rows(model, rows, batch_size, update=None, ignore_conflict=False):
+def batch_upsert_rows(model, rows, update=None, ignore_conflict=False):
     table_name = model._meta.db_table
     primary_key = model._meta.pk.name
-    """ Inserts many row, all in the same transaction"""
-    rows_length = len(rows)
+    """Inserts many rows, all in the same transaction"""
 
     with connection.cursor() as curs:
         try:
-            starting_count = model.objects.count()
             with transaction.atomic():
                 curs.executemany(upsert_query(table_name, rows[0], primary_key, ignore_conflict=ignore_conflict), tuple(
                     build_row_values(row) for row in rows))
-
-            if update:
-                rows_created = model.objects.count() - starting_count
-                update.rows_created = update.rows_created + rows_created
-                update.rows_updated = update.rows_updated + (rows_length - rows_created)
-                update.save()
-
         except Exception as e:
             logger.info('Database - error upserting rows. Doing single row upsert. - Error: {}'.format(e))
             upsert_single_rows(model, rows, update=update, ignore_conflict=ignore_conflict)
-
 
 def upsert_single_rows(model, rows, update=None, ignore_conflict=False):
     table_name = model._meta.db_table
@@ -304,19 +274,25 @@ def upsert_single_rows(model, rows, update=None, ignore_conflict=False):
     for row in rows:
         try:
             with connection.cursor() as curs:
+                primary_key_value = row[primary_key]
+                exists = model.objects.filter(**{primary_key: primary_key_value}).exists()
+
                 with transaction.atomic():
                     curs.execute(upsert_query(table_name, row, primary_key, ignore_conflict=ignore_conflict),
                                  build_row_values(row))
-                    rows_updated = rows_updated + 1
-                    rows_created = rows_created + 1
+                    
+                    if exists:
+                        rows_updated += 1
+                    else:
+                        rows_created += 1
 
-                    if rows_created % settings.BATCH_SIZE == 0:
-                        logger.debug("{} - seeded {}".format(table_name, rows_created))
+                    if (rows_created + rows_updated) % settings.BATCH_SIZE == 0:
+                        logger.debug("{} - seeded {}".format(table_name, rows_created + rows_updated))
                         if update:
-                            update.rows_created = update.rows_created + rows_created
-                            update.rows_updated = update.rows_updated + rows_created
+                            update.rows_created += rows_created
+                            update.rows_updated += rows_updated
                             update.save()
-                            rows_updated = 0
+                            rows_created = 0
                             rows_updated = 0
 
         except Exception as e:
@@ -324,8 +300,8 @@ def upsert_single_rows(model, rows, update=None, ignore_conflict=False):
             continue
 
     if update:
-        update.rows_created = update.rows_created + rows_created
-        update.rows_updated = update.rows_updated + rows_created
+        update.rows_created += rows_created
+        update.rows_updated += rows_updated
         update.save()
 
 
