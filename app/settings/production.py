@@ -8,7 +8,7 @@ EMAIL_PORT = 465
 EMAIL_USE_TLS = True
 
 ADMINS = (
-    ('Anhd admin', 'dapadmin@anhd.org'),
+    # ('Anhd admin', 'dapadmin@anhd.org'),
     ('Dev', 'scott@blueprintinteractive.com')
 )
 
