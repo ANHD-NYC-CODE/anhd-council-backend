@@ -9,8 +9,10 @@ from core.tasks import async_download_and_update
 from core.utils.typecast import HPDComplaintTypecast
 from django.utils import timezone
 import logging
+import datetime
 
 logger = logging.getLogger('app')
+
 
 class HPDComplaint(BaseDatasetModel, models.Model):
     class Meta:
@@ -19,7 +21,8 @@ class HPDComplaint(BaseDatasetModel, models.Model):
             models.Index(fields=['-receiveddate']),
         ]
     API_ID = 'ygpa-z7cr'
-    download_endpoint = "https://data.cityofnewyork.us/api/views/ygpa-z7cr/rows.csv?accessType=DOWNLOAD"
+    # download_endpoint = "https://data.cityofnewyork.us/api/views/ygpa-z7cr/rows.csv?accessType=DOWNLOAD"
+    base_download_endpoint = "https://data.cityofnewyork.us/resource/ygpa-z7cr.csv"
     QUERY_DATE_KEY = 'receiveddate'
     RECENT_DATE_PINNED = True
 
@@ -90,15 +93,41 @@ class HPDComplaint(BaseDatasetModel, models.Model):
         blank=True, null=True, verbose_name="Unique identifier of a Service Request (SR) in the open data set")
 
     slim_query_fields = ["complaintid", "bbl", "receiveddate"]
-    
+
     @classmethod
     def create_async_update_worker(self, endpoint=None, file_name=None):
         async_download_and_update.delay(
             self.get_dataset().id, endpoint=endpoint, file_name=file_name)
 
+    # @classmethod
+    # def download(self, endpoint=None, file_name=None):
+    #             return self.download_file(self.download_endpoint, file_name=file_name)
+
     @classmethod
-    def download(self, endpoint=None, file_name=None):
-        return self.download_file(self.download_endpoint, file_name=file_name)
+    def download(cls, endpoint=None, file_name=None):
+        # Filter the CSV being downloaded from Socrata to just past year
+        one_year_ago = (datetime.datetime.now(
+        ) - datetime.timedelta(days=365)).strftime('%Y-%m-%dT%H:%M:%S')
+
+        # Construct the dynamic URL with query parameters
+        query_params = (
+            f"$select=received_date,problem_id,complaint_id,building_id,borough,"
+            f"house_number,street_name,post_code,block,lot,apartment,community_board,"
+            f"unit_type,space_type,type,major_category,minor_category,problem_code,"
+            f"complaint_status,complaint_status_date,problem_status,problem_status_date,"
+            f"status_description,problem_duplicate_flag,complaint_anonymous_flag,unique_key,"
+            f"latitude,longitude,council_district,census_tract,bin,bbl,nta"
+            f"&$where=problem_status_date >= '{one_year_ago}'"
+            f"&$limit=100000000"
+        )
+
+        # Set the download_endpoint dynamically
+        download_endpoint = f"{cls.base_download_endpoint}?{query_params}"
+
+        logger.info(f"Downloading data from {download_endpoint}")
+
+        # Use the download_file method with the dynamic URL
+        return cls.download_file(download_endpoint, file_name=file_name)
 
     @classmethod
     def pre_validation_filters(self, gen_rows):
@@ -106,7 +135,7 @@ class HPDComplaint(BaseDatasetModel, models.Model):
         for row in gen_rows:
             if not is_null(row['complaintid']):
                 yield typecaster.cast_row(row)
-    
+
     @staticmethod
     def is_within_past_year(date_str, date_format='%Y-%m-%d'):
         try:
@@ -116,17 +145,18 @@ class HPDComplaint(BaseDatasetModel, models.Model):
         except Exception as e:
             logger.error(f"Date parsing error: {e}")
             return False
-            
-    @classmethod                
+
+    @classmethod
     def update_set_filter(self, csv_reader, headers):
         typecaster = HPDComplaintTypecast(HPDComplaint)
         # Find the index of 'Problem Status Date' in the headers
         problem_status_date_index = headers.index('Problem Status Date')
-        
+
         for row in csv_reader:
             # Check if the date in the 'Problem Status Date' column is within the past year
             if not self.is_within_past_year(row[problem_status_date_index]):
-                logger.debug(f"Skipping row with old date: {row[problem_status_date_index]}")
+                logger.debug(
+                    f"Skipping row with old date: {row[problem_status_date_index]}")
                 continue  # Skip rows older than one year
             # Apply typecasting and yield the transformed row
             yield typecaster.cast_row(row)
@@ -182,7 +212,7 @@ class HPDComplaint(BaseDatasetModel, models.Model):
             buildingid__isnull=False,
             bin__isnull=True
         )
-            
+
         logger.info(
             f"Updating bins for {objects_to_update.count()} records from the last year.")
         objects_to_update.update(bin=Subquery(bin_subquery))
