@@ -76,13 +76,15 @@ class BaseDatasetModel():
             raise Exception("Request error: {}".format(
                 file_request.status_code))
 
-        # get filename
+        # Get filename
         if not file_name:
             try:
                 file_name = re.findall(
                     "filename=(.+)", file_request.headers['content-disposition'])[0]
             except Exception as e:
-                file_name = endpoint.split('/')[-1][0:64]
+                # Use a more sensible default filename
+                timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+                file_name = f"dataset_{timestamp}.csv"
 
         # Create a temporary file
         lf = tempfile.NamedTemporaryFile()
