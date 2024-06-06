@@ -142,7 +142,8 @@ def seed_from_csv_diff(original_file_path, new_file_path, model, **kwargs):
 
     diff_gen = from_csv_file_to_gen(temp_file_path, kwargs['update'])
     logger.debug(" * Csv diff completed, beginning batch upsert.")
-    batch_upsert_from_gen(model, diff_gen, settings.BATCH_SIZE, **kwargs)
+    # batch_upsert_from_gen(model, diff_gen, settings.BATCH_SIZE, **kwargs)
+    batch_upsert_from_gen(model, diff_gen, 750000, **kwargs)
     if os.path.isfile(temp_file_path):
         os.remove(temp_file_path)
     if 'callback' in kwargs and kwargs['callback']:
@@ -186,7 +187,8 @@ def copy_file(model, file_path=None, **kwargs):
             logger.warning(
                 "Database - Bulk Import Error - beginning Batch seeding. Error: {}".format(e))
             rows = from_csv_file_to_gen(file_path, kwargs['update'])
-            batch_upsert_from_gen(model, rows, settings.BATCH_SIZE, **kwargs)
+            # batch_upsert_from_gen(model, rows, settings.BATCH_SIZE, **kwargs)
+            batch_upsert_from_gen(model, rows, 750000, **kwargs)
 
 
 def copy_insert_from_csv(table_name, temp_file_path, **kwargs):
@@ -252,7 +254,7 @@ def build_pkey_tuple(row, pkey):
     return tup
 
 
-def batch_upsert_from_gen(model, rows, batch_size=500000, **kwargs):
+def batch_upsert_from_gen(model, rows, batch_size=750000, **kwargs):
     table_name = model._meta.db_table
     update = kwargs['update'] if 'update' in kwargs else None
     ignore_conflict = kwargs['ignore_conflict'] if 'ignore_conflict' in kwargs else None
@@ -283,7 +285,7 @@ def batch_upsert_from_gen(model, rows, batch_size=500000, **kwargs):
 
 
 # No Conflict = True means DO NOTHING on conflict. False means update on conflict.
-def batch_upsert_rows(model, rows, batch_size=500000, update=None, ignore_conflict=False):
+def batch_upsert_rows(model, rows, batch_size=750000, update=None, ignore_conflict=False):
     table_name = model._meta.db_table
     primary_key = model._meta.pk.name
     """ Inserts many row, all in the same transaction"""
