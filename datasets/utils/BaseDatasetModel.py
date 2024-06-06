@@ -14,11 +14,9 @@ import tempfile
 import re
 import logging
 import math
-import datetime
 from datasets.utils import dates
 from django.db.models import Subquery, OuterRef, Count, IntegerField, F
 from django.db.models.functions import Coalesce
-
 from datetime import datetime, timezone
 from django.utils.timezone import make_aware
 
@@ -83,7 +81,7 @@ class BaseDatasetModel():
                     "filename=(.+)", file_request.headers['content-disposition'])[0]
             except Exception as e:
                 # Use a more sensible default filename
-                timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+                timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
                 file_name = f"dataset_{timestamp}.csv"
 
         # Create a temporary file
