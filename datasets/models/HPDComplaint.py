@@ -124,7 +124,8 @@ class HPDComplaint(BaseDatasetModel, models.Model):
         # Set the download_endpoint dynamically
         download_endpoint = f"{cls.base_download_endpoint}?{query_params}"
 
-        logger.info(f"Downloading data from {download_endpoint}")
+        logger.info(
+            f"Downloading HPD Complaint & Problem Data - filtered by Problem Status Date in the past year - from {download_endpoint}")
 
         # Use the download_file method with the dynamic URL
         return cls.download_file(download_endpoint, file_name=file_name)

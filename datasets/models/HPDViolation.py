@@ -6,6 +6,7 @@ from django.dispatch import receiver
 from core.tasks import async_download_and_update
 from datasets import models as ds
 import logging
+import datetime
 logger = logging.getLogger('app')
 
 
@@ -17,10 +18,11 @@ class HPDViolation(BaseDatasetModel, models.Model):
         ]
 
     API_ID = 'wvxf-dwi5'
+    base_download_endpoint = "https://data.cityofnewyork.us/resource/wvxf-dwi5.csv"
     QUERY_DATE_KEY = 'approveddate'
     EARLIEST_RECORD = '1933-01-01'
 
-    download_endpoint = "https://data.cityofnewyork.us/api/views/wvxf-dwi5/rows.csv?accessType=DOWNLOAD"
+    # download_endpoint = "https://data.cityofnewyork.us/api/views/wvxf-dwi5/rows.csv?accessType=DOWNLOAD"
 
     violationid = models.IntegerField(
         primary_key=True, blank=False, null=False)
@@ -77,9 +79,38 @@ class HPDViolation(BaseDatasetModel, models.Model):
         async_download_and_update.delay(
             self.get_dataset().id, endpoint=endpoint, file_name=file_name)
 
+    # Download Method for Full File (unfiltered by date)
+    # @classmethod
+    # def download(self, endpoint=None, file_name=None):
+    #     return self.download_file(self.download_endpoint, file_name=file_name)
+
+    # New Download method via API Soda Filtering by Date
     @classmethod
-    def download(self, endpoint=None, file_name=None):
-        return self.download_file(self.download_endpoint, file_name=file_name)
+    def download(cls, endpoint=None, file_name=None):
+        # Filter the CSV being downloaded from Socrata to just past year
+        one_year_ago = (datetime.datetime.now(
+        ) - datetime.timedelta(days=365)).strftime('%Y-%m-%dT%H:%M:%S')
+
+        # Construct the dynamic URL with query parameters
+        query_params = (
+            f"$select=violationid,buildingid,registrationid,boroid,boro,housenumber,lowhousenumber,highhousenumber,"
+            f"streetname,streetcode,zip,apartment,story,block,lot,class,inspectiondate,approveddate,"
+            f"originalcertifybydate,originalcorrectbydate,newcertifybydate,newcorrectbydate,certifieddate,"
+            f"ordernumber,novid,novdescription,novissueddate,currentstatusid,currentstatus,currentstatusdate,"
+            f"novtype,violationstatus,rentimpairing,latitude,longitude,communityboard,councildistrict,censustract,"
+            f"bin,bbl,nta"
+            f"&$where=inspectiondate >= '{one_year_ago}'"
+            f"&$limit=100000000"
+        )
+
+        # Set the download_endpoint dynamically
+        download_endpoint = f"{cls.base_download_endpoint}?{query_params}"
+
+        logger.info(
+            f"Downloading HPD Violation data - filtered by inspection dates in the past year -  from {download_endpoint}")
+
+        # Use the download_file method with the dynamic URL
+        return cls.download_file(download_endpoint, file_name=file_name)
 
     @classmethod
     def pre_validation_filters(self, gen_rows):
@@ -93,7 +124,7 @@ class HPDViolation(BaseDatasetModel, models.Model):
     @classmethod
     def update_set_filter(self, csv_reader, headers):
         for row in csv_reader:
-            if headers.index('InspectionDate') and is_older_than(row[headers.index('InspectionDate')], 2):
+            if headers.index('InspectionDate') and is_older_than(row[headers.index('InspectionDate')], 1):
                 continue
             yield row
 
@@ -118,7 +149,6 @@ class HPDViolation(BaseDatasetModel, models.Model):
 def annotate_property_on_save(sender, instance, created, **kwargs):
     if created == True:
         try:
-
             annotation = sender.annotate_property_standard(
                 instance.bbl.propertyannotation)
             annotation.save()
