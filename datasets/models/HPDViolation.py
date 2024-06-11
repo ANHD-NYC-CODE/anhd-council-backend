@@ -93,8 +93,8 @@ class HPDViolation(BaseDatasetModel, models.Model):
 
         # Construct the dynamic URL with query parameters
         query_params = (
-            f"$select=violationid,buildingid,registrationid,boroid,boro,housenumber,lowhousenumber,highhousenumber,"
-            f"streetname,streetcode,zip,apartment,story,block,lot,class,inspectiondate,approveddate,"
+            f"$select=violationid,buildingid,registrationid,boroid,borough,housenumber,lowhousenumber,highhousenumber,"
+            f"streetname,streetcode,postcode,apartment,story,block,lot,class_name,inspectiondate,approveddate,"
             f"originalcertifybydate,originalcorrectbydate,newcertifybydate,newcorrectbydate,certifieddate,"
             f"ordernumber,novid,novdescription,novissueddate,currentstatusid,currentstatus,currentstatusdate,"
             f"novtype,violationstatus,rentimpairing,latitude,longitude,communityboard,councildistrict,censustract,"
