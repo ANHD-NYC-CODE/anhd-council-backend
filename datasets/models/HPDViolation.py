@@ -93,7 +93,13 @@ class HPDViolation(BaseDatasetModel, models.Model):
 
         # Construct the dynamic URL with query parameters
         query_params = (
-            f"$where=inspectiondate >= '{one_year_ago}'"
+            f"$select=violationid,buildingid,registrationid,boroid,boro,housenumber,lowhousenumber,highhousenumber,"
+            f"streetname,streetcode,zip,apartment,story,block,lot,class,inspectiondate,approveddate,"
+            f"originalcertifybydate,originalcorrectbydate,newcertifybydate,newcorrectbydate,certifieddate,"
+            f"ordernumber,novid,novdescription,novissueddate,currentstatusid,currentstatus,currentstatusdate,"
+            f"novtype,violationstatus,rentimpairing,latitude,longitude,communityboard,councildistrict,censustract,"
+            f"bin,bbl,nta"
+            f"&$where=inspectiondate >= '{one_year_ago}'"
             f"&$limit=100000000"
         )
 
@@ -106,15 +112,9 @@ class HPDViolation(BaseDatasetModel, models.Model):
         # Use the download_file method with the dynamic URL
         return cls.download_file(download_endpoint, file_name=file_name)
 
-    @classmethod
-    def pre_validation_filters(self, gen_rows):
-        for row in gen_rows:
-            if is_null(row['violationid']):
-                continue
-            yield row
-
     # trims down new update files to preserve memory
     # uses original header values
+
     @classmethod
     def update_set_filter(self, csv_reader, headers):
         for row in csv_reader:
@@ -123,8 +123,35 @@ class HPDViolation(BaseDatasetModel, models.Model):
             yield row
 
     @classmethod
-    def transform_self(self, file_path, update=None):
-        return self.pre_validation_filters(from_csv_file_to_gen(file_path, update))
+    def transform_self(cls, file_path, update=None):
+        field_mapping = {
+            'boro': 'borough',
+            'zip': 'postcode',
+            'class': 'class_name'
+        }
+        # Create a generator that applies the field mapping
+
+        def map_fields(gen_rows):
+            for row in gen_rows:
+                mapped_row = {field_mapping.get(
+                    k, k): v for k, v in row.items()}
+                yield mapped_row
+
+        # Apply the pre-validation filters and the field mapping
+        gen_rows = from_csv_file_to_gen(file_path, update)
+        gen_rows = cls.pre_validation_filters(gen_rows)
+        gen_rows = map_fields(gen_rows)
+
+        return gen_rows
+
+    @classmethod
+    def pre_validation_filters(self, gen_rows):
+        for row in gen_rows:
+            if is_null(row['violationid']):
+                continue
+            yield row
+
+        # return self.pre_validation_filters(from_csv_file_to_gen(file_path, update))
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
