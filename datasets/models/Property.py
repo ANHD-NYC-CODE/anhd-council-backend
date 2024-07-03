@@ -1,7 +1,6 @@
 import json
 from shapely.geometry import shape, Point
-
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Q, F, Count, Sum, Exists, OuterRef, Prefetch, FilteredRelation
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from datasets.utils.validation_filters import is_null, exceeds_char_length
@@ -12,23 +11,15 @@ from django.dispatch import receiver
 from core.utils.database import queryset_foreach
 from core.utils.database import Status, progress_callback
 from core.tasks import async_download_and_update
-
 from datasets import models as ds
-
 import logging
 from django.conf import settings
 logger = logging.getLogger('app')
 
-# Update process: Manual
+# Update process: Automated
 # Update strategy: Upsert
 #
-# Download latest Pluto .csv zipfile from:
-# https://www1.nyc.gov/site/planning/data-maps/open-data/dwn-pluto-mappluto.page
-# upload zipfile file through admin, update
-# *** Add the pluto version to the 'version' field in admin ****
-# Ex: 20v6
 # ** RESOURCE INTENSIVE UPDATE ** - don't run during regular updates after 7pm
-
 
 class CurrentPropertyManager(models.Manager):
     def get_queryset(self):
@@ -394,12 +385,17 @@ class Property(BaseDatasetModel, models.Model):
             row['original_address'] = row['address']
             row['address'] = clean_number_and_streets(
                 row['address'], True, clean_typos=False)
-
-            # GEO
-            # lng, lat = get_geo(row)
-            # row['lat'] = lat
-            # row['lng'] = lng
-            # Count
+            
+            # Set CouncilDistrict row from Data to also be "Council" field
+            row['councildistrict'] = row.get('councildistrict')
+            council_district_number = row.get('councildistrict')
+            if council_district_number:
+                try:
+                    council_instance = ds.Council.objects.get(id=council_district_number)
+                    row['council'] = council_instance.id
+                except ds.Council.DoesNotExist:
+                    row['council'] = None  # Use None to represent NULL
+            
             count = count + 1
             if count % 10000 == 0:
                 logger.info("prepared {} properties".format(count))
