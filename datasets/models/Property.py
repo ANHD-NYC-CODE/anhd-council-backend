@@ -189,7 +189,7 @@ class Property(BaseDatasetModel, models.Model):
 
     # DEPRECATED - now the version is pulled from the Dataset "Version" field - make sure to include this
     # when creating a Property Update from pluto
-    current_version = '20v1'
+    current_version = '24v1.1'
     objects = PropertyManager()
     current = CurrentPropertyManager()
     obsolete = ObsoletePropertyManager()
@@ -216,7 +216,6 @@ class Property(BaseDatasetModel, models.Model):
                                     db_column='statesenate', db_constraint=False)
     ct2010 = models.TextField(blank=True, null=True)
     cb2010 = models.TextField(blank=True, null=True)
-    
     schooldist = models.SmallIntegerField(blank=True, null=True)
     firecomp = models.TextField(blank=True, null=True)
     policeprct = models.TextField(blank=True, null=True)
