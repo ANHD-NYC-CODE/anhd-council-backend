@@ -159,7 +159,7 @@ def async_send_user_message_email(self, bug_report_id):
     return send_user_message_email(bug_report=bug_report)
 
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=30, max_retries=3)
-def async_send_user_notification_email(self, user_id, save_name, save_url, new_result_num, new_results_url, last_notified_date):
+def async_send_user_notification_email(self, user_id, save_name, save_url, new_result_num, new_results_url, last_notified_date, added_items, removed_items):
     user = CustomUser.objects.get(id=user_id)
     subject = f'Notification: New results for your custom search, "{save_name}"'
     content = f'<h3>Hello {user.username}!</h3>'
@@ -168,11 +168,18 @@ def async_send_user_notification_email(self, user_id, save_name, save_url, new_r
 
     if new_result_num > 0 and len(new_results_url) > 0:
         content += f'<p>There are {new_result_num} new results since the last notification on {last_notified_date}. To view new results, <a href="{new_results_url}">click here</a>.</p>'
-
+    
+    # if len(added_items) > 0:
+    #     content += f'<p>The following items have been added to the search results: {", ".join(added_items)}.</p>'
+    # if len(removed_items) > 0:
+    # content += f'<p>The following items have been removed from the search results: {", ".join(removed_items)}.</p>'
+        
     content += f'<p><a href="{save_url}">Click here</a> to view your original search, including new results.</p>'
 
     content += '<p>If you would like to stop receiving these emails from DAP Portal, <a href="https://portal.displacementalert.org/me">visit your dashboard</a> to manage/unsubscribe from notifications.</p>'
     send_mail(user.email, subject, content)
+
+
 
 @app.task(bind=True, queue='celery')
 def async_test_rollbar(self):
@@ -285,7 +292,15 @@ def replace_date_in_url(url, last_date, now_date):
             pass
     return url
 
+def bp_compare_bbls(old_array, new_array):
+    old_set = set(old_array)
+    new_set = set(new_array)
 
+    added_items = new_set - old_set
+    removed_items = old_set - new_set
+
+    return list(added_items), list(removed_items)
+    
 def check_notifications_custom_search(notification_frequency):
     custom_searches = u.CustomSearch.objects.all()
     for custom_search in custom_searches:
@@ -297,9 +312,8 @@ def check_notifications_custom_search(notification_frequency):
         result_hash_length = get_query_result_hash_and_length_bbl(query)
         new_result_hash = result_hash_length['hash']
         new_result_length = result_hash_length['length']
+        new_result_rows = result_hash_length['result']
         
-        # print(result_hash_length)
-        # print("-------------------------")
         if past_result_hash != new_result_hash:
             logger.info(
                 'Change detected. Updating custom search with id:{}'.format(custom_search.id))
@@ -314,53 +328,93 @@ def check_notifications_custom_search(notification_frequency):
                     user_custom_search.last_notified_hash = new_result_hash
                     user_custom_search.save()
                     user = user_custom_search.user
+                    
+                    # Compare old and new result rows
+                    added_items = []
+                    removed_items = []
+                    initial = False
+
+                    # Store results for future comparison
+                    if user_custom_search.last_notified_result is None:
+                        print("Initial seeding")
+                        serialized_result = json.dumps(new_result_rows)
+                        user_custom_search.last_notified_result = serialized_result
+                        user_custom_search.save()
+                        
+                        added_items = new_result_rows
+                        initial = True
+                    else:
+                        print("Comparing results")
+                        print("ID: ", user_custom_search.id)
+                        # Get the old result rows from the stored last_notified_result
+                        old_result_rows = json.loads(user_custom_search.last_notified_result)
+                        
+                        # Serialize new result rows for comparison
+                        serialized_new_result_rows = json.dumps(new_result_rows)
+                        
+                        # Compare old and new result rows
+                        added_items, removed_items = bp_compare_bbls(old_result_rows, new_result_rows)
+                        
+                        # Update the last_notified_result with the new serialized result rows
+                        user_custom_search.last_notified_result = serialized_new_result_rows
+                        user_custom_search.save()
 
                     root_url = 'https://staging.portal.displacementalert.org/search' if settings.DEBUG else 'https://portal.displacementalert.org/search'
                     full_url = root_url + frontend_url
 
                     last_number_of_results = user_custom_search.last_number_of_results
                     new_results_url = ''
-                    new_results_count = 0
+                    new_results_count = len(added_items)
                     est = pytz.timezone('America/New_York')
                     last_date = user_custom_search.last_notified_date.astimezone(est) - timedelta(days=1)
                     if last_number_of_results != new_result_length:
                         user_custom_search.last_number_of_results = new_result_length
                         user_custom_search.last_notified_date = timezone.now()
                         user_custom_search.save()
+                    
+                    if new_results_count > 0:
                         try:
                             new_results_url = replace_date_in_url(full_url, last_date, timezone.now().astimezone(est) - timedelta(days=1))
                             new_backend_query = replace_date_in_url(query, last_date, timezone.now().astimezone(est) - timedelta(days=1))
                             new_result_hash_length = get_query_result_hash_and_length_bbl(new_backend_query)
                             if new_result_hash_length['length'] <= 0:
                                 new_results_url = ''
-                            new_results_count = new_result_hash_length['length']
                         except Exception:
                             new_results_url = ''
-                            new_results_count = 0
 
-                    try:
-                        if settings.DEBUG:
-                            logger.info('Not emailing {}'.format(user.email))
-                            async_send_user_notification_email.delay(
-                                user.id,
-                                user_custom_search.name,
-                                full_url,
-                                new_results_count,
-                                new_results_url,
-                                last_date.strftime('%B %-d, %Y')
-                            )
-                        else:
-                            async_send_user_notification_email.delay(
-                                user.id,
-                                user_custom_search.name,
-                                full_url,
-                                new_results_count,
-                                new_results_url,
-                                last_date.strftime('%B %-d, %Y')
-                            )
-                    except Exception as e:
-                        logger.info('Emailing {} failed'.format(user.username))
-                        async_send_general_task_error_mail.delay(str(e))
+                    if initial:
+                        print("Initial check. No email is to be sent.")
+                    else:    
+                        print("Emailing user")
+                        print("New results count: ", new_results_count)
+                        
+                        try:
+                            if settings.DEBUG:
+                                logger.info('Not emailing {}'.format(user.email))
+                                async_send_user_notification_email.delay(
+                                    user.id,
+                                    user_custom_search.name,
+                                    full_url,
+                                    new_results_count,
+                                    new_results_url,
+                                    last_date.strftime('%B %-d, %Y'),
+                                    added_items,
+                                    removed_items
+                                )
+                            else:
+                                async_send_user_notification_email.delay(
+                                    user.id,
+                                    user_custom_search.name,
+                                    full_url,
+                                    new_results_count,
+                                    new_results_url,
+                                    last_date.strftime('%B %-d, %Y'),
+                                    added_items,
+                                    removed_items
+                                )
+                        except Exception as e:
+                            logger.info('Emailing {} failed'.format(user.username))
+                            async_send_general_task_error_mail.delay(str(e))
 
 
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', acks_late=True, max_retries=1)
