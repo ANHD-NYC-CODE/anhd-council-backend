@@ -382,39 +382,39 @@ def check_notifications_custom_search(notification_frequency):
                         except Exception:
                             new_results_url = ''
 
-                    if initial:
-                        print("Initial check. No email is to be sent.")
-                    else:    
-                        print("Emailing user")
-                        print("New results count: ", new_results_count)
-                        
-                        try:
-                            if settings.DEBUG:
-                                logger.info('Not emailing {}'.format(user.email))
-                                async_send_user_notification_email.delay(
-                                    user.id,
-                                    user_custom_search.name,
-                                    full_url,
-                                    new_results_count,
-                                    new_results_url,
-                                    last_date.strftime('%B %-d, %Y'),
-                                    added_items,
-                                    removed_items
-                                )
-                            else:
-                                async_send_user_notification_email.delay(
-                                    user.id,
-                                    user_custom_search.name,
-                                    full_url,
-                                    new_results_count,
-                                    new_results_url,
-                                    last_date.strftime('%B %-d, %Y'),
-                                    added_items,
-                                    removed_items
-                                )
-                        except Exception as e:
-                            logger.info('Emailing {} failed'.format(user.username))
-                            async_send_general_task_error_mail.delay(str(e))
+                        if initial:
+                            print("Initial check. No email is to be sent.")
+                        else:    
+                            print("Emailing user")
+                            print("New results count: ", new_results_count)
+                            
+                            try:
+                                if settings.DEBUG:
+                                    logger.info('Not emailing {}'.format(user.email))
+                                    async_send_user_notification_email.delay(
+                                        user.id,
+                                        user_custom_search.name,
+                                        full_url,
+                                        new_results_count,
+                                        new_results_url,
+                                        last_date.strftime('%B %-d, %Y'),
+                                        added_items,
+                                        removed_items
+                                    )
+                                else:
+                                    async_send_user_notification_email.delay(
+                                        user.id,
+                                        user_custom_search.name,
+                                        full_url,
+                                        new_results_count,
+                                        new_results_url,
+                                        last_date.strftime('%B %-d, %Y'),
+                                        added_items,
+                                        removed_items
+                                    )
+                            except Exception as e:
+                                logger.info('Emailing {} failed'.format(user.username))
+                                async_send_general_task_error_mail.delay(str(e))
 
 
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', acks_late=True, max_retries=1)
