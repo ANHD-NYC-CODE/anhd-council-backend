@@ -184,6 +184,7 @@ class UserCustomSearch(models.Model):
     last_number_of_results = models.IntegerField(default=0, blank=True)
     custom_search_view = models.ForeignKey(CustomSearch, on_delete=models.CASCADE)
     created_date = models.DateTimeField(default=timezone.now)
+    last_notified_result = models.TextField(blank=True, null=True)
 
     class Meta:
         unique_together = ('user', 'name',)
