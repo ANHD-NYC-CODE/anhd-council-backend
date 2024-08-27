@@ -460,7 +460,7 @@ def async_check_notifications_custom_search_monthly(self):
         raise e
 
 def slack_send(message):
-    url = settings.SLACK_WEBHOOK_URL
+    url = os.environ.get('SLACK_WEBHOOK_URL', '')
     data = {"text": message}
     headers = {'Content-Type': 'application/json'}
     
