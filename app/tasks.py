@@ -458,3 +458,12 @@ def async_check_notifications_custom_search_monthly(self):
         logger.error('Error during task: {}'.format(e))
         async_send_general_task_error_mail.delay(str(e))
         raise e
+
+def slack_send(message):
+    url = "https://hooks.slack.com/services/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"
+    data = {"text": message}
+    headers = {'Content-Type': 'application/json'}
+    
+    response = requests.post(url, data=json.dumps(data), headers=headers, verify=False)
+    
+    return response.text
