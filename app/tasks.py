@@ -215,7 +215,6 @@ def get_query_result_hash_and_length_bbl(query_string):
     token = settings.CACHE_REQUEST_KEY
     auth_headers = {'whoisit': token}
     root_url = 'http://app:8000' if settings.DEBUG else 'https://api.displacementalert.org'
-    slack_send("root_url:{}".format(root_url))
     # Run query on server and hash results
     r = requests.get(root_url + query_string, headers=auth_headers)
     result = r.json()
@@ -381,10 +380,12 @@ def check_notifications_custom_search(notification_frequency):
                                 filtered_result = get_query_result_hash_and_length_bbl(new_backend_query)
                                 slack_send("Query:{}".format(new_backend_query))
                                 slack_send("Result:{}".format(filtered_result))
+                                slack_send("Length:{}".format(filtered_result['length']))
                                 
                                 if filtered_result['length'] <= 0:
                                     filtered_results_url = ''
                                 else:
+                                    slack_send("Building BBLS")
                                     new_result_rows = filtered_result['result']
                                     added_items_since_last_notified = bp_compare_bbls(old_result_rows, new_result_rows)
                                     addresses = get_addresses_by_bbls(added_items_since_last_notified, filtered_result['bbls_and_addresses'])
