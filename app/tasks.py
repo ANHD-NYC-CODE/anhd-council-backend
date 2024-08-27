@@ -484,6 +484,8 @@ def slack_send(message):
 
 def get_addresses_by_bbls(bbls, bbls_and_addresses):
     return [
-        {'bbl': bbl, 'address': next((item['address'] for item in bbls_and_addresses if item['bbl'] == bbl), 'No address found')}
+        {'bbl': bbl, 'address': address}
         for bbl in bbls[:10]  # Limit to the first 10 BBLs
+        for address in [next((item['address'] for item in bbls_and_addresses if item['bbl'] == bbl), None)]
+        if address is not None  # Only include records with a valid address
     ]
