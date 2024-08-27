@@ -378,7 +378,7 @@ def check_notifications_custom_search(notification_frequency):
                                 filtered_results_url = replace_date_in_url(full_url, last_date, timezone.now().astimezone(est) - timedelta(days=1))
                                 new_backend_query = replace_date_in_url(query, last_date, timezone.now().astimezone(est) - timedelta(days=1))
                                 filtered_result = get_query_result_hash_and_length_bbl(new_backend_query)
-                                
+                                slack_send("Query:{}".format(new_backend_query))
                                 
                                 if filtered_result['length'] <= 0:
                                     filtered_results_url = ''
@@ -386,7 +386,6 @@ def check_notifications_custom_search(notification_frequency):
                                     new_result_rows = filtered_result['result']
                                     added_items_since_last_notified = bp_compare_bbls(old_result_rows, new_result_rows)
                                     addresses = get_addresses_by_bbls(added_items_since_last_notified, filtered_result['bbls_and_addresses'])
-                                    slack_send("Filtered results url:{}".format(filtered_results_url))
                                     # These values should be the same assuming each bbl has an address.
                                     # We're checking to be safe.
                                     filtered_results_count = len(added_items_since_last_notified)
