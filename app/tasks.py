@@ -477,3 +477,9 @@ def slack_send(message):
     response = requests.post(url, data=json.dumps(data), headers=headers, verify=False)
     
     return response.text
+
+def get_addresses_by_bbls(bbls, bbls_and_addresses):
+    return [
+        {'bbl': bbl, 'address': next((item['address'] for item in bbls_and_addresses if item['bbl'] == bbl), 'No address found')}
+        for bbl in bbls[:10]  # Limit to the first 10 BBLs
+    ]
