@@ -460,7 +460,7 @@ def async_check_notifications_custom_search_monthly(self):
         raise e
 
 def slack_send(message):
-    url = "https://hooks.slack.com/services/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"
+    url = settings.SLACK_WEBHOOK_URL
     data = {"text": message}
     headers = {'Content-Type': 'application/json'}
     
