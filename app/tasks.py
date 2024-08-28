@@ -392,7 +392,10 @@ def check_notifications_custom_search(notification_frequency):
                                     slack_send("added_items_since_last_notified:{}".format(added_items_since_last_notified))
                                     slack_send("new_result_rows:{}".format(new_result_rows))
                                     
-                                    addresses = get_addresses_by_bbls(added_items_since_last_notified, filtered_result['bbls_and_addresses'])
+                                    try:
+                                        addresses = get_addresses_by_bbls(added_items_since_last_notified, filtered_result['bbls_and_addresses'])
+                                    except Exception as e:
+                                        slack_send(f"Error in get_addresses_by_bbls: {str(e)}")
                                     slack_send("Step3")
                                     # These values should be the same assuming each bbl has an address.
                                     # We're checking to be safe.
