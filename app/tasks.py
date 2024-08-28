@@ -300,9 +300,8 @@ def bp_compare_bbls(old_array, new_array):
     new_set = set(new_array)
 
     added_items = new_set - old_set
-    removed_items = old_set - new_set
 
-    return list(added_items), list(removed_items)
+    return list(added_items)
     
 def check_notifications_custom_search(notification_frequency):
     custom_searches = u.CustomSearch.objects.all()
