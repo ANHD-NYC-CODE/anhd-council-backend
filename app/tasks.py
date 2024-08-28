@@ -218,13 +218,25 @@ def get_query_result_hash_and_length_bbl(query_string):
     # Run query on server and hash results
     r = requests.get(root_url + query_string, headers=auth_headers)
     result = r.json()
+    
     if not result:
         bbls = []
+        bbls_and_addresses = []
     else:
+        # BBLs
         try:
             bbls = [item['bbl'] for item in result]
         except Exception as e:
             bbls = []
+        
+        # Addresses
+        try:
+            bbls_and_addresses = [
+                {'bbl': item['bbl'], 'address': item['address']} 
+                for item in result
+            ]
+        except Exception as e:
+            bbls_and_addresses = []
     
     bbls_string = json.dumps(bbls, sort_keys=True).encode('utf-8')
     result_hash = hashlib.sha256(bbls_string).hexdigest()
@@ -232,7 +244,8 @@ def get_query_result_hash_and_length_bbl(query_string):
     return {
         'hash': result_hash,
         'length': result_length,
-        'result': bbls
+        'result': bbls,
+        'bbls_and_addresses': bbls_and_addresses
     }
 
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', acks_late=True, max_retries=1)
