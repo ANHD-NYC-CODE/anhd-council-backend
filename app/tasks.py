@@ -397,26 +397,22 @@ def check_notifications_custom_search(notification_frequency):
                                 if filtered_result['length'] <= 0:
                                     filtered_results_url = ''
                                 else:
-                                    slack_send("Step1")
                                     new_result_rows = filtered_result['result']
                                     added_items_since_last_notified = bp_compare_bbls(old_result_rows, new_result_rows)
-                                    slack_send("Step2")
                                     
-                                    slack_send("added_items_since_last_notified:{}".format(added_items_since_last_notified))
-                                    slack_send("new_result_rows:{}".format(new_result_rows))
+                                    # slack_send("added_items_since_last_notified:{}".format(added_items_since_last_notified))
+                                    # slack_send("new_result_rows:{}".format(new_result_rows))
                                     
                                     addresses = get_addresses_by_bbls(added_items_since_last_notified, filtered_result['bbls_and_addresses'])
                                     
                                     # These values should be the same assuming each bbl has an address.
                                     # We're checking to be safe.
                                     filtered_results_count = len(added_items_since_last_notified)
-                                    slack_send("Step4")
                                     address_count = len(addresses)
-                                    slack_send("Step5")
 
-                                    slack_send("filtered_results_count:{}".format(filtered_results_count))
-                                    slack_send("address_count:{}".format(address_count))
-                                    slack_send("filtered_results_url:{}".format(filtered_results_url))
+                                    # slack_send("filtered_results_count:{}".format(filtered_results_count))
+                                    # slack_send("address_count:{}".format(address_count))
+                                    # slack_send("filtered_results_url:{}".format(filtered_results_url))
                                     
                                     if filtered_results_count > 0 and address_count > 0 and filtered_results_url != '':
                                         user_custom_search.last_notified_date = timezone.now()
