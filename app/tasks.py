@@ -405,11 +405,8 @@ def check_notifications_custom_search(notification_frequency):
                                     slack_send("added_items_since_last_notified:{}".format(added_items_since_last_notified))
                                     slack_send("new_result_rows:{}".format(new_result_rows))
                                     
-                                    try:
-                                        addresses = get_addresses_by_bbls(added_items_since_last_notified, filtered_result['bbls_and_addresses'])
-                                    except Exception as e:
-                                        slack_send(f"Error in get_addresses_by_bbls: {str(e)}")
-                                    slack_send("Step3")
+                                    addresses = get_addresses_by_bbls(added_items_since_last_notified, filtered_result['bbls_and_addresses'])
+                                    
                                     # These values should be the same assuming each bbl has an address.
                                     # We're checking to be safe.
                                     filtered_results_count = len(added_items_since_last_notified)
@@ -497,17 +494,8 @@ def slack_send(message):
     
     return response.text
 
-def get_addresses_by_bbls(bbls, filtered_result):
-    # Check if 'bbls_and_addresses' exists in filtered_result
-    if 'bbls_and_addresses' not in filtered_result:
-        slack_send("Warning: 'bbls_and_addresses' key is missing in filtered_result")
-        return []  # Return an empty list if the key is missing
-
-    bbls_and_addresses = filtered_result['bbls_and_addresses']
-
+def get_addresses_by_bbls(bbls, bbls_and_addresses):
     return [
-        {'bbl': bbl, 'address': address}
+        {'bbl': bbl, 'address': next((item['address'] for item in bbls_and_addresses if item['bbl'] == bbl), None)}
         for bbl in bbls[:10]  # Limit to the first 10 BBLs
-        for address in [next((item['address'] for item in bbls_and_addresses if item['bbl'] == bbl), None)]
-        if address is not None  # Only include records with a valid address
     ]
