@@ -484,7 +484,14 @@ def slack_send(message):
     
     return response.text
 
-def get_addresses_by_bbls(bbls, bbls_and_addresses):
+def get_addresses_by_bbls(bbls, filtered_result):
+    # Check if 'bbls_and_addresses' exists in filtered_result
+    if 'bbls_and_addresses' not in filtered_result:
+        slack_send("Warning: 'bbls_and_addresses' key is missing in filtered_result")
+        return []  # Return an empty list if the key is missing
+
+    bbls_and_addresses = filtered_result['bbls_and_addresses']
+
     return [
         {'bbl': bbl, 'address': address}
         for bbl in bbls[:10]  # Limit to the first 10 BBLs
