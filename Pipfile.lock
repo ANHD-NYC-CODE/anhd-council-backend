@@ -1654,11 +1654,12 @@
         },
         "restrictedpython": {
             "hashes": [
-                "sha256:2e683c8d96be63b2e07d8f65051b6c4bcefd07bf06d2b91da3330aa60d7df756",
-                "sha256:d489616a4bf4cb056a104a04e80e18f3747f3ca8598ec57f973c4381438e8385"
+                "sha256:40a6170bbcfc48b32962831d9281a61608c8e56e7c02fd8e2397225f516a6ed4",
+                "sha256:8888304c7858fdcfd86c50b58561797375ba40319d2b6ffb5d24b08b6a2dcd61"
             ],
-            "markers": "python_version < '3.14' and python_version >= '3.7'",
-            "version": "==7.2a1.dev0"
+            "index": "pypi",
+            "markers": "python_version < '3.13' and python_version >= '3.7'",
+            "version": "==7.3"
         },
         "roman": {
             "hashes": [
