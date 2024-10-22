@@ -46,15 +46,16 @@ class TaxLien(BaseDatasetModel, models.Model):
     @classmethod
     def pre_validation_filters(self, gen_rows):
         for row in gen_rows:
-            if not is_null(row['waterdebtonly']):
-                waterdebtonly = row['waterdebtonly'] == 'YES'
-                row['waterdebtonly'] = waterdebtonly
-            if not is_null(row['month']):
-                month = row['month'].split('/')[0]
-                year = row['month'].split('/')[1]
-                row['month'] = month
-                row['year'] = year
-            yield row
+            if 'sale' in row['cycle'].lower():
+                if not is_null(row['waterdebtonly']):
+                    waterdebtonly = row['waterdebtonly'] == 'YES'
+                    row['waterdebtonly'] = waterdebtonly
+                if not is_null(row['month']):
+                    month = row['month'].split('/')[0]
+                    year = row['month'].split('/')[1]
+                    row['month'] = month
+                    row['year'] = year
+                yield row
 
     @classmethod
     def transform_self(self, file_path, update=None):
