@@ -460,9 +460,9 @@ def check_notifications_custom_search(notification_frequency):
                                     filtered_results_count = filtered_result['length']
                                     address_count = len(addresses)
 
-                                    # slack_send("filtered_results_count:{}".format(filtered_results_count))
-                                    # slack_send("address_count:{}".format(address_count))
-                                    # slack_send("filtered_results_url:{}".format(filtered_results_url))
+                                    slack_send("filtered_results_count:{}".format(filtered_results_count))
+                                    slack_send("address_count:{}".format(address_count))
+                                    slack_send("filtered_results_url:{}".format(filtered_results_url))
                                     
                                     if filtered_results_count > 0 and address_count > 0 and filtered_results_url != '':
                                         user_custom_search.last_notified_date = timezone.now()
