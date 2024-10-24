@@ -433,7 +433,10 @@ def check_notifications_custom_search(notification_frequency):
                             try:
                                 filtered_results_url = replace_date_in_url(full_url, last_date, timezone.now().astimezone(est) - timedelta(days=1))
                                 filtered_results_url = filtered_results_url.replace(" ", "")
-                                filtered_results_url = root_url+filtered_results_url
+                                parsed_url = urlparse(url)
+                                base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+                                filtered_results_url = base_url+filtered_results_url
+                                
                                 new_backend_query = replace_date_in_url(query, last_date, timezone.now().astimezone(est) - timedelta(days=1))
                                 filtered_result = get_query_result_hash_and_length_bbl(new_backend_query)
                                 slack_send("Query:{}".format(new_backend_query))
