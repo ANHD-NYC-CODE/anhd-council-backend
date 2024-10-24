@@ -271,8 +271,13 @@ def async_update_custom_search_result_hash(self, custom_search_id, just_created=
 
 def replace_date_in_url(url, last_date, now_date):
     parsed_url = urlparse(url)
-    url_params = parse_qs(parsed_url.query)
-    query_string = url_params['q'][0]
+    query_params = parse_qs(parsed_url.query)
+    query_string = query_params['q'][0]
+    
+    
+    # Format the dates
+    start_date = last_date.strftime('%Y-%m-%d')
+    end_date = now_date.strftime('%Y-%m-%d')
 
     mapping = convert_query_string_to_mapping(query_string)
 
@@ -280,33 +285,74 @@ def replace_date_in_url(url, last_date, now_date):
         model_name = parsed_f['model']
         model_class = apps.get_model(app_label='datasets', model_name=model_name)
         query_date_key = model_class.QUERY_DATE_KEY
+        
+        # Construct both plural and singular date patterns
+        date_start_plural = f'{model_name}s__{query_date_key}__gte='
+        date_end_plural = f'{model_name}s__{query_date_key}__lte='
+        date_start_singular = f'{model_name}__{query_date_key}__gte='
+        date_end_singular = f'{model_name}__{query_date_key}__lte='
 
-        date_start = '{model_name}s__{query_date_key}__gte='.format(
-            model_name=model_name,
-            query_date_key=query_date_key,
-        )
-        date_start_index = url.find(date_start)
-
-        date_end = '{model_name}s__{query_date_key}__lte='.format(
-            model_name=model_name,
-            query_date_key=query_date_key,
-        )
-        date_end_index = url.find(date_end)
-
-        if date_start_index > 0:
-            if date_end_index > 0:
-                # Handle queries with date in between
+        date_start_key = ""
+        date_end_key = ""
+        singular_or_plural = ""
+        
+        # Search for both plural and singular versions of the date filters
+        date_start_index = url.find(date_start_plural)
+        if date_start_index == -1:  # If plural not found, check singular
+            date_start_index = url.find(date_start_singular)
+            if date_start_index == -1:
                 pass
             else:
-                url_before_date = url[:date_start_index + len(date_start)]
-                url_after_date = url[date_start_index + len(date_start) + len('0000-00-00'):]
-                now = last_date.strftime('%Y-%m-%d')
-                end_date = now_date.strftime('%Y-%m-%d')
-                url = f'{url_before_date}{now},{model_name}s__{query_date_key}__lte={end_date}{url_after_date}'
+                date_start_key = date_start_singular
+                singular_or_plural = "singular"
         else:
-            # Handle the case of user has only cases before
-            pass
-    return url
+            date_start_key = date_start_plural
+            singular_or_plural = "plural"
+
+        if date_start_key == "":
+            slack_send("Date start key not found")
+            return url
+        
+        for key in parsed_f.keys():
+            if key.startswith('query') and key.endswith('_filters'):
+                date_start_updated = False
+                date_end_updated = False
+                
+                date_start_key_to_check = date_start_key.rstrip('=')
+                date_end_key_to_check = date_end_singular if singular_or_plural == "singular" else date_end_plural
+                date_end_key_to_check = date_end_key_to_check.rstrip('=')
+                                
+                for query_filter in parsed_f[key]:
+                    if date_start_key_to_check in query_filter:
+                        query_filter[date_start_key_to_check] = start_date
+                        date_start_updated = True
+
+                    if date_end_key_to_check in query_filter:
+                        query_filter[date_end_key_to_check] = end_date
+                        date_end_updated = True
+
+                    for filter_key in list(query_filter.keys()):
+                        if filter_key.endswith('__lte') and filter_key != date_end_key_to_check:
+                            del query_filter[filter_key]
+
+                if not date_start_updated:
+                    parsed_f[key][0][date_start_key_to_check] = start_date
+
+                if not date_end_updated:
+                    parsed_f[key][0][date_end_key_to_check] = end_date
+
+    
+    # Remap to proper format
+    query_params['q'][0] = convert_mapping_to_query_string(mapping)
+    
+    # Structure the URL query params
+    query_params_str = '&'.join([f'{key}={",".join(value)}' for key, value in query_params.items()])
+
+    # Construct the updated URL without encoding
+    updated_url = f'{parsed_url.path}?{query_params_str}{parsed_url.fragment}'
+    trimmed_url = updated_url.replace(" ", "")
+
+    return trimmed_url
 
 def bp_compare_bbls(old_array, new_array):
     old_set = set(old_array)
@@ -495,3 +541,36 @@ def get_addresses_by_bbls(bbls, bbls_and_addresses):
         {'bbl': bbl, 'address': next((item['address'] for item in bbls_and_addresses if item['bbl'] == bbl), None)}
         for bbl in bbls[:10]  # Limit to the first 10 BBLs
     ]
+    
+def convert_mapping_to_query_string(mapping):    
+    # Access filters from the '0' key in the mapping
+    filters = mapping['0']['filters']
+    
+    # Retrieve condition_type and item_id from the nested dictionary
+    condition_type = mapping['0'].get('type')
+    item_id = mapping['0'].get('id')
+    
+    query_string_parts = []
+    
+    # Add the condition type and id to the query string if they exist
+    if condition_type and item_id is not None:
+        query_string_parts.append(f"*condition_{item_id}={condition_type}")
+    
+    # Iterate through the filters
+    for filter_index, filter_item in enumerate(filters):
+        filter_key = f"filter_{filter_index}"
+        
+        # Collect all the sub-filters for the current filter
+        filter_parts = []
+        for query_type, filter_list in filter_item.items():
+            if query_type.startswith('query') and query_type.endswith('_filters'):
+                for sub_filter in filter_list:
+                    for field, value in sub_filter.items():
+                        filter_parts.append(f"{field}={value}")
+        
+        # Join the filter parts with commas and append to the main query string
+        filter_str = ','.join(filter_parts)
+        query_string_parts.append(f"{filter_key}={filter_str}")
+    
+    # Return the full query string by joining the parts
+    return ' '.join(query_string_parts)
