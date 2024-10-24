@@ -350,9 +350,7 @@ def replace_date_in_url(url, last_date, now_date):
 
     # Construct the updated URL without encoding
     updated_url = f'{parsed_url.path}?{query_params_str}{parsed_url.fragment}'
-    trimmed_url = updated_url.replace(" ", "")
-
-    return trimmed_url
+    return updated_url
 
 def bp_compare_bbls(old_array, new_array):
     old_set = set(old_array)
@@ -434,6 +432,7 @@ def check_notifications_custom_search(notification_frequency):
                         if new_results_count > 0:
                             try:
                                 filtered_results_url = replace_date_in_url(full_url, last_date, timezone.now().astimezone(est) - timedelta(days=1))
+                                filtered_results_url = filtered_results_url.replace(" ", "")
                                 new_backend_query = replace_date_in_url(query, last_date, timezone.now().astimezone(est) - timedelta(days=1))
                                 filtered_result = get_query_result_hash_and_length_bbl(new_backend_query)
                                 slack_send("Query:{}".format(new_backend_query))
