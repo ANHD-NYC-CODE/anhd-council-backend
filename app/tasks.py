@@ -433,7 +433,7 @@ def check_notifications_custom_search(notification_frequency):
                             try:
                                 filtered_results_url = replace_date_in_url(full_url, last_date, timezone.now().astimezone(est) - timedelta(days=1))
                                 filtered_results_url = filtered_results_url.replace(" ", "")
-                                parsed_url = urlparse(url)
+                                parsed_url = urlparse(filtered_results_url)
                                 base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
                                 filtered_results_url = base_url+filtered_results_url
                                 
