@@ -439,6 +439,7 @@ def check_notifications_custom_search(notification_frequency):
                                 
                                 new_backend_query = replace_date_in_url(query, last_date, timezone.now().astimezone(est) - timedelta(days=1))
                                 filtered_result = get_query_result_hash_and_length_bbl(new_backend_query)
+                                slack_send("Filtered URL:{}".format(filtered_results_url))
                                 slack_send("Query:{}".format(new_backend_query))
                                 slack_send("Result:{}".format(filtered_result))
                                 slack_send("Length:{}".format(filtered_result['length']))
@@ -466,7 +467,7 @@ def check_notifications_custom_search(notification_frequency):
                                     if filtered_results_count > 0 and address_count > 0 and filtered_results_url != '':
                                         user_custom_search.last_notified_date = timezone.now()
                                         user_custom_search.save()
-                                        print("Pre Email")
+                                        slack_send("Pre Email")
                                         try:
                                             if settings.DEBUG:
                                                 print("Pre Email 1")
