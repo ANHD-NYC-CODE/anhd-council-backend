@@ -457,7 +457,7 @@ def check_notifications_custom_search(notification_frequency):
                                     
                                     # These values should be the same assuming each bbl has an address.
                                     # We're checking to be safe.
-                                    filtered_results_count = len(added_items_since_last_notified)
+                                    filtered_results_count = filtered_result['length']
                                     address_count = len(addresses)
 
                                     # slack_send("filtered_results_count:{}".format(filtered_results_count))
