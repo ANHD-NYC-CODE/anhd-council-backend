@@ -274,73 +274,89 @@ def replace_date_in_url(url, last_date, now_date):
     query_params = parse_qs(parsed_url.query)
     query_string = query_params['q'][0]
     
-    
+    # slack_send(f"Input Raw: {url}")
+    # slack_send(f"Input: {query_string}")
     # Format the dates
     start_date = last_date.strftime('%Y-%m-%d')
     end_date = now_date.strftime('%Y-%m-%d')
 
     mapping = convert_query_string_to_mapping(query_string)
+    # slack_send(f"Mapping 1: {mapping}")
 
     for parsed_f in mapping['0']['filters']:
         model_name = parsed_f['model']
         model_class = apps.get_model(app_label='datasets', model_name=model_name)
         query_date_key = model_class.QUERY_DATE_KEY
         
-        # Construct both plural and singular date patterns
+        # Construct both plural date patterns
         date_start_plural = f'{model_name}s__{query_date_key}__gte='
-        date_end_plural = f'{model_name}s__{query_date_key}__lte='
-        date_start_singular = f'{model_name}__{query_date_key}__gte='
-        date_end_singular = f'{model_name}__{query_date_key}__lte='
-
-        date_start_key = ""
-        date_end_key = ""
-        singular_or_plural = ""
-        
-        # Search for both plural and singular versions of the date filters
-        date_start_index = url.find(date_start_plural)
-        if date_start_index == -1:  # If plural not found, check singular
-            date_start_index = url.find(date_start_singular)
-            if date_start_index == -1:
-                pass
-            else:
-                date_start_key = date_start_singular
-                singular_or_plural = "singular"
-        else:
-            date_start_key = date_start_plural
-            singular_or_plural = "plural"
-
-        if date_start_key == "":
-            slack_send("Date start key not found")
-            return url
+        date_end_plural = f'{model_name}s__{query_date_key}__lte='  
         
         for key in parsed_f.keys():
+                    
             if key.startswith('query') and key.endswith('_filters'):
                 date_start_updated = False
                 date_end_updated = False
                 
-                date_start_key_to_check = date_start_key.rstrip('=')
-                date_end_key_to_check = date_end_singular if singular_or_plural == "singular" else date_end_plural
+                date_start_key_to_check = date_start_plural
+                date_start_key_to_check = date_start_key_to_check.rstrip('=')
+                date_end_key_to_check = date_end_plural
                 date_end_key_to_check = date_end_key_to_check.rstrip('=')
-                                
+                
                 for query_filter in parsed_f[key]:
+                    # slack_send(f"query_filter: {query_filter}")
+                    
+                    for filter_key in list(query_filter.keys()):
+                        # slack_send(f"filter_key: {filter_key}")
+                        # Check if the model_name is in the key
+                        model_position = filter_key.find(model_name)
+                        slack_send(f"model_name: {model_name}")
+                        if model_position != -1:
+                            # slack_send(f"model_position: {filter_key}")
+                            # Check if the character after the model_name is an 's' (to see if it's already plural)
+                            is_plural_in_key = filter_key[model_position + len(model_name):model_position + len(model_name) + 1] == 's'
+                            
+                            # Ensure the model name is plural only if it's not already plural
+                            if not is_plural_in_key:
+                                plural_model_name = model_name + 's'
+                                new_key = filter_key.replace(model_name, plural_model_name, 1)
+                                slack_send(f"Model Updated to Plural: {new_key}")
+                            else:
+                                # Keep the same key if it's already plural
+                                new_key = filter_key
+                                slack_send(f"Model Already Plural: {new_key}")
+                            
+                            # Replace the old key with the new key in the dictionary if it was modified
+                            if new_key != filter_key:
+                                query_filter[new_key] = query_filter.pop(filter_key)
+                                # slack_send(f"key replaced from: {filter_key} to: {new_key}")
+                    
                     if date_start_key_to_check in query_filter:
                         query_filter[date_start_key_to_check] = start_date
                         date_start_updated = True
+                        # slack_send(f"Date start updated: {query_filter[date_start_key_to_check]}")
 
                     if date_end_key_to_check in query_filter:
                         query_filter[date_end_key_to_check] = end_date
                         date_end_updated = True
-
-                    for filter_key in list(query_filter.keys()):
-                        if filter_key.endswith('__lte') and filter_key != date_end_key_to_check:
-                            del query_filter[filter_key]
+                        # slack_send(f"Date end updated: {query_filter[date_end_key_to_check]}")
 
                 if not date_start_updated:
                     parsed_f[key][0][date_start_key_to_check] = start_date
+                    # slack_send(f"Date start second updated: {parsed_f[key][0][date_start_key_to_check]}")
 
                 if not date_end_updated:
                     parsed_f[key][0][date_end_key_to_check] = end_date
+                    # slack_send(f"Date end second updated: {parsed_f[key][0][date_end_key_to_check]}")
 
+    
+    
+    # Remap to proper format
+    # nnn = convert_mapping_to_query_string(mapping)
+    # slack_send(f"Output1: {query_params['q']}")
+    # slack_send(f"Output2: {query_params['q'][0]}")
+    # slack_send(f"Output3: {nnn}")
+    # exit()
     
     # Remap to proper format
     query_params['q'][0] = convert_mapping_to_query_string(mapping)
@@ -350,7 +366,9 @@ def replace_date_in_url(url, last_date, now_date):
 
     # Construct the updated URL without encoding
     updated_url = f'{parsed_url.path}?{query_params_str}{parsed_url.fragment}'
-    return updated_url
+    trimmed_url = updated_url
+
+    return trimmed_url
 
 def bp_compare_bbls(old_array, new_array):
     old_set = set(old_array)
@@ -432,7 +450,6 @@ def check_notifications_custom_search(notification_frequency):
                         if new_results_count > 0:
                             try:
                                 filtered_results_url = replace_date_in_url(full_url, last_date, timezone.now().astimezone(est) - timedelta(days=1))
-                                filtered_results_url = filtered_results_url.replace(" ", "")
                                 parsed_url = urlparse(full_url)
                                 base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
                                 filtered_results_url = base_url+filtered_results_url
