@@ -215,32 +215,36 @@ def get_query_result_hash_and_length_bbl(query_string):
     token = settings.CACHE_REQUEST_KEY
     auth_headers = {'whoisit': token}
     root_url = 'http://app:8000' if settings.DEBUG else 'https://api.displacementalert.org'
-    # Run query on server and hash results
+    
     r = requests.get(root_url + query_string, headers=auth_headers)
-    result = r.json()
     
-    if not result:
-        bbls = []
-        bbls_and_addresses = []
-    else:
-        # BBLs
-        try:
-            bbls = [item['bbl'] for item in result]
-        except Exception as e:
-            bbls = []
+    try:
+        result = r.json()  # Attempt to parse JSON response
+    except ValueError:
+        logger.error("Failed to parse JSON response")
+        return {'hash': None, 'length': 0, 'result': [], 'bbls_and_addresses': []}
+    
+    # Initialize empty lists in case parsing fails
+    bbls = []
+    bbls_and_addresses = []
+    
+    if isinstance(result, list) and all(isinstance(item, dict) for item in result):
+        # BBLs extraction with check for 'bbl' key presence
+        bbls = [item.get('bbl') for item in result if 'bbl' in item]
         
-        # Addresses
-        try:
-            bbls_and_addresses = [
-                {'bbl': item['bbl'], 'address': item['address']} 
-                for item in result
-            ]
-        except Exception as e:
-            bbls_and_addresses = []
-    
+        # BBLs and addresses extraction with check for both 'bbl' and 'address' keys
+        bbls_and_addresses = [
+            {'bbl': item.get('bbl'), 'address': item.get('address')}
+            for item in result if 'bbl' in item and 'address' in item
+        ]
+    else:
+        logger.error("Unexpected JSON structure in response")
+
+    # Hash the BBLs list for consistency
     bbls_string = json.dumps(bbls, sort_keys=True).encode('utf-8')
     result_hash = hashlib.sha256(bbls_string).hexdigest()
     result_length = len(bbls)
+    
     return {
         'hash': result_hash,
         'length': result_length,
@@ -248,21 +252,36 @@ def get_query_result_hash_and_length_bbl(query_string):
         'bbls_and_addresses': bbls_and_addresses
     }
 
+
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', acks_late=True, max_retries=1)
 def async_update_custom_search_result_hash(self, custom_search_id, just_created=False):
     try:
         custom_search = u.CustomSearch.objects.filter(id=custom_search_id).first()
-        query = custom_search.query_string
-        logger.info(
-            'Starting query for this custom search: {}'.format(custom_search.id))
-        if custom_search:
-            result_hash = get_query_result_hash_and_length_bbl(query)['hash']
-            custom_search.result_hash_digest = result_hash
-            custom_search.save()
-        else:
+        
+        if not custom_search:
             logger.error(
-                '*ERROR* - Task Failure - No custom search found in async_update_custom_search_result_hash')
+                '*ERROR* - Task Failure - No custom search found in async_update_custom_search_result_hash'
+            )
             raise Exception('No custom search.')
+        
+        query = custom_search.query_string
+        logger.info('Starting query for this custom search: {}'.format(custom_search.id))
+        
+        # Call the updated function and get the hash
+        result_data = get_query_result_hash_and_length_bbl(query)
+        result_hash = result_data.get('hash')  # Safely retrieve the hash
+
+        # Check if result_hash is None, indicating an issue in the data retrieval
+        if result_hash is None:
+            logger.error(
+                '*ERROR* - Failed to retrieve valid hash in async_update_custom_search_result_hash'
+            )
+            raise Exception('Failed to retrieve valid hash.')
+        
+        # Update the custom search with the new result hash
+        custom_search.result_hash_digest = result_hash
+        custom_search.save()
+    
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
         async_send_general_task_error_mail.delay(str(e))
