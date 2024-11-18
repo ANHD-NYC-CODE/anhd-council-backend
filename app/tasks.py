@@ -199,16 +199,53 @@ def get_query_result_hash_and_length(query_string):
     token = settings.CACHE_REQUEST_KEY
     auth_headers = {'whoisit': token}
     root_url = 'http://app:8000' if settings.DEBUG else 'https://api.displacementalert.org'
-    # Run query on server and hash results
-    r = requests.get(root_url + query_string, headers=auth_headers)
-    result = r.json()
-    result_json = json.dumps(result, sort_keys=True).encode('utf-8')
-    result_hash = hashlib.sha256(result_json).hexdigest()
-    result_length = len(result)
-    return {
-        'hash': result_hash,
-        'length': result_length
-    }
+    
+    try:
+        # Run query on server and hash results
+        r = requests.get(root_url + query_string, headers=auth_headers)
+        r.raise_for_status()  # Raise an exception for bad status codes
+        
+        result = r.json()
+        
+        # Ensure result is a valid data structure
+        if result is not None:
+            result_json = json.dumps(result, sort_keys=True).encode('utf-8')
+            result_hash = hashlib.sha256(result_json).hexdigest()
+            result_length = len(result) if isinstance(result, (list, dict)) else 0
+            
+            return {
+                'hash': result_hash,
+                'length': result_length
+            }
+        
+        # Return default hash for empty/null results
+        default_hash = hashlib.sha256(b'empty_result').hexdigest()
+        return {
+            'hash': default_hash,
+            'length': 0
+        }
+        
+    except requests.RequestException as e:
+        logger.error(f"Request error in get_query_result_hash_and_length: {str(e)}")
+        error_hash = hashlib.sha256(b'request_error').hexdigest()
+        return {
+            'hash': error_hash,
+            'length': 0
+        }
+    except ValueError as e:
+        logger.error(f"JSON parsing error in get_query_result_hash_and_length: {str(e)}")
+        error_hash = hashlib.sha256(b'json_error').hexdigest()
+        return {
+            'hash': error_hash,
+            'length': 0
+        }
+    except Exception as e:
+        logger.error(f"Unexpected error in get_query_result_hash_and_length: {str(e)}")
+        error_hash = hashlib.sha256(b'unexpected_error').hexdigest()
+        return {
+            'hash': error_hash,
+            'length': 0
+        }
     
 # We created this function to resolve the issue with current date appearing in search results.
 def get_query_result_hash_and_length_bbl(query_string):
@@ -216,41 +253,56 @@ def get_query_result_hash_and_length_bbl(query_string):
     auth_headers = {'whoisit': token}
     root_url = 'http://app:8000' if settings.DEBUG else 'https://api.displacementalert.org'
     
-    r = requests.get(root_url + query_string, headers=auth_headers)
-    
     try:
-        result = r.json()  # Attempt to parse JSON response
-    except ValueError:
-        logger.error("Failed to parse JSON response")
-        return {'hash': None, 'length': 0, 'result': [], 'bbls_and_addresses': []}
-    
-    # Initialize empty lists in case parsing fails
-    bbls = []
-    bbls_and_addresses = []
-    
-    if isinstance(result, list) and all(isinstance(item, dict) for item in result):
-        # BBLs extraction with check for 'bbl' key presence
-        bbls = [item.get('bbl') for item in result if 'bbl' in item]
+        r = requests.get(root_url + query_string, headers=auth_headers)
+        r.raise_for_status()  # Raise an exception for bad status codes
         
-        # BBLs and addresses extraction with check for both 'bbl' and 'address' keys
-        bbls_and_addresses = [
-            {'bbl': item.get('bbl'), 'address': item.get('address')}
-            for item in result if 'bbl' in item and 'address' in item
-        ]
-    else:
-        logger.error("Unexpected JSON structure in response")
-
-    # Hash the BBLs list for consistency
-    bbls_string = json.dumps(bbls, sort_keys=True).encode('utf-8')
-    result_hash = hashlib.sha256(bbls_string).hexdigest()
-    result_length = len(bbls)
-    
-    return {
-        'hash': result_hash,
-        'length': result_length,
-        'result': bbls,
-        'bbls_and_addresses': bbls_and_addresses
-    }
+        result = r.json()
+        
+        # Set default values
+        bbls = []
+        bbls_and_addresses = []
+        
+        if isinstance(result, list) and len(result) > 0:
+            # BBLs extraction with check for 'bbl' key presence
+            bbls = [item.get('bbl') for item in result if 'bbl' in item]
+            
+            # BBLs and addresses extraction with check for both 'bbl' and 'address' keys
+            bbls_and_addresses = [
+                {'bbl': item.get('bbl'), 'address': item.get('address')}
+                for item in result if 'bbl' in item and 'address' in item
+            ]
+            
+            # Generate hash only if we have valid BBLs
+            if bbls:
+                bbls_string = json.dumps(bbls, sort_keys=True).encode('utf-8')
+                result_hash = hashlib.sha256(bbls_string).hexdigest()
+                return {
+                    'hash': result_hash,
+                    'length': len(bbls),
+                    'result': bbls,
+                    'bbls_and_addresses': bbls_and_addresses
+                }
+        
+        # If we reach here, return a default hash for empty results
+        default_hash = hashlib.sha256(b'empty_result').hexdigest()
+        return {
+            'hash': default_hash,
+            'length': 0,
+            'result': [],
+            'bbls_and_addresses': []
+        }
+        
+    except (requests.RequestException, ValueError) as e:
+        logger.error(f"Error in get_query_result_hash_and_length_bbl: {str(e)}")
+        # Return a default hash for error cases
+        error_hash = hashlib.sha256(b'error_result').hexdigest()
+        return {
+            'hash': error_hash,
+            'length': 0,
+            'result': [],
+            'bbls_and_addresses': []
+        }
 
 
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', acks_late=True, max_retries=1)
@@ -398,144 +450,191 @@ def bp_compare_bbls(old_array, new_array):
     return list(added_items)
     
 def check_notifications_custom_search(notification_frequency):
-    custom_searches = u.CustomSearch.objects.all()
-    for custom_search in custom_searches:
-        query = custom_search.query_string
-        past_result_hash = custom_search.result_hash_digest
-        frontend_url = custom_search.frontend_url
-
-        # Get new hash for result
-        result_hash_length = get_query_result_hash_and_length_bbl(query)
-        new_result_hash = result_hash_length['hash']
-        new_result_length = result_hash_length['length']
-        new_result_rows = result_hash_length['result']
+    try:
+        custom_searches = u.CustomSearch.objects.all()
+        logger.info(f'Starting notification check for frequency: {notification_frequency}')
         
-        if past_result_hash != new_result_hash:
-            logger.info(
-                'Change detected. Updating custom search with id:{}'.format(custom_search.id))
-            async_update_custom_search_result_hash.delay(custom_search.id)
+        for custom_search in custom_searches:
+            try:
+                query = custom_search.query_string
+                past_result_hash = custom_search.result_hash_digest
+                frontend_url = custom_search.frontend_url
 
-        # Alert users of the change
-        user_custom_searches = custom_search.usercustomsearch_set.filter(notification_frequency=notification_frequency)
-        if user_custom_searches.exists():
-            for user_custom_search in user_custom_searches:
-                # If user hasn't been alerted about this update
-                if user_custom_search.last_notified_hash != new_result_hash:
-                    user_custom_search.last_notified_hash = new_result_hash
-                    user_custom_search.save()
-                    user = user_custom_search.user
-                    
-                    # Compare old and new result rows
-                    added_items = []
-                    added_items_since_last_notified = []
+                # Get new hash for result
+                result_hash_length = get_query_result_hash_and_length_bbl(query)
+                new_result_hash = result_hash_length.get('hash')
+                new_result_length = result_hash_length.get('length', 0)
+                new_result_rows = result_hash_length.get('result', [])
+                
+                if not new_result_hash:
+                    logger.error(f'Invalid hash received for custom search id: {custom_search.id}')
+                    continue
+                
+                if past_result_hash != new_result_hash:
+                    logger.info(f'Change detected. Updating custom search with id: {custom_search.id}')
+                    async_update_custom_search_result_hash.delay(custom_search.id)
 
-                    # Store results for future comparison
-                    if user_custom_search.last_notified_result is None:
-                        print("Initial seeding")
-                        slack_send("Seeding for custom search with id:{}".format(custom_search.id))
-                        serialized_result = json.dumps(new_result_rows)
-                        user_custom_search.last_notified_result = serialized_result
-                        user_custom_search.save()
-                        
-                        added_items = new_result_rows
-                    else:
-                        print("Comparing results")
-                        slack_send("Comparing results for custom search with id:{}".format(custom_search.id))
-                        
-                        print("ID: ", user_custom_search.id)
-                        # Get the old result rows from the stored last_notified_result
-                        old_result_rows = json.loads(user_custom_search.last_notified_result)
-                        
-                        # Serialize new result rows for comparison
-                        serialized_new_result_rows = json.dumps(new_result_rows)
-                        
-                        # Compare old and new result rows
-                        added_items = bp_compare_bbls(old_result_rows, new_result_rows)
-                        # Update the last_notified_result with the new serialized result rows
-                        user_custom_search.last_notified_result = serialized_new_result_rows
-                        user_custom_search.save()
+                # Alert users of the change
+                user_custom_searches = custom_search.usercustomsearch_set.filter(
+                    notification_frequency=notification_frequency
+                )
+                
+                if not user_custom_searches.exists():
+                    continue
 
-                        root_url = 'https://staging.portal.displacementalert.org/search' if settings.DEBUG else 'https://portal.displacementalert.org/search'
-                        full_url = root_url + frontend_url
-
-                        last_number_of_results = user_custom_search.last_number_of_results
-                        new_results_count = len(added_items)
-                        est = pytz.timezone('America/New_York')
-                        last_date = user_custom_search.last_notified_date.astimezone(est) - timedelta(days=1)
-                        if last_number_of_results != new_result_length:
-                            user_custom_search.last_number_of_results = new_result_length
+                for user_custom_search in user_custom_searches:
+                    try:
+                        # Initialize last_notified_hash if it's null
+                        if user_custom_search.last_notified_hash is None:
+                            user_custom_search.last_notified_hash = new_result_hash
                             user_custom_search.save()
-                        
-                        if new_results_count > 0:
+                            continue
+
+                        # If user hasn't been alerted about this update
+                        if user_custom_search.last_notified_hash != new_result_hash:
+                            user_custom_search.last_notified_hash = new_result_hash
+                            user_custom_search.save()
+                            user = user_custom_search.user
+                            
+                            # Compare old and new result rows
+                            added_items = []
+                            added_items_since_last_notified = []
+
                             try:
-                                filtered_results_url = replace_date_in_url(full_url, last_date, timezone.now().astimezone(est) - timedelta(days=1))
-                                parsed_url = urlparse(full_url)
-                                base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
-                                filtered_results_url = base_url+filtered_results_url
-                                
-                                new_backend_query = replace_date_in_url(query, last_date, timezone.now().astimezone(est) - timedelta(days=1))
-                                filtered_result = get_query_result_hash_and_length_bbl(new_backend_query)
-                                slack_send("Filtered URL:{}".format(filtered_results_url))
-                                slack_send("Query:{}".format(new_backend_query))
-                                slack_send("Result:{}".format(filtered_result))
-                                slack_send("Length:{}".format(filtered_result['length']))
-                                
-                                if filtered_result['length'] <= 0:
-                                    filtered_results_url = ''
+                                # Store results for future comparison
+                                if user_custom_search.last_notified_result is None:
+                                    logger.info(f"Initial seeding for custom search id: {custom_search.id}")
+                                    slack_send(f"Seeding for custom search with id: {custom_search.id}")
+                                    serialized_result = json.dumps(new_result_rows)
+                                    user_custom_search.last_notified_result = serialized_result
+                                    user_custom_search.save()
+                                    added_items = new_result_rows
                                 else:
-                                    new_result_rows = filtered_result['result']
-                                    added_items_since_last_notified = bp_compare_bbls(old_result_rows, new_result_rows)
+                                    logger.info(f"Comparing results for custom search id: {custom_search.id}")
+                                    slack_send(f"Comparing results for custom search with id: {custom_search.id}")
                                     
-                                    # slack_send("added_items_since_last_notified:{}".format(added_items_since_last_notified))
-                                    # slack_send("new_result_rows:{}".format(new_result_rows))
+                                    logger.info(f"Processing UserCustomSearch ID: {user_custom_search.id}")
                                     
-                                    addresses = get_addresses_by_bbls(added_items_since_last_notified, filtered_result['bbls_and_addresses'])
+                                    # Get the old result rows from the stored last_notified_result
+                                    try:
+                                        old_result_rows = json.loads(user_custom_search.last_notified_result)
+                                    except json.JSONDecodeError as e:
+                                        logger.error(f"Error decoding last_notified_result: {e}")
+                                        old_result_rows = []
                                     
-                                    # These values should be the same assuming each bbl has an address.
-                                    # We're checking to be safe.
-                                    filtered_results_count = filtered_result['length']
-                                    address_count = len(addresses)
+                                    # Serialize new result rows for comparison
+                                    serialized_new_result_rows = json.dumps(new_result_rows)
+                                    
+                                    # Compare old and new result rows
+                                    added_items = bp_compare_bbls(old_result_rows, new_result_rows)
+                                    
+                                    # Update the last_notified_result with the new serialized result rows
+                                    user_custom_search.last_notified_result = serialized_new_result_rows
+                                    user_custom_search.save()
 
-                                    slack_send("filtered_results_count:{}".format(filtered_results_count))
-                                    slack_send("address_count:{}".format(address_count))
-                                    slack_send("filtered_results_url:{}".format(filtered_results_url))
+                                    root_url = ('https://staging.portal.displacementalert.org/search' 
+                                              if settings.DEBUG else 'https://portal.displacementalert.org/search')
+                                    full_url = root_url + frontend_url
+
+                                    last_number_of_results = user_custom_search.last_number_of_results
+                                    new_results_count = len(added_items)
+                                    est = pytz.timezone('America/New_York')
+                                    last_date = user_custom_search.last_notified_date.astimezone(est) - timedelta(days=1)
                                     
-                                    if filtered_results_count > 0 and address_count > 0 and filtered_results_url != '':
-                                        user_custom_search.last_notified_date = timezone.now()
+                                    if last_number_of_results != new_result_length:
+                                        user_custom_search.last_number_of_results = new_result_length
                                         user_custom_search.save()
-                                        slack_send("Pre Email")
+                                    
+                                    if new_results_count > 0:
                                         try:
-                                            if settings.DEBUG:
-                                                print("Pre Email 1")
-                                                logger.info('Not emailing {}'.format(user.email))
-                                                async_send_user_notification_email.delay(
-                                                    user.id,
-                                                    user_custom_search.name,
-                                                    full_url,
-                                                    filtered_results_count,
-                                                    filtered_results_url,
-                                                    last_date.strftime('%B %-d, %Y'),
-                                                    addresses
-                                                )
-                                                print("Pre Email 1a")
+                                            filtered_results_url = replace_date_in_url(
+                                                full_url, 
+                                                last_date, 
+                                                timezone.now().astimezone(est) - timedelta(days=1)
+                                            )
+                                            parsed_url = urlparse(full_url)
+                                            base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+                                            filtered_results_url = base_url + filtered_results_url
+                                            
+                                            new_backend_query = replace_date_in_url(
+                                                query, 
+                                                last_date, 
+                                                timezone.now().astimezone(est) - timedelta(days=1)
+                                            )
+                                            filtered_result = get_query_result_hash_and_length_bbl(new_backend_query)
+                                            
+                                            logger.debug(f"Filtered URL: {filtered_results_url}")
+                                            logger.debug(f"Query: {new_backend_query}")
+                                            logger.debug(f"Result: {filtered_result}")
+                                            logger.debug(f"Length: {filtered_result.get('length', 0)}")
+                                            
+                                            if filtered_result.get('length', 0) <= 0:
+                                                filtered_results_url = ''
                                             else:
-                                                async_send_user_notification_email.delay(
-                                                    user.id,
-                                                    user_custom_search.name,
-                                                    full_url,
-                                                    filtered_results_count,
-                                                    filtered_results_url,
-                                                    last_date.strftime('%B %-d, %Y'),
-                                                    addresses
+                                                new_result_rows = filtered_result.get('result', [])
+                                                added_items_since_last_notified = bp_compare_bbls(
+                                                    old_result_rows, 
+                                                    new_result_rows
                                                 )
-                                        except Exception as e:
-                                            print("Emailing user failed")
-                                            logger.info('Emailing {} failed'.format(user.username))
-                                            async_send_general_task_error_mail.delay(str(e))
-                            except Exception:
-                                print("Error in sending email")
-                                filtered_results_url = ''
+                                                
+                                                addresses = get_addresses_by_bbls(
+                                                    added_items_since_last_notified, 
+                                                    filtered_result.get('bbls_and_addresses', [])
+                                                )
+                                                
+                                                filtered_results_count = filtered_result.get('length', 0)
+                                                address_count = len(addresses)
 
+                                                logger.info(f"Filtered results count: {filtered_results_count}")
+                                                logger.info(f"Address count: {address_count}")
+                                                logger.info(f"Filtered results URL: {filtered_results_url}")
+                                                
+                                                if (filtered_results_count > 0 and 
+                                                    address_count > 0 and 
+                                                    filtered_results_url):
+                                                    
+                                                    user_custom_search.last_notified_date = timezone.now()
+                                                    user_custom_search.save()
+                                                    logger.info("Preparing to send email")
+                                                    
+                                                    try:
+                                                        if settings.DEBUG:
+                                                            logger.info(f'Debug mode: Not emailing {user.email}')
+                                                            async_send_user_notification_email.delay(
+                                                                user.id,
+                                                                user_custom_search.name,
+                                                                full_url,
+                                                                filtered_results_count,
+                                                                filtered_results_url,
+                                                                last_date.strftime('%B %-d, %Y'),
+                                                                addresses
+                                                            )
+                                                        else:
+                                                            async_send_user_notification_email.delay(
+                                                                user.id,
+                                                                user_custom_search.name,
+                                                                full_url,
+                                                                filtered_results_count,
+                                                                filtered_results_url,
+                                                                last_date.strftime('%B %-d, %Y'),
+                                                                addresses
+                                                            )
+                                                    except Exception as e:
+                                                        logger.error(f'Failed to email user {user.username}: {str(e)}')
+                                                        async_send_general_task_error_mail.delay(str(e))
+                                        except Exception as e:
+                                            logger.error(f'Error processing filtered results: {str(e)}')
+                                            filtered_results_url = ''
+                            except Exception as e:
+                                logger.error(f'Error processing results comparison: {str(e)}')
+                    except Exception as e:
+                        logger.error(f'Error processing user custom search {user_custom_search.id}: {str(e)}')
+            except Exception as e:
+                logger.error(f'Error processing custom search {custom_search.id}: {str(e)}')
+    except Exception as e:
+        logger.error(f'Error in check_notifications_custom_search: {str(e)}')
+        async_send_general_task_error_mail.delay(str(e))
+        raise
 
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', acks_late=True, max_retries=1)
 def async_check_notifications_custom_search_daily(self):
