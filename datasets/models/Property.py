@@ -204,8 +204,9 @@ class Property(BaseDatasetModel, models.Model):
                                 db_column='council', db_constraint=False)
     # 1 = manhattan 2 = bronx 3 = brooklyn 4 = queens 5 = staten island
     borough = models.TextField(blank=True, null=True)
-    block = models.TextField(blank=True, null=True)  # 5 digit number
-    lot = models.TextField(blank=True, null=True)  # 4 digit number
+    # Updating new "tax block" and "block" fields to feed to block and lot
+    block = models.TextField(blank=True, null=True, db_column='Tax block')  # 5 digit number
+    lot = models.TextField(blank=True, null=True, db_column='Tax lot')      # 4 digit number
     cd = models.ForeignKey('Community', on_delete=models.SET_NULL, null=True,
                            db_column='cd', db_constraint=False)
     zipcode = models.ForeignKey('ZipCode', on_delete=models.SET_NULL, null=True,
