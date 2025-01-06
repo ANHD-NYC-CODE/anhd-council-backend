@@ -205,8 +205,8 @@ class Property(BaseDatasetModel, models.Model):
     # 1 = manhattan 2 = bronx 3 = brooklyn 4 = queens 5 = staten island
     borough = models.TextField(blank=True, null=True)
     # Updating new "tax block" and "block" fields to feed to block and lot
-    block = models.TextField(blank=True, null=True, db_column='Tax block')  # 5 digit number
-    lot = models.TextField(blank=True, null=True, db_column='Tax lot')      # 4 digit number
+    block = models.TextField(blank=True, null=True)  # 5 digit number
+    lot = models.TextField(blank=True, null=True)  # 4 digit number
     cd = models.ForeignKey('Community', on_delete=models.SET_NULL, null=True,
                            db_column='cd', db_constraint=False)
     zipcode = models.ForeignKey('ZipCode', on_delete=models.SET_NULL, null=True,
@@ -370,6 +370,10 @@ class Property(BaseDatasetModel, models.Model):
     def clean_null_bytes_headers(self, gen_rows):
         gen_rows[0] = gen_rows[0].replace('postcode', 'zipcode')
         gen_rows[0] = gen_rows[0].replace('community board', 'cd')
+        gen_rows[0] = gen_rows[0].replace('Tax block', 'block')
+        gen_rows[0] = gen_rows[0].replace('taxblock', 'block')
+        gen_rows[0] = gen_rows[0].replace('taxlot', 'lot')
+        gen_rows[0] = gen_rows[0].replace('Tax lot', 'lot')
 
         for row in gen_rows:
             row = row.replace("\0", "")  # get rid of null-bytes
