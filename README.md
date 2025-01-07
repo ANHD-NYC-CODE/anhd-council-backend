@@ -619,3 +619,90 @@ This is LIKELY because NGINX is already running upon system boot or a prior dock
 3.  If that didn't resolve it, while still in the server, delete all current images (no data will be lost)
     `docker rm -f $(docker ps -aq)
     (Please make sure Database YAML files are up to date prior to this, or it could alter data)
+
+
+    
+## Resolving State Assemblies or State Senates Not Displaying Correctly on the Portal
+
+If updated assembly or senate data is not displaying correctly, follow these steps:
+
+---
+
+#### 1. Update the Mapbox Dataset
+- **Upload the Dataset**:  
+  Upload the updated shapefile dataset (ZIP) to [Mapbox Studio](https://studio.mapbox.com/). Refer to the **Mapbox PDF instructions** in the front-end repository for detailed steps.
+- **Update the Front-End App**:  
+  If a new API link is created, update it in the front-end app at:  
+  `/src/LeafletMap/index.js`.  
+  Following the PDF instructions should suffice to update the existing dataset/endpoint.
+
+---
+
+#### 2. Clear Cache
+- **Portal Cache**:  
+  Clear the cache on the portal at:  
+  [https://api.displacementalert.org/admin/login/?next=/admin/django_celery_beat/periodictask/](https://api.displacementalert.org/admin/login/?next=/admin/django_celery_beat/periodictask/).
+- **Browser Cache**:  
+  Clear your local browser cache. If overlapping layers or outdated data persist:
+  - Perform a hard refresh in your browser.
+  - Test in incognito mode or a different browser.
+  - **Note**: Mapbox overlays may remain cached, even in incognito mode.  
+    A full browser refresh and removal of all site data from your Chrome browser may be required.
+
+---
+
+#### 3. Recalculating State Assembly/Senate Data
+
+##### Why This Happens
+The portal does not automatically recalculate state assembly or senate data if these values already exist for a property. This is designed to avoid unnecessary processing, as recalculating each property's assembly or senate requires geospatial checks (2-3 seconds per property). However, when new shapefiles are uploaded, properties retain outdated assembly/senate designations until recalculation is manually triggered.  
+
+**Note**: State assembly and senate data are not included in the Pluto dataset, unlike council districts, requiring this extra step.
+
+---
+
+##### How to Fix It
+
+1. **Nullify Existing Values**  
+   Clear all state assembly and/or senate values in the `Properties` table.  
+   This step removes outdated data and flags properties for recalculation.  
+
+   Example SQL Command:  
+   ```sql
+   UPDATE public.datasets_property
+   SET stateassembly = NULL
+   WHERE version IS NOT NULL;
+   ```
+
+2. **Re-run the Pluto/Property Update**  
+   Trigger a Pluto/Property update to recalculate the now-empty assemblies and/or senates for each property. During this process:
+   - The portal assigns new assembly or senate values based on the updated shapefiles and each property's geolocation.
+
+3. **Wait for Processing to Complete**  
+   Recalculation is time-consuming and may take several days for large datasets.  
+   If interrupted, it can be resumed by re-running the Property update.  
+
+   **Monitoring Progress**:
+   - Check Docker logs to verify the process is still running.
+   - Use the state assembly maps to confirm if data is being filled in.
+   - Run SQL commands to assess progress:
+     ```sql
+     SELECT COUNT(*) FROM public.datasets_property
+     WHERE stateassembly IS NOT NULL;
+
+     SELECT COUNT(*) FROM public.datasets_property
+     WHERE stateassembly IS NULL AND version = '24v4';
+     ```
+
+---
+
+##### Known Behavior Without Recalculation
+- Properties will remain associated with outdated assemblies or senates, even if updated boundary lines are displayed on the map.
+- This misalignment results in incorrect filtering and inaccurate data visualization.
+
+---
+
+##### In Summary
+- After uploading updated shapefiles:  
+  - The portal will immediately display updated map boundaries.  
+  - Properties, however, will still show old assembly or senate designations.  
+- To resolve this, developers must manually nullify existing values in the database and run the recalculation via a Property dataset update. This ensures properties align with the new boundaries, guaranteeing accurate data across the portal.
