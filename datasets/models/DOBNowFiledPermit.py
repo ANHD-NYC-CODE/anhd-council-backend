@@ -130,20 +130,24 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
     # New remapping function to handle new header titles in 2025 data set.
     @classmethod
     def clean_null_bytes_headers(cls, gen_rows):
-        # Get the header row from the generator
         try:
             header_row = next(gen_rows)  # Extract the first row (headers)
+            logger.info("Processing header row: %s", header_row)
         except StopIteration:
             logger.error("Empty CSV generator received")
             raise ValueError("The CSV file is empty or invalid")
-        
-        # Replace headers
-        header_row = header_row.replace('ownerscity', 'city')
-        header_row = header_row.replace('ownersstate', 'state')
-        header_row = header_row.replace('ownerszip', 'zip')
-        header_row = header_row.replace('firstpermitdate', 'permitissuedate')
-        
-        # Yield the modified header row
+    
+        # Header replacements
+        replacements = {
+            'ownerscity': 'city',
+            'ownersstate': 'state',
+            'ownerszip': 'zip',
+            'firstpermitdate': 'permitissuedate',
+        }
+    
+        for old, new in replacements.items():
+            header_row = header_row.replace(old, new)
+    
         yield header_row
     
         # Process the remaining rows
@@ -151,10 +155,14 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
             row = row.replace("\0", "")  # Remove null bytes
             row = row.replace("\t", ",")  # Replace tabs with commas
             yield row
-
+    
+    
     @classmethod
     def transform_self(cls, file_path, update=None):
         def filter_postcode(row):
+            if not isinstance(row, dict):
+                logger.warning("Unexpected row format: %s", row)
+                return row
             # Remove 'Postcode' || 'postcode' keys from each row
             row.pop('Postcode', None)
             row.pop('postcode', None)
@@ -163,7 +171,8 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
         # Apply the transformations
         rows = from_csv_file_to_gen(file_path, update)
         cleaned_rows = cls.clean_null_bytes_headers(rows)
-        
+    
+        logger.info("Applying postcode filter and further transformations...")
         return with_bbl(
             (filter_postcode(row) for row in cleaned_rows)
         )
