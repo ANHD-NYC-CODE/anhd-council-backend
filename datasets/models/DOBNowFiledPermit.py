@@ -131,11 +131,13 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
     @classmethod
     def clean_null_bytes_headers(cls, gen_rows):
         # Replace headers
-        gen_rows[0] = gen_rows[0].replace('ownerscity', 'city')
-        gen_rows[0] = gen_rows[0].replace('ownersstate', 'state')
-        gen_rows[0] = gen_rows[0].replace('ownerszip', 'zip')
-        gen_rows[0] = gen_rows[0].replace('firstpermitdate', 'permitissuedate')
-
+        header_row = gen_rows[0]
+        header_row = header_row.replace('ownerscity', 'city')
+        header_row = header_row.replace('ownersstate', 'state')
+        header_row = header_row.replace('ownerszip', 'zip')
+        header_row = header_row.replace('firstpermitdate', 'permitissuedate')
+        gen_rows[0] = header_row
+    
         # Process each row to clean data
         for row in gen_rows:
             row = row.replace("\0", "")  # Remove null bytes
@@ -149,12 +151,14 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
             row.pop('Postcode', None)
             row.pop('postcode', None)
             return row
-
-        # Apply the filter while transforming rows
+    
+        # Apply the transformations
+        rows = from_csv_file_to_gen(file_path, update)
+        cleaned_rows = cls.clean_null_bytes_headers(rows)
+    
         return with_bbl(
-            (filter_postcode(row) for row in from_csv_file_to_gen(file_path, update))
+            (filter_postcode(row) for row in cleaned_rows)
         )
-
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
