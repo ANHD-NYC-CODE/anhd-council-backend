@@ -127,9 +127,34 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
     def update_set_filter(self, csv_reader, headers):
         return csv_reader
 
+    # New remapping function to handle new header titles in 2025 data set.
     @classmethod
-    def transform_self(self, file_path, update=None):
-        return with_bbl(from_csv_file_to_gen(file_path, update))
+    def clean_null_bytes_headers(cls, gen_rows):
+        # Replace headers
+        gen_rows[0] = gen_rows[0].replace('ownerscity', 'city')
+        gen_rows[0] = gen_rows[0].replace('ownersstate', 'state')
+        gen_rows[0] = gen_rows[0].replace('ownerszip', 'zip')
+        gen_rows[0] = gen_rows[0].replace('firstpermitdate', 'permitissuedate')
+
+        # Process each row to clean data
+        for row in gen_rows:
+            row = row.replace("\0", "")  # Remove null bytes
+            row = row.replace("\t", ",")  # Replace tabs with commas
+            yield row
+
+    @classmethod
+    def transform_self(cls, file_path, update=None):
+        def filter_postcode(row):
+            # Remove 'Postcode' || 'postcode' keys from each row when importing csv
+            row.pop('Postcode', None)
+            row.pop('postcode', None)
+            return row
+
+        # Apply the filter while transforming rows
+        return with_bbl(
+            (filter_postcode(row) for row in from_csv_file_to_gen(file_path, update))
+        )
+
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
