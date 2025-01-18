@@ -131,41 +131,44 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
     @classmethod
     def clean_null_bytes_headers(cls, gen_rows):
         try:
-            # Extract the header row (as a dictionary key list)
+            # Extract the header row
             header_row = next(gen_rows)  # Extract the first row (headers)
             logger.info("Processing header row: %s", header_row)
         except StopIteration:
             logger.error("Empty CSV generator received")
             raise ValueError("The CSV file is empty or invalid")
-        
-        # Header replacements (key-based for dictionaries)
+    
+        # Header replacements
         replacements = {
             'ownerscity': 'city',
             'ownersstate': 'state',
             'ownerszip': 'zip',
             'firstpermitdate': 'permitissuedate',
         }
-        
-        if isinstance(header_row, dict):  # Handle dictionary rows
-            # Update headers in the dictionary
+    
+        # Process header row based on its format
+        if isinstance(header_row, dict):  # If the row is a dictionary
+            # Update dictionary keys
             for old, new in replacements.items():
                 if old in header_row:
                     header_row[new] = header_row.pop(old)
-            yield header_row
-        else:  # If not a dictionary, treat it as a string
+        elif isinstance(header_row, str):  # If the row is a string
+            # Replace header strings
             for old, new in replacements.items():
                 header_row = header_row.replace(old, new)
-            yield header_row
+        else:
+            logger.warning("Unexpected header row type: %s", type(header_row))
+        yield header_row
     
-        # Process the remaining rows
+        # Process remaining rows
         for row in gen_rows:
-            if isinstance(row, dict):
-                # Clean values in dictionary rows
+            if isinstance(row, dict):  # If the row is a dictionary
+                # Clean dictionary values
                 for key, value in row.items():
                     if isinstance(value, str):
                         row[key] = value.replace("\0", "").replace("\t", ",")
                 yield row
-            elif isinstance(row, str):
+            elif isinstance(row, str):  # If the row is a string
                 # Clean string rows
                 row = row.replace("\0", "").replace("\t", ",")
                 yield row
@@ -173,7 +176,7 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
                 logger.warning("Unexpected row type: %s", type(row))
                 yield row
     
-    
+
     @classmethod
     def transform_self(cls, file_path, update=None):
         def filter_postcode(row):
@@ -189,9 +192,7 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
         cleaned_rows = cls.clean_null_bytes_headers(rows)
     
         logger.info("Applying postcode filter and further transformations...")
-        return with_bbl(
-            (filter_postcode(row) for row in cleaned_rows)
-        )
+        return with_bbl((filter_postcode(row) for row in cleaned_rows))
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
