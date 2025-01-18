@@ -131,41 +131,57 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
     @classmethod
     def clean_null_bytes_headers(cls, gen_rows):
         try:
+            # Extract the header row (as a dictionary key list)
             header_row = next(gen_rows)  # Extract the first row (headers)
             logger.info("Processing header row: %s", header_row)
         except StopIteration:
             logger.error("Empty CSV generator received")
             raise ValueError("The CSV file is empty or invalid")
-    
-        # Header replacements
+        
+        # Header replacements (key-based for dictionaries)
         replacements = {
             'ownerscity': 'city',
             'ownersstate': 'state',
             'ownerszip': 'zip',
             'firstpermitdate': 'permitissuedate',
         }
-    
-        for old, new in replacements.items():
-            header_row = header_row.replace(old, new)
-    
-        yield header_row
+        
+        if isinstance(header_row, dict):  # Handle dictionary rows
+            # Update headers in the dictionary
+            for old, new in replacements.items():
+                if old in header_row:
+                    header_row[new] = header_row.pop(old)
+            yield header_row
+        else:  # If not a dictionary, treat it as a string
+            for old, new in replacements.items():
+                header_row = header_row.replace(old, new)
+            yield header_row
     
         # Process the remaining rows
         for row in gen_rows:
-            row = row.replace("\0", "")  # Remove null bytes
-            row = row.replace("\t", ",")  # Replace tabs with commas
-            yield row
+            if isinstance(row, dict):
+                # Clean values in dictionary rows
+                for key, value in row.items():
+                    if isinstance(value, str):
+                        row[key] = value.replace("\0", "").replace("\t", ",")
+                yield row
+            elif isinstance(row, str):
+                # Clean string rows
+                row = row.replace("\0", "").replace("\t", ",")
+                yield row
+            else:
+                logger.warning("Unexpected row type: %s", type(row))
+                yield row
     
     
     @classmethod
     def transform_self(cls, file_path, update=None):
         def filter_postcode(row):
-            if not isinstance(row, dict):
+            if isinstance(row, dict):  # Handle dictionaries
+                row.pop('Postcode', None)
+                row.pop('postcode', None)
+            else:
                 logger.warning("Unexpected row format: %s", row)
-                return row
-            # Remove 'Postcode' || 'postcode' keys from each row
-            row.pop('Postcode', None)
-            row.pop('postcode', None)
             return row
     
         # Apply the transformations
