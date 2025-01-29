@@ -15,14 +15,13 @@ logger = logging.getLogger('app')
 # Download file from:
 # http://taxbills.nyc/joined.csv
 # upload file through admin then update
-# **** Add the YEAR of the most recent data to the version field when updating through admin ****
-# So "2019" is the version of the most recent data
+# **** Add the YEAR of the most recent data to the version field when updating through admin and also MANUAL_YEAR below ****
 
 
 class RentStabilizationRecord(BaseDatasetModel, models.Model):
     download_endpoint = "http://taxbills.nyc/joined.csv"
     data_2018 = "https://s3.amazonaws.com/justfix-data/rentstab_counts_for_pluto_19v1_bbls.csv"
-    MANUAL_YEAR = 2023  # This needs to manually be changed every year
+    MANUAL_YEAR = 2023  # This likely needs to manually be changed every year
 
     class Meta:
         indexes = [
@@ -249,14 +248,11 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
 
 
 @receiver(models.signals.post_save, sender=RentStabilizationRecord)
-def annotate_property_on_save(sender, instance, created, **kwargs):
-    if created == True:
-        try:
-            annotation = instance.ucbbl.propertyannotation
-            annotation.unitsrentstabilized = annotation.bbl.get_rentstabilized_units()
-            annotation.save()
-
-        except Exception as e:
-            print(e)
-
-            return
+def annotate_property_on_save(sender, instance, **kwargs):
+    try:
+        annotation = instance.ucbbl.propertyannotation
+        annotation.unitsrentstabilized = instance.get_rentstabilized_units()
+        annotation.save()
+        logger.info(f"Updated annotation for {instance.id}")
+    except Exception as e:
+        logger.error(f"Annotation failed for {instance.id}: {e}")
