@@ -22,7 +22,7 @@ logger = logging.getLogger('app')
 class RentStabilizationRecord(BaseDatasetModel, models.Model):
     download_endpoint = "http://taxbills.nyc/joined.csv"
     data_2018 = "https://s3.amazonaws.com/justfix-data/rentstab_counts_for_pluto_19v1_bbls.csv"
-    MANUAL_YEAR = 2018  # latest year this information holds
+    MANUAL_YEAR = 2023  # This needs to manually be changed every year
 
     class Meta:
         indexes = [
