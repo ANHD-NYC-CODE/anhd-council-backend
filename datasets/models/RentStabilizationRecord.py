@@ -201,17 +201,19 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
     def pre_validation_filters(self, gen_rows):
         for row in gen_rows:
             if is_null(row['ucbbl']):
-                continue
+                continue  # ❌ Skipping could cause missing records
+    
             row['ucbbl'] = str(row['ucbbl'])
             row['id'] = row['ucbbl']
-
+    
+            # ❌ Might fail to assign 'latestuctotals'
             year_cursor = self.MANUAL_YEAR
             while 'latestuctotals' not in row and year_cursor > 2006:
-                key = "uc{}".format(year_cursor)
-                if key in row and (row[key]):
+                key = f"uc{year_cursor}"
+                if key in row and row[key] is not None:
                     row['latestuctotals'] = row[key]
                 year_cursor -= 1
-
+    
             yield row
 
     # trims down new update files to preserve memory
@@ -251,8 +253,9 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
 def annotate_property_on_save(sender, instance, **kwargs):
     try:
         annotation = instance.ucbbl.propertyannotation
+        old_value = annotation.unitsrentstabilized
         annotation.unitsrentstabilized = instance.get_rentstabilized_units()
         annotation.save()
-        logger.info(f"Updated annotation for {instance.id}")
+        logger.info(f"Updated annotation for {instance.id} from {old_value} to {annotation.unitsrentstabilized}")
     except Exception as e:
         logger.error(f"Annotation failed for {instance.id}: {e}")
