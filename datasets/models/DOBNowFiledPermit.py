@@ -112,6 +112,18 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
     supportofexcavationworktype = models.BooleanField(blank=True, null=True)
     temporaryplaceofassemblyworktype = models.BooleanField(blank=True, null=True)
     jobtype = models.TextField(blank=True, null=True)
+    ownerscity = models.TextField(blank=True, null=True)
+    ownersstate = models.TextField(blank=True, null=True)
+    ownerszip = models.TextField(blank=True, null=True)
+    firstpermitdate = models.TextField(blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        # Always overwrite city, state, and zip with the owners* values
+        self.city = self.ownerscity
+        self.state = self.ownersstate
+        self.zip = self.ownerszip
+        self.permitissuedate = self.firstpermitdate  # Always overwrite permitissuedate
+        super().save(*args, **kwargs)
 
     @classmethod
     def create_async_update_worker(self, endpoint=None, file_name=None):
