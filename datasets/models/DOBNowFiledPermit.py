@@ -118,13 +118,54 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
     firstpermitdate = models.TextField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        # Always overwrite city, state, and zip with the owners* values
+        def convert_boolean(value):
+            # """Convert Yes/No strings to True/False without changing DB storage"""
+            if isinstance(value, str):
+                value = value.strip().lower()
+                if value == "yes":
+                    return True
+                elif value == "no":
+                    return False
+            return value  # Return as-is if it's already True/False or None
+    
+        # Always overwrite city, state, and zip with owners* values
         self.city = self.ownerscity
         self.state = self.ownersstate
         self.zip = self.ownerszip
         self.permitissuedate = self.firstpermitdate  # Always overwrite permitissuedate
+    
+        # Convert boolean fields before saving
+        self.sprinklerworktype = convert_boolean(self.sprinklerworktype)
+        self.plumbingworktype = convert_boolean(self.plumbingworktype)
+        self.littlee = convert_boolean(self.littlee)
+        self.unmappedccostreet = convert_boolean(self.unmappedccostreet)
+        self.requestlegalization = convert_boolean(self.requestlegalization)
+        self.includespermanentremoval = convert_boolean(self.includespermanentremoval)
+        self.incompliancewithnycecc = convert_boolean(self.incompliancewithnycecc)
+        self.exemptfromnycecc = convert_boolean(self.exemptfromnycecc)
+        self.standpipe = convert_boolean(self.standpipe)
+        self.antenna = convert_boolean(self.antenna)
+        self.curbcut = convert_boolean(self.curbcut)
+        self.sign = convert_boolean(self.sign)
+        self.fence = convert_boolean(self.fence)
+        self.scaffold = convert_boolean(self.scaffold)
+        self.shed = convert_boolean(self.shed)
+        self.boilerequipmentworktype = convert_boolean(self.boilerequipmentworktype)
+        self.earthworkworktype = convert_boolean(self.earthworkworktype)
+        self.foundationworktype = convert_boolean(self.foundationworktype)
+        self.generalconstructionworktype = convert_boolean(self.generalconstructionworktype)
+        self.mechanicalsystemsworktype = convert_boolean(self.mechanicalsystemsworktype)
+        self.placeofassemblyworktype = convert_boolean(self.placeofassemblyworktype)
+        self.protectionmechanicalmethodsworktype = convert_boolean(self.protectionmechanicalmethodsworktype)
+        self.sidewalkshedworktype = convert_boolean(self.sidewalkshedworktype)
+        self.structuralworktype = convert_boolean(self.structuralworktype)
+        self.supportofexcavationworktype = convert_boolean(self.supportofexcavationworktype)
+        self.temporaryplaceofassemblyworktype = convert_boolean(self.temporaryplaceofassemblyworktype)
+    
+        # Call the parent save method
         super().save(*args, **kwargs)
 
+    
     @classmethod
     def create_async_update_worker(self, endpoint=None, file_name=None):
         async_download_and_update.delay(
