@@ -15,13 +15,12 @@ logger = logging.getLogger('app')
 # Download file from:
 # http://taxbills.nyc/joined.csv
 # upload file through admin then update
-# **** Add the YEAR of the most recent data to the version field when updating through admin and also MANUAL_YEAR below ****
-
+# When updating new year, will likely have to add new key to dictionary below for model for that new year.
 
 class RentStabilizationRecord(BaseDatasetModel, models.Model):
     download_endpoint = "http://taxbills.nyc/joined.csv"
     data_2018 = "https://s3.amazonaws.com/justfix-data/rentstab_counts_for_pluto_19v1_bbls.csv"
-    MANUAL_YEAR = 2023  # This likely needs to manually be changed every year
+    MANUAL_YEAR = 2023  # This is likely no longer being used.
 
     class Meta:
         indexes = [
@@ -162,23 +161,33 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
     latestuctotals = models.IntegerField(blank=True, null=True)
 
     def get_latest_count(self):
-        year = datetime.datetime.today().year
-        latest_count = None
-
-        while not latest_count and int(year) > 2006:
-            latest_count = getattr(self, 'uc' + str(year))
-            year -= 1
-
-        return latest_count
+        # Get all available 'uc' columns dynamically
+        uc_columns = sorted(
+            [int(field.name.replace('uc', '')) for field in self._meta.fields if field.name.startswith('uc')],
+            reverse=True  # Start from the highest year
+        )
+    
+        for year in uc_columns:
+            latest_count = getattr(self, f'uc{year}', None)
+            if latest_count is not None:  # ✅ Return first non-null value
+                return latest_count
+    
+        return 0  # ✅ Default to 0 if all values are null
 
     def get_earliest_count(self):
-        year = 2007
-        earliest = None
+        # Get all available 'uc' columns dynamically and filter to years >= 2007
+        uc_columns = sorted(
+            [int(field.name.replace('uc', '')) for field in self._meta.fields if field.name.startswith('uc')]
+        )
+    
+        for year in uc_columns:
+            if year >= 2007:  # ✅ Ensure it starts at 2007
+                earliest_count = getattr(self, f'uc{year}', None)
+                if earliest_count is not None:  # ✅ Return first non-null value
+                    return earliest_count
+    
+        return 0  # ✅ Default to 0 if all values are null
 
-        while not earliest and int(year) < self.MANUAL_YEAR:
-            earliest = getattr(self, 'uc' + str(year))
-            year += 1
-        return earliest
 
     def get_percent_lost(self):
         # returns negative number for loss
