@@ -180,15 +180,15 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
 
     def get_latest_count(self):
         key = f"uc{self.MANUAL_YEAR}"
-        return getattr(self, key, 0) or 0  # ✅ Ensure it defaults to 0 if missing
-
+        return int(getattr(self, key, 0) or 0)  #  Ensure int conversion
+    
     def get_earliest_count(self):
-        return getattr(self, "uc2007", 0) or 0  # ✅ Ensure it defaults to 0 if missing or null
+        return int(getattr(self, "uc2007", 0) or 0)  #  Ensure int conversion
 
     def get_percent_lost(self):
         try:
-            earliest = self.get_earliest_count()
-            latest = self.get_latest_count()
+            earliest = int(self.get_earliest_count())  # ✅ Convert to int
+            latest = int(self.get_latest_count())  # ✅ Convert to int
             difference = earliest - latest
     
             if earliest == 0:  # ✅ Avoid division by zero
@@ -198,6 +198,7 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
     
         except Exception:
             return 0  # ✅ Failsafe return
+
 
     @classmethod
     def download(self, endpoint=None, file_name=None):
@@ -212,13 +213,20 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
             row['ucbbl'] = str(row['ucbbl'])
             row['id'] = row['ucbbl']
     
-            # ✅ Use manually set year instead of querying DB
+            # ✅ Ensure `uc{MANUAL_YEAR}` is converted to an integer
             key = f"uc{cls.MANUAL_YEAR}"
     
-            if key in row and row[key] is not None and row[key] > 0:
+            if key in row:
+                try:
+                    row[key] = int(row[key]) if row[key] and row[key].strip() else 0
+                except ValueError:
+                    row[key] = 0  # ✅ If conversion fails, set to 0
+    
+            if row[key] > 0:
                 row['latestuctotals'] = row[key]
     
             yield row  # Return processed row
+
 
     # trims down new update files to preserve memory
     # uses original header values
