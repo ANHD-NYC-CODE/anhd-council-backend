@@ -12,15 +12,23 @@ logger = logging.getLogger('app')
 # Update process: Manual
 # Update strategy: Overwrite
 #
-# Download file from:
-# http://taxbills.nyc/joined.csv
-# upload file through admin then update
-# When updating new year, will likely have to add new key to dictionary below for model for that new year.
+# Have ANHD Download file from NYCDB and ensure it includes the column for the year (ie. uc2024)
+# and the ucbbl column. All other columns can be omitted. Next  change MANUAL_YEAR below to most
+# recent year being uploaded in your dataset. We have set up to 
+# When updating, you may have to add a new ucbbl column/key to dictionary below for model for that new year 
+# and perform a migration
 
+# - The Latest Year Count (get_latest_count) Always fetches uc{MANUAL_YEAR} (e.g., uc2023) and will Defaults to 0 if missing.
+# - The Earliest Year Count (get_earliest_count) Always pulls uc2007 (never a later year). Defaults to 0 if missing or NULL.
+# - Percent Lost Calculation (get_percent_lost). Compares only to 2007 as the baseline.
+#   It then Handles cases where earliest = 0 to prevent division by zero and Converts the difference into a percentage change.
+# - The Pre-Validation Filtering (pre_validation_filters). Uses only the manually set year (uc{MANUAL_YEAR}) for latestuctotals.
+# - Lastly it Annotates the Latest Year Count to the Property Annotation table on Save (annotate_property_on_save)
+#   Specifically "unitsrentstabilized" on the Property Annotation table should match latestuctotals
+    
 class RentStabilizationRecord(BaseDatasetModel, models.Model):
-    download_endpoint = "http://taxbills.nyc/joined.csv"
-    data_2018 = "https://s3.amazonaws.com/justfix-data/rentstab_counts_for_pluto_19v1_bbls.csv"
-    MANUAL_YEAR = 2023  # This is likely no longer being used.
+    # data_2018 = "https://s3.amazonaws.com/justfix-data/rentstab_counts_for_pluto_19v1_bbls.csv"
+    MANUAL_YEAR = 2023  # This must be changed to the most recent year of data you're uploading for.
 
     class Meta:
         indexes = [
@@ -42,6 +50,9 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
             models.Index(fields=['ucbbl', 'uc2022']),
             models.Index(fields=['ucbbl', 'uc2023']),
             models.Index(fields=['ucbbl', 'uc2024']),
+            models.Index(fields=['ucbbl', 'uc2025']),
+            models.Index(fields=['ucbbl', 'uc2026']),
+            models.Index(fields=['ucbbl', 'uc2027']),
             models.Index(fields=['uc2007', 'ucbbl']),
             models.Index(fields=['uc2008', 'ucbbl']),
             models.Index(fields=['uc2009', 'ucbbl']),
@@ -60,6 +71,9 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
             models.Index(fields=['uc2022', 'ucbbl']),
             models.Index(fields=['uc2023', 'ucbbl']),
             models.Index(fields=['uc2024', 'ucbbl']),
+            models.Index(fields=['uc2025', 'ucbbl']),
+            models.Index(fields=['uc2026', 'ucbbl']),
+            models.Index(fields=['uc2027', 'ucbbl']),
         ]
     id = models.TextField(primary_key=True, blank=False, null=False)
     ucbbl = models.OneToOneField('Property', db_column='ucbbl', db_constraint=False,
@@ -130,6 +144,10 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
     dhcr2022 = models.BooleanField(blank=True, null=True)
     abat2022 = models.TextField(blank=True, null=True)
     uc2023 = models.IntegerField(db_index=True, blank=True, null=True)
+    uc2024 = models.IntegerField(db_index=True, blank=True, null=True)
+    uc2025 = models.IntegerField(db_index=True, blank=True, null=True)
+    uc2026 = models.IntegerField(db_index=True, blank=True, null=True)
+    uc2027 = models.IntegerField(db_index=True, blank=True, null=True)
     est2023 = models.BooleanField(blank=True, null=True)
     dhcr2023 = models.BooleanField(blank=True, null=True)
     abat2023 = models.TextField(blank=True, null=True)
@@ -161,69 +179,46 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
     latestuctotals = models.IntegerField(blank=True, null=True)
 
     def get_latest_count(self):
-        # Get all available 'uc' columns dynamically
-        uc_columns = sorted(
-            [int(field.name.replace('uc', '')) for field in self._meta.fields if field.name.startswith('uc')],
-            reverse=True  # Start from the highest year
-        )
-    
-        for year in uc_columns:
-            latest_count = getattr(self, f'uc{year}', None)
-            if latest_count is not None:  # ✅ Return first non-null value
-                return latest_count
-    
-        return 0  # ✅ Default to 0 if all values are null
+        key = f"uc{self.MANUAL_YEAR}"
+        return getattr(self, key, 0) or 0  # ✅ Ensure it defaults to 0 if missing
 
     def get_earliest_count(self):
-        # Get all available 'uc' columns dynamically and filter to years >= 2007
-        uc_columns = sorted(
-            [int(field.name.replace('uc', '')) for field in self._meta.fields if field.name.startswith('uc')]
-        )
-    
-        for year in uc_columns:
-            if year >= 2007:  # ✅ Ensure it starts at 2007
-                earliest_count = getattr(self, f'uc{year}', None)
-                if earliest_count is not None:  # ✅ Return first non-null value
-                    return earliest_count
-    
-        return 0  # ✅ Default to 0 if all values are null
-
+        return getattr(self, "uc2007", 0) or 0  # ✅ Ensure it defaults to 0 if missing or null
 
     def get_percent_lost(self):
-        # returns negative number for loss
-        # positive number for gain
         try:
-            difference = self.get_earliest_count() - self.get_latest_count()
-            if (difference >= 0):
-                return -(difference / self.get_earliest_count())
-            else:
-                return (-difference / self.get_earliest_count())
-
-        except Exception as e:
-            return 0
+            earliest = self.get_earliest_count()
+            latest = self.get_latest_count()
+            difference = earliest - latest
+    
+            if earliest == 0:  # ✅ Avoid division by zero
+                return 0
+    
+            return -(difference / earliest) if difference >= 0 else (-difference / earliest)
+    
+        except Exception:
+            return 0  # ✅ Failsafe return
 
     @classmethod
     def download(self, endpoint=None, file_name=None):
         return self.download_file(self.download_endpoint, file_name=file_name)
 
     @classmethod
-    def pre_validation_filters(self, gen_rows):
+    def pre_validation_filters(cls, gen_rows):
         for row in gen_rows:
             if is_null(row['ucbbl']):
-                continue  # ❌ Skipping could cause missing records
+                continue  # Skip rows with null BBL
     
             row['ucbbl'] = str(row['ucbbl'])
             row['id'] = row['ucbbl']
     
-            # ❌ Might fail to assign 'latestuctotals'
-            year_cursor = self.MANUAL_YEAR
-            while 'latestuctotals' not in row and year_cursor > 2006:
-                key = f"uc{year_cursor}"
-                if key in row and row[key] is not None:
-                    row['latestuctotals'] = row[key]
-                year_cursor -= 1
+            # ✅ Use manually set year instead of querying DB
+            key = f"uc{cls.MANUAL_YEAR}"
     
-            yield row
+            if key in row and row[key] is not None and row[key] > 0:
+                row['latestuctotals'] = row[key]
+    
+            yield row  # Return processed row
 
     # trims down new update files to preserve memory
     # uses original header values
