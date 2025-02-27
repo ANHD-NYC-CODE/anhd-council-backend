@@ -298,7 +298,8 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
     
         # ✅ Fix: Pass `file_path` to `transform_self()`
         processed_rows = (
-            log_progress(clean_boolean_fields(row)) for row in cls.transform_self(file_path=file_path, **kwargs)
+            log_progress(clean_boolean_fields({k: v for k, v in row.items() if k != "id"}))
+            for row in cls.transform_self(file_path=file_path, **kwargs)
         )
     
         # ✅ Fix: Pass `file_path` to `bulk_seed()`
