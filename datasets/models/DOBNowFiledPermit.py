@@ -249,8 +249,20 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        logger.info("Seeding/Updating %s", self.__name__)
-        self.bulk_seed(**kwargs, overwrite=True)
+        logger.info("Seeding/Updating %s", cls.__name__)
+        count = 0  # Counter for logging progress
+    
+        def log_progress(row):
+            nonlocal count
+            count += 1
+            if count % 10000 == 0:
+                logger.info(f"✅ Imported {count} records...")  # Log every 10k records
+            return row
+
+        processed_rows = (log_progress(row) for row in cls.transform_self(**kwargs))
+        cls.bulk_seed(data=processed_rows, overwrite=True)
+        
+        logger.info(f"🎯 Import Complete: {count} records inserted.")
 
     def __str__(self):
         return str(self.jobfilingnumber)
