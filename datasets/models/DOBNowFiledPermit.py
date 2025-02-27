@@ -248,8 +248,8 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
         return with_bbl((filter_postcode(row) for row in cleaned_rows))
 
     @classmethod
-    def seed_or_update_self(cls, **kwargs):
-        logger.info("Seeding/Updating %s", cls.__name__)  # Fix: changed self to cls
+    def seed_or_update_self(cls, file_path, **kwargs):
+        logger.info("Seeding/Updating %s", cls.__name__)  # Logging
         count = 0  # Counter for logging progress
     
         def log_progress(row):
@@ -259,9 +259,10 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
                 logger.info(f"✅ Imported {count} records...")  # Log every 10k records
             return row
     
-        processed_rows = (log_progress(row) for row in cls.transform_self(**kwargs))
-        cls.bulk_seed(data=processed_rows, overwrite=True)
-        
+        processed_rows = (log_progress(row) for row in cls.transform_self(file_path, **kwargs))
+    
+        # ✅ Fix: Pass `file_path` explicitly
+        cls.bulk_seed(data=processed_rows, overwrite=True, file_path=file_path)
         logger.info(f"🎯 Import Complete: {count} records inserted.")
 
     def __str__(self):
