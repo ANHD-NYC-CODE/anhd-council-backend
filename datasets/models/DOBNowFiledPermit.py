@@ -253,7 +253,7 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
         )
 
     @classmethod
-    def seed_or_update_self(cls, file_path, **kwargs):  # Add file_path
+    def seed_or_update_self(cls, file_path, **kwargs):
         logger.info("Seeding/Updating %s", cls.__name__)
         count = 0  # Counter for logging progress
     
@@ -296,9 +296,12 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
                     row[field] = convert_boolean(row[field])
             return row
     
-        processed_rows = (log_progress(clean_boolean_fields(row)) for row in cls.transform_self(file_path, **kwargs))
+        # ✅ Fix: Pass `file_path` to `transform_self()`
+        processed_rows = (
+            log_progress(clean_boolean_fields(row)) for row in cls.transform_self(file_path=file_path, **kwargs)
+        )
     
-        # ✅ FIX: Now passing `file_path` to `bulk_seed`
+        # ✅ Fix: Pass `file_path` to `bulk_seed()`
         cls.bulk_seed(file_path=file_path, data=processed_rows, overwrite=True)
     
         logger.info(f"🎯 Import Complete: {count} records inserted.")
