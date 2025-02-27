@@ -248,21 +248,54 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
         return with_bbl((filter_postcode(row) for row in cleaned_rows))
 
     @classmethod
-    def seed_or_update_self(cls, file_path, **kwargs):
-        logger.info("Seeding/Updating %s", cls.__name__)  # Logging
+    def seed_or_update_self(cls, **kwargs):
+        logger.info("Seeding/Updating %s", cls.__name__)
         count = 0  # Counter for logging progress
     
+        def convert_boolean(value):
+            """Convert 'Yes'/'No' to True/False and empty strings to None."""
+            if isinstance(value, str):
+                value = value.strip().lower()
+                if value == "yes":
+                    return True
+                elif value == "no":
+                    return False
+                elif value == "":  # Handle empty values
+                    return None
+            return value  # Return as-is if already True/False/None
+    
+        boolean_fields = [
+            "sprinklerworktype", "plumbingworktype", "littlee", "unmappedccostreet",
+            "requestlegalization", "includespermanentremoval", "incompliancewithnycecc",
+            "exemptfromnycecc", "standpipe", "antenna", "curbcut", "sign", "fence",
+            "scaffold", "shed", "boilerequipmentworktype", "earthworkworktype",
+            "foundationworktype", "generalconstructionworktype",
+            "mechanicalsystemsworktype", "placeofassemblyworktype",
+            "protectionmechanicalmethodsworktype", "sidewalkshedworktype",
+            "structuralworktype", "supportofexcavationworktype",
+            "temporaryplaceofassemblyworktype"
+        ]
+    
         def log_progress(row):
+            """Log every 10,000 records inserted."""
             nonlocal count
             count += 1
             if count % 10000 == 0:
-                logger.info(f"✅ Imported {count} records...")  # Log every 10k records
+                logger.info(f"✅ Imported {count} records...")
             return row
     
-        processed_rows = (log_progress(row) for row in cls.transform_self(file_path, **kwargs))
+        def clean_boolean_fields(row):
+            """Ensure all boolean fields are converted before inserting."""
+            for field in boolean_fields:
+                if field in row:
+                    row[field] = convert_boolean(row[field])
+            return row
     
-        # ✅ Fix: Pass `file_path` explicitly
-        cls.bulk_seed(data=processed_rows, overwrite=True, file_path=file_path)
+        processed_rows = (log_progress(clean_boolean_fields(row)) for row in cls.transform_self(**kwargs))
+    
+        # Now, the boolean values are properly converted before insertion
+        cls.bulk_seed(data=processed_rows, overwrite=True)
+    
         logger.info(f"🎯 Import Complete: {count} records inserted.")
 
     def __str__(self):
