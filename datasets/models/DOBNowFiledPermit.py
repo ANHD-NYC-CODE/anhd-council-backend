@@ -99,7 +99,7 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
     bin_2 = models.TextField(blank=True, null=True)
     currentstatusdate = models.DateField(blank=True, null=True)
     filingdate = models.DateField(blank=True, null=True)
-    firstpermitdate = models.TextField(blank=True, null=True)
+    firstpermitdate = models.DateField(blank=True, null=True)
     permitissuedate = models.DateField(blank=True, null=True)
     boilerequipmentworktype = models.BooleanField(blank=True, null=True)
     earthworkworktype = models.BooleanField(blank=True, null=True)
