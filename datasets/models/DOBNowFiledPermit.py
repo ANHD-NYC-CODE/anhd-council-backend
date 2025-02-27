@@ -229,24 +229,28 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
             else:
                 logger.warning("Unexpected row type: %s", type(row))
                 yield row
-    
 
     @classmethod
     def transform_self(cls, file_path, update=None):
         def filter_postcode(row):
             if isinstance(row, dict):  # Handle dictionaries
-                row.pop('Postcode', None)
+                row.pop('Postcode', None)  # Ensure it's removed safely
                 row.pop('postcode', None)
-            else:
-                logger.warning("Unexpected row format: %s", row)
             return row
     
-        # Apply the transformations
+        # Apply transformations
         rows = from_csv_file_to_gen(file_path, update)
         cleaned_rows = cls.clean_null_bytes_headers(rows)
     
         logger.info("Applying postcode filter and further transformations...")
-        return with_bbl((filter_postcode(row) for row in cleaned_rows))
+    
+        # Ensure fields match the model exactly
+        expected_fields = [f.name for f in cls._meta.fields]
+        
+        return (
+            {field: row.get(field, None) for field in expected_fields}
+            for row in with_bbl((filter_postcode(row) for row in cleaned_rows))
+        )
 
     @classmethod
     def seed_or_update_self(cls, **kwargs):
