@@ -8,6 +8,20 @@ from core.tasks import async_download_and_update
 
 logger = logging.getLogger('app')
 
+
+def transform_date(value):
+    """Convert 'MM/DD/YYYY HH:MM:SS AM/PM' or 'MM/DD/YYYY' to 'YYYY-MM-DD'."""
+    if isinstance(value, str) and value.strip():
+        try:
+            return datetime.strptime(value, "%m/%d/%Y %I:%M:%S %p").date()
+        except ValueError:
+            try:
+                return datetime.strptime(value, "%m/%d/%Y").date()
+            except ValueError:
+                return None  # Return None if format is invalid
+    return None  # Return None for empty values
+
+
 class DOBNowFiledPermit(BaseDatasetModel, models.Model):
     # download_endpoint = "https://data.cityofnewyork.us/api/views/w9ak-ipjd/rows.csv?accessType=DOWNLOAD"
     download_endpoint = "  https://anhd2402.bpbuild.com/test.csv?accessType=DOWNLOAD"
@@ -125,18 +139,6 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
                 elif value == "no":
                     return False
             return value  # Return as-is if it's already True/False or None
-            
-        def transform_date(value):
-            """Convert 'MM/DD/YYYY HH:MM:SS AM/PM' to 'YYYY-MM-DD' format."""
-            if isinstance(value, str) and value.strip():
-                try:
-                    return datetime.strptime(value, "%m/%d/%Y %I:%M:%S %p").date()
-                except ValueError:
-                    try:
-                        return datetime.strptime(value, "%m/%d/%Y").date()
-                    except ValueError:
-                        return None  # Return None if format is invalid
-            return None  # Return None for empty values
     
         # Always overwrite city, state, and zip with owners* values
         self.city = self.ownerscity
