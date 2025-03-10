@@ -266,11 +266,12 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
         transformed_rows = []
         for row in with_bbl((filter_postcode(row) for row in cleaned_rows)):
             transformed_row = {field: row.get(field, None) for field in expected_fields}
-    
-            # ❌ DO NOT LOOKUP ForeignKey fields (Keep them as raw values)
             transformed_row["bbl"] = row.get("bbl")  # Just keep the raw BBL value
             transformed_row["bin"] = row.get("bin")  # Just keep the raw BIN value
-    
+            transformed_row["currentstatusdate"] = transform_date(row.get("currentstatusdate"))
+            transformed_row["filingdate"] = transform_date(row.get("filingdate"))
+            transformed_row["firstpermitdate"] = transform_date(row.get("firstpermitdate"))
+            transformed_row["permitissuedate"] = transform_date(row.get("permitissuedate"))
             transformed_rows.append(transformed_row)
     
         return transformed_rows
