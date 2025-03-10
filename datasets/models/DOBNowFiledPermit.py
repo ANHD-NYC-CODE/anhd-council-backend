@@ -138,16 +138,19 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
                     except ValueError:
                         return None  # Return None if format is invalid
             return None  # Return None for empty values
-        
-        # ✅ Ensure `bbl` exists; raise an error if it doesn't
-        if not self.bbl or not Property.objects.filter(pk=self.bbl).exists():
-            raise ValueError(f"❌ Error: Property (BBL) {self.bbl} does not exist!")
-        
-        # ✅ Assign `bbl` if it exists
-        self.bbl = Property.objects.get(pk=self.bbl)
     
-        # ✅ Assign `bin` only if it exists, otherwise set it to None
-        self.bin = Building.objects.filter(pk=self.bin).first() if self.bin else None
+        # Always overwrite city, state, and zip with owners* values
+        self.city = self.ownerscity
+        self.state = self.ownersstate
+        self.zip = self.ownerszip
+        self.permitissuedate = self.firstpermitdate  # Always overwrite permitissuedate
+    
+        # ✅ **Old Behavior for `bbl` & `bin`**
+        if self.bbl:
+            self.bbl = Property.objects.filter(pk=self.bbl).first()  # Use existing or None
+    
+        if self.bin:
+            self.bin = Building.objects.filter(pk=self.bin).first()  # Use existing or None
     
         # ✅ Convert Boolean fields
         boolean_fields = [
@@ -165,7 +168,7 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
         for field in boolean_fields:
             setattr(self, field, convert_boolean(getattr(self, field)))
     
-        # ✅ Convert numeric fields (empty strings to None)
+        # ✅ Convert empty string numeric fields to None
         numeric_fields = [
             "initialcost", "totalconstructionfloorarea", "reviewbuildingcode",
             "existingstories", "existingheight", "existingdwellingunits",
@@ -179,10 +182,17 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
         # ✅ Convert date fields
         date_fields = ["currentstatusdate", "filingdate", "firstpermitdate", "permitissuedate"]
         for field in date_fields:
-            setattr(self, field, transform_date(getattr(self, field)))
+            value = getattr(self, field)
+            if isinstance(value, str) and value:
+                try:
+                    setattr(self, field, transform_date(value))
+                except ValueError:
+                    logger.warning(f"Invalid date format for {field}: {value}")
+                    setattr(self, field, None)
     
         # ✅ Save the object
         super().save(*args, **kwargs)
+
     
     @classmethod
     def create_async_update_worker(self, endpoint=None, file_name=None):
