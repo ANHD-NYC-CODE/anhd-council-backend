@@ -261,6 +261,12 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
         rows = from_csv_file_to_gen(file_path, update)
         cleaned_rows = cls.clean_null_bytes_headers(rows)
     
+        # 🔥 Log the first few rows before transformation
+        for i, raw_row in enumerate(cleaned_rows):
+            logger.info(f"📝 Raw CSV Row {i}: {raw_row}")
+            if i >= 2:  # Only log the first 3 rows
+                break
+    
         logger.info("Applying postcode filter and further transformations...")
     
         expected_fields = [f.name for f in cls._meta.fields]
@@ -326,12 +332,16 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
             for row in cls.transform_self(file_path=file_path, **kwargs)
         )
         
+        # ✅ Ensure "id" is removed from all rows before inserting into DB
+        processed_rows = ({k: v for k, v in row.items() if k != "id"} for row in processed_rows)
+        
+        # ✅ Log a single row before bulk insert
         for row in processed_rows:
-            logger.info(f"Processed Row (before bulk insert): {row}")
+            logger.info(f"Processed Row (before bulk insert, ID removed): {row}")
             break  # Just log one sample row to avoid spamming logs
-
-    
-        cls.bulk_seed(file_path=file_path, data=processed_rows, overwrite=True)    
+        
+        # ✅ Perform bulk insert
+        cls.bulk_seed(file_path=file_path, data=processed_rows, overwrite=True)
         logger.info(f"🎯 Import Complete: {count} records inserted.")
 
 
