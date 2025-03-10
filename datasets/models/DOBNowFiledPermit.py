@@ -23,8 +23,8 @@ def transform_date(value):
 
 
 class DOBNowFiledPermit(BaseDatasetModel, models.Model):
-    # download_endpoint = "https://data.cityofnewyork.us/api/views/w9ak-ipjd/rows.csv?accessType=DOWNLOAD"
-    download_endpoint = "  https://anhd2402.bpbuild.com/test.csv?accessType=DOWNLOAD"
+    download_endpoint = "https://data.cityofnewyork.us/api/views/w9ak-ipjd/rows.csv?accessType=DOWNLOAD"
+    # download_endpoint = "  https://anhd2402.bpbuild.com/test.csv?accessType=DOWNLOAD"
 
   
     API_ID = 'w9ak-ipjd'
