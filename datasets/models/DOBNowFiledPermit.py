@@ -10,7 +10,10 @@ from core.tasks import async_download_and_update
 logger = logging.getLogger('app')
 
 class DOBNowFiledPermit(BaseDatasetModel, models.Model):
-    download_endpoint = "https://data.cityofnewyork.us/api/views/w9ak-ipjd/rows.csv?accessType=DOWNLOAD"
+    # download_endpoint = "https://data.cityofnewyork.us/api/views/w9ak-ipjd/rows.csv?accessType=DOWNLOAD"
+    download_endpoint = "  https://anhd2402.bpbuild.com/test.csv?accessType=DOWNLOAD"
+
+  
     API_ID = 'w9ak-ipjd'
 
     class Meta:
