@@ -1,4 +1,5 @@
 from django.db import models
+from django.db import connection
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.utils.validation_filters import is_null, is_older_than, does_not_contain_values
@@ -7,7 +8,6 @@ import logging
 from core.tasks import async_download_and_update
 
 logger = logging.getLogger('app')
-
 
 def transform_date(value):
     """Convert 'MM/DD/YYYY HH:MM:SS AM/PM' or 'MM/DD/YYYY' to 'YYYY-MM-DD'."""
@@ -252,11 +252,40 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
                 yield row
 
     @classmethod
+    def get_next_id(cls):
+        """Fetch the next available ID from PostgreSQL sequence."""
+        with connection.cursor() as cursor:
+            cursor.execute(f"SELECT nextval(pg_get_serial_sequence('{cls._meta.db_table}', 'id'))")
+            return cursor.fetchone()[0]
+            
+    from django.db import connection
+    from datetime import datetime
+    
+    @classmethod
+    def get_next_id(cls):
+        """Fetch the next available ID from PostgreSQL sequence."""
+        with connection.cursor() as cursor:
+            cursor.execute(f"SELECT nextval(pg_get_serial_sequence('{cls._meta.db_table}', 'id'))")
+            return cursor.fetchone()[0]
+
+    @classmethod
     def transform_self(cls, file_path, update=None):
         def filter_postcode(row):
             row.pop('Postcode', None)
             row.pop('postcode', None)
             return row
+    
+        def transform_date(value):
+            """Convert date strings into 'YYYY-MM-DD' format."""
+            if isinstance(value, str) and value.strip():
+                try:
+                    return datetime.strptime(value, "%m/%d/%Y %I:%M:%S %p").date()
+                except ValueError:
+                    try:
+                        return datetime.strptime(value, "%m/%d/%Y").date()
+                    except ValueError:
+                        return None  # Return None if format is invalid
+            return None  # Return None for empty values
     
         rows = from_csv_file_to_gen(file_path, update)
         cleaned_rows = cls.clean_null_bytes_headers(rows)
@@ -268,16 +297,19 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
         transformed_rows = []
         for row in with_bbl((filter_postcode(row) for row in cleaned_rows)):
             transformed_row = {field: row.get(field, None) for field in expected_fields}
-            transformed_row["bbl"] = row.get("bbl")  # Just keep the raw BBL value
-            transformed_row["bin"] = row.get("bin")  # Just keep the raw BIN value
+            
+            # ✅ Assign an explicit ID
+            transformed_row["id"] = cls.get_next_id()
+    
+            # ✅ Convert date fields
             transformed_row["currentstatusdate"] = transform_date(row.get("currentstatusdate"))
             transformed_row["filingdate"] = transform_date(row.get("filingdate"))
             transformed_row["firstpermitdate"] = transform_date(row.get("firstpermitdate"))
             transformed_row["permitissuedate"] = transform_date(row.get("permitissuedate"))
+    
             transformed_rows.append(transformed_row)
     
         return transformed_rows
-
 
     @classmethod
     def seed_or_update_self(cls, file_path, **kwargs):
