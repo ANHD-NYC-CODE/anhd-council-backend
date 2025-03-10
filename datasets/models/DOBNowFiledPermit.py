@@ -5,8 +5,6 @@ from datasets.utils.validation_filters import is_null, is_older_than, does_not_c
 from datetime import datetime
 import logging
 from core.tasks import async_download_and_update
-from core.models import Property, Building
-
 
 logger = logging.getLogger('app')
 
