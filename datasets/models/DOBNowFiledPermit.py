@@ -328,8 +328,7 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
         )
     
         # cls.bulk_seed(file_path=file_path, data=processed_rows, overwrite=True)
-        cls.bulk_seed(file_path=file_path, raw=True)
-
+        cls.bulk_seed(**{"file_path": file_path, "raw": True})
     
         logger.info(f"🎯 Import Complete: {count} records inserted.")
 
