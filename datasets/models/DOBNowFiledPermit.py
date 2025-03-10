@@ -325,6 +325,11 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
             log_progress(clean_boolean_fields({k: v for k, v in row.items() if k != "id"}))
             for row in cls.transform_self(file_path=file_path, **kwargs)
         )
+        
+        for row in processed_rows:
+            logger.info(f"Processed Row (before bulk insert): {row}")
+            break  # Just log one sample row to avoid spamming logs
+
     
         cls.bulk_seed(file_path=file_path, data=processed_rows, overwrite=True)    
         logger.info(f"🎯 Import Complete: {count} records inserted.")
