@@ -36,7 +36,7 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
             # models.Index(fields=['bbl', 'prefilingdate']),
             # models.Index(fields=['prefilingdate', 'bbl']),
         ]
-
+    id = models.AutoField(primary_key=True)  # 🔥 Ensure this field is explicitly an AutoField
     jobfilingnumber = models.TextField(blank=False, null=False)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False, 
                             on_delete=models.SET_NULL, null=True, blank=False)
@@ -332,8 +332,11 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
         )
         
         # ✅ Ensure "id" is removed from all rows before inserting into DB
-        processed_rows = ({k: v for k, v in row.items() if k != "id"} for row in processed_rows)
-        
+        processed_rows = [
+            {k: v for k, v in row.items() if k != "id"} 
+            for row in cls.transform_self(file_path=file_path, **kwargs)
+        ]        
+
         # ✅ Log a single row before bulk insert
         for row in processed_rows:
             logger.info(f"Processed Row (before bulk insert, ID removed): {row}")
