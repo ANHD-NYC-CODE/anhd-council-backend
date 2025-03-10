@@ -212,8 +212,10 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
         except StopIteration:
             logger.error("Empty CSV generator received")
             raise ValueError("The CSV file is empty or invalid")
-    
-        # Header replacements
+
+        cleaned_header = {key.lstrip('\ufeff'): value for key, value in header_row.items()}
+      
+        # ✅ Header replacements
         replacements = {
             'ownerscity': 'city',
             'ownersstate': 'state',
@@ -221,35 +223,32 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
             'firstpermitdate': 'permitissuedate',
         }
     
-        # Process header row based on its format
-        if isinstance(header_row, dict):  # If the row is a dictionary
-            # Update dictionary keys
-            for old, new in replacements.items():
-                if old in header_row:
-                    header_row[new] = header_row.pop(old)
-        elif isinstance(header_row, str):  # If the row is a string
-            # Replace header strings
-            for old, new in replacements.items():
-                header_row = header_row.replace(old, new)
-        else:
-            logger.warning("Unexpected header row type: %s", type(header_row))
-        yield header_row
+        # ✅ Apply replacements to cleaned_header
+        for old, new in replacements.items():
+            if old in cleaned_header:
+                cleaned_header[new] = cleaned_header.pop(old)
     
-        # Process remaining rows
+        # ✅ Log the final header after cleaning
+        logger.info("✅ Cleaned Header Row: %s", cleaned_header)
+    
+        # ✅ Yield the cleaned header instead of the original
+        yield cleaned_header  
+    
+        # ✅ Process remaining rows
         for row in gen_rows:
             if isinstance(row, dict):  # If the row is a dictionary
-                # Clean dictionary values
+                # ✅ Clean dictionary values
                 for key, value in row.items():
                     if isinstance(value, str):
                         row[key] = value.replace("\0", "").replace("\t", ",")
                 yield row
             elif isinstance(row, str):  # If the row is a string
-                # Clean string rows
+                # ✅ Clean string rows
                 row = row.replace("\0", "").replace("\t", ",")
                 yield row
             else:
-                logger.warning("Unexpected row type: %s", type(row))
-                yield row
+                logger.warning("⚠️ Unexpected row type: %s", type(row))
+                yield row  # Yield the row as-is to prevent breaking the generator
 
     @classmethod
     def transform_self(cls, file_path, update=None):
