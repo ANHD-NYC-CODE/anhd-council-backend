@@ -36,7 +36,6 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
             # models.Index(fields=['bbl', 'prefilingdate']),
             # models.Index(fields=['prefilingdate', 'bbl']),
         ]
-    id = models.AutoField(primary_key=True)  # 🔥 Ensure this field is explicitly an AutoField
     jobfilingnumber = models.TextField(blank=False, null=False)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False, 
                             on_delete=models.SET_NULL, null=True, blank=False)
