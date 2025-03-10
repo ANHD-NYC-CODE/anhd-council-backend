@@ -5,6 +5,7 @@ from datasets.utils.validation_filters import is_null, is_older_than, does_not_c
 from datetime import datetime
 import logging
 from core.tasks import async_download_and_update
+from core.models import Property, Building
 
 
 logger = logging.getLogger('app')
@@ -25,7 +26,7 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
         ]
 
     jobfilingnumber = models.TextField(blank=False, null=False)
-    bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
+    bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False, 
                             on_delete=models.SET_NULL, null=True, blank=False)
     bin = models.ForeignKey('Building', db_column='bin', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=True)
@@ -144,13 +145,6 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
         self.state = self.ownersstate
         self.zip = self.ownerszip
         self.permitissuedate = self.firstpermitdate  # Always overwrite permitissuedate
-    
-        # ✅ **Old Behavior for `bbl` & `bin`**
-        if self.bbl:
-            self.bbl = Property.objects.filter(pk=self.bbl).first()  # Use existing or None
-    
-        if self.bin:
-            self.bin = Building.objects.filter(pk=self.bin).first()  # Use existing or None
     
         # ✅ Convert Boolean fields
         boolean_fields = [
@@ -275,15 +269,14 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
         for row in with_bbl((filter_postcode(row) for row in cleaned_rows)):
             transformed_row = {field: row.get(field, None) for field in expected_fields}
     
-            # ✅ Convert Foreign Keys here
-            if transformed_row.get("bbl"):
-                transformed_row["bbl"], _ = Property.objects.get_or_create(pk=transformed_row["bbl"])
-            if transformed_row.get("bin"):
-                transformed_row["bin"], _ = Building.objects.get_or_create(pk=transformed_row["bin"])
+            # ❌ DO NOT LOOKUP ForeignKey fields (Keep them as raw values)
+            transformed_row["bbl"] = row.get("bbl")  # Just keep the raw BBL value
+            transformed_row["bin"] = row.get("bin")  # Just keep the raw BIN value
     
             transformed_rows.append(transformed_row)
     
         return transformed_rows
+
 
     @classmethod
     def seed_or_update_self(cls, file_path, **kwargs):
