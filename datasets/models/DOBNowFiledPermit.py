@@ -321,16 +321,12 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
                     row[field] = convert_boolean(row[field])
             return row
     
-        # ✅ Fix: Pass `file_path` to `transform_self()`
         processed_rows = (
             log_progress(clean_boolean_fields({k: v for k, v in row.items() if k != "id"}))
             for row in cls.transform_self(file_path=file_path, **kwargs)
         )
     
-        # cls.bulk_seed(file_path=file_path, data=processed_rows, overwrite=True)
-        cls.bulk_seed(raw=True, file_path=file_path)
-
-    
+        cls.bulk_seed(file_path=file_path, data=processed_rows, overwrite=True)    
         logger.info(f"🎯 Import Complete: {count} records inserted.")
 
 
