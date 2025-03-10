@@ -250,13 +250,6 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
             else:
                 logger.warning("Unexpected row type: %s", type(row))
                 yield row
-    
-    @classmethod
-    def get_next_id(cls):
-        """Fetch the next available ID from PostgreSQL sequence."""
-        with connection.cursor() as cursor:
-            cursor.execute(f"SELECT nextval(pg_get_serial_sequence('{cls._meta.db_table}', 'id'))")
-            return cursor.fetchone()[0]
 
     @classmethod
     def transform_self(cls, file_path, update=None):
@@ -274,17 +267,11 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
     
         transformed_rows = []
         for row in with_bbl((filter_postcode(row) for row in cleaned_rows)):
-            transformed_row = {field: row.get(field, None) for field in expected_fields}
-            
-            # ✅ Assign an explicit ID
-            transformed_row["id"] = cls.get_next_id()
-    
-            # ✅ Convert date fields
+            transformed_row = {field: row.get(field, None) for field in expected_fields}    
             transformed_row["currentstatusdate"] = transform_date(row.get("currentstatusdate"))
             transformed_row["filingdate"] = transform_date(row.get("filingdate"))
             transformed_row["firstpermitdate"] = transform_date(row.get("firstpermitdate"))
             transformed_row["permitissuedate"] = transform_date(row.get("permitissuedate"))
-    
             transformed_rows.append(transformed_row)
     
         return transformed_rows
@@ -295,7 +282,8 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
         count = 0  # Counter for logging progress
     
         def convert_boolean(value):
-            """Convert 'Yes'/'No' to True/False and empty strings to None."""
+            if value is None:  # ✅ Handle None correctly
+                return None
             if isinstance(value, str):
                 value = value.strip().lower()
                 if value == "yes":
@@ -339,8 +327,9 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
             for row in cls.transform_self(file_path=file_path, **kwargs)
         )
     
-        # ✅ Fix: Pass `file_path` to `bulk_seed()`
-        cls.bulk_seed(file_path=file_path, data=processed_rows, overwrite=True)
+        # cls.bulk_seed(file_path=file_path, data=processed_rows, overwrite=True)
+        cls.bulk_seed(file_path=file_path, raw=True)
+
     
         logger.info(f"🎯 Import Complete: {count} records inserted.")
 
