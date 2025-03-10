@@ -2,16 +2,12 @@ from django.db import models
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.utils.validation_filters import is_null, is_older_than, does_not_contain_values
+from datetime import datetime
 import logging
 from core.tasks import async_download_and_update
 
 
 logger = logging.getLogger('app')
-
-# Update process: Automatic
-# Update strategy: Overwrite
-#
-
 
 class DOBNowFiledPermit(BaseDatasetModel, models.Model):
     download_endpoint = "https://data.cityofnewyork.us/api/views/w9ak-ipjd/rows.csv?accessType=DOWNLOAD"
@@ -117,10 +113,9 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
     ownersstate = models.TextField(blank=True, null=True)
     ownerszip = models.TextField(blank=True, null=True)
 
-
     def save(self, *args, **kwargs):
         def convert_boolean(value):
-            # """Convert Yes/No strings to True/False without changing DB storage"""
+            """Convert Yes/No strings to True/False without changing DB storage."""
             if isinstance(value, str):
                 value = value.strip().lower()
                 if value == "yes":
@@ -128,44 +123,63 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
                 elif value == "no":
                     return False
             return value  # Return as-is if it's already True/False or None
+            
+        def transform_date(value):
+            """Convert 'MM/DD/YYYY HH:MM:SS AM/PM' to 'YYYY-MM-DD' format."""
+            if isinstance(value, str) and value.strip():
+                try:
+                    return datetime.strptime(value, "%m/%d/%Y %I:%M:%S %p").date()
+                except ValueError:
+                    try:
+                        return datetime.strptime(value, "%m/%d/%Y").date()
+                    except ValueError:
+                        return None  # Return None if format is invalid
+            return None  # Return None for empty values
+        
+        # ✅ Ensure `bbl` exists; raise an error if it doesn't
+        if not self.bbl or not Property.objects.filter(pk=self.bbl).exists():
+            raise ValueError(f"❌ Error: Property (BBL) {self.bbl} does not exist!")
+        
+        # ✅ Assign `bbl` if it exists
+        self.bbl = Property.objects.get(pk=self.bbl)
     
-        # Always overwrite city, state, and zip with owners* values
-        self.city = self.ownerscity
-        self.state = self.ownersstate
-        self.zip = self.ownerszip
-        self.permitissuedate = self.firstpermitdate  # Always overwrite permitissuedate
+        # ✅ Assign `bin` only if it exists, otherwise set it to None
+        self.bin = Building.objects.filter(pk=self.bin).first() if self.bin else None
     
-        # Convert boolean fields before saving
-        self.sprinklerworktype = convert_boolean(self.sprinklerworktype)
-        self.plumbingworktype = convert_boolean(self.plumbingworktype)
-        self.littlee = convert_boolean(self.littlee)
-        self.unmappedccostreet = convert_boolean(self.unmappedccostreet)
-        self.requestlegalization = convert_boolean(self.requestlegalization)
-        self.includespermanentremoval = convert_boolean(self.includespermanentremoval)
-        self.incompliancewithnycecc = convert_boolean(self.incompliancewithnycecc)
-        self.exemptfromnycecc = convert_boolean(self.exemptfromnycecc)
-        self.standpipe = convert_boolean(self.standpipe)
-        self.antenna = convert_boolean(self.antenna)
-        self.curbcut = convert_boolean(self.curbcut)
-        self.sign = convert_boolean(self.sign)
-        self.fence = convert_boolean(self.fence)
-        self.scaffold = convert_boolean(self.scaffold)
-        self.shed = convert_boolean(self.shed)
-        self.boilerequipmentworktype = convert_boolean(self.boilerequipmentworktype)
-        self.earthworkworktype = convert_boolean(self.earthworkworktype)
-        self.foundationworktype = convert_boolean(self.foundationworktype)
-        self.generalconstructionworktype = convert_boolean(self.generalconstructionworktype)
-        self.mechanicalsystemsworktype = convert_boolean(self.mechanicalsystemsworktype)
-        self.placeofassemblyworktype = convert_boolean(self.placeofassemblyworktype)
-        self.protectionmechanicalmethodsworktype = convert_boolean(self.protectionmechanicalmethodsworktype)
-        self.sidewalkshedworktype = convert_boolean(self.sidewalkshedworktype)
-        self.structuralworktype = convert_boolean(self.structuralworktype)
-        self.supportofexcavationworktype = convert_boolean(self.supportofexcavationworktype)
-        self.temporaryplaceofassemblyworktype = convert_boolean(self.temporaryplaceofassemblyworktype)
+        # ✅ Convert Boolean fields
+        boolean_fields = [
+            "sprinklerworktype", "plumbingworktype", "littlee", "unmappedccostreet",
+            "requestlegalization", "includespermanentremoval", "incompliancewithnycecc",
+            "exemptfromnycecc", "standpipe", "antenna", "curbcut", "sign", "fence",
+            "scaffold", "shed", "boilerequipmentworktype", "earthworkworktype",
+            "foundationworktype", "generalconstructionworktype",
+            "mechanicalsystemsworktype", "placeofassemblyworktype",
+            "protectionmechanicalmethodsworktype", "sidewalkshedworktype",
+            "structuralworktype", "supportofexcavationworktype",
+            "temporaryplaceofassemblyworktype"
+        ]
     
-        # Call the parent save method
+        for field in boolean_fields:
+            setattr(self, field, convert_boolean(getattr(self, field)))
+    
+        # ✅ Convert numeric fields (empty strings to None)
+        numeric_fields = [
+            "initialcost", "totalconstructionfloorarea", "reviewbuildingcode",
+            "existingstories", "existingheight", "existingdwellingunits",
+            "proposednoofstories", "proposedheight", "proposeddwellingunits"
+        ]
+        for field in numeric_fields:
+            value = getattr(self, field)
+            if value == "":
+                setattr(self, field, None)
+    
+        # ✅ Convert date fields
+        date_fields = ["currentstatusdate", "filingdate", "firstpermitdate", "permitissuedate"]
+        for field in date_fields:
+            setattr(self, field, transform_date(getattr(self, field)))
+    
+        # ✅ Save the object
         super().save(*args, **kwargs)
-
     
     @classmethod
     def create_async_update_worker(self, endpoint=None, file_name=None):
@@ -233,24 +247,30 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
     @classmethod
     def transform_self(cls, file_path, update=None):
         def filter_postcode(row):
-            if isinstance(row, dict):  # Handle dictionaries
-                row.pop('Postcode', None)  # Ensure it's removed safely
-                row.pop('postcode', None)
+            row.pop('Postcode', None)
+            row.pop('postcode', None)
             return row
     
-        # Apply transformations
         rows = from_csv_file_to_gen(file_path, update)
         cleaned_rows = cls.clean_null_bytes_headers(rows)
     
         logger.info("Applying postcode filter and further transformations...")
     
-        # Ensure fields match the model exactly
         expected_fields = [f.name for f in cls._meta.fields]
-        
-        return (
-            {field: row.get(field, None) for field in expected_fields}
-            for row in with_bbl((filter_postcode(row) for row in cleaned_rows))
-        )
+    
+        transformed_rows = []
+        for row in with_bbl((filter_postcode(row) for row in cleaned_rows)):
+            transformed_row = {field: row.get(field, None) for field in expected_fields}
+    
+            # ✅ Convert Foreign Keys here
+            if transformed_row.get("bbl"):
+                transformed_row["bbl"], _ = Property.objects.get_or_create(pk=transformed_row["bbl"])
+            if transformed_row.get("bin"):
+                transformed_row["bin"], _ = Building.objects.get_or_create(pk=transformed_row["bin"])
+    
+            transformed_rows.append(transformed_row)
+    
+        return transformed_rows
 
     @classmethod
     def seed_or_update_self(cls, file_path, **kwargs):
