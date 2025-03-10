@@ -250,16 +250,6 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
             else:
                 logger.warning("Unexpected row type: %s", type(row))
                 yield row
-
-    @classmethod
-    def get_next_id(cls):
-        """Fetch the next available ID from PostgreSQL sequence."""
-        with connection.cursor() as cursor:
-            cursor.execute(f"SELECT nextval(pg_get_serial_sequence('{cls._meta.db_table}', 'id'))")
-            return cursor.fetchone()[0]
-            
-    from django.db import connection
-    from datetime import datetime
     
     @classmethod
     def get_next_id(cls):
@@ -274,18 +264,6 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
             row.pop('Postcode', None)
             row.pop('postcode', None)
             return row
-    
-        def transform_date(value):
-            """Convert date strings into 'YYYY-MM-DD' format."""
-            if isinstance(value, str) and value.strip():
-                try:
-                    return datetime.strptime(value, "%m/%d/%Y %I:%M:%S %p").date()
-                except ValueError:
-                    try:
-                        return datetime.strptime(value, "%m/%d/%Y").date()
-                    except ValueError:
-                        return None  # Return None if format is invalid
-            return None  # Return None for empty values
     
         rows = from_csv_file_to_gen(file_path, update)
         cleaned_rows = cls.clean_null_bytes_headers(rows)
