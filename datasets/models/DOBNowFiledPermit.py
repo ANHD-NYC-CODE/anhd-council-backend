@@ -182,11 +182,13 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
                 except ValueError:
                     logger.warning(f"Invalid date format for {field}: {value}")
                     setattr(self, field, None)
-    
+                    
+        if not self.id:  # Allow PostgreSQL to auto-generate the ID
+            self.id = None  # Ensure Django does NOT set an explicit ID
+            
         # ✅ Save the object
         super().save(*args, **kwargs)
 
-    
     @classmethod
     def create_async_update_worker(self, endpoint=None, file_name=None):
         async_download_and_update.delay(
