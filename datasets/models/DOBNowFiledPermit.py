@@ -23,8 +23,8 @@ def transform_date(value):
 
 
 class DOBNowFiledPermit(BaseDatasetModel, models.Model):
-    download_endpoint = "https://data.cityofnewyork.us/api/views/w9ak-ipjd/rows.csv?accessType=DOWNLOAD"
-    # download_endpoint = "  https://anhd2402.bpbuild.com/test.csv?accessType=DOWNLOAD"
+    # download_endpoint = "https://data.cityofnewyork.us/api/views/w9ak-ipjd/rows.csv?accessType=DOWNLOAD"
+    download_endpoint = "  https://anhd2402.bpbuild.com/test.csv?accessType=DOWNLOAD"
 
   
     API_ID = 'w9ak-ipjd'
@@ -214,8 +214,9 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
             logger.error("Empty CSV generator received")
             raise ValueError("The CSV file is empty or invalid")
 
-        cleaned_header = {key.lstrip('\ufeff'): value for key, value in header_row.items()}
-      
+        cleaned_header = {key.lstrip('\ufeff'): value for key, value in header_row.items() if key != "id"}
+        logger.debug("🚀 Cleaned header row (ID removed if present): %s", cleaned_header)
+
         # ✅ Header replacements
         replacements = {
             'ownerscity': 'city',
@@ -238,18 +239,27 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
         # ✅ Process remaining rows
         for row in gen_rows:
             if isinstance(row, dict):  # If the row is a dictionary
+                # ✅ Remove "id" if present
+                if "id" in row:
+                    del row["id"]
+                    logger.debug("🚀 Removed 'id' from row: %s", row)
+        
                 # ✅ Clean dictionary values
                 for key, value in row.items():
                     if isinstance(value, str):
                         row[key] = value.replace("\0", "").replace("\t", ",")
+                        
                 yield row
+            
             elif isinstance(row, str):  # If the row is a string
                 # ✅ Clean string rows
                 row = row.replace("\0", "").replace("\t", ",")
                 yield row
+            
             else:
                 logger.warning("⚠️ Unexpected row type: %s", type(row))
                 yield row  # Yield the row as-is to prevent breaking the generator
+
 
     @classmethod
     def transform_self(cls, file_path, update=None):
@@ -268,18 +278,20 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
                 break
     
         logger.info("Applying postcode filter and further transformations...")
-    
         expected_fields = [f.name for f in cls._meta.fields]
-    
+        
+        # ✅ Remove "id" from expected fields
+        if "id" in expected_fields:
+            expected_fields.remove("id")
+        
         transformed_rows = []
         for row in with_bbl((filter_postcode(row) for row in cleaned_rows)):
-            transformed_row = {field: row.get(field, None) for field in expected_fields}    
+            transformed_row = {field: row.get(field, None) for field in expected_fields if field != "id"}
             transformed_row["currentstatusdate"] = transform_date(row.get("currentstatusdate"))
             transformed_row["filingdate"] = transform_date(row.get("filingdate"))
             transformed_row["firstpermitdate"] = transform_date(row.get("firstpermitdate"))
             transformed_row["permitissuedate"] = transform_date(row.get("permitissuedate"))
             transformed_rows.append(transformed_row)
-    
         return transformed_rows
 
     @classmethod
@@ -336,12 +348,13 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
         processed_rows = [
             {k: v for k, v in row.items() if k != "id"} 
             for row in cls.transform_self(file_path=file_path, **kwargs)
-        ]        
-
+        ]
+        
+        logger.debug("🚀 First Row Before Bulk Insert: %s", processed_rows[0] if processed_rows else "No data")
+    
         # ✅ Log a single row before bulk insert
         for row in processed_rows:
-            logger.info(f"Processed Row (before bulk insert, ID removed): {row}")
-            break  # Just log one sample row to avoid spamming logs
+            logger.debug("🚀 Sample Processed Row: %s", row["jobfilingnumber"])
         
         # ✅ Perform bulk insert
         cls.bulk_seed(file_path=file_path, data=processed_rows, overwrite=True)
