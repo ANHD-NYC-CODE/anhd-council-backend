@@ -143,7 +143,8 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
         self.city = self.ownerscity
         self.state = self.ownersstate
         self.zip = self.ownerszip
-        self.permitissuedate = self.firstpermitdate  # Always overwrite permitissuedate
+        if self.firstpermitdate:
+            self.permitissuedate = self.firstpermitdate
     
         # ✅ Convert Boolean fields
         boolean_fields = [
@@ -290,7 +291,7 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
             transformed_row["currentstatusdate"] = transform_date(row.get("currentstatusdate"))
             transformed_row["filingdate"] = transform_date(row.get("filingdate"))
             transformed_row["firstpermitdate"] = transform_date(row.get("firstpermitdate"))
-            transformed_row["permitissuedate"] = transform_date(row.get("permitissuedate"))
+            transformed_row["permitissuedate"] = transform_date(row.get("firstpermitdate"))
             transformed_rows.append(transformed_row)
         return transformed_rows
 
@@ -325,10 +326,10 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
         ]
     
         def log_progress(row):
-            """Log every 10,000 records inserted."""
+            """Log every 50,000 records inserted."""
             nonlocal count
             count += 1
-            if count % 10000 == 0:
+            if count % 50000 == 0:
                 logger.info(f"✅ Imported {count} records...")
             return row
     
@@ -339,26 +340,44 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
                     row[field] = convert_boolean(row[field])
             return row
     
-        processed_rows = (
-            log_progress(clean_boolean_fields({k: v for k, v in row.items() if k != "id"}))
-            for row in cls.transform_self(file_path=file_path, **kwargs)
-        )
+        transformed_rows = list(cls.transform_self(file_path=file_path, **kwargs))  # Convert generator to list
+
+        if not transformed_rows:
+            logger.warning("⚠️ No transformed rows received from CSV. Skipping import.")
+            return  # Stop execution if no data exists
         
-        # ✅ Ensure "id" is removed from all rows before inserting into DB
         processed_rows = [
-            {k: v for k, v in row.items() if k != "id"} 
-            for row in cls.transform_self(file_path=file_path, **kwargs)
+            log_progress(clean_boolean_fields({k: v for k, v in row.items() if k != "id"}))
+            for row in transformed_rows
         ]
         
-        logger.debug("🚀 First Row Before Bulk Insert: %s", processed_rows[0] if processed_rows else "No data")
-    
-        # ✅ Log a single row before bulk insert
-        for row in processed_rows:
-            logger.debug("🚀 Sample Processed Row: %s", row["jobfilingnumber"])
+        if not processed_rows:
+            logger.warning("⚠️ No processed rows found after transformation!")
+            return
         
-        # ✅ Perform bulk insert
+        logger.info(f"📊 Ready to insert/update {len(processed_rows)} records.")
+
+        logger.debug("🚀 First Row Before Bulk Insert: %s", processed_rows[0] if processed_rows else "No data")
+
+        if processed_rows:
+            for i, row in enumerate(processed_rows[:5]):  # Log first 5 rows
+                logger.debug(f"🚀 Sample Row {i+1}: {row}")
+            else:
+                logger.warning("⚠️ No processed rows found after transformation!")
+        
+         # ✅ Log first 5 rows
+        for i, row in enumerate(processed_rows[:5]):
+            logger.debug(f"🚀 Sample Row {i+1}: {row}")
+    
+        # ✅ Ensure bulk insert actually writes data
+        existing_count = cls.objects.count()
+        logger.info(f"📊 Records in DB before insert: {existing_count}")
+    
         cls.bulk_seed(file_path=file_path, data=processed_rows, overwrite=True)
-        logger.info(f"🎯 Import Complete: {count} records inserted.")
+    
+        new_count = cls.objects.count()
+        inserted_count = new_count - existing_count
+        logger.info(f"🎯 Import Complete: {inserted_count} new records inserted. Total: {new_count} records in DB.")
 
 
     def __str__(self):
