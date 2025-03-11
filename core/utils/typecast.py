@@ -95,50 +95,76 @@ def yyyy_mm_dd(date_str, strptime_format='%Y%m%d'):
 
 
 def date(x):
+    """
+    Converts various date formats into a Python `date` object.
+    
+    Supports:
+    - YYYYMMDD (integer or string)
+    - YYYYMMDDHHMMSS (integer or string)
+    - MM/DD/YYYY, M/D/YYYY, etc. (with or without time)
+    - YYYY-MM-DD (ISO format)
+    - YYYY-MM-DD HH:MM:SS (Timestamp format)
+    - YYYY-MM-DDTHH:MM:SS (ISO format with time)
+    - Edge cases like empty strings, invalid formats, and single-character inputs
+    """
     if not x or isinstance(x, (datetime.date, datetime.datetime)):
-        return x
+        return x  # Return if already a date/datetime object
 
-    parsed_date = None
-    # checks yyyymmdd format in integers
-    if isinstance(x, int):
-        if len(str(x)) == 8:
-            parsed_date = yyyy_mm_dd(x, '%Y%m%d')
-    elif isinstance(x, str):
-        x = x.strip()  # because DOB Permits Issued has a trailing space at the end... :(
-        # Filters bad string entries
-        if len(x.strip()) == 1:
-            parsed_date = None
-        # checks string dates
-        # checks for 20181231 date input
-        elif re.match(r'[0-9]{8}', x):
-            try:
-                parsed_date = yyyy_mm_dd(x, '%Y%m%d')
-            except ValueError:
-                logger.warning(
-                    "r'[0-9]\{\8\}', * Unable to parse date string - {}".format(x))
-                parsed_date = None
+    parsed_date = None  # Initialize return variable
 
-        elif (len(x.strip()) == 8 or len(x.strip()) == 9 or len(x.strip()) == 10) and len(x.split('/')) == 3:
-            # checks for 1/1/2018 date input
-            # checks for 1/01/2018 date input
-            # checks for 01/01/2018 date input
-            parsed_date = mm_dd_yyyy(x, '/')
-        elif (len(x.strip()) == 8 or len(x.strip()) == 9 or len(x.strip()) == 10) and len(x.split('-')) == 3:
-            # checks for 2018-11-01 format
-            parsed_date = yyyy_mm_dd(x, '%Y-%m-%d')
-        elif len(x.strip()) == 22 and len(x[0:10].split('/')) == 3:
-            # checks for 12/31/2018 12:00:00 AM date input
-            parsed_date = mm_dd_yyyy(x, '/')
-        elif len(x.strip()) == 19 and len(x[0:10].split('/')) == 3:
-            # checks for 12/31/2018 12:00:00 date input
-            parsed_date = mm_dd_yyyy(x, '/')
-        elif len(x.split('T')[0]) == 10 and len(x.split('T')[0].split('-')) == 3:
-            # checks for 2017-02-06T00:00:00000
-            parsed_date = yyyy_mm_dd(x.split('T')[0], '%Y-%m-%d')
-        else:
-            logger.warning(
-                " Format not found - * Unable to parse date string - {}".format(x))
-            parsed_date = None
+    try:
+        # ✅ Case 1: YYYYMMDD as an INTEGER (e.g., 20250310 → 2025-03-10)
+        if isinstance(x, int) and len(str(x)) == 8:
+            parsed_date = datetime.datetime.strptime(str(x), "%Y%m%d").date()
+
+        # ✅ Case 2: YYYYMMDDHHMMSS as an INTEGER (e.g., 20250310120000 → 2025-03-10)
+        elif isinstance(x, int) and len(str(x)) == 14:
+            parsed_date = datetime.datetime.strptime(str(x), "%Y%m%d%H%M%S").date()
+
+        # ✅ Case 3: Convert string and strip any trailing spaces
+        elif isinstance(x, str):
+            x = x.strip()
+
+            # ❌ Ignore invalid cases (empty or single-character strings)
+            if len(x) <= 1:
+                return None
+
+            # ✅ Case 4: YYYYMMDD as a STRING (e.g., "20250310")
+            elif re.match(r"^\d{8}$", x):
+                parsed_date = datetime.datetime.strptime(x, "%Y%m%d").date()
+
+            # ✅ Case 5: YYYYMMDDHHMMSS as a STRING (e.g., "20250310120000")
+            elif re.match(r"^\d{14}$", x):
+                parsed_date = datetime.datetime.strptime(x, "%Y%m%d%H%M%S").date()
+
+            # ✅ Case 6: MM/DD/YYYY (e.g., "12/31/2023", "1/1/2018", "01/01/2018")
+            elif re.match(r"^\d{1,2}/\d{1,2}/\d{4}", x):
+                parsed_date = datetime.datetime.strptime(x[:10], "%m/%d/%Y").date()
+
+            # ✅ Case 7: YYYY-MM-DD (e.g., "2023-12-31", "2018-11-01")
+            elif re.match(r"^\d{4}-\d{2}-\d{2}$", x):
+                parsed_date = datetime.datetime.strptime(x, "%Y-%m-%d").date()
+
+            # ✅ Case 8: MM/DD/YYYY HH:MM:SS AM/PM (e.g., "12/31/2018 12:00:00 AM")
+            elif re.match(r"^\d{1,2}/\d{1,2}/\d{4} \d{2}:\d{2}:\d{2} (AM|PM)", x):
+                parsed_date = datetime.datetime.strptime(x, "%m/%d/%Y %I:%M:%S %p").date()
+
+            # ✅ Case 9: YYYY-MM-DD HH:MM:SS (e.g., "2023-12-31 23:59:59")
+            elif re.match(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$", x):
+                parsed_date = datetime.datetime.strptime(x, "%Y-%m-%d %H:%M:%S").date()
+
+            # ✅ Case 10: YYYY-MM-DDTHH:MM:SS (ISO format with "T", e.g., "2023-12-31T23:59:59")
+            elif re.match(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$", x):
+                parsed_date = datetime.datetime.strptime(x.split("T")[0], "%Y-%m-%d").date()
+
+            # ❌ Case 11: No match found, log warning
+            else:
+                logger.warning(f"Format not found - Unable to parse date string: {x}")
+                return None
+
+    except ValueError:
+        logger.warning(f"Unable to parse date string: {x}")
+        return None  # Return None if parsing fails
 
     return parsed_date
 
