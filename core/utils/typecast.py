@@ -75,23 +75,72 @@ def numeric(x):
         return None
 
 
+# def mm_dd_yyyy(date_str, splitter='/'):
+#     try:
+#         month, day, year = map(int, date_str[0:10].split('/'))
+#         return datetime.date(year, month, day)
+#     except ValueError:
+#         logger.warning(
+#             "mm_dd_yyyy - * Unable to parse date string - {}".format(date_str))
+#         return None
+
+
+# def yyyy_mm_dd(date_str, strptime_format='%Y%m%d'):
+#     try:
+#         return datetime.datetime.strptime(str(date_str), strptime_format).date()
+#     except ValueError:
+#         logger.warning(
+#             "yyyy_mm_dd - * Unable to parse date string - {}".format(date_str))
+#         return None
+
 def mm_dd_yyyy(date_str, splitter='/'):
+    """
+    Converts a date string in MM/DD/YYYY format to a `datetime.date` object.
+    Supports different delimiters (e.g., "/", "-", ".").
+    """
+    if not date_str or not isinstance(date_str, str):
+        logger.warning("mm_dd_yyyy - * Invalid input: {}".format(date_str))
+        return None
+
     try:
-        month, day, year = map(int, date_str[0:10].split('/'))
+        # Split by the specified separator and strip any spaces
+        parts = date_str.strip().split(splitter)
+
+        # Ensure the split resulted in exactly 3 parts
+        if len(parts) != 3:
+            raise ValueError
+
+        # Convert to integers and create a date object
+        month, day, year = map(int, parts)
         return datetime.date(year, month, day)
+
     except ValueError:
-        logger.warning(
-            "mm_dd_yyyy - * Unable to parse date string - {}".format(date_str))
+        logger.warning("mm_dd_yyyy - * Unable to parse date string: {}".format(date_str))
         return None
 
 
 def yyyy_mm_dd(date_str, strptime_format='%Y%m%d'):
-    try:
-        return datetime.datetime.strptime(str(date_str), strptime_format).date()
-    except ValueError:
-        logger.warning(
-            "yyyy_mm_dd - * Unable to parse date string - {}".format(date_str))
+    """
+    Converts a date string in YYYYMMDD or YYYY-MM-DD format to a `datetime.date` object.
+    Supports different formats, including `YYYYMMDD` and `YYYY-MM-DD`.
+    """
+    if not date_str or not isinstance(date_str, str):
+        logger.warning("yyyy_mm_dd - * Invalid input: {}".format(date_str))
         return None
+
+    try:
+        # Allow both "YYYYMMDD" and "YYYY-MM-DD" formats
+        if re.match(r"^\d{8}$", date_str):
+            return datetime.datetime.strptime(date_str, "%Y%m%d").date()
+        elif re.match(r"^\d{4}-\d{2}-\d{2}$", date_str):
+            return datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
+        else:
+            raise ValueError
+
+    except ValueError:
+        logger.warning("yyyy_mm_dd - * Unable to parse date string: {}".format(date_str))
+        return None
+
 
 
 def date(x):
