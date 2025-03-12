@@ -97,16 +97,8 @@ def yyyy_mm_dd(date_str, strptime_format='%Y%m%d'):
 def date(x):
     """
     Converts various date formats into a Python `date` object.
-    
-    Supports:
-    - YYYYMMDD (integer or string)
-    - YYYYMMDDHHMMSS (integer or string)
-    - MM/DD/YYYY, M/D/YYYY, etc. (with or without time)
-    - YYYY-MM-DD (ISO format)
-    - YYYY-MM-DD HH:MM:SS (Timestamp format)
-    - YYYY-MM-DDTHH:MM:SS (ISO format with time)
-    - Edge cases like empty strings, invalid formats, and single-character inputs
     """
+
     if not x or isinstance(x, (datetime.date, datetime.datetime)):
         return x  # Return if already a date/datetime object
 
@@ -117,17 +109,16 @@ def date(x):
         if isinstance(x, int) and len(str(x)) == 8:
             parsed_date = datetime.datetime.strptime(str(x), "%Y%m%d").date()
 
-        # ✅ Case 2: YYYYMMDDHHMMSS as an INTEGER (e.g., 20250310120000 → 2025-03-10)
-        elif isinstance(x, int) and len(str(x)) == 14:
-            parsed_date = datetime.datetime.strptime(str(x), "%Y%m%d%H%M%S").date()
+        # ✅ Case 2: Unix Timestamp (Seconds or Milliseconds Since Epoch)
+        elif isinstance(x, int) and len(str(x)) in [10, 13]:  # 10 digits (seconds), 13 digits (milliseconds)
+            parsed_date = datetime.datetime.fromtimestamp(int(str(x)[:10])).date()
 
         # ✅ Case 3: Convert string and strip any trailing spaces
         elif isinstance(x, str):
             x = x.strip()
 
-            # ❌ Ignore invalid cases (empty or single-character strings)
             if len(x) <= 1:
-                return None
+                return None  # Ignore empty strings or single-character inputs
 
             # ✅ Case 4: YYYYMMDD as a STRING (e.g., "20250310")
             elif re.match(r"^\d{8}$", x):
@@ -137,27 +128,39 @@ def date(x):
             elif re.match(r"^\d{14}$", x):
                 parsed_date = datetime.datetime.strptime(x, "%Y%m%d%H%M%S").date()
 
-            # ✅ Case 6: MM/DD/YYYY (e.g., "12/31/2023", "1/1/2018", "01/01/2018")
-            elif re.match(r"^\d{1,2}/\d{1,2}/\d{4}", x):
-                parsed_date = datetime.datetime.strptime(x[:10], "%m/%d/%Y").date()
+            # ✅ Case 6: MM/DD/YYYY
+            elif re.match(r"^\d{1,2}/\d{1,2}/\d{4}$", x):
+                parsed_date = datetime.datetime.strptime(x, "%m/%d/%Y").date()
 
-            # ✅ Case 7: YYYY-MM-DD (e.g., "2023-12-31", "2018-11-01")
+            # ✅ Case 7: YYYY-MM-DD
             elif re.match(r"^\d{4}-\d{2}-\d{2}$", x):
                 parsed_date = datetime.datetime.strptime(x, "%Y-%m-%d").date()
 
-            # ✅ Case 8: MM/DD/YYYY HH:MM:SS AM/PM (e.g., "12/31/2018 12:00:00 AM")
-            elif re.match(r"^\d{1,2}/\d{1,2}/\d{4} \d{2}:\d{2}:\d{2} (AM|PM)", x):
-                parsed_date = datetime.datetime.strptime(x, "%m/%d/%Y %I:%M:%S %p").date()
+            # ✅ Case 8: YYYY/MM/DD (Slash-separated format)
+            elif re.match(r"^\d{4}/\d{2}/\d{2}$", x):
+                parsed_date = datetime.datetime.strptime(x, "%Y/%m/%d").date()
 
-            # ✅ Case 9: YYYY-MM-DD HH:MM:SS (e.g., "2023-12-31 23:59:59")
-            elif re.match(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$", x):
-                parsed_date = datetime.datetime.strptime(x, "%Y-%m-%d %H:%M:%S").date()
-
-            # ✅ Case 10: YYYY-MM-DDTHH:MM:SS (ISO format with "T", e.g., "2023-12-31T23:59:59")
-            elif re.match(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$", x):
+            # ✅ Case 9: YYYY-MM-DDTHH:MM:SS.sss (ISO format with milliseconds)
+            elif re.match(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+$", x):
                 parsed_date = datetime.datetime.strptime(x.split("T")[0], "%Y-%m-%d").date()
 
-            # ❌ Case 11: No match found, log warning
+            # ✅ Case 10: YYYY-MM-DDTHH:MM:SSZ (ISO UTC format)
+            elif re.match(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$", x):
+                parsed_date = datetime.datetime.strptime(x.split("T")[0], "%Y-%m-%d").date()
+
+            # ✅ Case 11: YYYY-MM-DDTHH:MM:SS±HH:MM (ISO format with timezone offset)
+            elif re.match(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$", x):
+                parsed_date = datetime.datetime.strptime(x.split("T")[0], "%Y-%m-%d").date()
+
+            # ✅ Case 12: YYYY-MM-DDTHH:MM (Without Seconds)
+            elif re.match(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$", x):
+                parsed_date = datetime.datetime.strptime(x.split("T")[0], "%Y-%m-%d").date()
+
+            # ✅ Case 13: Verbose Format (March 4, 2025 4:15:24 PM)
+            elif re.match(r"^[A-Za-z]+ \d{1,2}, \d{4} \d{2}:\d{2}:\d{2} (AM|PM)$", x):
+                parsed_date = datetime.datetime.strptime(x, "%B %d, %Y %I:%M:%S %p").date()
+
+            # ❌ Case 14: No match found, log warning
             else:
                 logger.warning(f"Format not found - Unable to parse date string: {x}")
                 return None
@@ -171,16 +174,69 @@ def date(x):
 
 def time(x):
     """
-    Converts string into datetime.time
-    Example input: 13:01:00
+    Converts various time formats into a Python `time` object.
+
+    Supports:
+    - HH:MM:SS (24-hour format)
+    - HH:MM (24-hour format, no seconds)
+    - HH:MM AM/PM (12-hour format)
+    - HH:MM:SS.sss (Milliseconds)
+    - HH:MM:SS.ssssss (Microseconds)
+    - HH:MM:SSZ (UTC Zulu time)
+    - HH:MM:SS±HH:MM (Time with timezone offset)
+    - Unix timestamp (seconds or milliseconds since epoch)
     """
+
     if isinstance(x, datetime.time):
-        return x
-    if isinstance(x, str) and re.match(r'^\d{2}:\d{2}:\d{2}$', x.strip()):
-        try:
-            return datetime.time(*map(int, x.strip().split(':')))
-        except ValueError:
-            return None
+        return x  # Return if already a time object
+
+    try:
+        # ✅ Case 1: Unix Timestamp (Seconds or Milliseconds Since Epoch)
+        if isinstance(x, int) and len(str(x)) in [10, 13]:  # 10-digit (seconds), 13-digit (milliseconds)
+            return datetime.datetime.utcfromtimestamp(int(str(x)[:10])).time()
+
+        # ✅ Case 2: Convert string and strip any trailing spaces
+        elif isinstance(x, str):
+            x = x.strip()
+
+            # ✅ Case 3: HH:MM:SS (Standard 24-hour format)
+            if re.match(r"^\d{2}:\d{2}:\d{2}$", x):
+                return datetime.datetime.strptime(x, "%H:%M:%S").time()
+
+            # ✅ Case 4: HH:MM (No seconds)
+            elif re.match(r"^\d{2}:\d{2}$", x):
+                return datetime.datetime.strptime(x, "%H:%M").time()
+
+            # ✅ Case 5: HH:MM AM/PM (12-hour format)
+            elif re.match(r"^\d{1,2}:\d{2} (AM|PM)$", x, re.IGNORECASE):
+                return datetime.datetime.strptime(x, "%I:%M %p").time()
+
+            # ✅ Case 6: HH:MM:SS.sss (Time with milliseconds)
+            elif re.match(r"^\d{2}:\d{2}:\d{2}\.\d{1,3}$", x):
+                return datetime.datetime.strptime(x, "%H:%M:%S.%f").time()
+
+            # ✅ Case 7: HH:MM:SS.ssssss (Time with microseconds)
+            elif re.match(r"^\d{2}:\d{2}:\d{2}\.\d{6}$", x):
+                return datetime.datetime.strptime(x, "%H:%M:%S.%f").time()
+
+            # ✅ Case 8: HH:MM:SSZ (Zulu/UTC time)
+            elif re.match(r"^\d{2}:\d{2}:\d{2}Z$", x):
+                return datetime.datetime.strptime(x[:-1], "%H:%M:%S").time()
+
+            # ✅ Case 9: HH:MM:SS±HH:MM (Time with timezone offset) → Strip offset
+            elif re.match(r"^\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$", x):
+                return datetime.datetime.strptime(x[:8], "%H:%M:%S").time()
+
+            # ❌ Case 10: No match found, log warning
+            else:
+                logger.warning(f"Format not found - Unable to parse time string: {x}")
+                return None
+
+    except ValueError:
+        logger.warning(f"Unable to parse time string: {x}")
+        return None  # Return None if parsing fails
+
+    return None  # Default return for invalid cases
 
 
 def boolean(x):
