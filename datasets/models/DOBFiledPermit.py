@@ -81,8 +81,30 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
             other_table_name=legacy_table._meta.db_table, other_model_name=legacy_table._meta.model_name)
         now_table = ds.DOBNowFiledPermit
         now_count = now_table.objects.count()
-        now_cols = "concat(\'{other_model_name}\', {other_table_name}.jobfilingnumber), {other_table_name}.jobfilingnumber, {other_table_name}.bbl, {other_table_name}.bin, {other_table_name}.houseno, {other_table_name}.streetname, {other_table_name}.borough, {other_table_name}.filingstatus, NULL, NULL, NULL, {other_table_name}.applicantfirstname, {other_table_name}.applicantlastname, {other_table_name}.applicantprofessionaltitle, {other_table_name}.applicantlicense, {other_table_name}.ownersbusinessname, {other_table_name}.initialcost, CAST({other_table_name}.id AS text), \'{other_model_name}\'".format(
-            nil={None}, other_table_name=now_table._meta.db_table, other_model_name=now_table._meta.model_name)
+        now_cols = """
+        concat('{other_model_name}', {other_table_name}.jobfilingnumber),
+        {other_table_name}.jobfilingnumber,
+        {other_table_name}.bbl,
+        {other_table_name}.bin,
+        {other_table_name}.houseno,
+        {other_table_name}.streetname,
+        {other_table_name}.borough,
+        {other_table_name}.filingstatus,
+        {other_table_name}.jobtype,
+        {other_table_name}.workonfloor,
+        {other_table_name}.filingdate,
+        {other_table_name}.applicantfirstname,
+        {other_table_name}.applicantlastname,
+        {other_table_name}.applicantprofessionaltitle,
+        {other_table_name}.applicantlicense,
+        {other_table_name}.ownersbusinessname,
+        {other_table_name}.initialcost,
+        CAST({other_table_name}.id AS text),
+        '{other_model_name}'
+        """.format(
+            other_table_name=now_table._meta.db_table,
+            other_model_name=now_table._meta.model_name
+        )
 
         kwargs['update'].total_rows = legacy_count + now_count
         kwargs['update'].save()
