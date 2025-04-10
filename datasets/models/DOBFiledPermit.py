@@ -60,16 +60,30 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
         async_create_update.delay(self.get_dataset().id)
 
     @classmethod
-    def upsert_permit_sql(self, other_table, cols):
+    def upsert_permit_sql(self, other_table, cols, raw_select=False):
         table_name = self._meta.db_table
         primary_key = self._meta.pk.name
-        other_table_name = other_table._meta.db_table
         fields = ', '.join([k.name for k in self._meta.get_fields()])
         upsert_fields = ', '.join(
-            [k.name + "=EXCLUDED." + k.name for k in self._meta.get_fields()])
-
-        sql = "INSERT INTO {table_name} ({fields}) SELECT {cols} FROM {other_table_name} ON CONFLICT ({primary_key}) DO UPDATE SET {upsert_fields};"
-        return sql.format(table_name=table_name, fields=fields, cols=cols, other_table_name=other_table_name, primary_key=primary_key, upsert_fields=upsert_fields)
+            [k.name + "=EXCLUDED." + k.name for k in self._meta.get_fields()]
+        )
+    
+        if raw_select:
+            # If `cols` is a full SELECT statement already
+            sql = "INSERT INTO {table_name} ({fields}) {cols} ON CONFLICT ({primary_key}) DO UPDATE SET {upsert_fields};"
+        else:
+            # Regular cols string (non-SELECT)
+            other_table_name = other_table._meta.db_table
+            sql = "INSERT INTO {table_name} ({fields}) SELECT {cols} FROM {other_table_name} ON CONFLICT ({primary_key}) DO UPDATE SET {upsert_fields};"
+        
+        return sql.format(
+            table_name=table_name,
+            fields=fields,
+            cols=cols,
+            other_table_name=other_table._meta.db_table if not raw_select else "",
+            primary_key=primary_key,
+            upsert_fields=upsert_fields
+        )
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
@@ -126,7 +140,8 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
                      self.__name__, legacy_table._meta.db_table)
 
         starting_count = self.objects.count()
-        execute(self.upsert_permit_sql(now_table, now_cols))
+        # execute(self.upsert_permit_sql(now_table, now_cols))
+        execute(self.upsert_permit_sql(now_table, now_cols, raw_select=True))
         logger.debug("now seeded - current count: {}", self.objects.count())
 
         rows_created_now = self.objects.count() - starting_count
