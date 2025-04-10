@@ -377,6 +377,11 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
     
         new_count = cls.objects.count()
         inserted_count = new_count - existing_count
+
+        if inserted_count > 0:
+            kwargs['update'].rows_created += inserted_count
+            kwargs['update'].save()
+
         logger.info(f"🎯 Import Complete: {inserted_count} new records inserted. Total: {new_count} records in DB.")
 
 
