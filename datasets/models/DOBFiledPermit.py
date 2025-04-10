@@ -82,29 +82,33 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
         now_table = ds.DOBNowFiledPermit
         now_count = now_table.objects.count()
         now_cols = """
-        concat('{other_model_name}', {other_table_name}.jobfilingnumber),
-        {other_table_name}.jobfilingnumber,
-        {other_table_name}.bbl,
-        {other_table_name}.bin,
-        {other_table_name}.houseno,
-        {other_table_name}.streetname,
-        {other_table_name}.borough,
-        {other_table_name}.filingstatus,
-        {other_table_name}.jobtype,
-        {other_table_name}.workonfloor,
-        {other_table_name}.filingdate,
-        {other_table_name}.applicantfirstname,
-        {other_table_name}.applicantlastname,
-        {other_table_name}.applicantprofessionaltitle,
-        {other_table_name}.applicantlicense,
-        {other_table_name}.ownersbusinessname,
-        {other_table_name}.initialcost,
-        CAST({other_table_name}.id AS text),
-        '{other_model_name}'
+        SELECT DISTINCT ON ({other_table_name}.jobfilingnumber)
+            concat('{other_model_name}', {other_table_name}.jobfilingnumber),
+            {other_table_name}.jobfilingnumber,
+            {other_table_name}.bbl,
+            {other_table_name}.bin,
+            {other_table_name}.houseno,
+            {other_table_name}.streetname,
+            {other_table_name}.borough,
+            {other_table_name}.filingstatus,
+            {other_table_name}.jobtype,
+            {other_table_name}.workonfloor,
+            {other_table_name}.filingdate,
+            {other_table_name}.applicantfirstname,
+            {other_table_name}.applicantlastname,
+            {other_table_name}.applicantprofessionaltitle,
+            {other_table_name}.applicantlicense,
+            {other_table_name}.ownersbusinessname,
+            {other_table_name}.initialcost,
+            CAST({other_table_name}.id AS text),
+            '{other_model_name}'
+        FROM {other_table_name}
+        ORDER BY {other_table_name}.jobfilingnumber, {other_table_name}.filingdate DESC
         """.format(
             other_table_name=now_table._meta.db_table,
             other_model_name=now_table._meta.model_name
         )
+
 
         kwargs['update'].total_rows = legacy_count + now_count
         kwargs['update'].save()
@@ -138,6 +142,10 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
         dataset = self.get_dataset()
         dataset.api_last_updated = datetime.today()
         dataset.save()
+        total_count = self.objects.count()
+        logger.info("✅ Completed seeding DOBFiledPermit. Total rows in table: %s", total_count)
+        logger.info("📊 Rows created: %s, Rows updated: %s", kwargs['update'].rows_created, kwargs['update'].rows_updated)
+
 
     @classmethod
     def annotate_properties(self):
