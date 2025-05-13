@@ -9,6 +9,33 @@ from core.tasks import async_download_and_update
 
 logger = logging.getLogger('app')
 
+# def transform_date(value):
+#     """Convert common date/time formats to YYYY-MM-DD, or return None if invalid."""
+#     if not isinstance(value, str) or not value.strip():
+#         return None
+
+#     value = (
+#         value.strip()
+#         .replace('\u200b', '')  # zero-width space
+#         .replace('\ufeff', '')  # BOM
+#         .replace('\xa0', ' ')   # non-breaking space
+#     )
+
+#     known_formats = [
+#         "%m/%d/%Y %I:%M:%S %p",  # 04/13/2023 12:00:00 AM
+#         "%m/%d/%Y %H:%M:%S",     # 04/13/2023 00:00:00
+#         "%m/%d/%Y",              # 04/13/2023
+#     ]
+
+#     for fmt in known_formats:
+#         try:
+#             return datetime.strptime(value, fmt).date()
+#         except ValueError:
+#             continue
+
+#     logger.warning(f"Format not found - Unable to parse date string: {value}")
+#     return None
+
 def transform_date(value):
     """Convert common date/time formats to YYYY-MM-DD, or return None if invalid."""
     if not isinstance(value, str) or not value.strip():
@@ -22,9 +49,15 @@ def transform_date(value):
     )
 
     known_formats = [
-        "%m/%d/%Y %I:%M:%S %p",  # 04/13/2023 12:00:00 AM
-        "%m/%d/%Y %H:%M:%S",     # 04/13/2023 00:00:00
-        "%m/%d/%Y",              # 04/13/2023
+        "%m/%d/%Y %I:%M:%S %p",     # e.g. 04/13/2023 12:00:00 AM
+        "%m/%d/%Y %H:%M:%S",        # e.g. 04/13/2023 00:00:00
+        "%m/%d/%Y",                 # e.g. 04/13/2023
+        "%Y-%m-%dT%H:%M:%S.%fZ",    # ISO with microseconds
+        "%Y-%m-%dT%H:%M:%S",        # ISO no timezone
+        "%Y-%m-%d",                 # Simple date
+        "%Y/%m/%d",                 # Slash date
+        "%Y%m%d",                   # Compact
+        "%B %d, %Y %I:%M:%S %p",    # Verbose: March 4, 2025 4:15:24 PM
     ]
 
     for fmt in known_formats:
