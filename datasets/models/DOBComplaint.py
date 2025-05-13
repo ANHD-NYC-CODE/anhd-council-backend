@@ -57,7 +57,9 @@ class DOBComplaint(BaseDatasetModel, models.Model):
     @classmethod
     def pre_validation_filters(self, gen_rows):
         for row in gen_rows:
-            if is_null(row['complaintnumber']):
+            complaintnumber = row.get('complaintnumber')
+            if is_null(complaintnumber):
+                logger.warning(f"Skipping row with null complaintnumber: {row}")
                 continue
             yield row
 
@@ -89,8 +91,21 @@ class DOBComplaint(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        logger.info("Seeding/Updating {}", self.__name__)
+        logger.info("Seeding/Updating %s", self.__name__)  # fix logging bug
+    
+        if "rows" in kwargs:
+            original_len = len(kwargs["rows"])
+            kwargs["rows"] = [
+                row for row in kwargs["rows"]
+                if row.get("complaintnumber") not in (None, "", "null")
+            ]
+            if not kwargs["rows"]:
+                logger.warning("⚠️ All rows missing complaintnumber. Aborting update.")
+                return
+            logger.info("Filtered out %d rows missing complaintnumber", original_len - len(kwargs["rows"]))
+    
         self.seed_with_upsert(callback=self.add_bbls_from_bin, **kwargs)
+
 
     @classmethod
     def annotate_properties(self):
