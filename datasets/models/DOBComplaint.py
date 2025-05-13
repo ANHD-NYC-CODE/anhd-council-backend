@@ -93,6 +93,9 @@ class DOBComplaint(BaseDatasetModel, models.Model):
     def seed_or_update_self(self, file_path=None, **kwargs):
         logger.info("Seeding/Updating %s", self.__name__)  # fix logging bug
     
+        # ✅ Ensure file_path is captured from kwargs if passed indirectly
+        file_path = file_path or kwargs.get("file_path")
+    
         if "rows" not in kwargs:
             if not file_path:
                 logger.warning("No rows or file_path provided for seeding.")
