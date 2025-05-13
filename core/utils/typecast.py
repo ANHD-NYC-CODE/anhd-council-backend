@@ -209,6 +209,9 @@ def date(x):
             elif re.match(r"^[A-Za-z]+ \d{1,2}, \d{4} \d{2}:\d{2}:\d{2} (AM|PM)$", x):
                 parsed_date = datetime.datetime.strptime(x, "%B %d, %Y %I:%M:%S %p").date()
 
+          # ✅ MM/DD/YYYY HH:MM:SS AM/PM
+            elif re.match(r"^\d{1,2}/\d{1,2}/\d{4} \d{1,2}:\d{2}:\d{2} (AM|PM)$", x, re.IGNORECASE):
+                parsed_date = datetime.datetime.strptime(x, "%m/%d/%Y %I:%M:%S %p").date()
             # ❌ Case 14: No match found, log warning
             else:
                 logger.warning(f"Format not found - Unable to parse date string: {x}")
