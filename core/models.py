@@ -280,7 +280,7 @@ def add_task_result_to_update(sender, instance, created, **kwargs):
                 # async_send_update_success_mail.delay(u.id) # too many emails, too annoying
 
         except Exception as e:
-            logger.warning(
+            logger.debug(
                 "TaskResult {} not synced to Update".format(instance.id))
 
     transaction.on_commit(lambda: on_commit())
