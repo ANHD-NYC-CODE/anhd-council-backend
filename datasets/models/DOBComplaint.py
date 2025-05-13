@@ -90,20 +90,26 @@ class DOBComplaint(BaseDatasetModel, models.Model):
             'building').all().update(bbl=Subquery(bbl))
 
     @classmethod
-    def seed_or_update_self(self, **kwargs):
+    def seed_or_update_self(self, file_path=None, **kwargs):
         logger.info("Seeding/Updating %s", self.__name__)  # fix logging bug
     
-        if "rows" in kwargs:
-            original_len = len(kwargs["rows"])
-            kwargs["rows"] = [
-                row for row in kwargs["rows"]
-                if row.get("complaintnumber") not in (None, "", "null")
-            ]
-            if not kwargs["rows"]:
-                logger.warning("⚠️ All rows missing complaintnumber. Aborting update.")
+        if "rows" not in kwargs:
+            if not file_path:
+                logger.warning("No rows or file_path provided for seeding.")
                 return
-            logger.info("Filtered out %d rows missing complaintnumber", original_len - len(kwargs["rows"]))
+            kwargs["rows"] = list(self.transform_self(file_path=file_path, update=kwargs.get("update")))
     
+        original_len = len(kwargs["rows"])
+        kwargs["rows"] = [
+            row for row in kwargs["rows"]
+            if row.get("complaintnumber") not in (None, "", "null")
+        ]
+    
+        if not kwargs["rows"]:
+            logger.warning("⚠️ All rows missing complaintnumber. Aborting update.")
+            return
+    
+        logger.info("Filtered out %d rows missing complaintnumber", original_len - len(kwargs["rows"]))
         self.seed_with_upsert(callback=self.add_bbls_from_bin, **kwargs)
 
 
