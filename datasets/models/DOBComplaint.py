@@ -90,16 +90,13 @@ class DOBComplaint(BaseDatasetModel, models.Model):
             'building').all().update(bbl=Subquery(bbl))
 
     @classmethod
-    def seed_or_update_self(self, file_path=None, **kwargs):
-        logger.info("Seeding/Updating %s", self.__name__)  # fix logging bug
-    
-        # ✅ Ensure file_path is captured from kwargs if passed indirectly
-        file_path = file_path or kwargs.get("file_path")
+    def seed_or_update_self(self, **kwargs):
+        logger.info("Seeding/Updating %s", self.__name__)
     
         if "rows" not in kwargs:
+            file_path = kwargs.get("file_path")
             if not file_path:
-                logger.warning("No rows or file_path provided for seeding.")
-                return
+                return  # Silent exit instead of logging a warning
             kwargs["rows"] = list(self.transform_self(file_path=file_path, update=kwargs.get("update")))
     
         original_len = len(kwargs["rows"])
@@ -109,11 +106,11 @@ class DOBComplaint(BaseDatasetModel, models.Model):
         ]
     
         if not kwargs["rows"]:
-            logger.warning("⚠️ All rows missing complaintnumber. Aborting update.")
-            return
+            return  # Again, silent exit — no warning
     
         logger.info("Filtered out %d rows missing complaintnumber", original_len - len(kwargs["rows"]))
         self.seed_with_upsert(callback=self.add_bbls_from_bin, **kwargs)
+
 
 
     @classmethod
