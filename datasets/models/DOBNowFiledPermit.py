@@ -10,16 +10,31 @@ from core.tasks import async_download_and_update
 logger = logging.getLogger('app')
 
 def transform_date(value):
-    """Convert 'MM/DD/YYYY HH:MM:SS AM/PM' or 'MM/DD/YYYY' to 'YYYY-MM-DD'."""
-    if isinstance(value, str) and value.strip():
+    """Convert common date/time formats to YYYY-MM-DD, or return None if invalid."""
+    if not isinstance(value, str) or not value.strip():
+        return None
+
+    value = (
+        value.strip()
+        .replace('\u200b', '')  # zero-width space
+        .replace('\ufeff', '')  # BOM
+        .replace('\xa0', ' ')   # non-breaking space
+    )
+
+    known_formats = [
+        "%m/%d/%Y %I:%M:%S %p",  # 04/13/2023 12:00:00 AM
+        "%m/%d/%Y %H:%M:%S",     # 04/13/2023 00:00:00
+        "%m/%d/%Y",              # 04/13/2023
+    ]
+
+    for fmt in known_formats:
         try:
-            return datetime.strptime(value, "%m/%d/%Y %I:%M:%S %p").date()
+            return datetime.strptime(value, fmt).date()
         except ValueError:
-            try:
-                return datetime.strptime(value, "%m/%d/%Y").date()
-            except ValueError:
-                return None  # Return None if format is invalid
-    return None  # Return None for empty values
+            continue
+
+    logger.warning(f"Format not found - Unable to parse date string: {value}")
+    return None
 
 
 class DOBNowFiledPermit(BaseDatasetModel, models.Model):
