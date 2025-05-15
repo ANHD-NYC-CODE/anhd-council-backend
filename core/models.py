@@ -274,10 +274,9 @@ def add_task_result_to_update(sender, instance, created, **kwargs):
                 u.task_result = instance
                 u.completed_date = instance.date_done
                 u.save()
-                u.dataset.check_api_for_update()  # update dataset update time after success
-                # update records start / records end after success
-                u.dataset.update_records_range()
-                # async_send_update_success_mail.delay(u.id) # too many emails, too annoying
+                if instance.status == "SUCCESS":
+                    u.dataset.check_api_for_update()  # update dataset update time after success
+                    u.dataset.update_records_range()
 
         except Exception as e:
             logger.debug(
