@@ -9,33 +9,6 @@ from core.tasks import async_download_and_update
 
 logger = logging.getLogger('app')
 
-# def transform_date(value):
-#     """Convert common date/time formats to YYYY-MM-DD, or return None if invalid."""
-#     if not isinstance(value, str) or not value.strip():
-#         return None
-
-#     value = (
-#         value.strip()
-#         .replace('\u200b', '')  # zero-width space
-#         .replace('\ufeff', '')  # BOM
-#         .replace('\xa0', ' ')   # non-breaking space
-#     )
-
-#     known_formats = [
-#         "%m/%d/%Y %I:%M:%S %p",  # 04/13/2023 12:00:00 AM
-#         "%m/%d/%Y %H:%M:%S",     # 04/13/2023 00:00:00
-#         "%m/%d/%Y",              # 04/13/2023
-#     ]
-
-#     for fmt in known_formats:
-#         try:
-#             return datetime.strptime(value, fmt).date()
-#         except ValueError:
-#             continue
-
-#     logger.warning(f"Format not found - Unable to parse date string: {value}")
-#     return None
-
 def transform_date(value):
     """Convert common date/time formats to YYYY-MM-DD, or return None if invalid."""
     if not isinstance(value, str) or not value.strip():
@@ -71,10 +44,9 @@ def transform_date(value):
 
 
 class DOBNowFiledPermit(BaseDatasetModel, models.Model):
-    download_endpoint = "https://data.cityofnewyork.us/api/views/w9ak-ipjd/rows.csv?accessType=DOWNLOAD"
+    # download_endpoint = "https://data.cityofnewyork.us/api/views/w9ak-ipjd/rows.csv?accessType=DOWNLOAD"
     # download_endpoint = "  https://anhd2402.bpbuild.com/test.csv?accessType=DOWNLOAD"
-
-  
+    base_download_endpoint = "https://data.cityofnewyork.us/resource/w9ak-ipjd.csv"
     API_ID = 'w9ak-ipjd'
 
     class Meta:
@@ -242,11 +214,24 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
     def create_async_update_worker(self, endpoint=None, file_name=None):
         async_download_and_update.delay(
             self.get_dataset().id, endpoint=endpoint, file_name=file_name)
-
-    # BIN
+    
     @classmethod
-    def download(self, endpoint=None, file_name=None):
-        return self.download_file(self.download_endpoint, file_name=file_name)
+    def download(cls, endpoint=None, file_name=None):
+        # if endpoint:  # fallback/override behavior still allowed
+        #     return cls.download_file(endpoint, file_name=file_name)
+    
+        fields = [
+            "job_filing_number", "bbl", "bin", "house_no", "street_name", "borough",
+            "filing_status", "job_type", "work_on_floor", "filing_date",
+            "applicant_first_name", "applicant_last_name", "applicant_professional_title",
+            "applicant_license", "owner_s_business_name", "initial_cost",
+            "city", "state", "zip"
+        ]
+        query_string = f"$select={','.join(fields)}&$limit=100000000"
+        download_url = f"{cls.base_download_endpoint}?{query_string}"
+    
+        logger.info(f"📥 Downloading DOB Now filtered dataset from: {download_url}")
+        return cls.download_file(download_url, file_name=file_name)
 
     @classmethod
     def update_set_filter(self, csv_reader, headers):
@@ -256,58 +241,80 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
     @classmethod
     def clean_null_bytes_headers(cls, gen_rows):
         try:
-            # Extract the header row
-            header_row = next(gen_rows)  # Extract the first row (headers)
+            header_row = next(gen_rows)
             logger.info("Processing header row: %s", header_row)
         except StopIteration:
             logger.error("Empty CSV generator received")
             raise ValueError("The CSV file is empty or invalid")
-
+    
+        # Clean BOM and strip ID
         cleaned_header = {key.lstrip('\ufeff'): value for key, value in header_row.items() if key != "id"}
         logger.debug("🚀 Cleaned header row (ID removed if present): %s", cleaned_header)
-
-        # ✅ Header replacements
-        replacements = {
+    
+        # ✅ Header replacements: legacy remaps (already in your code)
+        legacy_replacements = {
             'ownerscity': 'city',
             'ownersstate': 'state',
             'ownerszip': 'zip',
             'firstpermitdate': 'permitissuedate',
         }
     
-        # ✅ Apply replacements to cleaned_header
-        for old, new in replacements.items():
-            if old in cleaned_header:
-                cleaned_header[new] = cleaned_header.pop(old)
+        # ✅ New replacements for Socrata resource API snake_case → camelCase
+        socrata_replacements = {
+            "job_filing_number": "jobfilingnumber",
+            "filing_status": "filingstatus",
+            "house_no": "houseno",
+            "street_name": "streetname",
+            "borough": "borough",
+            "bbl": "bbl",
+            "bin": "bin",
+            "job_type": "jobtype",
+            "work_on_floor": "workonfloor",
+            "filing_date": "filingdate",
+            "applicant_first_name": "applicantfirstname",
+            "applicant_last_name": "applicantlastname",
+            "applicant_professional_title": "applicantprofessionaltitle",
+            "applicant_license": "applicantlicense",
+            "owner_s_business_name": "ownersbusinessname",
+            "initial_cost": "initialcost",
+            "city": "ownerscity",
+            "state": "ownersstate",
+            "zip": "ownerszip",
+        }
     
-        # ✅ Log the final header after cleaning
-        logger.info("✅ Cleaned Header Row: %s", cleaned_header)
+        # ✅ Merge both replacement maps
+        all_replacements = {**legacy_replacements, **socrata_replacements}
     
-        # ✅ Yield the cleaned header instead of the original
-        yield cleaned_header  
+        # Apply replacements to keys
+        remapped_header = {}
+        for key, value in cleaned_header.items():
+            new_key = all_replacements.get(key, key)
+            remapped_header[new_key] = value
+    
+        logger.info("✅ Remapped Header Row: %s", remapped_header)
+    
+        yield remapped_header
     
         # ✅ Process remaining rows
         for row in gen_rows:
-            if isinstance(row, dict):  # If the row is a dictionary
-                # ✅ Remove "id" if present
+            if isinstance(row, dict):
                 if "id" in row:
                     del row["id"]
                     logger.debug("🚀 Removed 'id' from row: %s", row)
-        
-                # ✅ Clean dictionary values
+    
                 for key, value in row.items():
                     if isinstance(value, str):
                         row[key] = value.replace("\0", "").replace("\t", ",")
-                        
+    
                 yield row
-            
-            elif isinstance(row, str):  # If the row is a string
-                # ✅ Clean string rows
+    
+            elif isinstance(row, str):
                 row = row.replace("\0", "").replace("\t", ",")
                 yield row
-            
+    
             else:
                 logger.warning("⚠️ Unexpected row type: %s", type(row))
-                yield row  # Yield the row as-is to prevent breaking the generator
+                yield row
 
 
     @classmethod
