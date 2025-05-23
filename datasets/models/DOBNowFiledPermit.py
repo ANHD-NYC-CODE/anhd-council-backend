@@ -26,6 +26,7 @@ def transform_date(value):
         "%m/%d/%Y %H:%M:%S",        # e.g. 04/13/2023 00:00:00
         "%m/%d/%Y",                 # e.g. 04/13/2023
         "%Y-%m-%dT%H:%M:%S.%fZ",    # ISO with microseconds
+        "%Y-%m-%dT%H:%M:%S.%f",  
         "%Y-%m-%dT%H:%M:%S",        # ISO no timezone
         "%Y-%m-%d",                 # Simple date
         "%Y/%m/%d",                 # Slash date
