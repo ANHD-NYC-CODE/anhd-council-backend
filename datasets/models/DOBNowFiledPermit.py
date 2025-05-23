@@ -219,9 +219,10 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
     def download(cls, endpoint=None, file_name=None):
         # if endpoint:  # fallback/override behavior still allowed
         #     return cls.download_file(endpoint, file_name=file_name)
-    
+        
         fields = [
-            "job_filing_number", "bbl", "bin", "house_no", "street_name", "borough",
+            "job_filing_number", "bbl", "bin", "block", "lot", 
+            "house_no", "street_name", "borough",
             "filing_status", "job_type", "work_on_floor", "filing_date",
             "applicant_first_name", "applicant_last_name", "applicant_professional_title",
             "applicant_license", "owner_s_business_name", "initial_cost",
