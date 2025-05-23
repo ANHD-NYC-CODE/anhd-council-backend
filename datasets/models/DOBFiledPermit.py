@@ -101,12 +101,14 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
         {other_table_name}.borough,
         {other_table_name}.jobstatusdescrp,
         CASE 
-            WHEN {other_table_name}.jobtype IN ('A1', 'ALT-CO') THEN 'ALT-CO (A1)'
-            WHEN {other_table_name}.jobtype IN ('A2', 'Alteration') THEN 'Alteration (A2)'
-            WHEN {other_table_name}.jobtype IN ('DM', 'Full Demolition') THEN 'Full Demolition (DM)'
-            WHEN {other_table_name}.jobtype IN ('NB', 'New Building') THEN 'New Building (NB)'
-            WHEN {other_table_name}.jobtype IN ('PA', 'No Work') THEN 'No Work (PA)'
-            ELSE {other_table_name}.jobtype
+            WHEN {other_table_name}.jobtype IN ('A1', 'ALT-CO', 'ALT-CO (A1)', 'Alteration CO') THEN 'ALT-CO (A1)'
+            WHEN {other_table_name}.jobtype IN ('A2', 'Alteration', 'Alteration (A2)') THEN 'Alteration (A2)'
+            WHEN {other_table_name}.jobtype IN ('DM', 'Full Demolition', 'Full Demolition (DM)') THEN 'Full Demolition (DM)'
+            WHEN {other_table_name}.jobtype IN ('NB', 'New Building', 'New Building (NB)') THEN 'New Building (NB)'
+            WHEN {other_table_name}.jobtype IN ('PA', 'No Work', 'No Work (PA)') THEN 'No Work (PA)'
+            WHEN {other_table_name}.jobtype = 'ALT-CO - New Building with Existing Elements to Remain' THEN 'ALT-CO: New Building with Existing Elements to Remain'
+            WHEN {other_table_name}.jobtype IN ('A3', 'SC', 'SG', 'SI') THEN {other_table_name}.jobtype
+            ELSE NULL
         END,
         {other_table_name}.jobdescription,
         {other_table_name}.prefilingdate,
@@ -135,12 +137,14 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
             {other_table_name}.borough,
             {other_table_name}.filingstatus,
             CASE 
-                WHEN {other_table_name}.jobtype IN ('A1', 'ALT-CO') THEN 'ALT-CO (A1)'
-                WHEN {other_table_name}.jobtype IN ('A2', 'Alteration') THEN 'Alteration (A2)'
-                WHEN {other_table_name}.jobtype IN ('DM', 'Full Demolition') THEN 'Full Demolition (DM)'
-                WHEN {other_table_name}.jobtype IN ('NB', 'New Building') THEN 'New Building (NB)'
-                WHEN {other_table_name}.jobtype IN ('PA', 'No Work') THEN 'No Work (PA)'
-                ELSE {other_table_name}.jobtype
+                WHEN {other_table_name}.jobtype IN ('A1', 'ALT-CO', 'ALT-CO (A1)', 'Alteration CO') THEN 'ALT-CO (A1)'
+                WHEN {other_table_name}.jobtype IN ('A2', 'Alteration', 'Alteration (A2)') THEN 'Alteration (A2)'
+                WHEN {other_table_name}.jobtype IN ('DM', 'Full Demolition', 'Full Demolition (DM)') THEN 'Full Demolition (DM)'
+                WHEN {other_table_name}.jobtype IN ('NB', 'New Building', 'New Building (NB)') THEN 'New Building (NB)'
+                WHEN {other_table_name}.jobtype IN ('PA', 'No Work', 'No Work (PA)') THEN 'No Work (PA)'
+                WHEN {other_table_name}.jobtype = 'ALT-CO - New Building with Existing Elements to Remain' THEN 'ALT-CO: New Building with Existing Elements to Remain'
+                WHEN {other_table_name}.jobtype IN ('A3', 'SC', 'SG', 'SI') THEN {other_table_name}.jobtype
+                ELSE NULL
             END,
             {other_table_name}.workonfloor,
             {other_table_name}.filingdate,
