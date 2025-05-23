@@ -91,8 +91,37 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
         # Add records from both tables
         legacy_table = ds.DOBLegacyFiledPermit
         legacy_count = legacy_table.objects.count()
-        legacy_cols = "concat(\'{other_model_name}\', {other_table_name}.jobs1no, {other_table_name}.job), {other_table_name}.job, {other_table_name}.bbl, {other_table_name}.bin, {other_table_name}.house, {other_table_name}.streetname, {other_table_name}.borough, {other_table_name}.jobstatusdescrp, {other_table_name}.jobtype, {other_table_name}.jobdescription, {other_table_name}.prefilingdate, {other_table_name}.applicantsfirstname, {other_table_name}.applicantslastname, {other_table_name}.applicantprofessionaltitle, {other_table_name}.applicantlicense, {other_table_name}.ownersbusinessname, {other_table_name}.initialcost, CAST({other_table_name}.id AS text), \'{other_model_name}\'".format(
-            other_table_name=legacy_table._meta.db_table, other_model_name=legacy_table._meta.model_name)
+        legacy_cols = """
+        concat('{other_model_name}', {other_table_name}.jobs1no, {other_table_name}.job),
+        {other_table_name}.job,
+        {other_table_name}.bbl,
+        {other_table_name}.bin,
+        {other_table_name}.house,
+        {other_table_name}.streetname,
+        {other_table_name}.borough,
+        {other_table_name}.jobstatusdescrp,
+        CASE 
+            WHEN {other_table_name}.jobtype IN ('A1', 'ALT-CO') THEN 'ALT-CO (A1)'
+            WHEN {other_table_name}.jobtype IN ('A2', 'Alteration') THEN 'Alteration (A2)'
+            WHEN {other_table_name}.jobtype IN ('DM', 'Full Demolition') THEN 'Full Demolition (DM)'
+            WHEN {other_table_name}.jobtype IN ('NB', 'New Building') THEN 'New Building (NB)'
+            WHEN {other_table_name}.jobtype IN ('PA', 'No Work') THEN 'No Work (PA)'
+            ELSE {other_table_name}.jobtype
+        END,
+        {other_table_name}.jobdescription,
+        {other_table_name}.prefilingdate,
+        {other_table_name}.applicantsfirstname,
+        {other_table_name}.applicantslastname,
+        {other_table_name}.applicantprofessionaltitle,
+        {other_table_name}.applicantlicense,
+        {other_table_name}.ownersbusinessname,
+        {other_table_name}.initialcost,
+        CAST({other_table_name}.id AS text),
+        '{other_model_name}'
+        """.format(
+            other_table_name=legacy_table._meta.db_table,
+            other_model_name=legacy_table._meta.model_name
+        )
         now_table = ds.DOBNowFiledPermit
         now_count = now_table.objects.count()
         now_cols = """
@@ -105,7 +134,14 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
             {other_table_name}.streetname,
             {other_table_name}.borough,
             {other_table_name}.filingstatus,
-            {other_table_name}.jobtype,
+            CASE 
+                WHEN {other_table_name}.jobtype IN ('A1', 'ALT-CO') THEN 'ALT-CO (A1)'
+                WHEN {other_table_name}.jobtype IN ('A2', 'Alteration') THEN 'Alteration (A2)'
+                WHEN {other_table_name}.jobtype IN ('DM', 'Full Demolition') THEN 'Full Demolition (DM)'
+                WHEN {other_table_name}.jobtype IN ('NB', 'New Building') THEN 'New Building (NB)'
+                WHEN {other_table_name}.jobtype IN ('PA', 'No Work') THEN 'No Work (PA)'
+                ELSE {other_table_name}.jobtype
+            END,
             {other_table_name}.workonfloor,
             {other_table_name}.filingdate,
             {other_table_name}.applicantfirstname,
