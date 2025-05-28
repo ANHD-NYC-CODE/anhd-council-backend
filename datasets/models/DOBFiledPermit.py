@@ -168,31 +168,21 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
 
         # Clean up existing records - only updating the jobtype column
         cleanup_sql = """
-        -- Only updating the jobtype column, leaving all other columns unchanged
         UPDATE {table_name}
-        SET jobtype = CASE 
-            WHEN jobtype IN ('A1', 'ALT-CO', 'ALT-CO (A1)', 'Alteration CO', 'Alteration CO (A1)', 'Alteration') THEN 'ALT-CO (A1)'
-            WHEN jobtype IN ('A2', 'Alteration', 'Alteration (A2)', 'Alteration A2') THEN 'Alteration (A2)'
-            WHEN jobtype IN ('DM', 'Full Demolition', 'Full Demolition (DM)', 'Demolition') THEN 'Full Demolition (DM)'
-            WHEN jobtype IN ('NB', 'New Building', 'New Building (NB)', 'New Building NB') THEN 'New Building (NB)'
-            WHEN jobtype IN ('PA', 'No Work', 'No Work (PA)', 'No Work PA') THEN 'No Work (PA)'
-            WHEN jobtype IN ('ALT-CO - New Building with Existing Elements to Remain', 'ALT-CO: New Building with Existing Elements to Remain', 'ALT-CO New Building with Existing Elements to Remain') THEN 'ALT-CO: New Building with Existing Elements to Remain'
-            WHEN jobtype IN ('A3', 'SC', 'SG', 'SI') THEN jobtype
-            ELSE jobtype
-        END
-        WHERE jobtype IS NOT NULL
-        AND jobtype NOT IN (
-            'ALT-CO (A1)',
-            'Alteration (A2)',
-            'Full Demolition (DM)',
-            'New Building (NB)',
-            'No Work (PA)',
-            'ALT-CO: New Building with Existing Elements to Remain',
-            'A3',
-            'SC',
-            'SG',
-            'SI'
-        );
+        SET 
+            job_type = jobtype,  -- Save original value to job_type
+            jobtype = CASE 
+                WHEN jobtype IN ('A1', 'ALT-CO', 'ALT-CO (A1)', 'Alteration CO', 'Alteration CO (A1)', 'Alteration') THEN 'ALT-CO (A1)'
+                WHEN jobtype IN ('A2', 'Alteration', 'Alteration (A2)', 'Alteration A2') THEN 'Alteration (A2)'
+                WHEN jobtype IN ('DM', 'Full Demolition', 'Full Demolition (DM)', 'Demolition') THEN 'Full Demolition (DM)'
+                WHEN jobtype IN ('NB', 'New Building', 'New Building (NB)', 'New Building NB') THEN 'New Building (NB)'
+                WHEN jobtype IN ('PA', 'No Work', 'No Work (PA)', 'No Work PA') THEN 'No Work (PA)'
+                WHEN jobtype IN ('ALT-CO - New Building with Existing Elements to Remain', 'ALT-CO: New Building with Existing Elements to Remain', 'ALT-CO New Building with Existing Elements to Remain') THEN 'ALT-CO: New Building with Existing Elements to Remain'
+                WHEN jobtype IN ('A3', 'SC', 'SG', 'SI') THEN jobtype
+                ELSE jobtype
+            END
+        WHERE (job_type IS NULL OR jobtype IS NULL)  -- Only update records missing either field
+        AND jobtype IS NOT NULL;  -- But make sure we have a value to map from
         """.format(table_name=self._meta.db_table)
         
         execute(cleanup_sql)
