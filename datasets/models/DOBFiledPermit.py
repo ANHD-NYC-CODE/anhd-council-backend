@@ -39,7 +39,8 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
     borough = models.TextField(blank=True, null=True)
     jobstatus = models.TextField(blank=True, null=True)
     # AKA Work Type # no NOW equivalent
-    jobtype = models.TextField(blank=True, null=True)
+    jobtype = models.TextField(blank=True, null=True)  # Mapped standardized value
+    job_type = models.TextField(blank=True, null=True)  # Original raw value from API
     jobdescription = models.TextField(
         blank=True, null=True)  # no NOW equivalent
     datefiled = models.DateField(
@@ -110,6 +111,7 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
             WHEN {other_table_name}.jobtype IN ('A3', 'SC', 'SG', 'SI') THEN {other_table_name}.jobtype
             ELSE {other_table_name}.jobtype
         END,
+        {other_table_name}.jobtype,
         {other_table_name}.jobdescription,
         {other_table_name}.prefilingdate,
         {other_table_name}.applicantsfirstname,
@@ -146,6 +148,7 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
                 WHEN {other_table_name}.jobtype IN ('A3', 'SC', 'SG', 'SI') THEN {other_table_name}.jobtype
                 ELSE {other_table_name}.jobtype
             END,
+            {other_table_name}.jobtype,
             {other_table_name}.workonfloor,
             {other_table_name}.filingdate,
             {other_table_name}.applicantfirstname,
