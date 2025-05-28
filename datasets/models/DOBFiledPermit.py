@@ -102,7 +102,7 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
         {other_table_name}.borough,
         {other_table_name}.jobstatusdescrp,
         CASE 
-            WHEN {other_table_name}.jobtype IN ('A1', 'ALT-CO', 'ALT-CO (A1)', 'Alteration CO', 'Alteration CO (A1)', 'Alteration') THEN 'ALT-CO (A1)'
+            WHEN {other_table_name}.jobtype IN ('A1', 'ALT-CO', 'ALT-CO (A1)', 'Alteration CO', 'Alteration CO (A1)') THEN 'ALT-CO (A1)'
             WHEN {other_table_name}.jobtype IN ('A2', 'Alteration', 'Alteration (A2)', 'Alteration A2') THEN 'Alteration (A2)'
             WHEN {other_table_name}.jobtype IN ('DM', 'Full Demolition', 'Full Demolition (DM)', 'Demolition') THEN 'Full Demolition (DM)'
             WHEN {other_table_name}.jobtype IN ('NB', 'New Building', 'New Building (NB)', 'New Building NB') THEN 'New Building (NB)'
@@ -111,7 +111,7 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
             WHEN {other_table_name}.jobtype IN ('A3', 'SC', 'SG', 'SI') THEN {other_table_name}.jobtype
             ELSE {other_table_name}.jobtype
         END,
-        {other_table_name}.jobtype,
+        {other_table_name}.jobtype,  -- Original value from legacy table
         {other_table_name}.jobdescription,
         {other_table_name}.prefilingdate,
         {other_table_name}.applicantsfirstname,
@@ -225,6 +225,14 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
         logger.info("✅ Completed seeding DOBFiledPermit. Total rows in table: %s", total_count)
         logger.info("📊 Rows created: %s, Rows updated: %s", kwargs['update'].rows_created, kwargs['update'].rows_updated)
 
+        # Clean up any NULL job_type values
+        cleanup_sql = """
+        UPDATE {table_name}
+        SET job_type = jobtype
+        WHERE job_type IS NULL AND jobtype IS NOT NULL;
+        """.format(table_name=self._meta.db_table)
+        execute(cleanup_sql)
+        logger.info("Cleaned up NULL job_type values")
 
     @classmethod
     def annotate_properties(self):
