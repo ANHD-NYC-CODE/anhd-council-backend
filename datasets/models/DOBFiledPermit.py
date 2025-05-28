@@ -139,7 +139,7 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
             {other_table_name}.borough,
             {other_table_name}.filingstatus,
             CASE 
-                WHEN {other_table_name}.jobtype IN ('A1', 'ALT-CO', 'ALT-CO (A1)', 'Alteration CO', 'Alteration CO (A1)', 'Alteration') THEN 'ALT-CO (A1)'
+                WHEN {other_table_name}.jobtype IN ('A1', 'ALT-CO', 'ALT-CO (A1)', 'Alteration CO', 'Alteration CO (A1)') THEN 'ALT-CO (A1)'
                 WHEN {other_table_name}.jobtype IN ('A2', 'Alteration', 'Alteration (A2)', 'Alteration A2') THEN 'Alteration (A2)'
                 WHEN {other_table_name}.jobtype IN ('DM', 'Full Demolition', 'Full Demolition (DM)', 'Demolition') THEN 'Full Demolition (DM)'
                 WHEN {other_table_name}.jobtype IN ('NB', 'New Building', 'New Building (NB)', 'New Building NB') THEN 'New Building (NB)'
@@ -148,7 +148,7 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
                 WHEN {other_table_name}.jobtype IN ('A3', 'SC', 'SG', 'SI') THEN {other_table_name}.jobtype
                 ELSE {other_table_name}.jobtype
             END,
-            {other_table_name}.jobtype,
+            {other_table_name}.jobtype,  -- Original value from now table
             {other_table_name}.workonfloor,
             {other_table_name}.filingdate,
             {other_table_name}.applicantfirstname,
