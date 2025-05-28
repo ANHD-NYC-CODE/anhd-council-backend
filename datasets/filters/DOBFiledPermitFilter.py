@@ -21,6 +21,7 @@ class DOBFiledPermitFilter(django_filters.rest_framework.FilterSet):
             'bbl': ['isnull'],
             'bin': ['exact', 'isnull'],
             'jobtype': ['exact', 'icontains'],
+            'job_type': ['exact', 'icontains'],
             'jobdescription': ['exact', 'icontains'],
             'jobstatus': ['exact', 'icontains'],
             'foreign_key': ['exact'],
