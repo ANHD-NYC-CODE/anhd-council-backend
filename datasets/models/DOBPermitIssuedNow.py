@@ -18,7 +18,7 @@ logger = logging.getLogger('app')
 
 class DOBPermitIssuedNow(BaseDatasetModel, models.Model):
     API_ID = 'rbx6-tga4'
-    download_endpoint = "https://data.cityofnewyork.us/api/views/rbx6-tga4/rows.csv?accessType=DOWNLOAD"
+    base_download_endpoint = "https://data.cityofnewyork.us/resource/rbx6-tga4.csv"
 
     jobfilingnumber = models.TextField(blank=True, null=True)
     workpermit = models.TextField(blank=True, null=True)
@@ -69,7 +69,85 @@ class DOBPermitIssuedNow(BaseDatasetModel, models.Model):
 
     @classmethod
     def download(self, endpoint=None, file_name=None):
-        return self.download_file(self.download_endpoint, file_name=file_name)
+        # Fields based on DOBIssuedPermit usage
+        fields = [
+            "job_filing_number",  # jobfilingnumber
+            "work_permit",        # workpermit
+            "bin",               # bin
+            "borough",           # borough
+            "house_no",          # houseno
+            "street_name",       # streetname
+            "lot",              # lot
+            "block",            # block
+            "work_type",         # worktype
+            "job_description",   # jobdescription
+            "issued_date",       # issueddate
+            "expired_date"       # expireddate
+        ]
+        download_url = f"{self.base_download_endpoint}?$select={','.join(fields)}&$limit=100000000"
+    
+        logger.info(f"📥 Downloading DOB Permit Issued Now filtered dataset from: {download_url}")
+        return self.download_file(download_url, file_name=file_name)
+
+    @classmethod
+    def clean_null_bytes_headers(cls, gen_rows):
+        try:
+            header_row = next(gen_rows)
+            logger.info("Processing header row: %s", header_row)
+        except StopIteration:
+            logger.error("Empty CSV generator received")
+            raise ValueError("The CSV file is empty or invalid")
+    
+        # Clean BOM and strip ID
+        cleaned_header = {key.lstrip('\ufeff'): value for key, value in header_row.items() if key != "id"}
+        logger.debug("🚀 Cleaned header row (ID removed if present): %s", cleaned_header)
+    
+        # Header replacements for Socrata resource API snake_case → camelCase
+        socrata_replacements = {
+            "job_filing_number": "jobfilingnumber",
+            "work_permit": "workpermit",
+            "bin": "bin",
+            "borough": "borough",
+            "house_no": "houseno",
+            "street_name": "streetname",
+            "lot": "lot",
+            "block": "block",
+            "work_type": "worktype",
+            "job_description": "jobdescription",
+            "issued_date": "issueddate",
+            "expired_date": "expireddate"
+        }
+    
+        # Apply replacements to keys
+        remapped_header = {}
+        for key, value in cleaned_header.items():
+            new_key = socrata_replacements.get(key, key)
+            remapped_header[new_key] = value
+    
+        logger.info("✅ Remapped Header Row: %s", remapped_header)
+    
+        yield remapped_header
+    
+        # Process remaining rows
+        for row in gen_rows:
+            if isinstance(row, dict):
+                if "id" in row:
+                    del row["id"]
+                    logger.debug("🚀 Removed 'id' from row: %s", row)
+    
+                for key, value in row.items():
+                    if isinstance(value, str):
+                        row[key] = value.replace("\0", "").replace("\t", ",")
+    
+                yield row
+    
+            elif isinstance(row, str):
+                row = row.replace("\0", "").replace("\t", ",")
+                yield row
+    
+            else:
+                logger.warning("⚠️ Unexpected row type: %s", type(row))
+                yield row
 
     @classmethod
     def pre_validation_filters(self, gen_rows):
@@ -89,7 +167,9 @@ class DOBPermitIssuedNow(BaseDatasetModel, models.Model):
 
     @classmethod
     def transform_self(self, file_path, update=None):
-        return self.pre_validation_filters(with_bbl(from_csv_file_to_gen(file_path, update)))
+        rows = from_csv_file_to_gen(file_path, update)
+        cleaned_rows = self.clean_null_bytes_headers(rows)
+        return self.pre_validation_filters(with_bbl(cleaned_rows))
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
