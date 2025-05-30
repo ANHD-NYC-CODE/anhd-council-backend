@@ -70,7 +70,7 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
         return csv_reader
 
     @classmethod
-    def upsert_permit_sql(self, other_table, cols):
+    def upsert_permit_sql(self, other_table, cols, raw_select=False):
         table_name = self._meta.db_table
         primary_key = self._meta.pk.name
         other_table_name = other_table._meta.db_table
@@ -78,7 +78,10 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
         upsert_fields = ', '.join(
             [k.name + "=EXCLUDED." + k.name for k in self._meta.get_fields()])
 
-        sql = "INSERT INTO {table_name} ({fields}) SELECT {cols} FROM {other_table_name} ON CONFLICT ({primary_key}) DO UPDATE SET {upsert_fields};"
+        if raw_select:
+            sql = "INSERT INTO {table_name} ({fields}) SELECT {cols} FROM {other_table_name} ON CONFLICT ({primary_key}) DO UPDATE SET {upsert_fields};"
+        else:
+            sql = "INSERT INTO {table_name} ({fields}) SELECT {cols} FROM {other_table_name} ON CONFLICT ({primary_key}) DO UPDATE SET {upsert_fields};"
         return sql.format(table_name=table_name, fields=fields, cols=cols, other_table_name=other_table_name, primary_key=primary_key, upsert_fields=upsert_fields)
 
     # Join DOBPermitIssuedLegacy table with DOBPermitIssuedNow table
@@ -92,7 +95,33 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
 
         now_table = ds.DOBPermitIssuedNow
         now_count = now_table.objects.count()
-        now_cols = "concat({other_table_name}.jobfilingnumber, {other_table_name}.workpermit), {other_table_name}.jobfilingnumber, {other_table_name}.workpermit, {other_table_name}.bbl, {other_table_name}.bin, {other_table_name}.borough, {other_table_name}.houseno, {other_table_name}.streetname, {other_table_name}.worktype, {other_table_name}.jobdescription, {other_table_name}.issueddate, {other_table_name}.expireddate, concat_ws(' ', {other_table_name}.applicantfirstname, {other_table_name}.applicantlastname), {other_table_name}.applicantbusinessname, ownername, {other_table_name}.ownerbusinessname, {other_table_name}.id, \'{other_model_name}\', NULL, NULL, NULL, NULL".format(other_table_name=now_table._meta.db_table, other_model_name=now_table._meta.model_name)
+        now_cols = """
+        SELECT DISTINCT ON ({other_table_name}.jobfilingnumber)
+            concat({other_table_name}.jobfilingnumber, {other_table_name}.workpermit),
+            {other_table_name}.jobfilingnumber,
+            {other_table_name}.workpermit,
+            {other_table_name}.bbl,
+            {other_table_name}.bin,
+            {other_table_name}.borough,
+            {other_table_name}.houseno,
+            {other_table_name}.streetname,
+            {other_table_name}.worktype,
+            {other_table_name}.jobdescription,
+            {other_table_name}.issueddate,
+            {other_table_name}.expireddate,
+            concat_ws(' ', {other_table_name}.applicantfirstname, {other_table_name}.applicantlastname),
+            {other_table_name}.applicantbusinessname,
+            ownername,
+            {other_table_name}.ownerbusinessname,
+            {other_table_name}.id,
+            '{other_model_name}',
+            NULL,
+            NULL,
+            NULL,
+            NULL
+        FROM {other_table_name}
+        ORDER BY {other_table_name}.jobfilingnumber, {other_table_name}.issueddate DESC
+        """.format(other_table_name=now_table._meta.db_table, other_model_name=now_table._meta.model_name)
 
         kwargs['update'].total_rows = legacy_count + now_count
         kwargs['update'].save()
@@ -109,7 +138,7 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
                      self.__name__, legacy_table._meta.db_table)
 
         starting_count = self.objects.count()
-        execute(self.upsert_permit_sql(now_table, now_cols))
+        execute(self.upsert_permit_sql(now_table, now_cols, raw_select=True))
         rows_created_now = self.objects.count() - starting_count
         kwargs['update'].rows_created = kwargs['update'].rows_created + \
             rows_created_now
