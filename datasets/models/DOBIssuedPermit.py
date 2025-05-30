@@ -101,54 +101,71 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
         logger.info("Found {} records in now table", now_count)
         
         now_cols = """
-        SELECT DISTINCT ON ({other_table_name}.jobfilingnumber)
-            concat({other_table_name}.jobfilingnumber, {other_table_name}.workpermit),
-            {other_table_name}.jobfilingnumber,
-            {other_table_name}.workpermit,
-            {other_table_name}.bbl,
-            {other_table_name}.bin,
-            {other_table_name}.borough,
-            {other_table_name}.houseno,
-            {other_table_name}.streetname,
-            {other_table_name}.worktype,
-            {other_table_name}.jobdescription,
-            {other_table_name}.issueddate,
-            {other_table_name}.expireddate,
-            concat_ws(' ', {other_table_name}.applicantfirstname, {other_table_name}.applicantlastname),
-            {other_table_name}.applicantbusinessname,
-            ownername,
-            {other_table_name}.ownerbusinessname,
-            {other_table_name}.id,
-            '{other_model_name}',
-            NULL,
-            NULL,
-            NULL,
-            NULL
-        FROM {other_table_name}
-        ORDER BY {other_table_name}.jobfilingnumber, {other_table_name}.issueddate DESC
-        """.format(other_table_name=now_table._meta.db_table, other_model_name=now_table._meta.model_name)
+        WITH numbered_records AS (
+            SELECT 
+                CASE 
+                    WHEN ROW_NUMBER() OVER (PARTITION BY jobfilingnumber ORDER BY issueddate DESC) > 1 
+                    THEN concat(jobfilingnumber, workpermit, '-', ROW_NUMBER() OVER (PARTITION BY jobfilingnumber ORDER BY issueddate DESC))
+                    ELSE concat(jobfilingnumber, workpermit)
+                END as key,
+                jobfilingnumber,
+                workpermit,
+                bbl,
+                bin,
+                borough,
+                houseno,
+                streetname,
+                worktype,
+                jobdescription,
+                issueddate,
+                expireddate,
+                concat_ws(' ', applicantfirstname, applicantlastname) as applicantname,
+                applicantbusinessname,
+                ownername,
+                ownerbusinessname,
+                id,
+                'dobpermitissuednow' as type,
+                NULL as permit_type,
+                NULL as permit_subtype,
+                NULL as permit_status,
+                NULL as filing_status
+            FROM {other_table_name}
+        )
+        SELECT * FROM numbered_records
+        ORDER BY jobfilingnumber, issueddate DESC
+        """.format(other_table_name=now_table._meta.db_table)
 
         kwargs['update'].total_rows = legacy_count + now_count
         kwargs['update'].save()
         logger.info("Total records to process: {}", kwargs['update'].total_rows)
 
+        # Process legacy records
         starting_count = self.objects.count()
         logger.info("Starting legacy table import. Current count: {}", starting_count)
-        execute(self.upsert_permit_sql(legacy_table, legacy_cols))
-        rows_created_legacy = self.objects.count() - starting_count
-        logger.info("Legacy import complete. Created: {}, Updated: {}", 
-                   rows_created_legacy, legacy_count - rows_created_legacy)
+        try:
+            execute(self.upsert_permit_sql(legacy_table, legacy_cols))
+            rows_created_legacy = self.objects.count() - starting_count
+            logger.info("Legacy import complete. Created: {}, Updated: {}", 
+                       rows_created_legacy, legacy_count - rows_created_legacy)
+        except Exception as e:
+            logger.error("Error during legacy import: {}", str(e))
+            raise
         
         kwargs['update'].rows_created = kwargs['update'].rows_created + rows_created_legacy
         kwargs['update'].rows_updated = kwargs['update'].rows_updated + (legacy_count - rows_created_legacy)
         kwargs['update'].save()
 
+        # Process now records
         starting_count = self.objects.count()
         logger.info("Starting now table import. Current count: {}", starting_count)
-        execute(self.upsert_permit_sql(now_table, now_cols, raw_select=True))
-        rows_created_now = self.objects.count() - starting_count
-        logger.info("Now import complete. Created: {}, Updated: {}", 
-                   rows_created_now, now_count - rows_created_now)
+        try:
+            execute(self.upsert_permit_sql(now_table, now_cols, raw_select=True))
+            rows_created_now = self.objects.count() - starting_count
+            logger.info("Now import complete. Created: {}, Updated: {}", 
+                       rows_created_now, now_count - rows_created_now)
+        except Exception as e:
+            logger.error("Error during now import: {}", str(e))
+            raise
         
         kwargs['update'].rows_created = kwargs['update'].rows_created + rows_created_now
         kwargs['update'].rows_updated = kwargs['update'].rows_updated + (now_count - rows_created_now)
