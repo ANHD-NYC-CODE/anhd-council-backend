@@ -48,6 +48,7 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
     ownerbusinessname = models.TextField(blank=True, null=True)
     foreign_key = models.TextField(blank=True, null=True)
     type = models.TextField(blank=True, null=True)
+    filing_reason = models.TextField(blank=True, null=True)
     permit_type = models.TextField(blank=True, null=True)
     permit_subtype = models.TextField(blank=True, null=True)
     permit_status = models.TextField(blank=True, null=True)
@@ -124,7 +125,8 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
                 ownername,
                 ownerbusinessname,
                 id,
-                COALESCE(filingreason, 'dobpermitissuednow') as type,
+                'dobpermitissuednow' as type,
+                filingreason as filing_reason,
                 NULL as permit_type,
                 NULL as permit_subtype,
                 NULL as permit_status,
