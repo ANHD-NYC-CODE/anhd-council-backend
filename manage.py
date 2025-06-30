@@ -4,7 +4,10 @@ import sys
 import dotenv
 
 if __name__ == '__main__':
-    dotenv.load_dotenv()
+    try:
+        dotenv.load_dotenv()
+    except AttributeError:
+        dotenv.read_dotenv()
 
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "app.settings.development")
     try:
