@@ -124,7 +124,7 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
                 ownername,
                 ownerbusinessname,
                 id,
-                'dobpermitissuednow' as type,
+                COALESCE(filingreason, 'dobpermitissuednow') as type,
                 NULL as permit_type,
                 NULL as permit_subtype,
                 NULL as permit_status,

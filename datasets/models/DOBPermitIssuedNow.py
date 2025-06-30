@@ -82,7 +82,8 @@ class DOBPermitIssuedNow(BaseDatasetModel, models.Model):
             "work_type",         # worktype
             "job_description",   # jobdescription
             "issued_date",       # issueddate
-            "expired_date"       # expireddate
+            "expired_date",      # expireddate
+            "filing_reason"      # filingreason
         ]
         download_url = f"{self.base_download_endpoint}?$select={','.join(fields)}&$limit=100000000"
     
@@ -115,7 +116,8 @@ class DOBPermitIssuedNow(BaseDatasetModel, models.Model):
             "work_type": "worktype",
             "job_description": "jobdescription",
             "issued_date": "issueddate",
-            "expired_date": "expireddate"
+            "expired_date": "expireddate",
+            "filing_reason": "filingreason"
         }
     
         # Apply replacements to keys
