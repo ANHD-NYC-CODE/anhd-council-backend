@@ -102,38 +102,31 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
         logger.info("Found {} records in now table", now_count)
         
         now_cols = """
-        WITH numbered_records AS (
-            SELECT 
-                CASE 
-                    WHEN ROW_NUMBER() OVER (PARTITION BY jobfilingnumber ORDER BY issueddate DESC) > 1 
-                    THEN concat(jobfilingnumber, workpermit, '-', ROW_NUMBER() OVER (PARTITION BY jobfilingnumber ORDER BY issueddate DESC))
-                    ELSE concat(jobfilingnumber, workpermit)
-                END as key,
-                jobfilingnumber,
-                workpermit,
-                bbl,
-                bin,
-                borough,
-                houseno,
-                streetname,
-                worktype,
-                jobdescription,
-                issueddate,
-                expireddate,
-                concat_ws(' ', applicantfirstname, applicantlastname) as applicantname,
-                applicantbusinessname,
-                ownername,
-                ownerbusinessname,
-                id,
-                'dobpermitissuednow' as type,
-                filingreason as filing_reason,
-                NULL as permit_type,
-                NULL as permit_subtype,
-                NULL as permit_status,
-                NULL as filing_status
-            FROM {other_table_name}
-        )
-        SELECT * FROM numbered_records
+        SELECT DISTINCT ON (jobfilingnumber)
+            concat(jobfilingnumber, workpermit) as key,
+            jobfilingnumber,
+            workpermit,
+            bbl,
+            bin,
+            borough,
+            houseno,
+            streetname,
+            worktype,
+            jobdescription,
+            issueddate,
+            expireddate,
+            concat_ws(' ', applicantfirstname, applicantlastname) as applicantname,
+            applicantbusinessname,
+            ownername,
+            ownerbusinessname,
+            id,
+            'dobpermitissuednow' as type,
+            filingreason as filing_reason,
+            NULL as permit_type,
+            NULL as permit_subtype,
+            NULL as permit_status,
+            NULL as filing_status
+        FROM {other_table_name}
         ORDER BY jobfilingnumber, issueddate DESC
         """.format(other_table_name=now_table._meta.db_table)
 
