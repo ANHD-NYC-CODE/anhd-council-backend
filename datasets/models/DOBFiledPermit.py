@@ -93,35 +93,37 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
         legacy_table = ds.DOBLegacyFiledPermit
         legacy_count = legacy_table.objects.count()
         legacy_cols = """
-        concat('{other_model_name}', {other_table_name}.jobs1no, {other_table_name}.job),
-        {other_table_name}.job,
-        {other_table_name}.bbl,
-        {other_table_name}.bin,
-        {other_table_name}.house,
-        {other_table_name}.streetname,
-        {other_table_name}.borough,
-        {other_table_name}.jobstatusdescrp,
-        CASE 
-            WHEN {other_table_name}.jobtype IN ('A1', 'ALT-CO', 'ALT-CO (A1)', 'Alteration CO', 'Alteration CO (A1)') THEN 'ALT-CO (A1)'
-            WHEN {other_table_name}.jobtype IN ('A2', 'Alteration', 'Alteration (A2)', 'Alteration A2') THEN 'Alteration (A2)'
-            WHEN {other_table_name}.jobtype IN ('DM', 'Full Demolition', 'Full Demolition (DM)', 'Demolition') THEN 'Full Demolition (DM)'
-            WHEN {other_table_name}.jobtype IN ('NB', 'New Building', 'New Building (NB)', 'New Building NB') THEN 'New Building (NB)'
-            WHEN {other_table_name}.jobtype IN ('PA', 'No Work', 'No Work (PA)', 'No Work PA') THEN 'No Work (PA)'
-            WHEN {other_table_name}.jobtype IN ('ALT-CO - New Building with Existing Elements to Remain', 'ALT-CO: New Building with Existing Elements to Remain', 'ALT-CO New Building with Existing Elements to Remain') THEN 'ALT-CO: New Building with Existing Elements to Remain'
-            WHEN {other_table_name}.jobtype IN ('A3', 'SC', 'SG', 'SI') THEN {other_table_name}.jobtype
-            ELSE {other_table_name}.jobtype
-        END,
-        {other_table_name}.jobtype,  -- Original value from legacy table
-        {other_table_name}.jobdescription,
-        {other_table_name}.prefilingdate,
-        {other_table_name}.applicantsfirstname,
-        {other_table_name}.applicantslastname,
-        {other_table_name}.applicantprofessionaltitle,
-        {other_table_name}.applicantlicense,
-        {other_table_name}.ownersbusinessname,
-        {other_table_name}.initialcost,
-        CAST({other_table_name}.id AS text),
-        '{other_model_name}'
+        SELECT 
+            {other_table_name}.job,
+            {other_table_name}.job,
+            {other_table_name}.bbl,
+            {other_table_name}.bin,
+            {other_table_name}.house,
+            {other_table_name}.streetname,
+            {other_table_name}.borough,
+            {other_table_name}.jobstatusdescrp,
+            CASE 
+                WHEN {other_table_name}.jobtype IN ('A1', 'ALT-CO', 'ALT-CO (A1)', 'Alteration CO', 'Alteration CO (A1)') THEN 'ALT-CO (A1)'
+                WHEN {other_table_name}.jobtype IN ('A2', 'Alteration', 'Alteration (A2)', 'Alteration A2') THEN 'Alteration (A2)'
+                WHEN {other_table_name}.jobtype IN ('DM', 'Full Demolition', 'Full Demolition (DM)', 'Demolition') THEN 'Full Demolition (DM)'
+                WHEN {other_table_name}.jobtype IN ('NB', 'New Building', 'New Building (NB)', 'New Building NB') THEN 'New Building (NB)'
+                WHEN {other_table_name}.jobtype IN ('PA', 'No Work', 'No Work (PA)', 'No Work PA') THEN 'No Work (PA)'
+                WHEN {other_table_name}.jobtype IN ('ALT-CO - New Building with Existing Elements to Remain', 'ALT-CO: New Building with Existing Elements to Remain', 'ALT-CO New Building with Existing Elements to Remain') THEN 'ALT-CO: New Building with Existing Elements to Remain'
+                WHEN {other_table_name}.jobtype IN ('A3', 'SC', 'SG', 'SI') THEN {other_table_name}.jobtype
+                ELSE {other_table_name}.jobtype
+            END,
+            {other_table_name}.jobtype,  -- Original value from legacy table
+            {other_table_name}.jobdescription,
+            {other_table_name}.prefilingdate,
+            {other_table_name}.applicantsfirstname,
+            {other_table_name}.applicantslastname,
+            {other_table_name}.applicantprofessionaltitle,
+            {other_table_name}.applicantlicense,
+            {other_table_name}.ownersbusinessname,
+            {other_table_name}.initialcost,
+            CAST({other_table_name}.id AS text),
+            '{other_model_name}'
+        FROM {other_table_name}
         """.format(
             other_table_name=legacy_table._meta.db_table,
             other_model_name=legacy_table._meta.model_name
@@ -129,8 +131,8 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
         now_table = ds.DOBNowFiledPermit
         now_count = now_table.objects.count()
         now_cols = """
-        SELECT DISTINCT ON ({other_table_name}.jobfilingnumber)
-            concat('{other_model_name}', {other_table_name}.jobfilingnumber),
+        SELECT 
+            {other_table_name}.jobfilingnumber,
             {other_table_name}.jobfilingnumber,
             {other_table_name}.bbl,
             {other_table_name}.bin,
@@ -160,7 +162,6 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
             CAST({other_table_name}.id AS text),
             '{other_model_name}'
         FROM {other_table_name}
-        ORDER BY {other_table_name}.jobfilingnumber, {other_table_name}.filingdate DESC
         """.format(
             other_table_name=now_table._meta.db_table,
             other_model_name=now_table._meta.model_name
@@ -192,7 +193,7 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
         kwargs['update'].save()
         starting_count = self.objects.count()
 
-        execute(self.upsert_permit_sql(legacy_table, legacy_cols))
+        execute(self.upsert_permit_sql(legacy_table, legacy_cols, raw_select=True))
         logger.debug("legacy seeded - current count: {}", self.objects.count())
         rows_created_legacy = self.objects.count() - starting_count
         kwargs['update'].rows_created = kwargs['update'].rows_created + \

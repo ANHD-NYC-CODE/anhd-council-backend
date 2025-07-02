@@ -95,15 +95,40 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
         legacy_count = legacy_table.objects.count()
         logger.info("Found {} records in legacy table", legacy_count)
         
-        legacy_cols = "concat({other_table_name}.job, {other_table_name}.permitsino), {other_table_name}.job, {other_table_name}.permitsino, {other_table_name}.bbl, {other_table_name}.bin, {other_table_name}.borough, {other_table_name}.house, {other_table_name}.streetname, {other_table_name}.worktype, {other_table_name}.jobtype, {other_table_name}.issuancedate, {other_table_name}.expirationdate, concat_ws(' ', {other_table_name}.permitteesfirstname, {other_table_name}.permitteeslastname), {other_table_name}.permitteesbusinessname, concat_ws(' ', {other_table_name}.ownersfirstname, {other_table_name}.ownerslastname), {other_table_name}.ownersbusinessname, {other_table_name}.id, \'{other_model_name}\', {other_table_name}.permittype, {other_table_name}.permitsubtype, {other_table_name}.permitstatus, {other_table_name}.filingstatus".format(other_table_name=legacy_table._meta.db_table, other_model_name=legacy_table._meta.model_name)
+        legacy_cols = """
+        SELECT 
+            {other_table_name}.job,
+            {other_table_name}.job,
+            {other_table_name}.permitsino,
+            {other_table_name}.bbl,
+            {other_table_name}.bin,
+            {other_table_name}.borough,
+            {other_table_name}.house,
+            {other_table_name}.streetname,
+            {other_table_name}.worktype,
+            {other_table_name}.jobtype,
+            {other_table_name}.issuancedate,
+            {other_table_name}.expirationdate,
+            concat_ws(' ', {other_table_name}.permitteesfirstname, {other_table_name}.permitteeslastname),
+            {other_table_name}.permitteesbusinessname,
+            concat_ws(' ', {other_table_name}.ownersfirstname, {other_table_name}.ownerslastname),
+            {other_table_name}.ownersbusinessname,
+            {other_table_name}.id,
+            '{other_model_name}',
+            {other_table_name}.permittype,
+            {other_table_name}.permitsubtype,
+            {other_table_name}.permitstatus,
+            {other_table_name}.filingstatus
+        FROM {other_table_name}
+        """.format(other_table_name=legacy_table._meta.db_table, other_model_name=legacy_table._meta.model_name)
 
         now_table = ds.DOBPermitIssuedNow
         now_count = now_table.objects.count()
         logger.info("Found {} records in now table", now_count)
         
         now_cols = """
-        SELECT DISTINCT ON (jobfilingnumber)
-            concat(jobfilingnumber, workpermit) as key,
+        SELECT 
+            jobfilingnumber,
             jobfilingnumber,
             workpermit,
             bbl,
@@ -127,7 +152,6 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
             NULL as permit_status,
             NULL as filing_status
         FROM {other_table_name}
-        ORDER BY jobfilingnumber, issueddate DESC
         """.format(other_table_name=now_table._meta.db_table)
 
         kwargs['update'].total_rows = legacy_count + now_count
@@ -138,7 +162,7 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
         starting_count = self.objects.count()
         logger.info("Starting legacy table import. Current count: {}", starting_count)
         try:
-            execute(self.upsert_permit_sql(legacy_table, legacy_cols))
+            execute(self.upsert_permit_sql(legacy_table, legacy_cols, raw_select=True))
             rows_created_legacy = self.objects.count() - starting_count
             logger.info("Legacy import complete. Created: {}, Updated: {}", 
                        rows_created_legacy, legacy_count - rows_created_legacy)
@@ -165,6 +189,8 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
         kwargs['update'].rows_created = kwargs['update'].rows_created + rows_created_now
         kwargs['update'].rows_updated = kwargs['update'].rows_updated + (now_count - rows_created_now)
         kwargs['update'].save()
+
+        # No cleanup needed - NOT EXISTS logic prevents duplicates during import
 
         dataset = self.get_dataset()
         dataset.api_last_updated = datetime.today()
