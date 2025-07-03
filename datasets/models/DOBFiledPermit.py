@@ -93,7 +93,7 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
         legacy_table = ds.DOBLegacyFiledPermit
         legacy_count = legacy_table.objects.count()
         legacy_cols = """
-        SELECT 
+        SELECT DISTINCT ON ({other_table_name}.job)
             {other_table_name}.job,
             {other_table_name}.job,
             {other_table_name}.bbl,
@@ -124,6 +124,7 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
             CAST({other_table_name}.id AS text),
             '{other_model_name}'
         FROM {other_table_name}
+        ORDER BY {other_table_name}.job, {other_table_name}.prefilingdate DESC
         """.format(
             other_table_name=legacy_table._meta.db_table,
             other_model_name=legacy_table._meta.model_name
@@ -131,7 +132,7 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
         now_table = ds.DOBNowFiledPermit
         now_count = now_table.objects.count()
         now_cols = """
-        SELECT 
+        SELECT DISTINCT ON ({other_table_name}.jobfilingnumber)
             {other_table_name}.jobfilingnumber,
             {other_table_name}.jobfilingnumber,
             {other_table_name}.bbl,
@@ -162,6 +163,7 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
             CAST({other_table_name}.id AS text),
             '{other_model_name}'
         FROM {other_table_name}
+        ORDER BY {other_table_name}.jobfilingnumber, {other_table_name}.filingdate DESC
         """.format(
             other_table_name=now_table._meta.db_table,
             other_model_name=now_table._meta.model_name

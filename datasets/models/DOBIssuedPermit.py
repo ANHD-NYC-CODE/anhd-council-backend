@@ -96,7 +96,7 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
         logger.info("Found {} records in legacy table", legacy_count)
         
         legacy_cols = """
-        SELECT 
+        SELECT DISTINCT ON ({other_table_name}.job)
             {other_table_name}.job,
             {other_table_name}.job,
             {other_table_name}.permitsino,
@@ -120,6 +120,7 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
             {other_table_name}.permitstatus,
             {other_table_name}.filingstatus
         FROM {other_table_name}
+        ORDER BY {other_table_name}.job, {other_table_name}.issuancedate DESC
         """.format(other_table_name=legacy_table._meta.db_table, other_model_name=legacy_table._meta.model_name)
 
         now_table = ds.DOBPermitIssuedNow
@@ -127,7 +128,7 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
         logger.info("Found {} records in now table", now_count)
         
         now_cols = """
-        SELECT 
+        SELECT DISTINCT ON (jobfilingnumber)
             jobfilingnumber,
             jobfilingnumber,
             workpermit,
@@ -150,8 +151,10 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
             NULL as permit_type,
             NULL as permit_subtype,
             NULL as permit_status,
-            NULL as filing_status
+            NULL as filing_status,
+            id as foreign_key
         FROM {other_table_name}
+        ORDER BY jobfilingnumber, issueddate DESC
         """.format(other_table_name=now_table._meta.db_table)
 
         kwargs['update'].total_rows = legacy_count + now_count
