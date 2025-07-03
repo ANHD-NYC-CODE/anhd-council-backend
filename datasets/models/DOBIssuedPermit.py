@@ -115,6 +115,7 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
             {other_table_name}.ownersbusinessname,
             {other_table_name}.id,
             '{other_model_name}',
+            NULL as filing_reason,
             {other_table_name}.permittype,
             {other_table_name}.permitsubtype,
             {other_table_name}.permitstatus,
