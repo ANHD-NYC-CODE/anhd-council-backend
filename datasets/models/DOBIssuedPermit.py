@@ -145,14 +145,13 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
             applicantbusinessname,
             ownername,
             ownerbusinessname,
-            id,
+            id as foreign_key,
             'dobpermitissuednow' as type,
             filingreason as filing_reason,
             NULL as permit_type,
             NULL as permit_subtype,
             NULL as permit_status,
-            NULL as filing_status,
-            id as foreign_key
+            NULL as filing_status
         FROM {other_table_name}
         ORDER BY jobfilingnumber, issueddate DESC
         """.format(other_table_name=now_table._meta.db_table)
