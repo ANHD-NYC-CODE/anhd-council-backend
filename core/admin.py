@@ -6,6 +6,7 @@ from core.models import Dataset, DataFile, Update, UserMessage
 from app.admin.mixins import admin_changelist_link, admin_link
 from core.tasks import async_download_start
 from django.contrib import messages
+from django_celery_results.models import TaskResult
 
 import os
 import logging
@@ -108,6 +109,12 @@ class DataFileAdmin(admin.ModelAdmin):
     # def has_change_permission(self, request, obj=None):
     #     return False
 
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "dataset":
+            # Only show 10 most recent datasets
+            kwargs["queryset"] = Dataset.objects.order_by('-id')[:10]
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
     list_display = ['id', 'dataset_link',
                     'uploaded_date', 'file_name', 'version']
     ordering = ['-uploaded_date']
@@ -132,6 +139,21 @@ class UpdateAdmin(admin.ModelAdmin):
     @admin_link('task_result', ('Task Result'))
     def task_result_link(self, task_result):
         return task_result.status
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "file":
+            # Only show 10 most recent DataFiles
+            kwargs["queryset"] = DataFile.objects.order_by('-uploaded_date')[:10]
+        elif db_field.name == "previous_file":
+            # Only show 10 most recent DataFiles
+            kwargs["queryset"] = DataFile.objects.order_by('-uploaded_date')[:10]
+        elif db_field.name == "dataset":
+            # Only show 10 most recent datasets
+            kwargs["queryset"] = Dataset.objects.order_by('-id')[:10]
+        elif db_field.name == "task_result":
+            # Only show 10 most recent TaskResults
+            kwargs["queryset"] = TaskResult.objects.order_by('-date_created')[:10]
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     list_display = ['id', 'dataset_link', 'file_link',
                     'rows_updated', 'rows_created', 'total_rows', 'created_date', 'completed_date',  'task_id', 'task_result_link']
