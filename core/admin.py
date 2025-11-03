@@ -150,21 +150,29 @@ class UpdateAdminForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Replace file fields with custom field that allows any valid file
+        # Keep the original field but modify its queryset and add custom validation
+        # This preserves the admin widget with the "+" button
         if 'file' in self.fields:
-            self.fields['file'] = FlexibleDataFileField(
+            original_field = self.fields['file']
+            # Create custom field but keep the widget
+            custom_field = FlexibleDataFileField(
                 queryset=DataFile.objects.order_by('-uploaded_date')[:10],
-                required=False,
+                required=original_field.required,
                 empty_label='---------',
-                help_text=self.fields['file'].help_text
+                help_text=original_field.help_text,
+                widget=original_field.widget  # Preserve the admin widget
             )
+            self.fields['file'] = custom_field
         if 'previous_file' in self.fields:
-            self.fields['previous_file'] = FlexibleDataFileField(
+            original_field = self.fields['previous_file']
+            custom_field = FlexibleDataFileField(
                 queryset=DataFile.objects.order_by('-uploaded_date')[:10],
-                required=False,
+                required=original_field.required,
                 empty_label='---------',
-                help_text=self.fields['previous_file'].help_text
+                help_text=original_field.help_text,
+                widget=original_field.widget  # Preserve the admin widget
             )
+            self.fields['previous_file'] = custom_field
 
 
 class UpdateAdmin(admin.ModelAdmin):
@@ -189,8 +197,11 @@ class UpdateAdmin(admin.ModelAdmin):
         return task_result.status
     
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        # Skip file and previous_file - they're handled by the custom form fields
+        # Let Django admin create file fields normally so it sets up the widget correctly
+        # We'll modify them in the form's __init__ to limit queryset and add custom validation
         if db_field.name in ("file", "previous_file"):
+            # Let Django admin create the field with its widget, but limit queryset for display
+            kwargs["queryset"] = DataFile.objects.order_by('-uploaded_date')[:10]
             return super().formfield_for_foreignkey(db_field, request, **kwargs)
         elif db_field.name == "dataset":
             # Show all datasets alphabetically
