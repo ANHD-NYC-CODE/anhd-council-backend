@@ -7,6 +7,8 @@ from app.admin.mixins import admin_changelist_link, admin_link
 from core.tasks import async_download_start
 from django.contrib import messages
 from django_celery_results.models import TaskResult
+from django import forms
+from django.forms import ModelChoiceField
 
 import os
 import logging
@@ -111,8 +113,8 @@ class DataFileAdmin(admin.ModelAdmin):
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "dataset":
-            # Explicitly show all datasets to ensure validation works
-            kwargs["queryset"] = Dataset.objects.all()
+            # Show all datasets alphabetically to ensure validation works
+            kwargs["queryset"] = Dataset.objects.all().order_by('name')
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     list_display = ['id', 'dataset_link',
@@ -121,7 +123,53 @@ class DataFileAdmin(admin.ModelAdmin):
     actions = []
 
 
+class FlexibleDataFileField(ModelChoiceField):
+    """Custom field that allows validation of any DataFile even if not in queryset"""
+    def to_python(self, value):
+        """Override to bypass queryset validation - allow any valid DataFile"""
+        if value in self.empty_values:
+            return None
+        if isinstance(value, DataFile):
+            return value
+        try:
+            # Try to get the DataFile by ID, regardless of queryset
+            return DataFile.objects.get(pk=value)
+        except (TypeError, ValueError, DataFile.DoesNotExist):
+            raise forms.ValidationError(
+                self.error_messages['invalid_choice'],
+                code='invalid_choice',
+                params={'value': value},
+            )
+
+
+class UpdateAdminForm(forms.ModelForm):
+    """Custom form to allow validation of any valid file while limiting dropdown display"""
+    class Meta:
+        model = Update
+        fields = '__all__'
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Replace file fields with custom field that allows any valid file
+        if 'file' in self.fields:
+            self.fields['file'] = FlexibleDataFileField(
+                queryset=DataFile.objects.order_by('-uploaded_date')[:10],
+                required=False,
+                empty_label='---------',
+                help_text=self.fields['file'].help_text
+            )
+        if 'previous_file' in self.fields:
+            self.fields['previous_file'] = FlexibleDataFileField(
+                queryset=DataFile.objects.order_by('-uploaded_date')[:10],
+                required=False,
+                empty_label='---------',
+                help_text=self.fields['previous_file'].help_text
+            )
+
+
 class UpdateAdmin(admin.ModelAdmin):
+    form = UpdateAdminForm
+    
     def has_delete_permission(self, request, obj=None):
         return True
 
@@ -139,19 +187,16 @@ class UpdateAdmin(admin.ModelAdmin):
     @admin_link('task_result', ('Task Result'))
     def task_result_link(self, task_result):
         return task_result.status
-
+    
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == "file":
-            # Only show 10 most recent DataFiles
-            kwargs["queryset"] = DataFile.objects.order_by('-uploaded_date')[:10]
-        elif db_field.name == "previous_file":
-            # Only show 10 most recent DataFiles
-            kwargs["queryset"] = DataFile.objects.order_by('-uploaded_date')[:10]
+        # Skip file and previous_file - they're handled by the custom form fields
+        if db_field.name in ("file", "previous_file"):
+            return super().formfield_for_foreignkey(db_field, request, **kwargs)
         elif db_field.name == "dataset":
-            # Explicitly show all datasets to ensure validation works
-            kwargs["queryset"] = Dataset.objects.all()
+            # Show all datasets alphabetically
+            kwargs["queryset"] = Dataset.objects.all().order_by('name')
         elif db_field.name == "task_result":
-            # Only show 10 most recent TaskResults
+            # Only show 10 most recent TaskResults for display
             kwargs["queryset"] = TaskResult.objects.order_by('-date_created')[:10]
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
