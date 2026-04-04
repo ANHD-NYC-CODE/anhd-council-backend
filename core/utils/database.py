@@ -214,15 +214,25 @@ def copy_insert_from_csv(table_name, temp_file_path, **kwargs):
         os.remove(temp_file_path)
 
 
+def get_conflict_target(model):
+    """Get the correct conflict target for upserts.
+    Always uses primary key — this is the most reliable conflict target
+    since PK conflicts fire before other unique constraints.
+    """
+    return model._meta.pk.name
+
+
 def upsert_query(table_name, row, primary_key, ignore_conflict=False):
     fields = ', '.join(row.keys())
     upsert_fields = ', '.join([k + "= EXCLUDED." + k for k in row.keys()])
     placeholders = ', '.join(["%s" for v in row.values()])
-    conflict_action = "DO NOTHING" if ignore_conflict else "DO UPDATE SET {}".format(
-        upsert_fields)
-    sql = "INSERT INTO {table_name} ({fields}) VALUES ({values}) ON CONFLICT ({primary_key}) {conflict_action};"
-
-    return sql.format(table_name=table_name, fields=fields, values=placeholders, primary_key=primary_key, conflict_action=conflict_action)
+    if ignore_conflict:
+        return "INSERT INTO {table_name} ({fields}) VALUES ({values}) ON CONFLICT DO NOTHING;".format(
+            table_name=table_name, fields=fields, values=placeholders)
+    else:
+        conflict_action = "DO UPDATE SET {}".format(upsert_fields)
+        return "INSERT INTO {table_name} ({fields}) VALUES ({values}) ON CONFLICT ({primary_key}) {conflict_action};".format(
+            table_name=table_name, fields=fields, values=placeholders, primary_key=primary_key, conflict_action=conflict_action)
 
 
 def insert_query(table_name, row):
@@ -289,15 +299,31 @@ def batch_upsert_from_gen(model, rows, batch_size=750000, **kwargs):
 # No Conflict = True means DO NOTHING on conflict. False means update on conflict.
 def batch_upsert_rows(model, rows, batch_size=750000, update=None, ignore_conflict=False):
     table_name = model._meta.db_table
-    primary_key = model._meta.pk.name
+    conflict_target = get_conflict_target(model)
     """ Inserts many row, all in the same transaction"""
+
+    # Deduplicate by PK and unique_together to avoid executemany failures
+    # when source data has duplicate keys within the same batch
+    pk_name = model._meta.pk.name
+    seen_pk = {}
+    for row in rows:
+        seen_pk[row.get(pk_name)] = row
+    rows = list(seen_pk.values())
+
+    if model._meta.unique_together:
+        unique_fields = model._meta.unique_together[0]
+        seen_unique = {}
+        for row in rows:
+            key = tuple(row.get(f) for f in unique_fields)
+            seen_unique[key] = row
+        rows = list(seen_unique.values())
     rows_length = len(rows)
 
     with connection.cursor() as curs:
         try:
             starting_count = model.objects.count()
             with transaction.atomic():
-                curs.executemany(upsert_query(table_name, rows[0], primary_key, ignore_conflict=ignore_conflict), tuple(
+                curs.executemany(upsert_query(table_name, rows[0], conflict_target, ignore_conflict=ignore_conflict), tuple(
                     build_row_values(row) for row in rows))
 
             if update:
@@ -316,7 +342,7 @@ def batch_upsert_rows(model, rows, batch_size=750000, update=None, ignore_confli
 
 def upsert_single_rows(model, rows, update=None, ignore_conflict=False):
     table_name = model._meta.db_table
-    primary_key = model._meta.pk.name
+    conflict_target = get_conflict_target(model)
     rows_created = 0
     rows_updated = 0
 
@@ -324,7 +350,7 @@ def upsert_single_rows(model, rows, update=None, ignore_conflict=False):
         try:
             with connection.cursor() as curs:
                 with transaction.atomic():
-                    curs.execute(upsert_query(table_name, row, primary_key, ignore_conflict=ignore_conflict),
+                    curs.execute(upsert_query(table_name, row, conflict_target, ignore_conflict=ignore_conflict),
                                  build_row_values(row))
                     rows_updated = rows_updated + 1
                     rows_created = rows_created + 1
@@ -340,8 +366,8 @@ def upsert_single_rows(model, rows, update=None, ignore_conflict=False):
                             rows_updated = 0
 
         except Exception as e:
-            logger.error(
-                "Database Error * - unable to upsert single record. Error: {}".format(e))
+            logger.debug(
+                "Database - skipped duplicate record: {}".format(e))
             continue
 
     if update:

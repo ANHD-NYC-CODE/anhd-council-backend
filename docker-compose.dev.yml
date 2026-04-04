@@ -76,7 +76,7 @@ services:
     build: .
     container_name: "celerybeat"
     image: app_image
-    entrypoint: "celery -A app beat -l debug --scheduler django_celery_beat.schedulers:DatabaseScheduler --logfile=./celery/logs/beat.log"
+    entrypoint: "celery -A app beat -l debug --scheduler django_celery_beat.schedulers:DatabaseScheduler --pidfile= --logfile=./celery/logs/beat.log"
     networks:
       - network1
     depends_on:
@@ -102,6 +102,8 @@ services:
       - "8888:8888"
     environment:
       - TZ=America/New_York
+      - FLOWER_UNAPPLY_DJANGO_FIXUPS=true
+    command: celery flower --broker=redis://redis --port=8888
   redis:
     environment:
       - TZ=America/New_York

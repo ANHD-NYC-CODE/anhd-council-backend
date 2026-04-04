@@ -160,10 +160,13 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
                     return False
             return value  # Return as-is if it's already True/False or None
     
-        # Always overwrite city, state, and zip with owners* values
-        self.city = self.ownerscity
-        self.state = self.ownersstate
-        self.zip = self.ownerszip
+        # Always overwrite city, state, and zip with owners* values if available
+        if hasattr(self, 'ownerscity') and self.ownerscity:
+            self.city = self.ownerscity
+        if hasattr(self, 'ownersstate') and self.ownersstate:
+            self.state = self.ownersstate
+        if hasattr(self, 'ownerszip') and self.ownerszip:
+            self.zip = self.ownerszip
         if self.firstpermitdate:
             self.permitissuedate = self.firstpermitdate
     
@@ -232,8 +235,8 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
         query_string = f"$select={','.join(fields)}&$limit=100000000"
         download_url = f"{cls.base_download_endpoint}?{query_string}"
     
-        logger.info(f"📥 Downloading DOB Now filtered dataset from: {download_url}")
-        return cls.download_file(download_url, file_name=file_name)
+        logger.info("Downloading DOB Now filtered dataset from: %s", download_url)
+        return cls.download_file(download_url, file_name=file_name or "DOBNowFiledPermit")
 
     @classmethod
     def update_set_filter(self, csv_reader, headers):
@@ -325,51 +328,20 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
             row.pop('Postcode', None)
             row.pop('postcode', None)
             return row
-    
-        rows = from_csv_file_to_gen(file_path, update)
-        cleaned_rows = cls.clean_null_bytes_headers(rows)
-    
-        # 🔥 Log the first few rows before transformation
-        for i, raw_row in enumerate(cleaned_rows):
-            logger.info(f"Raw CSV Row {i}: {raw_row}")
-            if i >= 2:  # Only log the first 3 rows
-                break
-    
-        logger.info("Applying postcode filter and further transformations...")
-        expected_fields = [f.name for f in cls._meta.fields]
-        
-        # Remove "id" from expected fields
-        if "id" in expected_fields:
-            expected_fields.remove("id")
-        
-        transformed_rows = []
-        for row in with_bbl((filter_postcode(row) for row in cleaned_rows)):
-            transformed_row = {field: row.get(field, None) for field in expected_fields if field != "id"}
-            transformed_row["currentstatusdate"] = transform_date(row.get("currentstatusdate"))
-            transformed_row["filingdate"] = transform_date(row.get("filingdate"))
-            transformed_row["firstpermitdate"] = transform_date(row.get("firstpermitdate"))
-            transformed_row["permitissuedate"] = transform_date(row.get("firstpermitdate"))
-            transformed_rows.append(transformed_row)
-        return transformed_rows
 
-    @classmethod
-    def seed_or_update_self(cls, file_path, **kwargs):
-        logger.info("Seeding/Updating %s", cls.__name__)
-        count = 0  # Counter for logging progress
-    
         def convert_boolean(value):
-            if value is None:  # Handle None correctly
+            if value is None:
                 return None
             if isinstance(value, str):
                 value = value.strip().lower()
                 if value == "yes":
-                    return True
+                    return "true"
                 elif value == "no":
-                    return False
-                elif value == "":  # Handle empty values
+                    return "false"
+                elif value == "":
                     return None
-            return value  # Return as-is if already True/False/None
-    
+            return value
+
         boolean_fields = [
             "sprinklerworktype", "plumbingworktype", "littlee", "unmappedccostreet",
             "requestlegalization", "includespermanentremoval", "incompliancewithnycecc",
@@ -381,63 +353,35 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
             "structuralworktype", "supportofexcavationworktype",
             "temporaryplaceofassemblyworktype"
         ]
-    
-        def log_progress(row):
-            """Log every 50,000 records inserted."""
-            nonlocal count
-            count += 1
-            if count % 50000 == 0:
-                logger.info(f"Imported {count} records...")
-            return row
-    
-        def clean_boolean_fields(row):
-            """Ensure all boolean fields are converted before inserting."""
+
+        rows = from_csv_file_to_gen(file_path, update)
+        cleaned_rows = cls.clean_null_bytes_headers(rows)
+
+        expected_fields = [f.name for f in cls._meta.fields if f.name != "id"]
+
+        for row in with_bbl((filter_postcode(row) for row in cleaned_rows)):
+            transformed_row = {field: row.get(field, None) for field in expected_fields}
+            transformed_row["currentstatusdate"] = transform_date(row.get("currentstatusdate"))
+            transformed_row["filingdate"] = transform_date(row.get("filingdate"))
+            transformed_row["firstpermitdate"] = transform_date(row.get("firstpermitdate"))
+            transformed_row["permitissuedate"] = transform_date(row.get("firstpermitdate"))
+            # Clean boolean fields for COPY compatibility
             for field in boolean_fields:
-                if field in row:
-                    row[field] = convert_boolean(row[field])
-            return row
-    
-        transformed_rows = list(cls.transform_self(file_path=file_path, **kwargs))  # Convert generator to list
+                if field in transformed_row:
+                    transformed_row[field] = convert_boolean(transformed_row[field])
+            # Map owners fields to city/state/zip
+            if transformed_row.get("ownerscity"):
+                transformed_row["city"] = transformed_row["ownerscity"]
+            if transformed_row.get("ownersstate"):
+                transformed_row["state"] = transformed_row["ownersstate"]
+            if transformed_row.get("ownerszip"):
+                transformed_row["zip"] = transformed_row["ownerszip"]
+            yield transformed_row
 
-        if not transformed_rows:
-            logger.warning("No transformed rows received from CSV. Skipping import.")
-            return  # Stop execution if no data exists
-        
-        processed_rows = [
-            log_progress(clean_boolean_fields({k: v for k, v in row.items() if k != "id"}))
-            for row in transformed_rows
-        ]
-        
-        if not processed_rows:
-            logger.warning("No processed rows found after transformation!")
-            return
-
-        logger.info("Ready to insert/update %s records.", len(processed_rows))
-
-        logger.debug("First Row Before Bulk Insert: %s", processed_rows[0] if processed_rows else "No data")
-
-        if processed_rows:
-            for i, row in enumerate(processed_rows[:5]):
-                logger.debug("Sample Row %s: %s", i+1, row)
-            else:
-                logger.warning("No processed rows found after transformation!")
-
-        for i, row in enumerate(processed_rows[:5]):
-            logger.debug("Sample Row %s: %s", i+1, row)
-
-        existing_count = cls.objects.count()
-        logger.info("Records in DB before insert: %s", existing_count)
-    
-        cls.bulk_seed(file_path=file_path, data=processed_rows, overwrite=True)
-    
-        new_count = cls.objects.count()
-        inserted_count = new_count - existing_count
-
-        if inserted_count > 0:
-            kwargs['update'].rows_created += inserted_count
-            kwargs['update'].save()
-
-        logger.info(f"🎯 Import Complete: {inserted_count} new records inserted. Total: {new_count} records in DB.")
+    @classmethod
+    def seed_or_update_self(cls, file_path, **kwargs):
+        logger.info("Seeding/Updating %s", cls.__name__)
+        cls.bulk_seed(file_path=file_path, overwrite=True, **kwargs)
 
 
     def __str__(self):

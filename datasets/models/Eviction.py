@@ -1,4 +1,4 @@
-from django.db import models, IntegrityError
+from django.db import models, IntegrityError, transaction
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.utils.validation_filters import is_null
@@ -119,7 +119,8 @@ class Eviction(BaseDatasetModel, models.Model):
         eviction.uniqueid = "{}-{}-{}-{}".format(eviction.evictionaddress,
                                                  eviction.evictionapartmentnumber, eviction.executeddate, eviction.marshallastname)
         try:
-            eviction.save()
+            with transaction.atomic():
+                eviction.save()
         except IntegrityError as e:
             # silently fail duplicate entries
             return
@@ -156,23 +157,20 @@ class Eviction(BaseDatasetModel, models.Model):
                     self.save_eviction(
                         eviction=eviction, bbl=address_match[0].bbl)
                 else:
-                    # logger.debug(
-                    #     "no eviction match - multiple matches found on generic address: {}".format(eviction.evictionaddress))
                     try:
                         self.get_geosearch_address(cleaned_address, eviction)
                     except IndexError:
                         logger.debug(
-                            "error getting geosearch address for eviction: {}".format(eviction.evictionaddress))
+                            "error getting geosearch address for eviction: %s", eviction.evictionaddress)
             else:
-                # logger.debug("no eviction match - no address matches: {}".format(eviction.evictionaddress))
                 try:
                     self.get_geosearch_address(cleaned_address, eviction)
                 except IndexError:
                     logger.debug(
-                        "error getting geosearch address for eviction: {}".format(eviction.evictionaddress))
+                        "error getting geosearch address for eviction: %s", eviction.evictionaddress)
         else:
             logger.debug(
-                "no eviction match - no regex matches: {}".format(eviction.evictionaddress))
+                "no eviction match - no regex matches: %s", eviction.evictionaddress)
 
 
     @classmethod
@@ -184,8 +182,8 @@ class Eviction(BaseDatasetModel, models.Model):
         try:
             parsed = json.loads(response.text)
         except Exception as e:
-            logger.debug('Unable to parse response from query: {}'.format(
-                address_search_query))
+            logger.debug('Unable to parse response from query: %s',
+                cleaned_address_with_borough)
             return None
 
         match = None
@@ -350,7 +348,7 @@ class Eviction(BaseDatasetModel, models.Model):
             if dataset gets too big, switch to seed_with_upsert (upsert, slow, low memory)
         """
         logger.info("Seeding/Updating %s", self.__name__)
-        update = self.seed_with_upsert(**kwargs)
+        update = self.seed_with_upsert(ignore_conflict=True, **kwargs)
         self.link_eviction_to_pluto_by_address()
 
         return update
@@ -367,7 +365,8 @@ class Eviction(BaseDatasetModel, models.Model):
 def annotate_property_on_save(sender, instance, created, **kwargs):
     if created == True:
         try:
-
+            if instance.bbl is None:
+                return
             annotation = sender.annotate_property_standard(
                 instance.bbl.propertyannotation)
             annotation.save()

@@ -87,8 +87,8 @@ class DOBPermitIssuedNow(BaseDatasetModel, models.Model):
         ]
         download_url = f"{self.base_download_endpoint}?$select={','.join(fields)}&$limit=100000000"
     
-        logger.info(f"📥 Downloading DOB Permit Issued Now filtered dataset from: {download_url}")
-        return self.download_file(download_url, file_name=file_name)
+        logger.info("Downloading DOB Permit Issued Now filtered dataset from: %s", download_url)
+        return self.download_file(download_url, file_name=file_name or "DOBPermitIssuedNow")
 
     @classmethod
     def clean_null_bytes_headers(cls, gen_rows):

@@ -10,10 +10,11 @@ logger = logging.getLogger('app')
 
 
 def send_mail(to_email, subject, content_string):
+    if settings.DEBUG:
+        logger.debug("Skipping email in DEBUG mode: %s", subject)
+        return
     sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY', ''))
     from_email = os.environ.get('EMAIL_USER', '')
-    if settings.DEBUG:
-        subject = "(DEVELOPMENT) " + subject
     message = Mail(from_email=from_email,
                    to_emails=to_email,
                    subject=subject,
