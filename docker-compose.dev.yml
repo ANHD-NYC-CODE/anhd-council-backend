@@ -102,7 +102,6 @@ services:
       - "8888:8888"
     environment:
       - TZ=America/New_York
-      - FLOWER_UNAPPLY_DJANGO_FIXUPS=true
     command: celery flower --broker=redis://redis --port=8888
   redis:
     environment:
