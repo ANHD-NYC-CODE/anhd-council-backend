@@ -85,7 +85,7 @@ class LisPenden(BaseDatasetModel, models.Model):
 
     @classmethod
     def mark_foreclosure_with_creditor(self):
-        for lispenden in self.objects.filter(~Q(type=self.LISPENDEN_TYPES['foreclosure'])):
+        for lispenden in self.objects.filter(~Q(type=self.LISPENDEN_TYPES['foreclosure'])).iterator():
             if lispenden.has_bank_creditor():
 
                 lispenden.type = self.LISPENDEN_TYPES['foreclosure']

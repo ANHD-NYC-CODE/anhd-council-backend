@@ -114,6 +114,18 @@ If the Box dump is outdated and you need a fresh copy from production:
 
 4. Once downloaded, use `sh setup-db.dev.sh dap_prod.gz` to load it locally.
 
+### Socrata (NYC Open Data) Downloads
+
+Most datasets are downloaded from NYC Open Data (Socrata) via their API. The download URLs are defined in each dataset model's `download_endpoint` or `download()` method.
+
+Some datasets use `$select` to limit which fields are downloaded, reducing file size:
+```
+https://data.cityofnewyork.us/resource/{API_ID}.csv?$select=field1,field2&$limit=100000000
+```
+The `$limit=100000000` ensures all records are returned (Socrata defaults to 1000 rows). This doesn't mean 100M rows are downloaded — it returns whatever the dataset contains.
+
+Datasets that use `$select` filtering: DOBNowFiledPermit, DOBPermitIssuedNow, HPDViolation, HPDComplaint. Other datasets download all fields since they use most of them.
+
 ### Note on `docker-compose` vs `docker compose`
 
 If you have Docker Compose v2 (Docker Desktop), use `docker compose` (with a space). The older `docker-compose` (hyphenated) command may not be available.

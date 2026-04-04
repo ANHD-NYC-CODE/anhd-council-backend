@@ -337,3 +337,28 @@ def async_check_on_updates(self):
     except Exception as e:
         handle_task_error(e)
         raise e
+
+
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', max_retries=0)
+def async_db_health_check(self):
+    """Periodic task to verify database connectivity. Sends alert email if DB is unreachable."""
+    from django.db import connection
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+        logger.debug("DB health check passed")
+    except Exception as e:
+        logger.error("DB health check FAILED: %s", e)
+        alert_subject = "DAP Portal - CRITICAL - Database Unreachable"
+        alert_body = "The database health check failed.<br><br>Error: {}<br><br>The database server may need to be restarted.".format(str(e))
+        try:
+            from sendgrid import SendGridAPIClient
+            from sendgrid.helpers.mail import Mail
+            sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY', ''))
+            from_email = os.environ.get('EMAIL_USER', '')
+            for to_email in ['dapadmin@anhd.org', 'scott@blueprintinteractive.com']:
+                message = Mail(from_email=from_email, to_emails=to_email, subject=alert_subject, html_content=alert_body)
+                sg.send(message)
+            logger.info("DB health check alert sent")
+        except Exception as mail_err:
+            logger.error("Failed to send DB health check alert: %s", mail_err)

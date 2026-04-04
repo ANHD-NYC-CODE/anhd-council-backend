@@ -178,7 +178,8 @@ class Eviction(BaseDatasetModel, models.Model):
         cleaned_address_with_borough = "{}, {}".format(
             cleaned_address, eviction.borough)
         response = requests.get(
-            "https://geosearch.planninglabs.nyc/v2/search?text={}".format(cleaned_address_with_borough))
+            "https://geosearch.planninglabs.nyc/v2/search?text={}".format(cleaned_address_with_borough),
+            timeout=15)
         try:
             parsed = json.loads(response.text)
         except Exception as e:

@@ -82,7 +82,7 @@ class CONHRecord(BaseDatasetModel, models.Model):
 
     @classmethod
     def annotate_properties(self):
-        for record in self.objects.all():
+        for record in self.objects.all().iterator():
             try:
                 annotation = record.bbl.propertyannotation
                 annotation.conhrecord = True

@@ -92,23 +92,6 @@ class DOBComplaint(BaseDatasetModel, models.Model):
     @classmethod
     def seed_or_update_self(self, **kwargs):
         logger.info("Seeding/Updating %s", self.__name__)
-    
-        if "rows" not in kwargs:
-            file_path = kwargs.get("file_path")
-            if not file_path:
-                return  # Silent exit instead of logging a warning
-            kwargs["rows"] = list(self.transform_self(file_path=file_path, update=kwargs.get("update")))
-    
-        original_len = len(kwargs["rows"])
-        kwargs["rows"] = [
-            row for row in kwargs["rows"]
-            if row.get("complaintnumber") not in (None, "", "null")
-        ]
-    
-        if not kwargs["rows"]:
-            return  # Again, silent exit — no warning
-    
-        logger.info("Filtered out %d rows missing complaintnumber", original_len - len(kwargs["rows"]))
         self.seed_with_upsert(callback=self.add_bbls_from_bin, **kwargs)
 
 

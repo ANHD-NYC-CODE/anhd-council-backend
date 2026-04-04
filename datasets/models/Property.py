@@ -152,9 +152,6 @@ class PropertyManager(models.Manager):
     def community(self, number):
         return self.get_queryset().community(number)
 
-    def council(self, number):
-        return self.get_queryset().council(number)
-
     def zipcode(self, number):
         return self.get_queryset().zipcode(number)
 
@@ -354,13 +351,15 @@ class Property(BaseDatasetModel, models.Model):
 
     @classmethod
     def recreate_community_relations(self):
-        for property in self.objects.all():
-            try:
-                property.cd = ds.Community.objects.get(id=property.cd_id)
-                property.save()
-            except Exception as e:
-                logger.debug(
-                    'Unable to find community for {}'.format(property))
+        from django.db import connection
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                UPDATE datasets_property p
+                SET cd_id = c.id
+                FROM datasets_community c
+                WHERE p.cd_id = c.id
+            """)
+            logger.info("Updated community relations for %s properties", cursor.rowcount)
 
     @classmethod
     def update_set_filter(self, csv_reader, headers):

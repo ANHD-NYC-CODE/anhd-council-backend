@@ -226,6 +226,10 @@ USE_L10N = True
 
 USE_TZ = True
 TIME_ZONE = "America/New_York"
+
+# Suppress naive datetime warnings to debug level
+import warnings
+warnings.filterwarnings('ignore', message='DateTimeField .* received a naive datetime')
 # https://github.com/celery/django-celery-beat/issues/95
 
 # https://stackoverflow.com/questions/19853378/how-to-keep-multiple-independent-celery-queues
