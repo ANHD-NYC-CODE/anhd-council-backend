@@ -69,10 +69,54 @@ Run: sudo sh build.dev.sh
 
 ## Development Setup (after cloning this repo)
 
-1. run `sh build.dev.sh`
-2. Download a pre-seeded database from dropbox here to move it to project root: https://www.dropbox.com/s/8iqkuk0ip39mtle/dap.gz?dl=0 This database comes with all the councils, communities, properties, buildings, address records, and subsidy programs pre-loaded.
-3. Run this command to copy the data - `gzip -d dap.gz && cat dap | docker exec -i postgres psql -U anhd -d anhd`
+### Option A: Using the database setup script (recommended)
+
+1. Get the `.env` and `.env.dev` files from another dev.
+2. Download the production database dump (`dap_prod.gz`) from [Box](https://blueprint.box.com/shared/static/ehsr8thnn511wk1hx3mre0drfmrms2d7.gz). The file is password-protected — get the password from a team member.
+3. Run the database setup script:
+   ```
+   sh setup-db.dev.sh /path/to/dap_prod.gz
+   ```
+   This will start Postgres, load the dump, and then start all other containers.
+   The app will be available at `http://localhost:8000`.
+
+**Important:** Make sure Docker Desktop's "Resource Saver" is turned off in Settings, as it can interrupt the long-running database load.
+
+### Option B: Manual setup
+
+1. Start only Postgres first:
+   ```
+   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d postgres
+   ```
+2. Wait for Postgres to be ready, then load the database dump:
+   ```
+   gunzip -c dap_prod.gz | docker exec -i postgres psql -U anhd -d anhd
+   ```
+3. Start the rest of the containers:
+   ```
+   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+   ```
 4. If the site does not run as is, run `docker exec -it app /bin/bash` to connect to the running docker container, and then run `python manage.py migrate`
+
+### Creating a fresh database dump from production
+
+If the Box dump is outdated and you need a fresh copy from production:
+
+1. Make sure the production database credentials are in your `.env` file (`DATABASE_HOST`, `DATABASE_PASSWORD`). These can be found on the production server at `/var/www/anhd-council-backend/.env`.
+
+2. Dump directly from the production database to a local file:
+   ```
+   PGPASSWORD=<DATABASE_PASSWORD> pg_dump -h <DATABASE_HOST> -U anhd -d anhd | gzip > dap_prod.gz
+   ```
+   This requires your IP to be whitelisted in the database droplet's firewall on DigitalOcean.
+
+3. The dump will be ~7GB compressed (~80GB uncompressed) and takes about 15-20 minutes to download.
+
+4. Once downloaded, use `sh setup-db.dev.sh dap_prod.gz` to load it locally.
+
+### Note on `docker-compose` vs `docker compose`
+
+If you have Docker Compose v2 (Docker Desktop), use `docker compose` (with a space). The older `docker-compose` (hyphenated) command may not be available.
 
 ## Migrations
 
