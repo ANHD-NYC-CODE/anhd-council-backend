@@ -196,20 +196,20 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
         starting_count = self.objects.count()
 
         execute(self.upsert_permit_sql(legacy_table, legacy_cols, raw_select=True))
-        logger.debug("legacy seeded - current count: {}", self.objects.count())
+        logger.debug("legacy seeded - current count: %s", self.objects.count())
         rows_created_legacy = self.objects.count() - starting_count
         kwargs['update'].rows_created = kwargs['update'].rows_created + \
             rows_created_legacy
         kwargs['update'].rows_updated = kwargs['update'].rows_updated + \
             (legacy_count - rows_created_legacy)
         kwargs['update'].save()
-        logger.debug("Completed seed into {} for {}",
+        logger.debug("Completed seed into %s for %s",
                      self.__name__, legacy_table._meta.db_table)
 
         starting_count = self.objects.count()
         # execute(self.upsert_permit_sql(now_table, now_cols))
         execute(self.upsert_permit_sql(now_table, now_cols, raw_select=True))
-        logger.debug("now seeded - current count: {}", self.objects.count())
+        logger.debug("now seeded - current count: %s", self.objects.count())
 
         rows_created_now = self.objects.count() - starting_count
         kwargs['update'].rows_created = kwargs['update'].rows_created + \
@@ -218,7 +218,7 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
             (now_count - rows_created_now)
         kwargs['update'].save()
 
-        logger.debug("Completed seed into {} for {}",
+        logger.debug("Completed seed into %s for %s",
                      self.__name__, now_table._meta.db_table)
 
         dataset = self.get_dataset()
