@@ -34,7 +34,7 @@ class BaseDatasetModel():
                     'https://data.cityofnewyork.us/api/views/{}.json'.format(self.API_ID)).text)
                 return datetime.fromtimestamp(response['rowsUpdatedAt'], timezone.utc)
             else:
-                return make_aware(datetime.datetime.now())
+                return make_aware(datetime.now())
         except Exception as e:
             logger.warning("Unable to retrieve last API update date", e)
             return None
