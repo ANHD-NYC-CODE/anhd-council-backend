@@ -349,7 +349,7 @@ class Eviction(BaseDatasetModel, models.Model):
             default method is bulk_seed for most datasets (immutable update, fast, memory intensive)
             if dataset gets too big, switch to seed_with_upsert (upsert, slow, low memory)
         """
-        logger.info("Seeding/Updating {}", self.__name__)
+        logger.info("Seeding/Updating %s", self.__name__)
         update = self.seed_with_upsert(**kwargs)
         self.link_eviction_to_pluto_by_address()
 

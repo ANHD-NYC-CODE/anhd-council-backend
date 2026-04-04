@@ -88,7 +88,7 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        logger.info("Seeding/Updating {}", self.__name__)
+        logger.info("Seeding/Updating %s", self.__name__)
         # Add records from both tables
         legacy_table = ds.DOBLegacyFiledPermit
         legacy_count = legacy_table.objects.count()
@@ -225,8 +225,8 @@ class DOBFiledPermit(BaseDatasetModel, models.Model):
         dataset.api_last_updated = datetime.today()
         dataset.save()
         total_count = self.objects.count()
-        logger.info("✅ Completed seeding DOBFiledPermit. Total rows in table: %s", total_count)
-        logger.info("📊 Rows created: %s, Rows updated: %s", kwargs['update'].rows_created, kwargs['update'].rows_updated)
+        logger.info("Completed seeding DOBFiledPermit. Total rows in table: %s", total_count)
+        logger.info("Rows created: %s, Rows updated: %s", kwargs['update'].rows_created, kwargs['update'].rows_updated)
 
         # Clean up any NULL job_type values
         cleanup_sql = """

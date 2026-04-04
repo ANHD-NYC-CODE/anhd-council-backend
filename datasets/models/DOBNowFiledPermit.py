@@ -167,7 +167,7 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
         if self.firstpermitdate:
             self.permitissuedate = self.firstpermitdate
     
-        # ✅ Convert Boolean fields
+        # Convert Boolean fields
         boolean_fields = [
             "sprinklerworktype", "plumbingworktype", "littlee", "unmappedccostreet",
             "requestlegalization", "includespermanentremoval", "incompliancewithnycecc",
@@ -183,7 +183,7 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
         for field in boolean_fields:
             setattr(self, field, convert_boolean(getattr(self, field)))
     
-        # ✅ Convert empty string numeric fields to None
+        # Convert empty string numeric fields to None
         numeric_fields = [
             "initialcost", "totalconstructionfloorarea", "reviewbuildingcode",
             "existingstories", "existingheight", "existingdwellingunits",
@@ -194,7 +194,7 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
             if value == "":
                 setattr(self, field, None)
     
-        # ✅ Convert date fields
+        # Convert date fields
         date_fields = ["currentstatusdate", "filingdate", "firstpermitdate", "permitissuedate"]
         for field in date_fields:
             value = getattr(self, field)
@@ -208,7 +208,7 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
         if not self.id:  # Allow PostgreSQL to auto-generate the ID
             self.id = None  # Ensure Django does NOT set an explicit ID
             
-        # ✅ Save the object
+        # Save the object
         super().save(*args, **kwargs)
 
     @classmethod
@@ -251,9 +251,9 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
     
         # Clean BOM and strip ID
         cleaned_header = {key.lstrip('\ufeff'): value for key, value in header_row.items() if key != "id"}
-        logger.debug("🚀 Cleaned header row (ID removed if present): %s", cleaned_header)
+        logger.debug("Cleaned header row (ID removed if present): %s", cleaned_header)
     
-        # ✅ Header replacements: legacy remaps (already in your code)
+        # Header replacements: legacy remaps (already in your code)
         legacy_replacements = {
             'ownerscity': 'city',
             'ownersstate': 'state',
@@ -261,7 +261,7 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
             'firstpermitdate': 'permitissuedate',
         }
     
-        # ✅ New replacements for Socrata resource API snake_case → camelCase
+        # New replacements for Socrata resource API snake_case → camelCase
         socrata_replacements = {
             "job_filing_number": "jobfilingnumber",
             "filing_status": "filingstatus",
@@ -284,7 +284,7 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
             "zip": "ownerszip",
         }
     
-        # ✅ Merge both replacement maps
+        # Merge both replacement maps
         all_replacements = {**legacy_replacements, **socrata_replacements}
     
         # Apply replacements to keys
@@ -293,16 +293,16 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
             new_key = all_replacements.get(key, key)
             remapped_header[new_key] = value
     
-        logger.info("✅ Remapped Header Row: %s", remapped_header)
+        logger.info("Remapped Header Row: %s", remapped_header)
     
         yield remapped_header
     
-        # ✅ Process remaining rows
+        # Process remaining rows
         for row in gen_rows:
             if isinstance(row, dict):
                 if "id" in row:
                     del row["id"]
-                    logger.debug("🚀 Removed 'id' from row: %s", row)
+                    logger.debug("Removed 'id' from row: %s", row)
     
                 for key, value in row.items():
                     if isinstance(value, str):
@@ -315,7 +315,7 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
                 yield row
     
             else:
-                logger.warning("⚠️ Unexpected row type: %s", type(row))
+                logger.warning("Unexpected row type: %s", type(row))
                 yield row
 
 
@@ -331,14 +331,14 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
     
         # 🔥 Log the first few rows before transformation
         for i, raw_row in enumerate(cleaned_rows):
-            logger.info(f"📝 Raw CSV Row {i}: {raw_row}")
+            logger.info(f"Raw CSV Row {i}: {raw_row}")
             if i >= 2:  # Only log the first 3 rows
                 break
     
         logger.info("Applying postcode filter and further transformations...")
         expected_fields = [f.name for f in cls._meta.fields]
         
-        # ✅ Remove "id" from expected fields
+        # Remove "id" from expected fields
         if "id" in expected_fields:
             expected_fields.remove("id")
         
@@ -358,7 +358,7 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
         count = 0  # Counter for logging progress
     
         def convert_boolean(value):
-            if value is None:  # ✅ Handle None correctly
+            if value is None:  # Handle None correctly
                 return None
             if isinstance(value, str):
                 value = value.strip().lower()
@@ -387,7 +387,7 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
             nonlocal count
             count += 1
             if count % 50000 == 0:
-                logger.info(f"✅ Imported {count} records...")
+                logger.info(f"Imported {count} records...")
             return row
     
         def clean_boolean_fields(row):
@@ -400,7 +400,7 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
         transformed_rows = list(cls.transform_self(file_path=file_path, **kwargs))  # Convert generator to list
 
         if not transformed_rows:
-            logger.warning("⚠️ No transformed rows received from CSV. Skipping import.")
+            logger.warning("No transformed rows received from CSV. Skipping import.")
             return  # Stop execution if no data exists
         
         processed_rows = [
@@ -409,26 +409,24 @@ class DOBNowFiledPermit(BaseDatasetModel, models.Model):
         ]
         
         if not processed_rows:
-            logger.warning("⚠️ No processed rows found after transformation!")
+            logger.warning("No processed rows found after transformation!")
             return
-        
-        logger.info(f"📊 Ready to insert/update {len(processed_rows)} records.")
 
-        logger.debug("🚀 First Row Before Bulk Insert: %s", processed_rows[0] if processed_rows else "No data")
+        logger.info("Ready to insert/update %s records.", len(processed_rows))
+
+        logger.debug("First Row Before Bulk Insert: %s", processed_rows[0] if processed_rows else "No data")
 
         if processed_rows:
-            for i, row in enumerate(processed_rows[:5]):  # Log first 5 rows
-                logger.debug(f"🚀 Sample Row {i+1}: {row}")
+            for i, row in enumerate(processed_rows[:5]):
+                logger.debug("Sample Row %s: %s", i+1, row)
             else:
-                logger.warning("⚠️ No processed rows found after transformation!")
-        
-         # ✅ Log first 5 rows
+                logger.warning("No processed rows found after transformation!")
+
         for i, row in enumerate(processed_rows[:5]):
-            logger.debug(f"🚀 Sample Row {i+1}: {row}")
-    
-        # ✅ Ensure bulk insert actually writes data
+            logger.debug("Sample Row %s: %s", i+1, row)
+
         existing_count = cls.objects.count()
-        logger.info(f"📊 Records in DB before insert: {existing_count}")
+        logger.info("Records in DB before insert: %s", existing_count)
     
         cls.bulk_seed(file_path=file_path, data=processed_rows, overwrite=True)
     

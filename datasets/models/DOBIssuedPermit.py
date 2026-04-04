@@ -200,12 +200,12 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
         dataset.save()
         
         final_count = self.objects.count()
-        logger.info("✅ Seeding complete for {}. Final counts:", self.__name__)
-        logger.info("📊 Total records: {}", final_count)
-        logger.info("📊 Records created: {}", kwargs['update'].rows_created)
-        logger.info("📊 Records updated: {}", kwargs['update'].rows_updated)
-        logger.info("📊 Legacy records: {}", legacy_count)
-        logger.info("📊 Now records: {}", now_count)
+        logger.info("Seeding complete for %s. Final counts:", self.__name__)
+        logger.info("Total records: %s", final_count)
+        logger.info("Records created: %s", kwargs['update'].rows_created)
+        logger.info("Records updated: %s", kwargs['update'].rows_updated)
+        logger.info("Legacy records: %s", legacy_count)
+        logger.info("Now records: %s", now_count)
 
     @classmethod
     def annotate_properties(self):

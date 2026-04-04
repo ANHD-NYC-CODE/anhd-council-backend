@@ -101,7 +101,7 @@ class DOBPermitIssuedNow(BaseDatasetModel, models.Model):
     
         # Clean BOM and strip ID
         cleaned_header = {key.lstrip('\ufeff'): value for key, value in header_row.items() if key != "id"}
-        logger.debug("🚀 Cleaned header row (ID removed if present): %s", cleaned_header)
+        logger.debug("Cleaned header row (ID removed if present): %s", cleaned_header)
     
         # Header replacements for Socrata resource API snake_case → camelCase
         socrata_replacements = {
@@ -126,7 +126,7 @@ class DOBPermitIssuedNow(BaseDatasetModel, models.Model):
             new_key = socrata_replacements.get(key, key)
             remapped_header[new_key] = value
     
-        logger.info("✅ Remapped Header Row: %s", remapped_header)
+        logger.info("Remapped Header Row: %s", remapped_header)
     
         yield remapped_header
     
@@ -135,7 +135,7 @@ class DOBPermitIssuedNow(BaseDatasetModel, models.Model):
             if isinstance(row, dict):
                 if "id" in row:
                     del row["id"]
-                    logger.debug("🚀 Removed 'id' from row: %s", row)
+                    logger.debug("Removed 'id' from row: %s", row)
     
                 for key, value in row.items():
                     if isinstance(value, str):
@@ -148,7 +148,7 @@ class DOBPermitIssuedNow(BaseDatasetModel, models.Model):
                 yield row
     
             else:
-                logger.warning("⚠️ Unexpected row type: %s", type(row))
+                logger.warning("Unexpected row type: %s", type(row))
                 yield row
 
     @classmethod
@@ -175,7 +175,7 @@ class DOBPermitIssuedNow(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        logger.info("Seeding/Updating {}", self.__name__)
+        logger.info("Seeding/Updating %s", self.__name__)
         return self.bulk_seed(**kwargs, overwrite=True)
 
     def __str__(self):

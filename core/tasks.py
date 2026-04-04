@@ -256,12 +256,18 @@ def async_update_from_file(self, file_id, previous_file_id):
     try:
         update = None
         file = c.DataFile.objects.get(id=file_id)
-        previous_file = c.DataFile.objects.filter(id=previous_file_id).first()
+        previous_file = c.DataFile.objects.filter(id=previous_file_id).first() if previous_file_id else None
         dataset = file.dataset
         logger.info(
             "Starting async update for dataset: {}".format(dataset.name))
-        update = c.Update.objects.create(
-            dataset=dataset, file=file, previous_file=previous_file)
+        try:
+            update = c.Update.objects.create(
+                dataset=dataset, file=file, previous_file=previous_file)
+        except Exception:
+            # previous_file may have been deleted between lookup and insert
+            logger.warning("previous_file_id {} no longer exists, creating update without it".format(previous_file_id))
+            update = c.Update.objects.create(
+                dataset=dataset, file=file, previous_file=None)
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
         if update:

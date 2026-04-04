@@ -85,7 +85,7 @@ def create_gen_from_csv_diff(original_file_path, new_file_path):
 
 
 def write_gen_to_temp_file(gen_rows):
-
+    os.makedirs(settings.MEDIA_TEMP_ROOT, exist_ok=True)
     temp_file_path = os.path.join(settings.MEDIA_TEMP_ROOT, str(
         'set_diff' + str(random.randint(1, 10000000))) + '.mock' if settings.TESTING else '.csv')
     headers = iter(next(gen_rows))
@@ -132,6 +132,7 @@ def seed_from_csv_diff(original_file_path, new_file_path, model, **kwargs):
         original_diff_set.add(json.dumps(row))
 
     diff = new_diff_set - original_diff_set
+    os.makedirs(settings.MEDIA_TEMP_ROOT, exist_ok=True)
     temp_file_path = os.path.join(settings.MEDIA_TEMP_ROOT, str(
         'set_diff' + str(random.randint(1, 10000000))) + '.mock' if settings.TESTING else '.csv')
     with open(temp_file_path, 'w') as temp_file:
@@ -155,6 +156,7 @@ def bulk_insert_from_file(model, file_path, **kwargs):
     logger.debug('creating temp csv with cleaned rows and seeding...')
     # create new csv with cleaned rows
 
+    os.makedirs(settings.MEDIA_TEMP_ROOT, exist_ok=True)
     temp_file_extension = '.mock' if settings.TESTING else '.csv'
     temp_file_path = os.path.join(settings.MEDIA_TEMP_ROOT, str(
         'clean_csv_' + str(random.randint(1, 10000000))) + temp_file_extension)
