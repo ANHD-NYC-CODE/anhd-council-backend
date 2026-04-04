@@ -64,17 +64,47 @@ def async_ensure_update_task_results(self):
 def clean_temp_directory(self):
     try:
         flushexpiredtokens.Command().handle()
+        # Clean temp files
         folder = settings.MEDIA_TEMP_ROOT
-        for the_file in os.listdir(folder):
-            file_path = os.path.join(folder, the_file)
-            try:
-                if os.path.isfile(file_path):
-                    os.unlink(file_path)
-            except Exception as e:
-                print(e)
+        if os.path.isdir(folder):
+            for the_file in os.listdir(folder):
+                file_path = os.path.join(folder, the_file)
+                try:
+                    if os.path.isfile(file_path):
+                        os.unlink(file_path)
+                except Exception as e:
+                    logger.warning('Error deleting temp file %s: %s', file_path, e)
+
+        # Clean downloaded CSV files (keep only the 2 most recent per dataset)
+        data_folder = settings.MEDIA_ROOT
+        if os.path.isdir(data_folder):
+            import glob
+            from collections import defaultdict
+            csv_files = glob.glob(os.path.join(data_folder, '*.csv'))
+            # Group by dataset name prefix (everything before the date stamp)
+            groups = defaultdict(list)
+            for f in csv_files:
+                basename = os.path.basename(f)
+                # Split at the date pattern __MMDDYYYY
+                prefix = basename.rsplit('__', 1)[0] if '__' in basename else basename
+                groups[prefix].append(f)
+
+            deleted = 0
+            for prefix, files in groups.items():
+                # Sort by modification time, newest first
+                files.sort(key=os.path.getmtime, reverse=True)
+                # Keep 2 most recent, delete the rest
+                for old_file in files[2:]:
+                    try:
+                        os.unlink(old_file)
+                        deleted += 1
+                    except Exception as e:
+                        logger.warning('Error deleting old CSV %s: %s', old_file, e)
+            if deleted:
+                logger.info('Cleaned up %s old CSV files from data directory', deleted)
 
     except Exception as e:
-        logger.error('Error during task: {}'.format(e))
+        logger.error('Error during cleanup task: %s', e)
         async_send_general_task_error_mail.delay(str(e))
         raise e
 
