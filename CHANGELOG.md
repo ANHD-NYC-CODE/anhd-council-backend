@@ -1,4 +1,43 @@
-# API CHANGELOG (Outdated. Please use GIT LOG for version updates)
+# API CHANGELOG
+
+### 2026-04-04 — Dataset Import Fixes & Performance
+
+**Bug Fixes**
+- Fixed `datetime.datetime.now()` crash in `BaseDatasetModel.fetch_last_updated` (affected all datasets without API_ID)
+- Fixed FK race condition in `async_update_from_file` where `previous_file` was deleted between lookup and insert (AEP Buildings failures)
+- Fixed missing `/app/data/temp/` directory causing DOB Permits Issued (NOW) failures
+- Fixed all `logger.info("{}",...)` format strings across 27+ model files (was crashing tasks silently)
+- Fixed Eviction `save_eviction` missing `transaction.atomic()` (caused 24 "transaction aborted" failures in prod)
+- Fixed Eviction null `bbl` crash in post_save signal (caused 9 "str has no attribute name" failures)
+- Fixed undefined `address_search_query` variable in Eviction geosearch
+- Fixed DOBComplaint loading all 3M rows into memory (now streams via generator)
+- Fixed DOBNowFiledPermit loading all rows into memory causing OOM/SIGKILL (now streams via generator with boolean cleaning)
+- Fixed duplicate `council()` method in PropertyManager
+- Fixed Flower container never starting (command only set timezone then exited)
+- Fixed celerybeat PID file causing stale lock on restart
+
+**Performance**
+- Eviction upserts use `ON CONFLICT DO NOTHING` — batch succeeds instead of falling back to 118k single-row inserts
+- PK deduplication before batch `executemany` prevents within-batch conflicts
+- Property `recreate_community_relations` replaced N+1 loop (872k queries) with single SQL UPDATE
+- Added `.iterator()` to 10 model loops to prevent full table memory loads
+- Annotation deadlock retry with backoff (3 attempts)
+- Duplicate row logging changed from ERROR to DEBUG
+
+**New Features**
+- DB health check periodic task (every 5 min) with email alerts if database unreachable
+- `setup-db.dev.sh` script for local dev database setup from production dump
+- Dataset field audit report (`dataset_field_audit.md`) with frontend usage mapping
+
+**Infrastructure**
+- Centralized task error handling — transient DB connection errors logged as WARNING, skip error emails
+- Skip all emails when `DEBUG=True` (dev environment)
+- Suppressed naive datetime warnings
+- 15s timeout on Eviction geosearch HTTP requests
+- Download filenames use model name (DOBNowFiledPermit, DOBPermitIssuedNow)
+- Flower compose config fixed for dev and prod
+- Socrata download pattern documented in README
+- Added `prod-logs/` to gitignore
 
 ### V1.0.11
 
