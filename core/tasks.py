@@ -19,6 +19,22 @@ import logging
 
 logger = logging.getLogger('app')
 
+TRANSIENT_ERRORS = ['connection already closed', 'connection to server', 'server closed the connection', 'server terminated abnormally']
+
+def is_transient_error(e):
+    error_str = str(e).lower()
+    return any(msg in error_str for msg in TRANSIENT_ERRORS)
+
+def handle_task_error(e, update=None):
+    if is_transient_error(e):
+        logger.warning('Transient connection error during task: %s', e)
+    else:
+        logger.error('Error during task: %s', e)
+        if update:
+            async_send_update_error_mail.delay(update.id, str(e))
+        else:
+            async_send_general_task_error_mail.delay(str(e))
+
 
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 5})
 def async_cache_council_property_summaries_full(self, token):
@@ -120,8 +136,7 @@ def async_create_update(self, dataset_id, file_id=None):
                 "*ERROR* - Task Failure - No dataset found in async_download_start")
             raise Exception("No dataset.")
     except Exception as e:
-        logger.error('Error during task: {}'.format(e))
-        async_send_general_task_error_mail.delay(str(e))
+        handle_task_error(e)
         raise e
 
 
@@ -143,11 +158,7 @@ def async_seed_split_file(self, file_path, update_id, dataset_id=None):
             "Beginning async seeding (split) - {} - c.Update: {}".format(update.dataset.name, update.id))
         dataset.split_seed_dataset(file_path=file_path, update=update)
     except Exception as e:
-        logger.error('Error during task: {}'.format(e))
-        if update:
-            async_send_update_error_mail.delay(update.id, str(e))
-        else:
-            async_send_general_task_error_mail.delay(str(e))
+        handle_task_error(e, update=update)
         raise e
 
 
@@ -166,11 +177,7 @@ def async_seed_file(self, file_path, update_id, dataset_id=None):
         logger.info(
             "{} updated successfully".format(update.dataset.name))
     except Exception as e:
-        logger.error('Error during task: {}'.format(e))
-        if update:
-            async_send_update_error_mail.delay(update.id, str(e))
-        else:
-            async_send_general_task_error_mail.delay(str(e))
+        handle_task_error(e, update=update)
         raise e
 
 
@@ -182,11 +189,7 @@ def async_seed_table(self, update_id):
             "Beginning async seeding (table) - {} - c.Update: {}".format(update.dataset.name, update.id))
         update.dataset.seed_dataset(update=update, logger=logger)
     except Exception as e:
-        logger.error('Error during task: {}'.format(e))
-        if update:
-            async_send_update_error_mail.delay(update.id, str(e))
-        else:
-            async_send_general_task_error_mail.delay(str(e))
+        handle_task_error(e, update=update)
         raise e
 
 
@@ -203,8 +206,7 @@ def async_download_start(self, dataset_id):
                 "*ERROR* - Task Failure - No dataset found in async_download_start")
             raise Exception("No dataset.")
     except Exception as e:
-        logger.error('Error during task: {}'.format(e))
-        async_send_general_task_error_mail.delay(str(e))
+        handle_task_error(e)
         raise e
 
 
@@ -225,8 +227,7 @@ def async_download_and_update(self, dataset_id, endpoint=None, file_name=None):
                 "*ERROR* - Task Failure - No dataset found in async_download_start")
             raise Exception("No dataset.")
     except Exception as e:
-        logger.error('Error during task: {}'.format(e))
-        async_send_general_task_error_mail.delay(str(e))
+        handle_task_error(e)
         raise e
 
 
@@ -246,8 +247,7 @@ def get_gmail_property_shark_links(self):
                 ds.PSPreForeclosure.create_async_update_worker(
                     endpoint=link, file_name=file_name)
     except Exception as e:
-        logger.error('Error during task: {}'.format(e))
-        async_send_general_task_error_mail.delay(str(e))
+        handle_task_error(e)
         raise e
 
 
@@ -269,11 +269,7 @@ def async_update_from_file(self, file_id, previous_file_id):
             update = c.Update.objects.create(
                 dataset=dataset, file=file, previous_file=None)
     except Exception as e:
-        logger.error('Error during task: {}'.format(e))
-        if update:
-            async_send_update_error_mail.delay(update.id, str(e))
-        else:
-            async_send_general_task_error_mail.delay(str(e))
+        handle_task_error(e, update=update)
         raise e
 
 
@@ -288,8 +284,7 @@ def async_download_all_dob_construction(self):
         dob_now_issued.download()
 
     except Exception as e:
-        logger.error('Error during task: {}'.format(e))
-        async_send_general_task_error_mail.delay(str(e))
+        handle_task_error(e)
         raise e
 
 
@@ -304,8 +299,7 @@ def async_download_all_dob_construction(self):
         dob_now_issued.download()
 
     except Exception as e:
-        logger.error('Error during task: {}'.format(e))
-        async_send_general_task_error_mail.delay(str(e))
+        handle_task_error(e)
         raise e
 
 
@@ -341,6 +335,5 @@ def async_check_on_updates(self):
                     )
 
     except Exception as e:
-        logger.error('Error during task: {}'.format(e))
-        async_send_general_task_error_mail.delay(str(e))
+        handle_task_error(e)
         raise e
