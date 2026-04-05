@@ -203,7 +203,8 @@ def async_send_user_notification_email(self, user_id, save_name, save_url, new_r
     
     if len(added_items) > 0:
         for item in added_items:
-            content += f'<p><a href="https://portal.displacementalert.org/property/{item["bbl"]}">{item["address"]}</a></p>'
+            if item.get("address"):
+                content += f'<p><a href="https://portal.displacementalert.org/property/{item["bbl"]}">{item["address"]}</a></p>'
         
     content += f'<p><a href="{save_url}">Click here</a> to view your original search, including new results.</p>'
 
@@ -717,8 +718,8 @@ def slack_send(message):
 
 def get_addresses_by_bbls(bbls, bbls_and_addresses):
     return [
-        {'bbl': bbl, 'address': next((item['address'] for item in bbls_and_addresses if item['bbl'] == bbl), None)}
-        for bbl in bbls[:10]  # Limit to the first 10 BBLs
+        {'bbl': bbl, 'address': next((item['address'] for item in bbls_and_addresses if str(item.get('bbl')) == str(bbl)), None)}
+        for bbl in bbls[:10]  # Preview limited to first 10
     ]
     
 def convert_mapping_to_query_string(mapping):    
