@@ -1,7 +1,7 @@
 import sys
 import traceback
 import time
-from django.db import connection, transaction, utils
+from django.db import connection, transaction, utils, IntegrityError
 from core.utils.transform import from_dict_list_to_gen, from_csv_file_to_gen
 from core.utils.csv_helpers import gen_to_csv
 from django.conf import settings
@@ -365,9 +365,13 @@ def upsert_single_rows(model, rows, update=None, ignore_conflict=False):
                             rows_updated = 0
                             rows_updated = 0
 
-        except Exception as e:
+        except IntegrityError as e:
             logger.debug(
                 "Database - skipped duplicate record: {}".format(e))
+            continue
+        except Exception as e:
+            logger.error(
+                "Database Error - unable to upsert single record: {}".format(e))
             continue
 
     if update:

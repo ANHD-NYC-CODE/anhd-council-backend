@@ -351,15 +351,13 @@ class Property(BaseDatasetModel, models.Model):
 
     @classmethod
     def recreate_community_relations(self):
-        from django.db import connection
-        with connection.cursor() as cursor:
-            cursor.execute("""
-                UPDATE datasets_property p
-                SET cd_id = c.id
-                FROM datasets_community c
-                WHERE p.cd_id = c.id
-            """)
-            logger.info("Updated community relations for %s properties", cursor.rowcount)
+        for property in self.objects.all().iterator():
+            try:
+                property.cd = ds.Community.objects.get(id=property.cd_id)
+                property.save()
+            except Exception as e:
+                logger.debug(
+                    'Unable to find community for %s', property)
 
     @classmethod
     def update_set_filter(self, csv_reader, headers):
