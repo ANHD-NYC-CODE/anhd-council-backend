@@ -115,7 +115,7 @@ def mm_dd_yyyy(date_str, splitter='/'):
         return datetime.date(year, month, day)
 
     except ValueError:
-        logger.warning("mm_dd_yyyy - * Unable to parse date string: {}".format(date_str))
+        logger.debug("mm_dd_yyyy - * Unable to parse date string: {}".format(date_str))
         return None
 
 
@@ -138,7 +138,7 @@ def yyyy_mm_dd(date_str, strptime_format='%Y%m%d'):
             raise ValueError
 
     except ValueError:
-        logger.warning("yyyy_mm_dd - * Unable to parse date string: {}".format(date_str))
+        logger.debug("yyyy_mm_dd - * Unable to parse date string: {}".format(date_str))
         return None
 
 
@@ -218,11 +218,11 @@ def date(x):
               
             # ❌ Case 14: No match found, log warning
             else:
-                logger.warning(f"Format not found - Unable to parse date string: {x}")
+                logger.debug(f"Format not found - Unable to parse date string: {x}")
                 return None
 
     except ValueError:
-        logger.warning(f"Unable to parse date string: {x}")
+        logger.debug(f"Unable to parse date string: {x}")
         return None  # Return None if parsing fails
 
     return parsed_date
@@ -285,7 +285,7 @@ def time(x):
 
             # ❌ Case 10: No match found, log warning
             else:
-                logger.warning(f"Format not found - Unable to parse time string: {x}")
+                logger.debug(f"Format not found - Unable to parse time string: {x}")
                 return None
 
     except ValueError:

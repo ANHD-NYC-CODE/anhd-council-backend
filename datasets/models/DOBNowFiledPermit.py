@@ -40,7 +40,7 @@ def transform_date(value):
         except ValueError:
             continue
 
-    logger.warning(f"Format not found - Unable to parse date string: {value}")
+    logger.debug(f"Format not found - Unable to parse date string: {value}")
     return None
 
 
