@@ -210,7 +210,7 @@ def async_send_user_notification_email(self, user_id, save_name, save_url, new_r
     content += '<p>If you would like to stop receiving these emails from DAP Portal, <a href="https://portal.displacementalert.org/me">visit your dashboard</a> to manage/unsubscribe from notifications.</p>'
     
     send_mail(user.email, subject, content)
-    slack_send(f"Emailed user {user.username} for custom search {save_name} the content: {content}")
+    # slack_send(f"Emailed user {user.username} for custom search {save_name} the content: {content}")
 
 
 
@@ -387,7 +387,9 @@ def replace_date_in_url(url, last_date, now_date):
     for parsed_f in mapping['0']['filters']:
         model_name = parsed_f['model']
         model_class = apps.get_model(app_label='datasets', model_name=model_name)
-        query_date_key = model_class.QUERY_DATE_KEY
+        query_date_key = getattr(model_class, 'QUERY_DATE_KEY', None)
+        if not query_date_key:
+            continue  # Skip models without date-based filtering (e.g., TaxLien)
         
         # Construct both plural date patterns
         date_start_plural = f'{model_name}s__{query_date_key}__gte='
@@ -411,7 +413,7 @@ def replace_date_in_url(url, last_date, now_date):
                         # slack_send(f"filter_key: {filter_key}")
                         # Check if the model_name is in the key
                         model_position = filter_key.find(model_name)
-                        slack_send(f"model_name: {model_name}")
+                        # slack_send(f"model_name: {model_name}")
                         if model_position != -1:
                             # slack_send(f"model_position: {filter_key}")
                             # Check if the character after the model_name is an 's' (to see if it's already plural)
@@ -421,11 +423,11 @@ def replace_date_in_url(url, last_date, now_date):
                             if not is_plural_in_key:
                                 plural_model_name = model_name + 's'
                                 new_key = filter_key.replace(model_name, plural_model_name, 1)
-                                slack_send(f"Model Updated to Plural: {new_key}")
+                                # slack_send(f"Model Updated to Plural: {new_key}")
                             else:
                                 # Keep the same key if it's already plural
                                 new_key = filter_key
-                                slack_send(f"Model Already Plural: {new_key}")
+                                # slack_send(f"Model Already Plural: {new_key}")
                             
                             # Replace the old key with the new key in the dictionary if it was modified
                             if new_key != filter_key:
@@ -534,14 +536,14 @@ def check_notifications_custom_search(notification_frequency):
                                 # Store results for future comparison
                                 if user_custom_search.last_notified_result is None:
                                     logger.info(f"Initial seeding for custom search id: {custom_search.id}")
-                                    slack_send(f"Seeding for custom search with id: {custom_search.id}")
+                                    # slack_send(f"Seeding for custom search with id: {custom_search.id}")
                                     serialized_result = json.dumps(new_result_rows)
                                     user_custom_search.last_notified_result = serialized_result
                                     user_custom_search.save()
                                     added_items = new_result_rows
                                 else:
                                     logger.info(f"Comparing results for custom search id: {custom_search.id}")
-                                    slack_send(f"Comparing results for custom search with id: {custom_search.id}")
+                                    # slack_send(f"Comparing results for custom search with id: {custom_search.id}")
                                     
                                     logger.info(f"Processing UserCustomSearch ID: {user_custom_search.id}")
                                     

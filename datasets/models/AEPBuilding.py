@@ -11,6 +11,7 @@ logger = logging.getLogger('app')
 
 class AEPBuilding(BaseDatasetModel, models.Model):
     download_endpoint = "https://data.cityofnewyork.us/api/views/hcir-3275/rows.csv?accessType=DOWNLOAD"
+    QUERY_DATE_KEY = 'aepstartdate'
 
     id = models.TextField(primary_key=True)  # buildingid-bbl-bin
     buildingid = models.TextField(default='', blank=True, null=True)
