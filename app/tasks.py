@@ -325,11 +325,9 @@ def get_query_result_hash_and_length_bbl(query_string):
         }
         
     except (requests.RequestException, ValueError) as e:
-        logger.error(f"Error in get_query_result_hash_and_length_bbl: {str(e)}")
-        # Return a default hash for error cases
-        error_hash = hashlib.sha256(b'error_result').hexdigest()
+        logger.warning("Error in get_query_result_hash_and_length_bbl: %s", e)
         return {
-            'hash': error_hash,
+            'hash': None,
             'length': 0,
             'result': [],
             'bbls_and_addresses': []
