@@ -22,7 +22,12 @@
 - Fixed custom search notifications querying all 114 searches instead of only subscribed ones (~48k yearly 502 errors)
 - Fixed custom search notification emails only showing 1 address (BBL type mismatch in address lookup)
 
+- Removed incorrect `QUERY_DATE_KEY` from AEPBuilding and CONHRecord (caused 500 error on API — PropertyAnnotation missing columns)
+- Fixed batch dedup collapsing all rows to 1 when PK is auto-generated
+
 **Performance**
+- DOBLegacyFiledPermit: `$select` download — 22 of 97 fields (~40% smaller CSV)
+- DOBPermitIssuedLegacy: `$select` download — 23 of 61 fields (~60% smaller CSV), switched from upsert to COPY
 - Eviction upserts use `ON CONFLICT DO NOTHING` — batch succeeds instead of falling back to 118k single-row inserts
 - PK and unique_together deduplication before batch `executemany` prevents within-batch conflicts
 - Added `.iterator()` to 10 model loops to prevent full table memory loads
