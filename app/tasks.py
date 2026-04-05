@@ -281,14 +281,18 @@ def get_query_result_hash_and_length(query_string):
 # We created this function to resolve the issue with current date appearing in search results.
 def get_query_result_hash_and_length_bbl(query_string):
     token = settings.CACHE_REQUEST_KEY
-    auth_headers = {'whoisit': token}
-    root_url = 'http://app:8000' if settings.DEBUG else 'https://api.displacementalert.org'
-    
+
     try:
-        r = requests.get(root_url + query_string, headers=auth_headers, timeout=300)
-        r.raise_for_status()
-        
-        result = r.json()
+        # Use Django test client to call the view internally, bypassing nginx
+        from django.test import Client
+        client = Client()
+        r = client.get(query_string, HTTP_WHOISIT=token, **{'SERVER_NAME': 'localhost'})
+
+        if r.status_code != 200:
+            logger.warning("Internal API call returned %s for query: %s", r.status_code, query_string[:100])
+            return {'hash': None, 'length': 0, 'result': [], 'bbls_and_addresses': []}
+
+        result = json.loads(r.content)
         
         # Set default values
         bbls = []
@@ -324,7 +328,7 @@ def get_query_result_hash_and_length_bbl(query_string):
             'bbls_and_addresses': []
         }
         
-    except (requests.RequestException, ValueError) as e:
+    except Exception as e:
         logger.warning("Error in get_query_result_hash_and_length_bbl: %s", e)
         return {
             'hash': None,
