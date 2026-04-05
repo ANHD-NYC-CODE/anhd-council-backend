@@ -232,8 +232,8 @@ def get_query_result_hash_and_length(query_string):
     
     try:
         # Run query on server and hash results
-        r = requests.get(root_url + query_string, headers=auth_headers)
-        r.raise_for_status()  # Raise an exception for bad status codes
+        r = requests.get(root_url + query_string, headers=auth_headers, timeout=300)
+        r.raise_for_status()
         
         result = r.json()
         
@@ -284,8 +284,8 @@ def get_query_result_hash_and_length_bbl(query_string):
     root_url = 'http://app:8000' if settings.DEBUG else 'https://api.displacementalert.org'
     
     try:
-        r = requests.get(root_url + query_string, headers=auth_headers)
-        r.raise_for_status()  # Raise an exception for bad status codes
+        r = requests.get(root_url + query_string, headers=auth_headers, timeout=300)
+        r.raise_for_status()
         
         result = r.json()
         
@@ -483,10 +483,18 @@ def bp_compare_bbls(old_array, new_array):
     
 def check_notifications_custom_search(notification_frequency):
     try:
-        custom_searches = u.CustomSearch.objects.all()
-        logger.info(f'Starting notification check for frequency: {notification_frequency}')
-        
-        for custom_search in custom_searches:
+        import time as _time
+        # Only check searches that have users subscribed at this frequency
+        custom_searches = u.CustomSearch.objects.filter(
+            usercustomsearch__notification_frequency=notification_frequency
+        ).distinct()
+        logger.info('Starting notification check for frequency: %s (%s searches)',
+                     notification_frequency, custom_searches.count())
+
+        for i, custom_search in enumerate(custom_searches):
+            # Space out requests to avoid overwhelming the database
+            if i > 0:
+                _time.sleep(5)
             try:
                 query = custom_search.query_string
                 past_result_hash = custom_search.result_hash_digest
