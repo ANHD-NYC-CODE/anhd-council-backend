@@ -15,28 +15,37 @@
 - Fixed duplicate `council()` method in PropertyManager
 - Fixed Flower container never starting (command only set timezone then exited)
 - Fixed celerybeat PID file causing stale lock on restart
+- Added missing `QUERY_DATE_KEY` to AEPBuilding and CONHRecord (91 + 55 prod errors)
+- Fixed TaxLien crash in custom search notification — skips models without date field
+- Added `default=''` to `last_notified_hash` field (16 prod NOT NULL violations)
+- Fixed `is_null` to catch literal "null" strings in CSV data
+- Fixed custom search notifications querying all 114 searches instead of only subscribed ones (~48k yearly 502 errors)
 
 **Performance**
 - Eviction upserts use `ON CONFLICT DO NOTHING` — batch succeeds instead of falling back to 118k single-row inserts
-- PK deduplication before batch `executemany` prevents within-batch conflicts
-- Property `recreate_community_relations` replaced N+1 loop (872k queries) with single SQL UPDATE
+- PK and unique_together deduplication before batch `executemany` prevents within-batch conflicts
 - Added `.iterator()` to 10 model loops to prevent full table memory loads
 - Annotation deadlock retry with backoff (3 attempts)
-- Duplicate row logging changed from ERROR to DEBUG
+- Duplicate row logging changed from DEBUG (IntegrityError) vs ERROR (other exceptions)
+- Custom search notifications spaced 5s apart to avoid overwhelming the database
+- HTTP request timeouts: 300s for custom search API calls, 15s for Eviction geosearch
 
 **New Features**
-- DB health check periodic task (every 5 min) with email alerts if database unreachable
+- DB health check periodic task (every 5 min) with email alerts to dapadmin@anhd.org and scott@blueprintinteractive.com if database unreachable
 - `setup-db.dev.sh` script for local dev database setup from production dump
 - Dataset field audit report (`dataset_field_audit.md`) with frontend usage mapping
+- CSV cleanup in weekly `clean_temp_directory` task — keeps 2 most recent per dataset, deletes rest (prod had 28GB accumulated)
 
 **Infrastructure**
 - Centralized task error handling — transient DB connection errors logged as WARNING, skip error emails
 - Skip all emails when `DEBUG=True` (dev environment)
 - Suppressed naive datetime warnings
-- 15s timeout on Eviction geosearch HTTP requests
 - Download filenames use model name (DOBNowFiledPermit, DOBPermitIssuedNow)
 - Flower compose config fixed for dev and prod
+- Commented out slack_send debug calls
+- Disabled ghost `ensure_task_updates` periodic task (code doesn't exist)
 - Socrata download pattern documented in README
+- Docker builder prune added to dev build script
 - Added `prod-logs/` to gitignore
 
 ### V1.0.11
