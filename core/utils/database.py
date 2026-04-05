@@ -305,10 +305,16 @@ def batch_upsert_rows(model, rows, batch_size=750000, update=None, ignore_confli
     # Deduplicate by PK and unique_together to avoid executemany failures
     # when source data has duplicate keys within the same batch
     pk_name = model._meta.pk.name
-    seen_pk = {}
-    for row in rows:
-        seen_pk[row.get(pk_name)] = row
-    rows = list(seen_pk.values())
+    if any(row.get(pk_name) is not None for row in rows[:1]):
+        # Only dedup by PK if rows actually have PK values (not auto-generated)
+        seen_pk = {}
+        for row in rows:
+            key = row.get(pk_name)
+            if key is not None:
+                seen_pk[key] = row
+            else:
+                seen_pk[id(row)] = row  # keep rows with no PK
+        rows = list(seen_pk.values())
 
     if model._meta.unique_together:
         unique_fields = model._meta.unique_together[0]
@@ -317,6 +323,15 @@ def batch_upsert_rows(model, rows, batch_size=750000, update=None, ignore_confli
             key = tuple(row.get(f) for f in unique_fields)
             seen_unique[key] = row
         rows = list(seen_unique.values())
+
+    # Also dedup by UniqueConstraint (not just unique_together)
+    for constraint in model._meta.constraints:
+        if hasattr(constraint, 'fields'):
+            seen = {}
+            for row in rows:
+                key = tuple(row.get(f) for f in constraint.fields)
+                seen[key] = row
+            rows = list(seen.values())
     rows_length = len(rows)
 
     with connection.cursor() as curs:

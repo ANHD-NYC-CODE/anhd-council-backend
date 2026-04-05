@@ -21,7 +21,6 @@ logger = logging.getLogger('app')
 class CONHRecord(BaseDatasetModel, models.Model):
     API_ID = 'bzxi-2tsw'
     download_endpoint = "https://data.cityofnewyork.us/api/views/bzxi-2tsw/rows.csv?accessType=DOWNLOAD"
-    QUERY_DATE_KEY = 'dateadded'
 
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
