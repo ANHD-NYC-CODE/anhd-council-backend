@@ -16,6 +16,7 @@ logger = logging.getLogger('app')
 class DOBPermitIssuedLegacy(BaseDatasetModel, models.Model):
     API_ID = 'ipu4-2q9a'
     download_endpoint = "https://data.cityofnewyork.us/api/views/ipu4-2q9a/rows.csv?accessType=DOWNLOAD"
+    base_download_endpoint = "https://data.cityofnewyork.us/resource/ipu4-2q9a.csv"
 
     class Meta:
         constraints = [
@@ -96,7 +97,52 @@ class DOBPermitIssuedLegacy(BaseDatasetModel, models.Model):
 
     @classmethod
     def download(self, endpoint=None, file_name=None):
-        return self.download_file(self.download_endpoint, file_name=file_name)
+        fields = [
+            "job__", "permit_si_no", "borough", "bin__", "house__", "street_name",
+            "block", "lot", "work_type", "job_type", "permit_status", "filing_status",
+            "permit_type", "permit_subtype",
+            "issuance_date", "expiration_date",
+            "permittee_s_first_name", "permittee_s_last_name", "permittee_s_business_name",
+            "owner_s_first_name", "owner_s_last_name", "owner_s_business_name",
+            "dobrundate"
+        ]
+        download_url = "{}?$select={}&$limit=100000000".format(
+            self.base_download_endpoint, ','.join(fields))
+        logger.info("Downloading DOBPermitIssuedLegacy filtered dataset from: %s", download_url)
+        return self.download_file(download_url, file_name=file_name or "DOBPermitIssuedLegacy")
+
+    # Socrata resource API returns different column names than the CSV export
+    SOCRATA_FIELD_MAP = {
+        'job__': 'job',
+        'permit_si_no': 'permitsino',
+        'bin__': 'bin',
+        'house__': 'house',
+        'street_name': 'streetname',
+        'work_type': 'worktype',
+        'job_type': 'jobtype',
+        'permit_status': 'permitstatus',
+        'filing_status': 'filingstatus',
+        'permit_type': 'permittype',
+        'permit_subtype': 'permitsubtype',
+        'issuance_date': 'issuancedate',
+        'expiration_date': 'expirationdate',
+        'permittee_s_first_name': 'permitteesfirstname',
+        'permittee_s_last_name': 'permitteeslastname',
+        'permittee_s_business_name': 'permitteesbusinessname',
+        'owner_s_first_name': 'ownersfirstname',
+        'owner_s_last_name': 'ownerslastname',
+        'owner_s_business_name': 'ownersbusinessname',
+    }
+
+    @classmethod
+    def remap_headers(cls, gen_rows):
+        for row in gen_rows:
+            remapped = {}
+            for key, value in row.items():
+                clean_key = key.lstrip('\ufeff')
+                new_key = cls.SOCRATA_FIELD_MAP.get(clean_key, clean_key)
+                remapped[new_key] = value
+            yield remapped
 
     @classmethod
     def pre_validation_filters(self, gen_rows):
@@ -120,7 +166,7 @@ class DOBPermitIssuedLegacy(BaseDatasetModel, models.Model):
 
     @classmethod
     def transform_self(self, file_path, update=None):
-        return self.pre_validation_filters(with_bbl(from_csv_file_to_gen(file_path, update)))
+        return self.pre_validation_filters(with_bbl(self.remap_headers(from_csv_file_to_gen(file_path, update))))
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
