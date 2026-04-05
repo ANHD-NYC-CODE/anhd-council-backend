@@ -227,57 +227,10 @@ def async_test_celery(self):
 
 
 def get_query_result_hash_and_length(query_string):
-    token = settings.CACHE_REQUEST_KEY
-    auth_headers = {'whoisit': token}
-    root_url = 'http://app:8000' if settings.DEBUG else 'https://api.displacementalert.org'
-    
-    try:
-        # Run query on server and hash results
-        r = requests.get(root_url + query_string, headers=auth_headers, timeout=300)
-        r.raise_for_status()
-        
-        result = r.json()
-        
-        # Ensure result is a valid data structure
-        if result is not None:
-            result_json = json.dumps(result, sort_keys=True).encode('utf-8')
-            result_hash = hashlib.sha256(result_json).hexdigest()
-            result_length = len(result) if isinstance(result, (list, dict)) else 0
-            
-            return {
-                'hash': result_hash,
-                'length': result_length
-            }
-        
-        # Return default hash for empty/null results
-        default_hash = hashlib.sha256(b'empty_result').hexdigest()
-        return {
-            'hash': default_hash,
-            'length': 0
-        }
-        
-    except requests.RequestException as e:
-        logger.error(f"Request error in get_query_result_hash_and_length: {str(e)}")
-        error_hash = hashlib.sha256(b'request_error').hexdigest()
-        return {
-            'hash': error_hash,
-            'length': 0
-        }
-    except ValueError as e:
-        logger.error(f"JSON parsing error in get_query_result_hash_and_length: {str(e)}")
-        error_hash = hashlib.sha256(b'json_error').hexdigest()
-        return {
-            'hash': error_hash,
-            'length': 0
-        }
-    except Exception as e:
-        logger.error(f"Unexpected error in get_query_result_hash_and_length: {str(e)}")
-        error_hash = hashlib.sha256(b'unexpected_error').hexdigest()
-        return {
-            'hash': error_hash,
-            'length': 0
-        }
-    
+    """Deprecated: use get_query_result_hash_and_length_bbl instead."""
+    return get_query_result_hash_and_length_bbl(query_string)
+
+
 # We created this function to resolve the issue with current date appearing in search results.
 def get_query_result_hash_and_length_bbl(query_string):
     token = settings.CACHE_REQUEST_KEY
