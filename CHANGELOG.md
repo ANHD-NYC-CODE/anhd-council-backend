@@ -33,8 +33,10 @@
 - Added `.iterator()` to 10 model loops to prevent full table memory loads
 - Annotation deadlock retry with backoff (3 attempts)
 - Duplicate row logging changed from DEBUG (IntegrityError) vs ERROR (other exceptions)
+- Custom search notifications: replaced HTTP self-call through nginx with internal Django client (eliminates ~48k yearly 502 errors)
 - Custom search notifications spaced 5s apart to avoid overwhelming the database
-- HTTP request timeouts: 300s for custom search API calls, 15s for Eviction geosearch
+- 15s timeout on Eviction geosearch HTTP requests
+- Return None hash on API errors instead of fake error hash (prevents masking future changes)
 
 **New Features**
 - DB health check periodic task (every 5 min) with email alerts to dapadmin@anhd.org and scott@blueprintinteractive.com if database unreachable
