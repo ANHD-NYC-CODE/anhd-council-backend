@@ -49,6 +49,90 @@
 - Docker builder prune added to dev build script
 - Added `prod-logs/` to gitignore
 
+### 2025-10 / 2025-11 — File Upload Streamlining
+- Streamlined file upload process
+- Various fixes to file upload flow
+
+### 2025-07 — DOB De-duplication
+- Updated ID as foreign key for DOB models
+- Added de-duplication logic for DOB imports
+
+### 2025-06 — DOB Issued Permits (NOW) Source Type
+- Added new DOB NOW type for permits issued
+- For DOB Issued Permits (NOW), use Filing Reason in Source Type for Initial Permit vs Renewal classification
+- Remove duplicates for DOB imports
+- Fix: support both `dotenv.load_dotenv` and `dotenv.read_dotenv` for manage.py compatibility
+
+### 2025-05 — DOB Model Overhaul
+- Fixed DOB NOW permit issued join
+- Fixed DOB NOW updates
+- Various updates to DOBNowFiledPermit, DOBFiledPermit, DOBFiledPermitFilter, DOBComplaint models
+- Updates to typecast.py and models.py
+- DOB Issued NOW updates
+
+### 2025-03 / 2025-04 — DOB NOW Filed Permit Iteration
+- Various updates to DOBNowFiledPermit model (extensive iteration on field mappings and logic)
+- Various updates to DOBFiledPermit model
+- Updates to typecast.py
+
+### 2025-01 / 2025-02 — Rent Stabilization & DOB NOW Updates
+- Various updates to RentStabilizationRecord model
+- Various updates to DOBNowFiledPermit model
+- Updates to Property model
+- README updates
+
+### 2024-10 / 2024-11 — Custom Search Notification Fixes
+- Updated tasks.py with new logic for between-dates filtering
+- Fixed plural/singular issue with model names in notification tasks
+- Fixed spaces in URLs and queries for tasks
+- Fixed empty result.json in tasks
+- Updated filtered_results_url handling and email count logic
+- Added Slack debugging for notifications
+- Fixed mailer.py errors in production settings
+- Updated TaxLien to only import final sales
+
+### 2024-08 — Custom Search Email Notification Overhaul
+- Rewrote email notification format and logic to check for new properties matching search criteria since last notification
+- Added Slack logging for notification debugging (`slack_send` function)
+- Added `get_addresses_by_bbls` function
+- Moved Slack URL to .env
+- Various tasks.py iteration and cleanup
+
+### 2024-07 — Property & Task Updates
+- Updated Property model to set Council field correctly
+- Various updates to tasks.py and models.py
+
+### 2024-06 — HPD Violation API & Data Import Improvements
+- Added HPD violation API endpoint filtering via SODA
+- Added mapping for new HPD violation API columns
+- Hardcoded batch sizes for different import functions
+- Updated filename methods for better naming and date-based filenames
+- Added HPD CSV filter and batch-size increase
+- Removed select filter from violations
+- Updated database.py, production.py, and base.py settings
+
+### 2024-05 — Major Infrastructure Upgrade
+- Python, PostgreSQL, and Django upgrades
+- HPD Complaint / Dataset upgrade
+- Updated HPDComplaint model
+- OCAHousingCourt model updates
+- Fixed duplicate eviction keys
+- New server migration changes
+- Updated production email addresses
+- Flower time sync fix
+- Various database.py configuration updates
+
+### 2024-03 — Documentation
+- README updates
+
+### 2024-01 — Custom Search Email Task Fixes
+- Prevented custom search emails from going out when there are no updates
+- Added type checking before accessing task items
+- Added check to ensure results exist before referencing BBL number
+- Removed dates from results which made hashing inconsistent
+- Moved task back to BBL as unique identifier
+- Removed debugger code from tasks
+
 ### V1.0.11
 
 - added `rentimpairing` field to HPDViolations
