@@ -20,6 +20,7 @@
 - Added `default=''` to `last_notified_hash` field (16 prod NOT NULL violations)
 - Fixed `is_null` to catch literal "null" strings in CSV data
 - Fixed custom search notifications querying all 114 searches instead of only subscribed ones (~48k yearly 502 errors)
+- Fixed custom search notification emails only showing 1 address (BBL type mismatch in address lookup)
 
 **Performance**
 - Eviction upserts use `ON CONFLICT DO NOTHING` — batch succeeds instead of falling back to 118k single-row inserts
