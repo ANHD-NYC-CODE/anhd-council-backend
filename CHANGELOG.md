@@ -1,5 +1,30 @@
 # API CHANGELOG
 
+### 2026-04-06 — Download Optimization & Custom Search Fixes
+
+**Performance**
+- HPD Violations: switched from `inspectiondate` 1yr to `currentstatusdate` 2mo + nulls (270K vs 10.8M rows)
+- HPD Complaints: switched from `problem_status_date` 1yr to 2mo + nulls (228K vs 16M rows)
+- DOB Complaints: added `$select` + `$where` filter (disposition/entered/inspection 2mo + null dispositions)
+- DOB Violations: added `$select` + `$where` filter (issue/disposition 2mo + null dispositions, 669K vs 2.8M rows)
+
+**Bug Fixes**
+- Fixed Custom Search crash — `InputGroup.Prepend` removed in Bootstrap 5, replaced with `InputGroup.Text`
+- Fixed `baseComponent` function calls to use `React.createElement` (GenericFieldSet, RangeFieldSet, ComparisonFieldSet, PrimaryComparisonFieldSet, MultiSelectField)
+
+**New Features**
+- Added "Rent Impaired" column to HPD Violations table (Yes/No with sorting)
+- Added "Rent Impaired" sub-filter to Custom Search for HPD Violations
+- Date range headers in property tables now display on two lines with min-width
+- Table row hover: all child text turns white
+
+**Documentation**
+- Created `DATASET_REFERENCE.md` — comprehensive dataset glossary with sources, import methods, update instructions
+- Added Property Annotations section to backend README
+- Added Data Notes section (auth-required datasets, download filters, data retention, manual uploads)
+- Corrected download filter descriptions (2 months, not 1 year)
+- Fixed ANNOTATED_DATASETS list, PropertyShark frequency, RentStabilization PK
+
 ### 2026-04-05 — Dependency Security Patches, Frontend Fixes & Features
 
 **Dependency Updates (no code changes)**

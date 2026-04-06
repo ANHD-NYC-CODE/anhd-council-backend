@@ -13,9 +13,11 @@ import hashlib
 
 class CustomUserManager(UserManager):
     def get_by_natural_key(self, username):
-        case_insensitive_username_field = '{}__iexact'.format(
-            self.model.USERNAME_FIELD)
-        return self.get(**{case_insensitive_username_field: username})
+        # Accept either username or email address for login
+        try:
+            return self.get(**{'username__iexact': username})
+        except self.model.DoesNotExist:
+            return self.get(**{'email__iexact': username})
 
 
 class CustomUser(AbstractUser):
