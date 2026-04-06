@@ -1,5 +1,48 @@
 # API CHANGELOG
 
+### 2026-04-05 — Dependency Security Patches, Frontend Fixes & Features
+
+**Dependency Updates (no code changes)**
+- Django 4.2.11 → 4.2.29 (LTS security patches)
+- Celery 5.4.0rc1 → 5.4.0 (was running a pre-release in production)
+- Redis 5.1.0b4 → 5.2.1 (was running a beta in production)
+- DRF 3.15.0 → 3.15.2 (bugfixes)
+- psycopg2 2.9.9 → 2.9.11 (patches)
+- certifi, urllib3, pillow, requests, PyJWT, kombu, billiard, sqlparse, Jinja2 — security patches
+- Added `setuptools` to Dockerfile (required by `coreapi` on Python 3.12)
+
+**Bug Fixes**
+- Fixed `/docs/` route crashing entire app — `coreapi` incompatible with Python 3.12 (missing `pkg_resources`); disabled route
+- Removed stale `parentComponent={this}` from BaseTableHeader (functional component, `this` is undefined)
+
+**Frontend (upgrade-branch)**
+- Fixed table filter button wiring after @tanstack/react-table migration — button-set filters (Open/Closed, Class A/B/C, Active/Dismissed, etc.) were disconnected from column filtering
+- Added `FILTER_TO_DATAFIELD` mapping in BaseTableConfig for direct TanStack `setColumnFilters` integration
+- Assigned correct `filterFn` (text vs multiSelect) per column in `adaptColumns`
+- Fixed infinite render loop on district dashboard (auth-gating skipped requests without marking `called`)
+- Fixed expanding row crash — `ExpandedLinkRow` called as function instead of React component
+- Fixed double CSV export — `csvProps.onExport` duplicated `handleCsvClick`
+- Fixed header `th` getting `expandable-cell` class (hover effect on non-expandable headers)
+- Fixed `createSelector` identity function warning (reselect)
+- Fixed `block` attribute warning on react-bootstrap Buttons (replaced with CSS classes)
+- Suppressed 401 console errors for unauthenticated requests
+- Fixed custom search "between" filter using exclusive bounds (`gt`/`lt` → `gte`/`lte`)
+- Fixed "between" range sentence parser to handle both `gte`/`lte` and `gt`/`lt`
+- Added "Rent Impairing" column to HPD Violations table (Yes/No with sorting)
+- Added "Rent Impairing" sub-filter to Custom Search for HPD Violations
+- Added Google Street View embed (hidden until Maps Embed API enabled via `REACT_APP_STREET_VIEW_ENABLED`)
+- Added "Open Street View" link on property lookup pages
+- CSS: dashboard title padding, building select first option color, leaflet attribution minimized, header hover scoped to tbody
+
+**Documentation**
+- Rewrote backend README — cross-link to frontend, dataset sources table, verified FAQ, removed duplicated sections
+- Updated frontend README — cross-link to backend, Mapbox tileset guide reference
+
+**Maintenance**
+- VACUUM FULL on all 40 dataset tables (62GB → 56GB)
+- Post-vacuum field audit updated (283 fields 100% null, 338 fields >90% null across 45 tables)
+- Deleted accumulated CSV downloads (~3.4GB)
+
 ### 2026-04-04 — Dataset Import Fixes & Performance
 
 **Bug Fixes**
