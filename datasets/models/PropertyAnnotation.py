@@ -26,6 +26,7 @@ class PropertyAnnotation(BaseDatasetModel, models.Model):
     hpdviolations_last3years = models.IntegerField(
         db_index=True, default=0, blank=True, null=True)
     hpdviolations_lastupdated = models.DateTimeField(blank=True, null=True)
+
     # Pinned to 1st of last month of latest data
     hpdcomplaints_last30 = models.IntegerField(
         db_index=True, default=0, blank=True, null=True)

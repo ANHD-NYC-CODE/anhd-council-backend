@@ -212,6 +212,79 @@ aws s3 cp s3://oca-2-dev/public/oca_addresses_with_bbl.csv .
 
 > Verify the bucket name in your `.env` — it was changed to `oca-2-dev` in 2023.
 
+## Property Annotations
+
+The `PropertyAnnotation` table stores pre-computed counts of dataset records per property (BBL) for three time periods: last 30 days, last year, and last 3 years. These power the District Dashboard's property tables, showing columns like "HPD Violations (date range)" without querying the full violation tables on every page load.
+
+**How it works:**
+- Each annotated dataset model (HPDViolation, DOBViolation, etc.) has an `annotate_properties()` method
+- After a dataset import completes, the annotation runs automatically — counting records per BBL within each time window
+- Results are stored in `datasets_propertyannotation` as integer columns (e.g., `hpdviolations_last30`, `hpdviolations_lastyear`)
+- The `PropertyShortAnnotatedSerializer` reads these columns and returns them with date-range keys like `hpdviolations__04/05/2025-04/04/2026`
+
+**Which datasets are annotated:**
+Defined in `settings.ANNOTATED_DATASETS` — currently includes HPDViolation, HPDComplaint, DOBViolation, DOBComplaint, ECBViolation, Eviction, DOBFiledPermit, DOBIssuedPermit, HousingLitigation, AcrisRealMaster, OCAHousingCourt, and Foreclosure.
+
+**Adding a new annotation:**
+1. Add fields to `PropertyAnnotation` model (e.g., `newdataset_last30`, `_lastyear`, `_last3years`, `_lastupdated`)
+2. Add the model name to `settings.ANNOTATED_DATASETS`
+3. Ensure the model has `QUERY_DATE_KEY` and an `annotate_properties()` method
+4. Create a migration and run it
+5. The serializer and API field builder pick up new annotations automatically from `ANNOTATED_DATASETS`
+
+**Note:** Annotations are aggregate counts. Sub-field filtering (e.g., only rent-impaired violations) is better handled via Custom Search query parameters, not annotations.
+
+## Data Notes
+
+### Datasets that require login
+
+These datasets have `REQUIRES_AUTHENTICATION = True` — unauthenticated API requests return 403:
+
+- **OCA Housing Court** (`OCAHousingCourt`)
+- **Foreclosures** (`Foreclosure`)
+- **Lis Pendens** (`LisPenden`)
+
+All other datasets are publicly accessible.
+
+### Datasets using `$select` field filtering
+
+These download only the fields the app uses, reducing file size and import time:
+
+- HPDViolation (also filters by inspection date — **last year only**)
+- HPDComplaint (also filters by problem status date — **last year only**)
+- DOBNowFiledPermit
+- DOBPermitIssuedNow
+- DOBLegacyFiledPermit
+- DOBPermitIssuedLegacy
+
+All other datasets download the full CSV from Socrata.
+
+### Data retention and deduplication
+
+- **HPD Violations**: Downloads only the last year of data per import, upserted (never truncated). Older violations persist from previous imports. **Caveat:** status changes on violations older than 1 year won't be picked up (e.g., a 2-year-old violation that closes). Socrata has no per-row `updated_at` field to filter by.
+- **HPD Complaints**: Same as HPD Violations — downloads last year only, upserted. Same stale-status caveat applies.
+- **Evictions**: Uses `ignore_conflict=True` on upsert — duplicate records (same `courtindexnumber`) are silently skipped. Uniqueness is also enforced on `(evictionaddress, evictionapartmentnumber, executeddate, marshallastname)`. Only data from 2017+ exists (when NYC started publishing eviction data).
+- **ACRIS**: Only `DEED` document types are counted as "sales" in property annotations. Other document types (mortgages, agreements, etc.) are stored but not counted in the sales column.
+- **DOB Permits (child tables)**: DOBNowFiledPermit, DOBPermitIssuedNow, DOBLegacyFiledPermit, and DOBPermitIssuedLegacy are **truncated and fully reloaded** on every import (`overwrite=True`). They download all records (no date filter).
+- **DOB Permits (join tables)**: `DOBFiledPermit` and `DOBIssuedPermit` upsert from the child tables above. Never truncated.
+- **DOB Complaints / DOB Violations**: upserted, never truncated.
+
+### Manual upload datasets
+
+- **PropertyShark** (PSPreForeclosure, PSForeclosure): bi-weekly manual download and upload via admin
+- **Properties** (PLUTO): manual upload when NYC Planning releases new data
+- **Buildings / PAD Records**: manual upload from PAD data
+- **CoreData Subsidies**: manual upload from ANHD CoreData
+- **Rent Stabilization Records**: manual upload from tax bills data
+- **Tax Liens**: manual upload, no date field — just current status (boolean on PropertyAnnotation)
+
+### Frontend behavior notes
+
+- **District Dashboard**: API responses cached in localStorage, invalidated daily at 7am Eastern
+- **Table filters** (Open/Closed, Class A/B/C, etc.): client-side filtering of already-loaded data, not additional API calls
+- **Custom Search**: uses the advanced query language to filter properties server-side (see Advanced Search section below)
+- **CSV Export**: exports the currently filtered/visible rows, not the full dataset
+
 ## Caching
 
 The nightly cache task (`core/utils/cache.py`) pre-caches all council and community district dashboard endpoints. It uses a unique token to cache both authenticated and unauthenticated responses.
