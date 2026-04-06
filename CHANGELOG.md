@@ -1,6 +1,10 @@
 # API CHANGELOG
 
-### 2026-04-06 — Download Optimization & Custom Search Fixes
+### 2026-04-06 — Download Optimization, Custom Search Fixes & Auth Improvements
+
+**Auth**
+- Login now accepts username OR email address
+- Login form label updated to "Username or Email"
 
 **Performance**
 - HPD Violations: switched from `inspectiondate` 1yr to `currentstatusdate` 2mo + nulls (270K vs 10.8M rows)
