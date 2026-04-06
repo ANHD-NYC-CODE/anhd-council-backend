@@ -170,7 +170,7 @@ For non-automated datasets (PropertyShark, CoreData, etc.):
 | Tax Liens | NYC Open Data | Manual |
 | CONH Records | NYC Open Data (Socrata) | Automated |
 | AEP Buildings | NYC Open Data (Socrata) | Automated |
-| PSPreForeclosure, PSForeclosure | PropertyShark (manual download) | Manual (monthly) |
+| PSPreForeclosure, PSForeclosure | PropertyShark (manual download) | Manual (bi-weekly) |
 | Council/Community/Assembly/Senate Districts | NYC Planning (shapefiles) | Manual (redistricting) |
 
 ### Socrata (NYC Open Data) Downloads
@@ -223,7 +223,7 @@ The `PropertyAnnotation` table stores pre-computed counts of dataset records per
 - The `PropertyShortAnnotatedSerializer` reads these columns and returns them with date-range keys like `hpdviolations__04/05/2025-04/04/2026`
 
 **Which datasets are annotated:**
-Defined in `settings.ANNOTATED_DATASETS` — currently includes HPDViolation, HPDComplaint, DOBViolation, DOBComplaint, ECBViolation, Eviction, DOBFiledPermit, DOBIssuedPermit, HousingLitigation, AcrisRealMaster, OCAHousingCourt, and Foreclosure.
+Defined in `settings.ANNOTATED_DATASETS`. See `app/settings/base.py` for the full list — includes HPDViolation, HPDComplaint, DOBViolation, DOBComplaint, ECBViolation, Eviction, DOBFiledPermit, DOBIssuedPermit, HousingLitigation, AcrisRealMaster, OCAHousingCourt, Foreclosure, and others (CONHRecord, HPDBuildingRecord, AEPBuilding, etc.).
 
 **Adding a new annotation:**
 1. Add fields to `PropertyAnnotation` model (e.g., `newdataset_last30`, `_lastyear`, `_last3years`, `_lastupdated`)
@@ -250,8 +250,10 @@ All other datasets are publicly accessible.
 
 These download only the fields the app uses, reducing file size and import time:
 
-- HPDViolation (also filters by inspection date — **last year only**)
-- HPDComplaint (also filters by problem status date — **last year only**)
+- HPDViolation (also filters by `currentstatusdate` — **past 2 months + nulls**)
+- HPDComplaint (also filters by `problem_status_date` — **past 2 months + nulls**)
+- DOBComplaint (also filters by `disposition/entered/inspection date` — **past 2 months + null dispositions**)
+- DOBViolation (also filters by `issue/disposition date` — **past 2 months + null dispositions**)
 - DOBNowFiledPermit
 - DOBPermitIssuedNow
 - DOBLegacyFiledPermit
@@ -261,8 +263,10 @@ All other datasets download the full CSV from Socrata.
 
 ### Data retention and deduplication
 
-- **HPD Violations**: Downloads only the last year of data per import, upserted (never truncated). Older violations persist from previous imports. **Caveat:** status changes on violations older than 1 year won't be picked up (e.g., a 2-year-old violation that closes). Socrata has no per-row `updated_at` field to filter by.
-- **HPD Complaints**: Same as HPD Violations — downloads last year only, upserted. Same stale-status caveat applies.
+- **HPD Violations**: Downloads records with `currentstatusdate` in the past 2 months (+ nulls), upserted (never truncated). Catches both new violations and status changes on old ones. Older unchanged records persist from previous imports. **Caveat:** status changes on records not touched in 2+ months won't be caught until HPD updates the record's `currentstatusdate`.
+- **HPD Complaints**: Same approach — downloads `problem_status_date` in the past 2 months (+ nulls), upserted.
+- **DOB Complaints**: Downloads records with any date field (disposition/entered/inspection) in the past 2 months, plus all records with null disposition dates. Upserted.
+- **DOB Violations**: Downloads records with issue or disposition date in the past 2 months, plus all records with null disposition dates (662K perpetually "Active" records). Upserted.
 - **Evictions**: Uses `ignore_conflict=True` on upsert — duplicate records (same `courtindexnumber`) are silently skipped. Uniqueness is also enforced on `(evictionaddress, evictionapartmentnumber, executeddate, marshallastname)`. Only data from 2017+ exists (when NYC started publishing eviction data).
 - **ACRIS**: Only `DEED` document types are counted as "sales" in property annotations. Other document types (mortgages, agreements, etc.) are stored but not counted in the sales column.
 - **DOB Permits (child tables)**: DOBNowFiledPermit, DOBPermitIssuedNow, DOBLegacyFiledPermit, and DOBPermitIssuedLegacy are **truncated and fully reloaded** on every import (`overwrite=True`). They download all records (no date filter).
