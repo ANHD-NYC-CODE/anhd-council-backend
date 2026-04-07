@@ -128,7 +128,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
     def build_building_gen(self):
         # TODO: Switch this to use raw PAD csv
         # Do not create address record for buildings without bbls
-        for building in ds.PadRecord.objects.filter(bbl__isnull=False).all():
+        for building in ds.PadRecord.objects.filter(bbl__isnull=False).iterator():
             try:
                 building.bbl
             except Exception as e:
@@ -247,7 +247,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
     @classmethod
     def build_property_gen(self):
         logger.info("Generating Addresses from property objects...")
-        for property in ds.Property.objects.all():
+        for property in ds.Property.objects.all().iterator():
             record = self.address_row_from_property(property)
             if record:
                 yield record

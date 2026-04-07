@@ -381,22 +381,23 @@ class Property(BaseDatasetModel, models.Model):
     @classmethod
     def pre_validation_filters(self, gen_rows):
         logger.info("prevalidating properties")
+        # Preload all council IDs to avoid 872K individual DB queries
+        council_ids = set(ds.Council.objects.values_list('id', flat=True))
         count = 0
         for row in gen_rows:
             # Address Standardizing
             row['original_address'] = row['address']
             row['address'] = clean_number_and_streets(
                 row['address'], True, clean_typos=False)
-            
+
             # Set CouncilDistrict row from Data to also be "Council" field
-            row['councildistrict'] = row.get('councildistrict')
             council_district_number = row.get('councildistrict')
             if council_district_number:
                 try:
-                    council_instance = ds.Council.objects.get(id=council_district_number)
-                    row['council'] = council_instance.id
-                except ds.Council.DoesNotExist:
-                    row['council'] = None  # Use None to represent NULL
+                    cd_int = int(council_district_number)
+                    row['council'] = cd_int if cd_int in council_ids else None
+                except (ValueError, TypeError):
+                    row['council'] = None
             
             count = count + 1
             if count % 10000 == 0:
@@ -431,12 +432,71 @@ class Property(BaseDatasetModel, models.Model):
                 logger.info("attached geos to {} properties".format(count))
 
     @classmethod
+    def copy_upsert(cls, **kwargs):
+        """Fast PLUTO import using COPY + temp table + INSERT ON CONFLICT UPDATE."""
+        import csv
+        import tempfile
+        import os
+        from django.db import connection
+
+        file_path = kwargs.get('file_path')
+        update = kwargs.get('update')
+
+        logger.info('Starting COPY upsert for Property (PLUTO)')
+
+        # Get transformed rows
+        gen = cls.transform_self_from_file(file_path, update)
+
+        # Get model field names (exclude auto fields)
+        field_names = [f.column for f in cls._meta.fields]
+
+        # Write transformed data to temp CSV
+        temp_file = tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False, dir='/tmp')
+        writer = csv.DictWriter(temp_file, fieldnames=field_names, extrasaction='ignore')
+        writer.writeheader()
+        row_count = 0
+        for row in gen:
+            writer.writerow(row)
+            row_count += 1
+        temp_file.close()
+        logger.info('Wrote %d rows to temp CSV', row_count)
+
+        from django.db import transaction
+        with transaction.atomic(), connection.cursor() as cursor:
+            # Create temp table with same structure
+            cursor.execute(f'CREATE TEMP TABLE temp_property (LIKE {cls._meta.db_table} INCLUDING ALL) ON COMMIT DROP')
+
+            # COPY into temp table
+            with open(temp_file.name, 'r') as f:
+                columns = f.readline().strip()
+                sql = f"COPY temp_property ({columns}) FROM STDIN WITH CSV"
+                cursor.copy_expert(sql, f)
+            logger.info('COPY completed: %d rows loaded into temp table', row_count)
+
+            # Upsert from temp into real table
+            set_clause = ', '.join(f'{col} = EXCLUDED.{col}' for col in field_names if col != 'bbl')
+            cursor.execute(f"""
+                INSERT INTO {cls._meta.db_table} ({', '.join(field_names)})
+                SELECT {', '.join(field_names)} FROM temp_property
+                ON CONFLICT (bbl) DO UPDATE SET {set_clause}
+            """)
+            logger.info('Upsert completed: %d rows processed', cursor.rowcount)
+
+            if update:
+                update.rows_created = cursor.rowcount
+                update.save()
+
+        # Clean up temp file
+        os.unlink(temp_file.name)
+        logger.info('COPY upsert complete for Property')
+
+    @classmethod
     def seed_or_update_self(self, **kwargs):
         import datetime as dt
         from django.utils.timezone import make_aware
         import_start = make_aware(dt.datetime.now())
 
-        self.seed_with_upsert(**kwargs)
+        self.copy_upsert(**kwargs)
 
         # Null district fields for properties not in this PLUTO import (obsolete BBLs)
         # Properties in the import have last_modified set by transform_self; older ones were not in the file
