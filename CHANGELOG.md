@@ -13,8 +13,15 @@
 
 **Admin**
 - Added `deprecated` field to Dataset model — hides deprecated datasets from admin dropdowns
-- Marked Foreclosure, LisPenden, LisPendenComment, HPDProblem as deprecated
+- Marked Foreclosure, LisPenden, LisPendenComment, HPDProblem, Subsidy421a as deprecated
+- Email Status column in user list (green OK / red BOUNCING)
+- "Clear Email Bounce" button on user edit page — removes from SendGrid suppression + clears cache
 - Restored missing core migration files (0001-0006) from git history
+
+**Frontend**
+- Email bounce warning banner on My Dashboard (orange, white text)
+- My Dashboard top section stacks on mobile/tablet
+- Deleted 22MB of accidentally committed RPM files
 
 **Monitoring**
 - New monthly task: checks manual datasets for source data updates on Socrata, emails alert if stale
