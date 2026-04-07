@@ -1,11 +1,9 @@
 # DAP Portal — Dataset Reference
 
-*Last updated: 2026-04-06*
+*Last updated: 2026-04-07*
 
 This document covers all datasets in the DAP Portal: what they are, where they come from, how they're imported, and how to update them.
 
-> **Note:** This document is in the parent directory (not in either repo) because it contains operational details. Reference it alongside the backend README for technical setup.
->
 
 ---
 
@@ -141,6 +139,21 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Stale data caveat:** Status changes on records older than 2 months won't be caught until the record's `currentstatusdate` is updated by HPD. Socrata has no per-row `updated_at` field.
 - **Temporal scope:** Records from 1913 to present (EARLIEST_RECORD filter set to 1933, but older records exist in DB)
 
+**Field Audit:**
+**>90% NULL (2 fields):**
+
+| Field | Non-null | Null | Populated % |
+|-------|----------|------|-------------|
+| `newcertifybydate` | 92,950 | 10,712,399 | 0.9% |
+| `newcorrectbydate` | 92,950 | 10,712,399 | 0.9% |
+
+**Healthy fields (39):** 31 fields >=99% populated; 7 fields 50-98% populated; 1 fields 11-49% populated.
+
+*Partially populated (11-49%):*
+- `certifieddate`: 35.4%
+
+---
+
 ### HPD Complaints & Problems
 
 - **Description:** Complaints made via 311, Code Enforcement offices, or online about HMC/MDL violations. Each complaint has one or more associated problems.
@@ -150,6 +163,11 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Import method:** Upsert (never truncated)
 - **Download filter:** `$select` (31 fields) + `$where` (problem_status_date >= 2 months ago OR NULL)
 - **Note:** HPD Problems was merged into HPD Complaints. The `problemid` is the PK, not `complaintid` — one complaint can have multiple problems.
+
+**Field Audit:**
+**Healthy fields (33):** 31 fields >=99% populated; 2 fields 50-98% populated.
+
+---
 
 ### DOB Complaints
 
@@ -161,6 +179,17 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Download filter:** `$select` (15 fields) + `$where` ((date_entered >= 2mo OR disposition_date >= 2mo) AND complaint_number IS NOT NULL)
 - **Note:** After import, BBLs are populated from BIN via Building lookup (`add_bbls_from_bin`)
 
+**Field Audit:**
+**>90% NULL (1 fields):**
+
+| Field | Non-null | Null | Populated % |
+|-------|----------|------|-------------|
+| `specialdistrict` | 16,734 | 3,070,410 | 0.5% |
+
+**Healthy fields (15):** 11 fields >=99% populated; 4 fields 50-98% populated.
+
+---
+
 ### DOB Violations
 
 - **Description:** Violations issued by DOB for building/zoning code violations.
@@ -170,6 +199,20 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Import method:** Upsert (never truncated)
 - **Download filter:** `$select` (18 fields) + `$where` ((issue_date >= 2mo OR disposition_date >= 2mo) AND isn_dob_bis_viol IS NOT NULL)
 - **Note:** 662K records have NULL disposition dates (mostly 5+ years old, perpetually "Active")
+
+**Field Audit:**
+**>90% NULL (1 fields):**
+
+| Field | Non-null | Null | Populated % |
+|-------|----------|------|-------------|
+| `ecbnumber` | 238,622 | 2,524,360 | 8.6% |
+
+**Healthy fields (18):** 14 fields >=99% populated; 3 fields 50-98% populated; 1 fields 11-49% populated.
+
+*Partially populated (11-49%):*
+- `description`: 36.3%
+
+---
 
 ### ECB Violations
 
@@ -181,6 +224,39 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Download filter:** Full CSV (no `$select`)
 - **Post-download filter:** `update_set_filter` skips records older than 4 years by ISSUE_DATE
 
+**Field Audit:**
+**100% NULL (6 fields):**
+
+| Field | Non-null | Null | Populated % |
+|-------|----------|------|-------------|
+| `infractioncode10` | 314 | 1,803,886 | 0.0% |
+| `infractioncode8` | 638 | 1,803,562 | 0.0% |
+| `infractioncode9` | 474 | 1,803,726 | 0.0% |
+| `sectionlawdescription10` | 314 | 1,803,886 | 0.0% |
+| `sectionlawdescription8` | 638 | 1,803,562 | 0.0% |
+| `sectionlawdescription9` | 474 | 1,803,726 | 0.0% |
+
+**>90% NULL (12 fields):**
+
+| Field | Non-null | Null | Populated % |
+|-------|----------|------|-------------|
+| `infractioncode2` | 107,587 | 1,696,613 | 6.0% |
+| `infractioncode3` | 10,463 | 1,793,737 | 0.6% |
+| `infractioncode4` | 3,729 | 1,800,471 | 0.2% |
+| `infractioncode5` | 2,074 | 1,802,126 | 0.1% |
+| `infractioncode6` | 1,336 | 1,802,864 | 0.1% |
+| `infractioncode7` | 939 | 1,803,261 | 0.1% |
+| `sectionlawdescription2` | 106,339 | 1,697,861 | 5.9% |
+| `sectionlawdescription3` | 10,408 | 1,793,792 | 0.6% |
+| `sectionlawdescription4` | 3,717 | 1,800,483 | 0.2% |
+| `sectionlawdescription5` | 2,068 | 1,802,132 | 0.1% |
+| `sectionlawdescription6` | 1,334 | 1,802,866 | 0.1% |
+| `sectionlawdescription7` | 938 | 1,803,262 | 0.1% |
+
+**Healthy fields (29):** 18 fields >=99% populated; 11 fields 50-98% populated.
+
+---
+
 ### DOB NOW Filed Permits
 
 - **Description:** Permit applications filed via DOB NOW electronic portal.
@@ -189,6 +265,82 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Automated:** Yes (daily)
 - **Import method:** Truncate + reload (`overwrite=True`)
 - **Download filter:** `$select` (21 fields), all rows
+
+**Field Audit:**
+**100% NULL (66 fields):**
+
+| Field | Non-null | Null | Populated % |
+|-------|----------|------|-------------|
+| `antenna` | 0 | 885,852 | 0.0% |
+| `applicantsmiddleinitial` | 0 | 885,852 | 0.0% |
+| `aptcondonos` | 0 | 885,852 | 0.0% |
+| `bin_2` | 0 | 885,852 | 0.0% |
+| `boilerequipmentworktype` | 0 | 885,852 | 0.0% |
+| `buildingtype` | 0 | 885,852 | 0.0% |
+| `built1informationvalue` | 0 | 885,852 | 0.0% |
+| `built2ainformationvalue` | 0 | 885,852 | 0.0% |
+| `built2binformationvalue` | 0 | 885,852 | 0.0% |
+| `built2informationvalue` | 0 | 885,852 | 0.0% |
+| `censustract` | 0 | 885,852 | 0.0% |
+| `commmunityboard` | 0 | 885,852 | 0.0% |
+| `councildistrict` | 0 | 885,852 | 0.0% |
+| `curbcut` | 0 | 885,852 | 0.0% |
+| `currentstatusdate` | 0 | 885,852 | 0.0% |
+| `earthworkworktype` | 0 | 885,852 | 0.0% |
+| `exemptfromnycecc` | 0 | 885,852 | 0.0% |
+| `existingdwellingunits` | 0 | 885,852 | 0.0% |
+| `existingheight` | 0 | 885,852 | 0.0% |
+| `existingstories` | 0 | 885,852 | 0.0% |
+| `fence` | 0 | 885,852 | 0.0% |
+| `filingrepresentativebusinessname` | 0 | 885,852 | 0.0% |
+| `filingrepresentativecity` | 0 | 885,852 | 0.0% |
+| `filingrepresentativefirstname` | 0 | 885,852 | 0.0% |
+| `filingrepresentativelastname` | 0 | 885,852 | 0.0% |
+| `filingrepresentativemiddleinitial` | 0 | 885,852 | 0.0% |
+| `filingrepresentativestate` | 0 | 885,852 | 0.0% |
+| `filingrepresentativestreetname` | 0 | 885,852 | 0.0% |
+| `filingrepresentativezip` | 0 | 885,852 | 0.0% |
+| `firstpermitdate` | 0 | 885,852 | 0.0% |
+| `foundationworktype` | 0 | 885,852 | 0.0% |
+| `generalconstructionworktype` | 0 | 885,852 | 0.0% |
+| `includespermanentremoval` | 0 | 885,852 | 0.0% |
+| `incompliancewithnycecc` | 0 | 885,852 | 0.0% |
+| `latitude` | 0 | 885,852 | 0.0% |
+| `littlee` | 0 | 885,852 | 0.0% |
+| `longitude` | 0 | 885,852 | 0.0% |
+| `mechanicalsystemsworktype` | 0 | 885,852 | 0.0% |
+| `nta` | 0 | 885,852 | 0.0% |
+| `ownerscity` | 1 | 885,851 | 0.0% |
+| `ownersstate` | 1 | 885,851 | 0.0% |
+| `ownersstreetname` | 0 | 885,852 | 0.0% |
+| `ownerszip` | 1 | 885,851 | 0.0% |
+| `permitissuedate` | 0 | 885,852 | 0.0% |
+| `placeofassemblyworktype` | 0 | 885,852 | 0.0% |
+| `plumbingworktype` | 0 | 885,852 | 0.0% |
+| `progressinspectionrequirement` | 0 | 885,852 | 0.0% |
+| `proposeddwellingunits` | 0 | 885,852 | 0.0% |
+| `proposedheight` | 0 | 885,852 | 0.0% |
+| `proposednoofstories` | 0 | 885,852 | 0.0% |
+| `protectionmechanicalmethodsworktype` | 0 | 885,852 | 0.0% |
+| `requestlegalization` | 0 | 885,852 | 0.0% |
+| `reviewbuildingcode` | 0 | 885,852 | 0.0% |
+| `scaffold` | 0 | 885,852 | 0.0% |
+| `shed` | 0 | 885,852 | 0.0% |
+| `sidewalkshedworktype` | 0 | 885,852 | 0.0% |
+| `sign` | 0 | 885,852 | 0.0% |
+| `specialinspectionagencynumber` | 0 | 885,852 | 0.0% |
+| `specialinspectionrequirement` | 0 | 885,852 | 0.0% |
+| `sprinklerworktype` | 0 | 885,852 | 0.0% |
+| `standpipe` | 0 | 885,852 | 0.0% |
+| `structuralworktype` | 0 | 885,852 | 0.0% |
+| `supportofexcavationworktype` | 0 | 885,852 | 0.0% |
+| `temporaryplaceofassemblyworktype` | 0 | 885,852 | 0.0% |
+| `totalconstructionfloorarea` | 0 | 885,852 | 0.0% |
+| `unmappedccostreet` | 0 | 885,852 | 0.0% |
+
+**Healthy fields (21):** 19 fields >=99% populated; 2 fields 50-98% populated.
+
+---
 
 ### DOB Permit Issued NOW
 
@@ -199,6 +351,38 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Import method:** Truncate + reload (`overwrite=True`)
 - **Download filter:** `$select` (fields filtered), all rows
 
+**Field Audit:**
+**100% NULL (22 fields):**
+
+| Field | Non-null | Null | Populated % |
+|-------|----------|------|-------------|
+| `applicantbusinessaddress` | 0 | 918,418 | 0.0% |
+| `applicantbusinessname` | 0 | 918,418 | 0.0% |
+| `applicantfirstname` | 0 | 918,418 | 0.0% |
+| `applicantlastname` | 0 | 918,418 | 0.0% |
+| `applicantlicense` | 0 | 918,418 | 0.0% |
+| `applicantmiddlename` | 0 | 918,418 | 0.0% |
+| `approveddate` | 0 | 918,418 | 0.0% |
+| `aptcondonos` | 0 | 918,418 | 0.0% |
+| `cbno` | 0 | 918,418 | 0.0% |
+| `estimatedjobcosts` | 0 | 918,418 | 0.0% |
+| `filingrepresentativebusinessname` | 0 | 918,418 | 0.0% |
+| `filingrepresentativefirstname` | 0 | 918,418 | 0.0% |
+| `filingrepresentativelastname` | 0 | 918,418 | 0.0% |
+| `filingrepresentativemiddleinitial` | 0 | 918,418 | 0.0% |
+| `ownerbusinessname` | 0 | 918,418 | 0.0% |
+| `ownercity` | 0 | 918,418 | 0.0% |
+| `ownername` | 0 | 918,418 | 0.0% |
+| `ownerstate` | 0 | 918,418 | 0.0% |
+| `ownerstreetaddress` | 0 | 918,418 | 0.0% |
+| `ownerzipcode` | 0 | 918,418 | 0.0% |
+| `permitteeslicensetype` | 0 | 918,418 | 0.0% |
+| `workonfloor` | 0 | 918,418 | 0.0% |
+
+**Healthy fields (14):** 14 fields >=99% populated.
+
+---
+
 ### DOB Legacy Filed Permits
 
 - **Description:** Permit applications filed via traditional BIS system.
@@ -208,449 +392,7 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Import method:** Truncate + reload (`overwrite=True`)
 - **Download filter:** `$select` (22 fields), all rows
 
-### DOB Permit Issued Legacy
-
-- **Description:** Permits issued via traditional BIS system.
-- **Source:** [NYC Open Data](https://data.cityofnewyork.us/Housing-Development/DOB-Permit-Issuance/ipu4-2q9a)
-- **Model:** `DOBPermitIssuedLegacy` | **PK:** auto-generated `id`
-- **Automated:** Yes (daily)
-- **Import method:** Truncate + reload (`overwrite=True`)
-- **Download filter:** `$select` (23 fields), all rows
-
-### DOB Filed Permits (Joined)
-
-- **Description:** Combined view of Legacy + NOW filed permits for the frontend.
-- **Model:** `DOBFiledPermit` | **PK:** `key`
-- **Automated:** Yes (runs after children import)
-- **Import method:** Upsert from child tables via SQL
-- **Note:** Has both `jobtype` (raw) and `job_type` (display) fields. NULL `job_type` values are cleaned up post-import.
-
-### DOB Issued Permits (Joined)
-
-- **Description:** Combined view of Legacy + NOW issued permits for the frontend.
-- **Model:** `DOBIssuedPermit` | **PK:** `key`
-- **Automated:** Yes (runs after children import)
-- **Import method:** Upsert from child tables via SQL
-
-### Evictions
-
-- **Description:** Court-ordered marshal evictions since 1/1/2017.
-- **Source:** [NYC Open Data](https://data.cityofnewyork.us/City-Government/Evictions/6z8x-wfk4)
-- **Model:** `Eviction` | **PK:** `courtindexnumber`
-- **Automated:** Yes (daily)
-- **Import method:** Upsert with `ignore_conflict=True` (duplicate court index numbers silently skipped)
-- **Deduplication:** `unique_together` on `(evictionaddress, evictionapartmentnumber, executeddate, marshallastname)`
-- **Temporal scope:** 2017 to present (when NYC began publishing)
-- **Note:** Addresses are cleaned and matched to BBLs via geosearch with 15s timeout
-
-### ACRIS Real Property Masters
-
-- **Description:** Document details for real property transactions recorded in ACRIS. Only `DEED` types counted as "sales" in annotations.
-- **Source:** [NYC Open Data](https://data.cityofnewyork.us/City-Government/ACRIS-Real-Property-Master/bnx9-e6tj)
-- **Model:** `AcrisRealMaster` | **PK:** `documentid`
-- **Automated:** Yes (monthly)
-- **Import method:** Upsert
-- **Post-download filter:** Skips records older than 1 year by `docdate`
-- **Temporal scope:** Records from 1863 to present
-
-### ACRIS Real Property Legals
-
-- **Description:** Property details (BBL, block, lot) linked to ACRIS documents.
-- **Source:** [NYC Open Data](https://data.cityofnewyork.us/City-Government/ACRIS-Real-Property-Legals/8h5j-fqxa)
-- **Model:** `AcrisRealLegal` | **PK:** `key`
-- **Automated:** Yes (monthly)
-
-### ACRIS Real Property Parties
-
-- **Description:** Party names (buyers, sellers, borrowers, lenders) linked to ACRIS documents.
-- **Source:** [NYC Open Data](https://data.cityofnewyork.us/City-Government/ACRIS-Real-Property-Parties/636b-3b5g)
-- **Model:** `AcrisRealParty` | **PK:** `key`
-- **Automated:** Yes (monthly)
-
-### Housing Litigations
-
-- **Description:** HPD or tenant-initiated litigation in Housing Court against landlords.
-- **Source:** [NYC Open Data](https://data.cityofnewyork.us/Housing-Development/Housing-Litigations/59kj-x8nc)
-- **Model:** `HousingLitigation` | **PK:** `litigationid`
-- **Automated:** Yes (monthly)
-- **Import method:** Upsert
-- **Note:** Does not include Supreme Court cases.
-
-### OCA Housing Court
-
-- **Description:** Extract of landlord/tenant cases in NYC housing court (no PII).
-- **Source:** AWS S3 bucket `oca-2-dev` (via [Housing Data Coalition](https://github.com/housing-data-coalition/oca))
-- **Documentation:** [NYCDB Wiki](https://github.com/nycdb/nycdb/wiki/Dataset:-OCA-Housing-Court-Records)
-- **Model:** `OCAHousingCourt` | **PK:** `indexnumberid`
-- **Automated:** Yes (monthly)
-- **Requires authentication:** Yes (403 for unauthenticated users)
-- **Note:** Requires AWS credentials (`OCA_AWS_SECRET_KEY_ID`, `OCA_AWS_SECRET_ACCESS_KEY`) in `.env`. Bucket changed to `oca-2-dev` in 2023.
-
-### HPD Registrations
-
-- **Description:** Multiple dwelling registration information collected by HPD.
-- **Source:** [NYC Open Data](https://data.cityofnewyork.us/Housing-Development/Multiple-Dwelling-Registrations/tesw-yqqr)
-- **Model:** `HPDRegistration` | **PK:** `registrationid`
-- **Automated:** Yes (monthly)
-
-### HPD Registration Contacts
-
-- **Description:** Organizations/individuals listed on Multiple Dwelling Registration forms.
-- **Source:** [NYC Open Data](https://data.cityofnewyork.us/Housing-Development/Registration-Contacts/feu5-w2e2)
-- **Model:** `HPDContact` | **PK:** `registrationcontactid`
-- **Automated:** Yes (monthly)
-
-### HPD Building Records
-
-- **Description:** Buildings under HPD jurisdiction (registered, litigated, complained about, or in AEP/emergency repair).
-- **Source:** [NYC Open Data](https://data.cityofnewyork.us/Housing-Development/Buildings-Subject-to-HPD-Jurisdiction/kj4p-ruqc)
-- **Model:** `HPDBuildingRecord`
-- **Automated:** Yes (monthly)
-- **Update instructions:** Download from https://data.cityofnewyork.us/api/views/kj4p-ruqc/rows.csv?accessType=DOWNLOAD, add file, update.
-
-### AEP Buildings
-
-- **Description:** Buildings in HPD's Alternative Enforcement Program for severe maintenance code violations.
-- **Source:** [NYC Open Data](https://data.cityofnewyork.us/Housing-Development/Buildings-Selected-for-the-Alternative-Enforcement/hcir-3275)
-- **Model:** `AEPBuilding`
-- **Automated:** Yes (when needed)
-- **Note:** Temporary status flag. Records from 2007+.
-
-### Certificate of No Harassment (CONH) Records
-
-- **Description:** Buildings subject to the CONH Pilot Program.
-- **Source:** [NYC Open Data](https://data.cityofnewyork.us/Housing-Development/Certification-of-No-Harassment-CONH-Pilot-Building/bzxi-2tsw)
-- **Model:** `CONHRecord`
-- **Automated:** Yes (when needed)
-- **Note:** Temporary status flag.
-
-### Properties (PLUTO)
-
-- **Description:** Extensive land use and geographic data at the tax lot level.
-- **Source:** [NYC Open Data — PLUTO](https://data.cityofnewyork.us/City-Government/Primary-Land-Use-Tax-Lot-Output-PLUTO-/64uk-42ks)
-- **Model:** `Property`
-- **Automated:** Manual (can trigger via admin "Update Dataset" button)
-- **Update frequency:** Check every 6 months
-- **Update instructions:**
-  1. For automatic: click 'Properties' in admin, click 'Update Dataset'
-  2. For manual: download PLUTO (not MapPLUTO) CSV from NYC Planning, upload via admin
-  3. After updating Properties, also update: Buildings, PAD Records, then Address Records (in order)
-
-### Buildings
-
-- **Description:** Building-level data from the Property Address Directory (PAD).
-- **Source:** [NYC Open Data — PAD](https://data.cityofnewyork.us/City-Government/Property-Address-Directory/bc8t-ecyu)
-- **Model:** `Building`
-- **Update instructions:** Download PAD ZIP, extract `bobaadr.csv`, upload via admin. Update whenever PLUTO is updated.
-
-### PAD Records
-
-- **Description:** Additional geographic data at the tax lot level from PAD.
-- **Source:** Same as Buildings (PAD)
-- **Model:** `PadRecord`
-- **Update instructions:** Same file as Buildings (`bobaadr.csv`). Update whenever PLUTO is updated.
-
-### Address Records
-
-- **Description:** Searchable address table built from Properties, Buildings, and PAD Records.
-- **Model:** `AddressRecord`
-- **Update instructions:** Create an update in admin with only the dataset selected (no file needed). Runs automatically after the above three are updated.
-- **Warning:** Requires ~6GB RAM (atomic transaction). Takes 2-4 hours. Run on weekends. Restart app/postgres first to free memory.
-
-### Rent Stabilization Records (TaxBills)
-
-- **Description:** Registered rent-stabilized units per property, scraped from DOF tax bill PDFs.
-- **Source:** [NYCDB](https://github.com/nycdb/nycdb/wiki/Dataset:-Rent-Stabilized-Buildings)
-- **Model:** `RentStabilizationRecord` | **PK:** `id` (derived from `ucbbl`)
-- **Manual upload**
-
-### CoreData Subsidy Records
-
-- **Description:** NYU Furman Center's Subsidized Housing Database — properties with active housing subsidies.
-- **Source:** [CoreData.nyc](https://app.coredata.nyc)
-- **Documentation:** [Furman Methodology](https://furmancenter.org/coredata/userguide/methodology) | [Data Updates](https://furmancenter.org/coredata/userguide/data-updates)
-- **Model:** `CoreSubsidyRecord`
-- **Update frequency:** Yearly (month varies)
-- **Update instructions:** Visit CoreData.nyc → Table View → Download → Full property and subsidy data set. Compare date against last import.
-
-### 421a Subsidy Records
-
-- **Description:** Properties receiving 421-a tax exemption/abatement for new construction.
-- **Source:** [NYC DOF](https://www.nyc.gov/site/finance/property/benefits-421a.page) + [Furman CoreData](https://furmancenter.org/coredata/userguide/dictionary)
-- **Model:** `Subsidy421a`
-- **Update frequency:** Yearly (check June 1)
-- **Update instructions:**
-  1. Download all 5 borough `.xlsx` files from DOF
-  2. Manually combine into single `.csv`
-  3. Ensure headers match model exactly (e.g., `BUILDINGCLASSATPRESENT`)
-  4. Ensure borough values are letter abbreviations, not numbers
-  5. Upload and create update
-
-### J-51 Subsidy Records
-
-- **Description:** Properties receiving J-51 tax exemption/abatement for renovations.
-- **Source:** [NYC DOF](https://www.nyc.gov/site/finance/benefits/benefits-j51.page)
-- **Model:** `SubsidyJ51`
-- **Update frequency:** Yearly (check June 1)
-- **Update instructions:** Same process as 421a (download 5 boroughs, combine, upload)
-
-### Tax Liens
-
-- **Description:** Properties with tax liens for unpaid property taxes.
-- **Source:** [NYC DOF](https://www.nyc.gov/site/finance/taxes/property-lien-sales.page)
-- **Model:** `TaxLien`
-- **Note:** No date field — stored as boolean on PropertyAnnotation (`taxlien`). Only final sales are imported.
-
-### Public Housing Records
-
-- **Description:** NYCHA property directory.
-- **Source:** [NYCHA Address Guide](https://www.nyc.gov/site/nycha/about/developments.page) — scraped via [nycha-scraper](https://github.com/itzamnahuerta/nycha-scraper-anhd)
-- **Model:** `PublicHousingRecord`
-- **Update instructions:**
-  1. Download latest NYCHA Property Directory PDF
-  2. Clone [nycha-scraper-anhd](https://github.com/itzamnahuerta/nycha-scraper-anhd)
-  3. Update PDF path in script, run to generate CSV
-  4. Upload CSV to backend
-- **Note:** Last updated 2019. New address guide PDF available as of 1/1/2024.
-
-### PropertyShark Foreclosures
-
-- **Description:** Foreclosure auction data from PropertyShark.
-- **Source:** [PropertyShark](https://www.propertyshark.com/mason/) (subscription required)
-- **Model:** `PSForeclosure`
-- **Update frequency:** Bi-weekly manual download and upload via admin
-
-### PropertyShark PreForeclosures
-
-- **Description:** Pre-foreclosure filing data from PropertyShark.
-- **Source:** [PropertyShark](https://www.propertyshark.com/mason/) (subscription required)
-- **Model:** `PSPreForeclosure`
-- **Update frequency:** Bi-weekly manual download and upload via admin
-
-### Tax Lots
-
-- **Description:** Tax lot data from PLUTO.
-- **Source:** [NYC Planning — PLUTO](https://www.nyc.gov/site/planning/data-maps/open-data/dwn-pluto-mappluto.page)
-- **Model:** `TaxLot`
-
-### Council Districts
-
-- **Description:** NYC Council District boundaries.
-- **Source:** [NYC Planning](https://www.nyc.gov/site/planning/data-maps/open-data/districts-download-metadata.page)
-- **Model:** `Council`
-- **Update instructions:** Download GeoJSON from ArcGIS endpoint, upload via admin. Changed in 2024, next change expected after 2030 census. See `HowtoUpdateMapboxTileset.pdf` in the frontend repo for Mapbox updates.
-
-### Community Districts
-
-- **Description:** NYC Community District boundaries.
-- **Source:** [NYC Planning](https://www.nyc.gov/site/planning/data-maps/open-data.page)
-- **Model:** `Community`
-- **Note:** Not expected to change.
-
-### State Assemblies
-
-- **Description:** State Assembly district boundaries.
-- **Source:** [NY LATFOR](https://www.latfor.state.ny.us/maps/?sec=2024_assembly)
-- **Model:** `StateAssembly`
-
-### State Senates
-
-- **Description:** State Senate district boundaries.
-- **Source:** [NYC Planning](https://www.nyc.gov/site/planning/data-maps/open-data/districts-download-metadata.page)
-- **Model:** `StateSenate`
-
-### Zip Codes
-
-- **Description:** Modified Zip Code Tabulation Areas.
-- **Source:** [NYC Open Data](https://data.cityofnewyork.us/Health/Modified-Zip-Code-Tabulation-Areas-MODZCTA-/pri4-ifjk)
-- **Model:** `ZipCode`
-
-### Deprecated Datasets
-
-| Dataset | Status | Notes |
-|---|---|---|
-| **Foreclosures** | Deprecated | Merged with PropertyShark Foreclosures |
-| **Lis Pendens** | Deprecated | Old foreclosure filings source, replaced by PropertyShark |
-| **Lis Penden Comments** | Deprecated | Associated with Lis Pendens |
-| **HPD Problems** | Merged | Now part of HPD Complaints & Problems |
-
----
-
-## Annual Maintenance Checklist
-
-- [ ] Check 421a and J-51 data (June — yearly release)
-- [ ] Check CoreData subsidy updates (varies — check Furman Center)
-- [ ] Check PLUTO/PAD updates (every ~6 months)
-- [ ] Check Public Housing records (NYCHA address guide PDF)
-- [ ] Compare local row counts vs Socrata for key datasets (see table above)
-- [ ] Review PropertyShark subscription status
-- [ ] Verify OCA AWS credentials and bucket name
-
----
-
-## Field-Level Audit (Per-Table Null Statistics)
-
-*Post-vacuum data from 2026-04-06. 283 fields are 100% null, 338 fields are >90% null across 45 tables.*
-
-## Table-by-Table Breakdown
-
-### `datasets_acrisreallegal` — 22,373,669 rows, 16 fields
-
-**No 100% NULL fields.**
-
-**Healthy fields (16):** 13 fields 100% populated; 2 fields 50-98% populated (`streetnumber`: 71.3%, `streetname`: 71.8%); 1 field 11-49% populated.
-
-*Partially populated (11-49%):*
-- `unit`: 22.4%
-
----
-
-### `datasets_acrisrealmaster` — 16,921,049 rows, 14 fields
-
-**Healthy fields (14):** 12 fields >=99% populated; 2 fields 50-98% populated.
-
----
-
-### `datasets_acrisrealparty` — 45,271,670 rows, 12 fields
-
-**>90% NULL (1 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `address2` | 3,904,277 | 41,367,393 | 8.6% |
-
-**Healthy fields (11):** 6 fields >=99% populated; 5 fields 50-98% populated.
-
----
-
-### `datasets_addressrecord` — 1,407,419 rows, 10 fields
-
-**Healthy fields (10):** 7 fields >=99% populated; 1 fields 50-98% populated; 2 fields 11-49% populated.
-
-*Partially populated (11-49%):*
-- `bin`: 38.4%
-- `pad_address`: 38.5%
-
----
-
-### `datasets_aepbuilding` — 3,706 rows, 19 fields
-
-**Healthy fields (19):** 18 fields >=99% populated; 1 fields 50-98% populated.
-
----
-
-### `datasets_building` — 1,084,857 rows, 28 fields
-
-**100% NULL (2 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `dapsflag` | 0 | 1,084,857 | 0.0% |
-| `naubflag` | 0 | 1,084,857 | 0.0% |
-
-**>90% NULL (4 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `addrtype` | 573 | 1,084,284 | 0.1% |
-| `hcontpar` | 4,045 | 1,080,812 | 0.4% |
-| `lcontpar` | 4,041 | 1,080,816 | 0.4% |
-| `realb7sc` | 583 | 1,084,274 | 0.1% |
-
-**Healthy fields (22):** 21 fields >=99% populated; 1 fields 50-98% populated.
-
----
-
-### `datasets_community` — 71 rows, 1 fields
-
-**Healthy fields (1):** 1 fields >=99% populated.
-
----
-
-### `datasets_conhrecord` — 1,519 rows, 25 fields
-
-**100% NULL (3 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `aeporder` | 0 | 1,519 | 0.0% |
-| `censustract` | 0 | 1,519 | 0.0% |
-| `ntaneighborhoodtabulationarea` | 0 | 1,519 | 0.0% |
-
-**Healthy fields (22):** 22 fields >=99% populated.
-
----
-
-### `datasets_coresubsidyrecord` — 21,133 rows, 39 fields
-
-**100% NULL (6 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `serviolation2017` | 0 | 21,133 | 0.0% |
-| `serviolation2018` | 0 | 21,133 | 0.0% |
-| `serviolation2019` | 0 | 21,133 | 0.0% |
-| `taxdelinquency2016` | 0 | 21,133 | 0.0% |
-| `taxdelinquency2018` | 0 | 21,133 | 0.0% |
-| `taxdelinquency2019` | 0 | 21,133 | 0.0% |
-
-**>90% NULL (2 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `reacdate` | 23 | 21,110 | 0.1% |
-| `reacscore` | 785 | 20,348 | 3.7% |
-
-**Healthy fields (31):** 19 fields >=99% populated; 8 fields 50-98% populated; 4 fields 11-49% populated.
-
-*Partially populated (11-49%):*
-- `agencysuppliedid2`: 18.4%
-- `serviolation2021`: 41.0%
-- `taxdelinquency2021`: 38.1%
-- `tenure`: 21.0%
-
----
-
-### `datasets_council` — 51 rows, 1 fields
-
-**Healthy fields (1):** 1 fields >=99% populated.
-
----
-
-### `datasets_councilprofile` — 0 rows, 0 fields
-
----
-
-### `datasets_dobcomplaint` — 3,087,144 rows, 16 fields
-
-**>90% NULL (1 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `specialdistrict` | 16,734 | 3,070,410 | 0.5% |
-
-**Healthy fields (15):** 11 fields >=99% populated; 4 fields 50-98% populated.
-
----
-
-### `datasets_dobfiledpermit` — 2,509,799 rows, 20 fields
-
-**Healthy fields (20):** 17 fields >=99% populated; 3 fields 50-98% populated.
-
----
-
-### `datasets_dobissuedpermit` — 2,184,571 rows, 23 fields
-
-**Healthy fields (23):** 14 fields >=99% populated; 7 fields 50-98% populated; 2 fields 11-49% populated.
-
-*Partially populated (11-49%):*
-- `filing_reason`: 24.6%
-- `permit_subtype`: 42.5%
-
----
-
-### `datasets_doblegacyfiledpermit` — 2,714,598 rows, 97 fields
-
+**Field Audit:**
 **100% NULL (74 fields):**
 
 | Field | Non-null | Null | Populated % |
@@ -734,85 +476,16 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 
 ---
 
-### `datasets_dobnowfiledpermit` — 885,852 rows, 87 fields
+### DOB Permit Issued Legacy
 
-**100% NULL (66 fields):**
+- **Description:** Permits issued via traditional BIS system.
+- **Source:** [NYC Open Data](https://data.cityofnewyork.us/Housing-Development/DOB-Permit-Issuance/ipu4-2q9a)
+- **Model:** `DOBPermitIssuedLegacy` | **PK:** auto-generated `id`
+- **Automated:** Yes (daily)
+- **Import method:** Truncate + reload (`overwrite=True`)
+- **Download filter:** `$select` (23 fields), all rows
 
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `antenna` | 0 | 885,852 | 0.0% |
-| `applicantsmiddleinitial` | 0 | 885,852 | 0.0% |
-| `aptcondonos` | 0 | 885,852 | 0.0% |
-| `bin_2` | 0 | 885,852 | 0.0% |
-| `boilerequipmentworktype` | 0 | 885,852 | 0.0% |
-| `buildingtype` | 0 | 885,852 | 0.0% |
-| `built1informationvalue` | 0 | 885,852 | 0.0% |
-| `built2ainformationvalue` | 0 | 885,852 | 0.0% |
-| `built2binformationvalue` | 0 | 885,852 | 0.0% |
-| `built2informationvalue` | 0 | 885,852 | 0.0% |
-| `censustract` | 0 | 885,852 | 0.0% |
-| `commmunityboard` | 0 | 885,852 | 0.0% |
-| `councildistrict` | 0 | 885,852 | 0.0% |
-| `curbcut` | 0 | 885,852 | 0.0% |
-| `currentstatusdate` | 0 | 885,852 | 0.0% |
-| `earthworkworktype` | 0 | 885,852 | 0.0% |
-| `exemptfromnycecc` | 0 | 885,852 | 0.0% |
-| `existingdwellingunits` | 0 | 885,852 | 0.0% |
-| `existingheight` | 0 | 885,852 | 0.0% |
-| `existingstories` | 0 | 885,852 | 0.0% |
-| `fence` | 0 | 885,852 | 0.0% |
-| `filingrepresentativebusinessname` | 0 | 885,852 | 0.0% |
-| `filingrepresentativecity` | 0 | 885,852 | 0.0% |
-| `filingrepresentativefirstname` | 0 | 885,852 | 0.0% |
-| `filingrepresentativelastname` | 0 | 885,852 | 0.0% |
-| `filingrepresentativemiddleinitial` | 0 | 885,852 | 0.0% |
-| `filingrepresentativestate` | 0 | 885,852 | 0.0% |
-| `filingrepresentativestreetname` | 0 | 885,852 | 0.0% |
-| `filingrepresentativezip` | 0 | 885,852 | 0.0% |
-| `firstpermitdate` | 0 | 885,852 | 0.0% |
-| `foundationworktype` | 0 | 885,852 | 0.0% |
-| `generalconstructionworktype` | 0 | 885,852 | 0.0% |
-| `includespermanentremoval` | 0 | 885,852 | 0.0% |
-| `incompliancewithnycecc` | 0 | 885,852 | 0.0% |
-| `latitude` | 0 | 885,852 | 0.0% |
-| `littlee` | 0 | 885,852 | 0.0% |
-| `longitude` | 0 | 885,852 | 0.0% |
-| `mechanicalsystemsworktype` | 0 | 885,852 | 0.0% |
-| `nta` | 0 | 885,852 | 0.0% |
-| `ownerscity` | 1 | 885,851 | 0.0% |
-| `ownersstate` | 1 | 885,851 | 0.0% |
-| `ownersstreetname` | 0 | 885,852 | 0.0% |
-| `ownerszip` | 1 | 885,851 | 0.0% |
-| `permitissuedate` | 0 | 885,852 | 0.0% |
-| `placeofassemblyworktype` | 0 | 885,852 | 0.0% |
-| `plumbingworktype` | 0 | 885,852 | 0.0% |
-| `progressinspectionrequirement` | 0 | 885,852 | 0.0% |
-| `proposeddwellingunits` | 0 | 885,852 | 0.0% |
-| `proposedheight` | 0 | 885,852 | 0.0% |
-| `proposednoofstories` | 0 | 885,852 | 0.0% |
-| `protectionmechanicalmethodsworktype` | 0 | 885,852 | 0.0% |
-| `requestlegalization` | 0 | 885,852 | 0.0% |
-| `reviewbuildingcode` | 0 | 885,852 | 0.0% |
-| `scaffold` | 0 | 885,852 | 0.0% |
-| `shed` | 0 | 885,852 | 0.0% |
-| `sidewalkshedworktype` | 0 | 885,852 | 0.0% |
-| `sign` | 0 | 885,852 | 0.0% |
-| `specialinspectionagencynumber` | 0 | 885,852 | 0.0% |
-| `specialinspectionrequirement` | 0 | 885,852 | 0.0% |
-| `sprinklerworktype` | 0 | 885,852 | 0.0% |
-| `standpipe` | 0 | 885,852 | 0.0% |
-| `structuralworktype` | 0 | 885,852 | 0.0% |
-| `supportofexcavationworktype` | 0 | 885,852 | 0.0% |
-| `temporaryplaceofassemblyworktype` | 0 | 885,852 | 0.0% |
-| `totalconstructionfloorarea` | 0 | 885,852 | 0.0% |
-| `unmappedccostreet` | 0 | 885,852 | 0.0% |
-
-**Healthy fields (21):** 19 fields >=99% populated; 2 fields 50-98% populated.
-
----
-
-### `datasets_dobpermitissuedlegacy` — 3,965,376 rows, 61 fields
-
+**Field Audit:**
 **100% NULL (37 fields):**
 
 | Field | Non-null | Null | Populated % |
@@ -859,90 +532,47 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 
 ---
 
-### `datasets_dobpermitissuednow` — 918,418 rows, 36 fields
+### DOB Filed Permits (Joined)
 
-**100% NULL (22 fields):**
+- **Description:** Combined view of Legacy + NOW filed permits for the frontend.
+- **Model:** `DOBFiledPermit` | **PK:** `key`
+- **Automated:** Yes (runs after children import)
+- **Import method:** Upsert from child tables via SQL
+- **Note:** Has both `jobtype` (raw) and `job_type` (display) fields. NULL `job_type` values are cleaned up post-import.
 
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `applicantbusinessaddress` | 0 | 918,418 | 0.0% |
-| `applicantbusinessname` | 0 | 918,418 | 0.0% |
-| `applicantfirstname` | 0 | 918,418 | 0.0% |
-| `applicantlastname` | 0 | 918,418 | 0.0% |
-| `applicantlicense` | 0 | 918,418 | 0.0% |
-| `applicantmiddlename` | 0 | 918,418 | 0.0% |
-| `approveddate` | 0 | 918,418 | 0.0% |
-| `aptcondonos` | 0 | 918,418 | 0.0% |
-| `cbno` | 0 | 918,418 | 0.0% |
-| `estimatedjobcosts` | 0 | 918,418 | 0.0% |
-| `filingrepresentativebusinessname` | 0 | 918,418 | 0.0% |
-| `filingrepresentativefirstname` | 0 | 918,418 | 0.0% |
-| `filingrepresentativelastname` | 0 | 918,418 | 0.0% |
-| `filingrepresentativemiddleinitial` | 0 | 918,418 | 0.0% |
-| `ownerbusinessname` | 0 | 918,418 | 0.0% |
-| `ownercity` | 0 | 918,418 | 0.0% |
-| `ownername` | 0 | 918,418 | 0.0% |
-| `ownerstate` | 0 | 918,418 | 0.0% |
-| `ownerstreetaddress` | 0 | 918,418 | 0.0% |
-| `ownerzipcode` | 0 | 918,418 | 0.0% |
-| `permitteeslicensetype` | 0 | 918,418 | 0.0% |
-| `workonfloor` | 0 | 918,418 | 0.0% |
-
-**Healthy fields (14):** 14 fields >=99% populated.
+**Field Audit:**
+**Healthy fields (20):** 17 fields >=99% populated; 3 fields 50-98% populated.
 
 ---
 
-### `datasets_dobviolation` — 2,762,982 rows, 19 fields
+### DOB Issued Permits (Joined)
 
-**>90% NULL (1 fields):**
+- **Description:** Combined view of Legacy + NOW issued permits for the frontend.
+- **Model:** `DOBIssuedPermit` | **PK:** `key`
+- **Automated:** Yes (runs after children import)
+- **Import method:** Upsert from child tables via SQL
 
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `ecbnumber` | 238,622 | 2,524,360 | 8.6% |
-
-**Healthy fields (18):** 14 fields >=99% populated; 3 fields 50-98% populated; 1 fields 11-49% populated.
+**Field Audit:**
+**Healthy fields (23):** 14 fields >=99% populated; 7 fields 50-98% populated; 2 fields 11-49% populated.
 
 *Partially populated (11-49%):*
-- `description`: 36.3%
+- `filing_reason`: 24.6%
+- `permit_subtype`: 42.5%
 
 ---
 
-### `datasets_ecbviolation` — 1,804,200 rows, 47 fields
+### Evictions
 
-**100% NULL (6 fields):**
+- **Description:** Court-ordered marshal evictions since 1/1/2017.
+- **Source:** [NYC Open Data](https://data.cityofnewyork.us/City-Government/Evictions/6z8x-wfk4)
+- **Model:** `Eviction` | **PK:** `courtindexnumber`
+- **Automated:** Yes (daily)
+- **Import method:** Upsert with `ignore_conflict=True` (duplicate court index numbers silently skipped)
+- **Deduplication:** `unique_together` on `(evictionaddress, evictionapartmentnumber, executeddate, marshallastname)`
+- **Temporal scope:** 2017 to present (when NYC began publishing)
+- **Note:** Addresses are cleaned and matched to BBLs via geosearch with 15s timeout
 
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `infractioncode10` | 314 | 1,803,886 | 0.0% |
-| `infractioncode8` | 638 | 1,803,562 | 0.0% |
-| `infractioncode9` | 474 | 1,803,726 | 0.0% |
-| `sectionlawdescription10` | 314 | 1,803,886 | 0.0% |
-| `sectionlawdescription8` | 638 | 1,803,562 | 0.0% |
-| `sectionlawdescription9` | 474 | 1,803,726 | 0.0% |
-
-**>90% NULL (12 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `infractioncode2` | 107,587 | 1,696,613 | 6.0% |
-| `infractioncode3` | 10,463 | 1,793,737 | 0.6% |
-| `infractioncode4` | 3,729 | 1,800,471 | 0.2% |
-| `infractioncode5` | 2,074 | 1,802,126 | 0.1% |
-| `infractioncode6` | 1,336 | 1,802,864 | 0.1% |
-| `infractioncode7` | 939 | 1,803,261 | 0.1% |
-| `sectionlawdescription2` | 106,339 | 1,697,861 | 5.9% |
-| `sectionlawdescription3` | 10,408 | 1,793,792 | 0.6% |
-| `sectionlawdescription4` | 3,717 | 1,800,483 | 0.2% |
-| `sectionlawdescription5` | 2,068 | 1,802,132 | 0.1% |
-| `sectionlawdescription6` | 1,334 | 1,802,866 | 0.1% |
-| `sectionlawdescription7` | 938 | 1,803,262 | 0.1% |
-
-**Healthy fields (29):** 18 fields >=99% populated; 11 fields 50-98% populated.
-
----
-
-### `datasets_eviction` — 108,455 rows, 25 fields
-
+**Field Audit:**
 **100% NULL (3 fields):**
 
 | Field | Non-null | Null | Populated % |
@@ -962,24 +592,66 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 
 ---
 
-### `datasets_foreclosure` — 56,843 rows, 14 fields
+### ACRIS Real Property Masters
 
-**100% NULL (1 fields):**
+- **Description:** Document details for real property transactions recorded in ACRIS. Only `DEED` types counted as "sales" in annotations.
+- **Source:** [NYC Open Data](https://data.cityofnewyork.us/City-Government/ACRIS-Real-Property-Master/bnx9-e6tj)
+- **Model:** `AcrisRealMaster` | **PK:** `documentid`
+- **Automated:** Yes (monthly)
+- **Import method:** Upsert
+- **Post-download filter:** Skips records older than 1 year by `docdate`
+- **Temporal scope:** Records from 1863 to present
 
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `mortgage_amount` | 10 | 56,833 | 0.0% |
-
-**Healthy fields (13):** 8 fields >=99% populated; 3 fields 50-98% populated; 2 fields 11-49% populated.
-
-*Partially populated (11-49%):*
-- `auction`: 10.8%
-- `mortgage_date`: 44.1%
+**Field Audit:**
+**Healthy fields (14):** 12 fields >=99% populated; 2 fields 50-98% populated.
 
 ---
 
-### `datasets_housinglitigation` — 236,872 rows, 24 fields
+### ACRIS Real Property Legals
 
+- **Description:** Property details (BBL, block, lot) linked to ACRIS documents.
+- **Source:** [NYC Open Data](https://data.cityofnewyork.us/City-Government/ACRIS-Real-Property-Legals/8h5j-fqxa)
+- **Model:** `AcrisRealLegal` | **PK:** `key`
+- **Automated:** Yes (monthly)
+
+**Field Audit:**
+**No 100% NULL fields.**
+
+**Healthy fields (16):** 13 fields 100% populated; 2 fields 50-98% populated (`streetnumber`: 71.3%, `streetname`: 71.8%); 1 field 11-49% populated.
+
+*Partially populated (11-49%):*
+- `unit`: 22.4%
+
+---
+
+### ACRIS Real Property Parties
+
+- **Description:** Party names (buyers, sellers, borrowers, lenders) linked to ACRIS documents.
+- **Source:** [NYC Open Data](https://data.cityofnewyork.us/City-Government/ACRIS-Real-Property-Parties/636b-3b5g)
+- **Model:** `AcrisRealParty` | **PK:** `key`
+- **Automated:** Yes (monthly)
+
+**Field Audit:**
+**>90% NULL (1 fields):**
+
+| Field | Non-null | Null | Populated % |
+|-------|----------|------|-------------|
+| `address2` | 3,904,277 | 41,367,393 | 8.6% |
+
+**Healthy fields (11):** 6 fields >=99% populated; 5 fields 50-98% populated.
+
+---
+
+### Housing Litigations
+
+- **Description:** HPD or tenant-initiated litigation in Housing Court against landlords.
+- **Source:** [NYC Open Data](https://data.cityofnewyork.us/Housing-Development/Housing-Litigations/59kj-x8nc)
+- **Model:** `HousingLitigation` | **PK:** `litigationid`
+- **Automated:** Yes (monthly)
+- **Import method:** Upsert
+- **Note:** Does not include Supreme Court cases.
+
+**Field Audit:**
 **>90% NULL (3 fields):**
 
 | Field | Non-null | Null | Populated % |
@@ -992,78 +664,17 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 
 ---
 
-### `datasets_hpdbuildingrecord` — 380,050 rows, 24 fields
+### OCA Housing Court
 
-**Healthy fields (24):** 18 fields >=99% populated; 6 fields 50-98% populated.
+- **Description:** Extract of landlord/tenant cases in NYC housing court (no PII).
+- **Source:** AWS S3 bucket `oca-2-dev` (via [Housing Data Coalition](https://github.com/housing-data-coalition/oca))
+- **Documentation:** [NYCDB Wiki](https://github.com/nycdb/nycdb/wiki/Dataset:-OCA-Housing-Court-Records)
+- **Model:** `OCAHousingCourt` | **PK:** `indexnumberid`
+- **Automated:** Yes (monthly)
+- **Requires authentication:** Yes (403 for unauthenticated users)
+- **Note:** Requires AWS credentials (`OCA_AWS_SECRET_KEY_ID`, `OCA_AWS_SECRET_ACCESS_KEY`) in `.env`. Bucket changed to `oca-2-dev` in 2023.
 
----
-
-### `datasets_hpdcomplaint` — 15,976,108 rows, 33 fields
-
-**Healthy fields (33):** 31 fields >=99% populated; 2 fields 50-98% populated.
-
----
-
-### `datasets_hpdcontact` — 731,030 rows, 15 fields
-
-**Healthy fields (15):** 4 fields >=99% populated; 7 fields 50-98% populated; 4 fields 11-49% populated.
-
-*Partially populated (11-49%):*
-- `businessapartment`: 34.5%
-- `corporationname`: 26.2%
-- `middleinitial`: 13.6%
-- `title`: 16.4%
-
----
-
-### `datasets_hpdregistration` — 193,881 rows, 17 fields
-
-**Healthy fields (17):** 16 fields >=99% populated; 1 fields 50-98% populated.
-
----
-
-### `datasets_hpdviolation` — 10,805,349 rows, 41 fields
-
-**>90% NULL (2 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `newcertifybydate` | 92,950 | 10,712,399 | 0.9% |
-| `newcorrectbydate` | 92,950 | 10,712,399 | 0.9% |
-
-**Healthy fields (39):** 31 fields >=99% populated; 7 fields 50-98% populated; 1 fields 11-49% populated.
-
-*Partially populated (11-49%):*
-- `certifieddate`: 35.4%
-
----
-
-### `datasets_lispenden` — 13,295 rows, 16 fields
-
-**100% NULL (1 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `thirdparty` | 0 | 13,295 | 0.0% |
-
-**Healthy fields (15):** 8 fields >=99% populated; 3 fields 50-98% populated; 4 fields 11-49% populated.
-
-*Partially populated (11-49%):*
-- `attorney`: 30.6%
-- `disp`: 12.5%
-- `satdate`: 31.2%
-- `source`: 30.6%
-
----
-
-### `datasets_lispendencomment` — 87,306 rows, 2 fields
-
-**Healthy fields (2):** 2 fields >=99% populated.
-
----
-
-### `datasets_ocahousingcourt` — 2,259,564 rows, 41 fields
-
+**Field Audit:**
 **100% NULL (13 fields):**
 
 | Field | Non-null | Null | Populated % |
@@ -1090,30 +701,96 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 
 ---
 
-### `datasets_padrecord` — 1,236,507 rows, 28 fields
+### HPD Registrations
 
-**100% NULL (2 fields):**
+- **Description:** Multiple dwelling registration information collected by HPD.
+- **Source:** [NYC Open Data](https://data.cityofnewyork.us/Housing-Development/Multiple-Dwelling-Registrations/tesw-yqqr)
+- **Model:** `HPDRegistration` | **PK:** `registrationid`
+- **Automated:** Yes (monthly)
 
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `dapsflag` | 0 | 1,236,507 | 0.0% |
-| `naubflag` | 0 | 1,236,507 | 0.0% |
-
-**>90% NULL (4 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `addrtype` | 11,136 | 1,225,371 | 0.9% |
-| `hcontpar` | 7,396 | 1,229,111 | 0.6% |
-| `lcontpar` | 7,396 | 1,229,111 | 0.6% |
-| `realb7sc` | 1,242 | 1,235,265 | 0.1% |
-
-**Healthy fields (22):** 21 fields >=99% populated; 1 fields 50-98% populated.
+**Field Audit:**
+**Healthy fields (17):** 16 fields >=99% populated; 1 fields 50-98% populated.
 
 ---
 
-### `datasets_property` — 872,840 rows, 111 fields
+### HPD Registration Contacts
 
+- **Description:** Organizations/individuals listed on Multiple Dwelling Registration forms.
+- **Source:** [NYC Open Data](https://data.cityofnewyork.us/Housing-Development/Registration-Contacts/feu5-w2e2)
+- **Model:** `HPDContact` | **PK:** `registrationcontactid`
+- **Automated:** Yes (monthly)
+
+**Field Audit:**
+**Healthy fields (15):** 4 fields >=99% populated; 7 fields 50-98% populated; 4 fields 11-49% populated.
+
+*Partially populated (11-49%):*
+- `businessapartment`: 34.5%
+- `corporationname`: 26.2%
+- `middleinitial`: 13.6%
+- `title`: 16.4%
+
+---
+
+### HPD Building Records
+
+- **Description:** Buildings under HPD jurisdiction (registered, litigated, complained about, or in AEP/emergency repair).
+- **Source:** [NYC Open Data](https://data.cityofnewyork.us/Housing-Development/Buildings-Subject-to-HPD-Jurisdiction/kj4p-ruqc)
+- **Model:** `HPDBuildingRecord`
+- **Automated:** Yes (monthly)
+- **Update instructions:** Download from https://data.cityofnewyork.us/api/views/kj4p-ruqc/rows.csv?accessType=DOWNLOAD, add file, update.
+
+**Field Audit:**
+**Healthy fields (24):** 18 fields >=99% populated; 6 fields 50-98% populated.
+
+---
+
+### AEP Buildings
+
+- **Description:** Buildings in HPD's Alternative Enforcement Program for severe maintenance code violations.
+- **Source:** [NYC Open Data](https://data.cityofnewyork.us/Housing-Development/Buildings-Selected-for-the-Alternative-Enforcement/hcir-3275)
+- **Model:** `AEPBuilding`
+- **Automated:** Yes (when needed)
+- **Note:** Temporary status flag. Records from 2007+.
+
+**Field Audit:**
+**Healthy fields (19):** 18 fields >=99% populated; 1 fields 50-98% populated.
+
+---
+
+### Certificate of No Harassment (CONH) Records
+
+- **Description:** Buildings subject to the CONH Pilot Program.
+- **Source:** [NYC Open Data](https://data.cityofnewyork.us/Housing-Development/Certification-of-No-Harassment-CONH-Pilot-Building/bzxi-2tsw)
+- **Model:** `CONHRecord`
+- **Automated:** Yes (when needed)
+- **Note:** Temporary status flag.
+
+**Field Audit:**
+**100% NULL (3 fields):**
+
+| Field | Non-null | Null | Populated % |
+|-------|----------|------|-------------|
+| `aeporder` | 0 | 1,519 | 0.0% |
+| `censustract` | 0 | 1,519 | 0.0% |
+| `ntaneighborhoodtabulationarea` | 0 | 1,519 | 0.0% |
+
+**Healthy fields (22):** 22 fields >=99% populated.
+
+---
+
+### Properties (PLUTO)
+
+- **Description:** Extensive land use and geographic data at the tax lot level.
+- **Source:** [NYC Open Data — PLUTO](https://data.cityofnewyork.us/City-Government/Primary-Land-Use-Tax-Lot-Output-PLUTO-/64uk-42ks)
+- **Model:** `Property`
+- **Automated:** Manual (can trigger via admin "Update Dataset" button)
+- **Update frequency:** Check every 6 months
+- **Update instructions:**
+  1. For automatic: click 'Properties' in admin, click 'Update Dataset'
+  2. For manual: download PLUTO (not MapPLUTO) CSV from NYC Planning, upload via admin
+  3. After updating Properties, also update: Buildings, PAD Records, then Address Records (in order)
+
+**Field Audit:**
 **100% NULL (10 fields):**
 
 | Field | Non-null | Null | Populated % |
@@ -1162,67 +839,86 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 
 ---
 
-### `datasets_propertyannotation` — 872,840 rows, 64 fields
+### Buildings
 
-**>90% NULL (3 fields):**
+- **Description:** Building-level data from the Property Address Directory (PAD).
+- **Source:** [NYC Open Data — PAD](https://data.cityofnewyork.us/City-Government/Property-Address-Directory/bc8t-ecyu)
+- **Model:** `Building`
+- **Update instructions:** Download PAD ZIP, extract `bobaadr.csv`, upload via admin. Update whenever PLUTO is updated.
 
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `aepdischargedate` | 2,765 | 870,075 | 0.3% |
-| `aepstartdate` | 3,640 | 869,200 | 0.4% |
-| `subsidyprograms` | 21,079 | 851,761 | 2.4% |
-
-**Healthy fields (61):** 57 fields >=99% populated; 2 fields 50-98% populated; 2 fields 11-49% populated.
-
-*Partially populated (11-49%):*
-- `legalclassa`: 38.5%
-- `legalclassb`: 37.8%
-
----
-
-### `datasets_psforeclosure` — 14,439 rows, 23 fields
-
-**100% NULL (1 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `bldgareasqft` | 0 | 14,439 | 0.0% |
-
-**Healthy fields (22):** 15 fields >=99% populated; 5 fields 50-98% populated; 2 fields 11-49% populated.
-
-*Partially populated (11-49%):*
-- `legalprocess`: 49.9%
-- `unitnumber`: 16.4%
-
----
-
-### `datasets_pspreforeclosure` — 52,123 rows, 20 fields
-
+**Field Audit:**
 **100% NULL (2 fields):**
 
 | Field | Non-null | Null | Populated % |
 |-------|----------|------|-------------|
-| `bldgareasqft` | 0 | 52,123 | 0.0% |
-| `mortgageamount` | 12 | 52,111 | 0.0% |
+| `dapsflag` | 0 | 1,084,857 | 0.0% |
+| `naubflag` | 0 | 1,084,857 | 0.0% |
 
-**Healthy fields (18):** 8 fields >=99% populated; 9 fields 50-98% populated; 1 fields 11-49% populated.
+**>90% NULL (4 fields):**
 
-*Partially populated (11-49%):*
-- `debtoraddress`: 16.7%
+| Field | Non-null | Null | Populated % |
+|-------|----------|------|-------------|
+| `addrtype` | 573 | 1,084,284 | 0.1% |
+| `hcontpar` | 4,045 | 1,080,812 | 0.4% |
+| `lcontpar` | 4,041 | 1,080,816 | 0.4% |
+| `realb7sc` | 583 | 1,084,274 | 0.1% |
 
----
-
-### `datasets_publichousingrecord` — 4,519 rows, 10 fields
-
-**Healthy fields (10):** 9 fields >=99% populated; 1 fields 11-49% populated.
-
-*Partially populated (11-49%):*
-- `facility`: 47.0%
+**Healthy fields (22):** 21 fields >=99% populated; 1 fields 50-98% populated.
 
 ---
 
-### `datasets_rentstabilizationrecord` — 52,172 rows, 95 fields
+### PAD Records
 
+- **Description:** Additional geographic data at the tax lot level from PAD.
+- **Source:** Same as Buildings (PAD)
+- **Model:** `PadRecord`
+- **Update instructions:** Same file as Buildings (`bobaadr.csv`). Update whenever PLUTO is updated.
+
+**Field Audit:**
+**100% NULL (2 fields):**
+
+| Field | Non-null | Null | Populated % |
+|-------|----------|------|-------------|
+| `dapsflag` | 0 | 1,236,507 | 0.0% |
+| `naubflag` | 0 | 1,236,507 | 0.0% |
+
+**>90% NULL (4 fields):**
+
+| Field | Non-null | Null | Populated % |
+|-------|----------|------|-------------|
+| `addrtype` | 11,136 | 1,225,371 | 0.9% |
+| `hcontpar` | 7,396 | 1,229,111 | 0.6% |
+| `lcontpar` | 7,396 | 1,229,111 | 0.6% |
+| `realb7sc` | 1,242 | 1,235,265 | 0.1% |
+
+**Healthy fields (22):** 21 fields >=99% populated; 1 fields 50-98% populated.
+
+---
+
+### Address Records
+
+- **Description:** Searchable address table built from Properties, Buildings, and PAD Records.
+- **Model:** `AddressRecord`
+- **Update instructions:** Create an update in admin with only the dataset selected (no file needed). Runs automatically after the above three are updated.
+- **Warning:** Requires ~6GB RAM (atomic transaction). Takes 2-4 hours. Run on weekends. Restart app/postgres first to free memory.
+
+**Field Audit:**
+**Healthy fields (10):** 7 fields >=99% populated; 1 fields 50-98% populated; 2 fields 11-49% populated.
+
+*Partially populated (11-49%):*
+- `bin`: 38.4%
+- `pad_address`: 38.5%
+
+---
+
+### Rent Stabilization Records (TaxBills)
+
+- **Description:** Registered rent-stabilized units per property, scraped from DOF tax bill PDFs.
+- **Source:** [NYCDB](https://github.com/nycdb/nycdb/wiki/Dataset:-Rent-Stabilized-Buildings)
+- **Model:** `RentStabilizationRecord` | **PK:** `id` (derived from `ucbbl`)
+- **Manual upload**
+
+**Field Audit:**
 **100% NULL (34 fields):**
 
 | Field | Non-null | Null | Populated % |
@@ -1277,36 +973,156 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 
 ---
 
-### `datasets_stateassembly` — 65 rows, 1 fields
+### CoreData Subsidy Records
 
-**Healthy fields (1):** 1 fields >=99% populated.
+- **Description:** NYU Furman Center's Subsidized Housing Database — properties with active housing subsidies.
+- **Source:** [CoreData.nyc](https://app.coredata.nyc)
+- **Documentation:** [Furman Methodology](https://furmancenter.org/coredata/userguide/methodology) | [Data Updates](https://furmancenter.org/coredata/userguide/data-updates)
+- **Model:** `CoreSubsidyRecord`
+- **Update frequency:** Yearly (month varies)
+- **Update instructions:** Visit CoreData.nyc → Table View → Download → Full property and subsidy data set. Compare date against last import.
+
+**Field Audit:**
+**100% NULL (6 fields):**
+
+| Field | Non-null | Null | Populated % |
+|-------|----------|------|-------------|
+| `serviolation2017` | 0 | 21,133 | 0.0% |
+| `serviolation2018` | 0 | 21,133 | 0.0% |
+| `serviolation2019` | 0 | 21,133 | 0.0% |
+| `taxdelinquency2016` | 0 | 21,133 | 0.0% |
+| `taxdelinquency2018` | 0 | 21,133 | 0.0% |
+| `taxdelinquency2019` | 0 | 21,133 | 0.0% |
+
+**>90% NULL (2 fields):**
+
+| Field | Non-null | Null | Populated % |
+|-------|----------|------|-------------|
+| `reacdate` | 23 | 21,110 | 0.1% |
+| `reacscore` | 785 | 20,348 | 3.7% |
+
+**Healthy fields (31):** 19 fields >=99% populated; 8 fields 50-98% populated; 4 fields 11-49% populated.
+
+*Partially populated (11-49%):*
+- `agencysuppliedid2`: 18.4%
+- `serviolation2021`: 41.0%
+- `taxdelinquency2021`: 38.1%
+- `tenure`: 21.0%
 
 ---
 
-### `datasets_statesenate` — 28 rows, 1 fields
+### 421a Subsidy Records
 
-**Healthy fields (1):** 1 fields >=99% populated.
+- **Description:** Properties receiving 421-a tax exemption/abatement for new construction.
+- **Source:** [NYC DOF](https://www.nyc.gov/site/finance/property/benefits-421a.page) + [Furman CoreData](https://furmancenter.org/coredata/userguide/dictionary)
+- **Model:** `Subsidy421a`
+- **Update frequency:** Yearly (check June 1)
+- **Update instructions:**
+  1. Download all 5 borough `.xlsx` files from DOF
+  2. Manually combine into single `.csv`
+  3. Ensure headers match model exactly (e.g., `BUILDINGCLASSATPRESENT`)
+  4. Ensure borough values are letter abbreviations, not numbers
+  5. Upload and create update
 
+**Field Audit:**
 ---
 
-### `datasets_subsidy421a` — 0 rows, 0 fields
+### J-51 Subsidy Records
 
----
+- **Description:** Properties receiving J-51 tax exemption/abatement for renovations.
+- **Source:** [NYC DOF](https://www.nyc.gov/site/finance/benefits/benefits-j51.page)
+- **Model:** `SubsidyJ51`
+- **Update frequency:** Yearly (check June 1)
+- **Update instructions:** Same process as 421a (download 5 boroughs, combine, upload)
 
-### `datasets_subsidyj51` — 27,762 rows, 16 fields
-
+**Field Audit:**
 **Healthy fields (16):** 16 fields >=99% populated.
 
 ---
 
-### `datasets_taxlien` — 6,562 rows, 15 fields
+### Tax Liens
 
+- **Description:** Properties with tax liens for unpaid property taxes.
+- **Source:** [NYC DOF](https://www.nyc.gov/site/finance/taxes/property-lien-sales.page)
+- **Model:** `TaxLien`
+- **Note:** No date field — stored as boolean on PropertyAnnotation (`taxlien`). Only final sales are imported.
+
+**Field Audit:**
 **Healthy fields (15):** 11 fields >=99% populated; 4 fields 50-98% populated.
 
 ---
 
-### `datasets_taxlot` — 1,138,745 rows, 9 fields
+### Public Housing Records
 
+- **Description:** NYCHA property directory.
+- **Source:** [NYCHA Address Guide](https://www.nyc.gov/site/nycha/about/developments.page) — scraped via [nycha-scraper](https://github.com/itzamnahuerta/nycha-scraper-anhd)
+- **Model:** `PublicHousingRecord`
+- **Update instructions:**
+  1. Download latest NYCHA Property Directory PDF
+  2. Clone [nycha-scraper-anhd](https://github.com/itzamnahuerta/nycha-scraper-anhd)
+  3. Update PDF path in script, run to generate CSV
+  4. Upload CSV to backend
+- **Note:** Last updated 2019. New address guide PDF available as of 1/1/2024.
+
+**Field Audit:**
+**Healthy fields (10):** 9 fields >=99% populated; 1 fields 11-49% populated.
+
+*Partially populated (11-49%):*
+- `facility`: 47.0%
+
+---
+
+### PropertyShark Foreclosures
+
+- **Description:** Foreclosure auction data from PropertyShark.
+- **Source:** [PropertyShark](https://www.propertyshark.com/mason/) (subscription required)
+- **Model:** `PSForeclosure`
+- **Update frequency:** Bi-weekly manual download and upload via admin
+
+**Field Audit:**
+**100% NULL (1 fields):**
+
+| Field | Non-null | Null | Populated % |
+|-------|----------|------|-------------|
+| `bldgareasqft` | 0 | 14,439 | 0.0% |
+
+**Healthy fields (22):** 15 fields >=99% populated; 5 fields 50-98% populated; 2 fields 11-49% populated.
+
+*Partially populated (11-49%):*
+- `legalprocess`: 49.9%
+- `unitnumber`: 16.4%
+
+---
+
+### PropertyShark PreForeclosures
+
+- **Description:** Pre-foreclosure filing data from PropertyShark.
+- **Source:** [PropertyShark](https://www.propertyshark.com/mason/) (subscription required)
+- **Model:** `PSPreForeclosure`
+- **Update frequency:** Bi-weekly manual download and upload via admin
+
+**Field Audit:**
+**100% NULL (2 fields):**
+
+| Field | Non-null | Null | Populated % |
+|-------|----------|------|-------------|
+| `bldgareasqft` | 0 | 52,123 | 0.0% |
+| `mortgageamount` | 12 | 52,111 | 0.0% |
+
+**Healthy fields (18):** 8 fields >=99% populated; 9 fields 50-98% populated; 1 fields 11-49% populated.
+
+*Partially populated (11-49%):*
+- `debtoraddress`: 16.7%
+
+---
+
+### Tax Lots
+
+- **Description:** Tax lot data from PLUTO.
+- **Source:** [NYC Planning — PLUTO](https://www.nyc.gov/site/planning/data-maps/open-data/dwn-pluto-mappluto.page)
+- **Model:** `TaxLot`
+
+**Field Audit:**
 **>90% NULL (1 fields):**
 
 | Field | Non-null | Null | Populated % |
@@ -1321,8 +1137,59 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 
 ---
 
-### `datasets_zipcode` — 226 rows, 1 fields
+### Council Districts
 
+- **Description:** NYC Council District boundaries.
+- **Source:** [NYC Planning](https://www.nyc.gov/site/planning/data-maps/open-data/districts-download-metadata.page)
+- **Model:** `Council`
+- **Update instructions:** Download GeoJSON from ArcGIS endpoint, upload via admin. Changed in 2024, next change expected after 2030 census. See `HowtoUpdateMapboxTileset.pdf` in the frontend repo for Mapbox updates.
+
+**Field Audit:**
+**Healthy fields (1):** 1 fields >=99% populated.
+
+---
+
+### Community Districts
+
+- **Description:** NYC Community District boundaries.
+- **Source:** [NYC Planning](https://www.nyc.gov/site/planning/data-maps/open-data.page)
+- **Model:** `Community`
+- **Note:** Not expected to change.
+
+**Field Audit:**
+**Healthy fields (1):** 1 fields >=99% populated.
+
+---
+
+### State Assemblies
+
+- **Description:** State Assembly district boundaries.
+- **Source:** [NY LATFOR](https://www.latfor.state.ny.us/maps/?sec=2024_assembly)
+- **Model:** `StateAssembly`
+
+**Field Audit:**
+**Healthy fields (1):** 1 fields >=99% populated.
+
+---
+
+### State Senates
+
+- **Description:** State Senate district boundaries.
+- **Source:** [NYC Planning](https://www.nyc.gov/site/planning/data-maps/open-data/districts-download-metadata.page)
+- **Model:** `StateSenate`
+
+**Field Audit:**
+**Healthy fields (1):** 1 fields >=99% populated.
+
+---
+
+### Zip Codes
+
+- **Description:** Modified Zip Code Tabulation Areas.
+- **Source:** [NYC Open Data](https://data.cityofnewyork.us/Health/Modified-Zip-Code-Tabulation-Areas-MODZCTA-/pri4-ifjk)
+- **Model:** `ZipCode`
+
+**Field Audit:**
 **Healthy fields (1):** 1 fields >=99% populated.
 
 ---
@@ -1336,3 +1203,107 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 | Fields that are 100% NULL | 283 |
 | Fields that are >90% NULL | 338 |
 | Healthy fields (<=90% NULL) | 874 |
+
+
+### Council Profiles
+
+**Field Audit:**
+---
+
+---
+
+### Foreclosure (Joined)
+
+**Field Audit:**
+**100% NULL (1 fields):**
+
+| Field | Non-null | Null | Populated % |
+|-------|----------|------|-------------|
+| `mortgage_amount` | 10 | 56,833 | 0.0% |
+
+**Healthy fields (13):** 8 fields >=99% populated; 3 fields 50-98% populated; 2 fields 11-49% populated.
+
+*Partially populated (11-49%):*
+- `auction`: 10.8%
+- `mortgage_date`: 44.1%
+
+---
+
+---
+
+### Lis Penden Comments (Deprecated)
+
+**Field Audit:**
+**Healthy fields (2):** 2 fields >=99% populated.
+
+---
+
+---
+
+### Lis Pendens (Deprecated)
+
+**Field Audit:**
+**100% NULL (1 fields):**
+
+| Field | Non-null | Null | Populated % |
+|-------|----------|------|-------------|
+| `thirdparty` | 0 | 13,295 | 0.0% |
+
+**Healthy fields (15):** 8 fields >=99% populated; 3 fields 50-98% populated; 4 fields 11-49% populated.
+
+*Partially populated (11-49%):*
+- `attorney`: 30.6%
+- `disp`: 12.5%
+- `satdate`: 31.2%
+- `source`: 30.6%
+
+---
+
+---
+
+### Property Annotations
+
+**Field Audit:**
+**>90% NULL (3 fields):**
+
+| Field | Non-null | Null | Populated % |
+|-------|----------|------|-------------|
+| `aepdischargedate` | 2,765 | 870,075 | 0.3% |
+| `aepstartdate` | 3,640 | 869,200 | 0.4% |
+| `subsidyprograms` | 21,079 | 851,761 | 2.4% |
+
+**Healthy fields (61):** 57 fields >=99% populated; 2 fields 50-98% populated; 2 fields 11-49% populated.
+
+*Partially populated (11-49%):*
+- `legalclassa`: 38.5%
+- `legalclassb`: 37.8%
+
+---
+
+---
+
+### Deprecated Datasets
+
+| Dataset | Status | Notes |
+|---|---|---|
+| **Foreclosures** | Deprecated | Merged with PropertyShark Foreclosures |
+| **Lis Pendens** | Deprecated | Old foreclosure filings source, replaced by PropertyShark |
+| **Lis Penden Comments** | Deprecated | Associated with Lis Pendens |
+| **HPD Problems** | Merged | Now part of HPD Complaints & Problems |
+
+---
+
+## Annual Maintenance Checklist
+
+- [ ] Check 421a and J-51 data (June — yearly release from DOF)
+- [ ] Check CoreData subsidy updates (varies — check [Furman Center](https://furmancenter.org/coredata/userguide/data-updates))
+- [ ] Check PLUTO/PAD updates (every ~6 months from [NYC Planning](https://data.cityofnewyork.us/City-Government/Primary-Land-Use-Tax-Lot-Output-PLUTO-/64uk-42ks))
+- [ ] Check Rent Stabilization data (yearly — check [NYCDB](https://github.com/nycdb/nycdb), currently on 2023 data, 2024 available)
+- [ ] Check Public Housing records (NYCHA address guide PDF)
+- [ ] Compare local row counts vs Socrata for key datasets (see table above)
+- [ ] Review PropertyShark subscription status
+- [ ] Verify OCA AWS credentials and bucket name (`oca-2-dev` as of 2023)
+- [ ] Check SendGrid sender reputation and suppression list
+- [ ] Review users with active notifications who have never logged in (currently 8 of 14)
+
+---
