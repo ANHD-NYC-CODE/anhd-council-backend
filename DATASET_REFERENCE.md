@@ -70,7 +70,7 @@ These return 403 for unauthenticated API requests (`REQUIRES_AUTHENTICATION = Tr
 | Properties (PLUTO) | 872,840 | Upserts — cumulative, old lots kept | yearbuilt: 0*–2025 | — | — |
 | Buildings (PAD) | 1,084,857 | Manual upload, upserts | No date field | — | — |
 | PAD Records | 1,236,507 | Manual upload, upserts | No date field | — | — |
-| Address Records | 1,407,419 | Fully rebuilt from Property+Building+PAD (atomic delete + reseed) | — | — | — |
+| Address Records | 1,407,419 | Rebuilt from Property+Building+PAD (inserts new, deletes pre-existing after completion — NOT atomic) | — | — | — |
 | Rent Stabilization | 52,172 | Manual upload — new year column appended, old data kept | No date field | — | — |
 | CoreData Subsidies | 21,133 | Manual upload, upserts — expired subsidies remain in DB | enddate: 1984–2102* | — | — |
 | 421a Subsidies | 0 | Manual upload — **currently empty, needs data import** | — | — | — |
@@ -102,7 +102,7 @@ These return 403 for unauthenticated API requests (`REQUIRES_AUTHENTICATION = Tr
 | **Upsert** (`seed_with_upsert`) | Insert new, update existing by PK. Old records never deleted. | HPD Violations, HPD Complaints, DOB Complaints, DOB Violations, ECB Violations, Evictions, Housing Litigations, ACRIS (all), HPD Registrations, HPD Contacts, HPD Building Records, AEP Buildings, CONH Records |
 | **Truncate + Reload** (`bulk_seed overwrite=True`) | DELETE all rows, then COPY from CSV. Complete fresh data every import. | DOB NOW Filed Permits, DOB Permit Issued NOW, DOB Legacy Filed Permits, DOB Permit Issued Legacy, OCA Housing Court |
 | **Upsert from children** | JOIN table populated from Legacy + NOW child tables via SQL upsert. | DOB Filed Permits (Joined), DOB Issued Permits (Joined) |
-| **Atomic rebuild** | Deletes all rows, rebuilds from source tables within a single transaction. | Address Records |
+| **Rebuild + delete old** | Inserts new records from Property+Building, then deletes records not touched by this import. NOT atomic. | Address Records |
 | **Upsert with ignore_conflict** | ON CONFLICT DO NOTHING — silently skip duplicates. | Evictions |
 | **Manual upload** | File uploaded via admin panel, processed same as automated. | Properties, Buildings, PAD Records, Address Records, Rent Stabilization, CoreData, 421a, J-51, Tax Liens, Public Housing, PropertyShark |
 
@@ -784,10 +784,13 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Model:** `Property`
 - **Automated:** Manual (can trigger via admin "Update Dataset" button)
 - **Update frequency:** Check every 6 months
-- **Update instructions:**
-  1. For automatic: click 'Properties' in admin, click 'Update Dataset'
-  2. For manual: download PLUTO (not MapPLUTO) CSV from NYC Planning, upload via admin
-  3. After updating Properties, also update: Buildings, PAD Records, then Address Records (in order)
+- **Update instructions (must be done in this order, one at a time):**
+  1. **Property** — click 'Properties' in admin → 'Update Dataset' (or manually upload PLUTO CSV, NOT MapPLUTO)
+  2. **Building** — upload `bobaadr.csv` from PAD ZIP, associate with Building dataset
+  3. **PAD Record** — same `bobaadr.csv` file, associate with PAD Record dataset
+  4. **Address Record** — create update in admin with no file (rebuilds from above). Best on weekend mornings, takes 2-4 hours.
+- **Known issue:** Obsolete/defunct BBLs are never deleted — only new/updated BBLs are upserted. Obsolete properties remain on district maps until their district fields (council, cd, assembly, senate, zipcode) are manually nulled. A future fix should auto-null district fields for BBLs not present in the latest PLUTO import.
+- **Tip:** Space updates by a day if possible (Property day 1, Building+PAD day 2, Address day 3).
 
 **Field Audit:**
 **100% NULL (10 fields):**
@@ -899,7 +902,7 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Description:** Searchable address table built from Properties, Buildings, and PAD Records.
 - **Model:** `AddressRecord`
 - **Update instructions:** Create an update in admin with only the dataset selected (no file needed). Runs automatically after Properties, Buildings, and PAD Records are updated.
-- **Warning:** Requires ~6GB RAM (atomic transaction). Takes 2-4 hours. Best done on weekend mornings. Don't run during regular updates after 6pm. Restart app/postgres first to free memory.
+- **Warning:** Requires ~6GB RAM. Takes 2-4 hours. Best done on weekend mornings. Don't run during regular updates after 6pm. Restart app/postgres first to free memory. Note: despite earlier docs saying "atomic," the rebuild is NOT wrapped in a transaction — if it fails midway, partial data may exist alongside old records.
 - **Note:** When extracting the PAD ZIP, you may need to convert `bobaadr.txt` to `.csv` format.
 
 **Field Audit:**
