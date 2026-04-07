@@ -212,6 +212,7 @@ class Property(BaseDatasetModel, models.Model):
                                       db_column='stateassembly', db_constraint=False)
     statesenate = models.ForeignKey('StateSenate', on_delete=models.SET_NULL, null=True,
                                     db_column='statesenate', db_constraint=False)
+    last_modified = models.DateTimeField(blank=True, null=True)
     ct2010 = models.TextField(blank=True, null=True)
     cb2010 = models.TextField(blank=True, null=True)
     schooldist = models.SmallIntegerField(blank=True, null=True)
@@ -405,7 +406,13 @@ class Property(BaseDatasetModel, models.Model):
 
     @classmethod
     def transform_self(self, file_path, update=None):
-        return self.pre_validation_filters(from_csv_file_to_gen(file_path, update, self.clean_null_bytes_headers))
+        import datetime as dt
+        now = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        def add_timestamp(gen):
+            for row in gen:
+                row['last_modified'] = now
+                yield row
+        return add_timestamp(self.pre_validation_filters(from_csv_file_to_gen(file_path, update, self.clean_null_bytes_headers)))
 
     # DEPRECATED - KEEP FOR TESTS
     # UPDATE MOCK PLUTO FILES TO versin 20+ which have latitude and longitude included
@@ -425,7 +432,26 @@ class Property(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
+        import datetime as dt
+        from django.utils.timezone import make_aware
+        import_start = make_aware(dt.datetime.now())
+
         self.seed_with_upsert(**kwargs)
+
+        # Null district fields for properties not in this PLUTO import (obsolete BBLs)
+        # Properties in the import have last_modified set by transform_self; older ones were not in the file
+        obsolete = self.objects.filter(
+            models.Q(last_modified__lt=import_start) | models.Q(last_modified__isnull=True)
+        ).exclude(
+            council=None, cd=None, stateassembly=None, statesenate=None, zipcode=None
+        )
+        obsolete_count = obsolete.count()
+        if obsolete_count > 0:
+            obsolete.update(council=None, cd=None, stateassembly=None, statesenate=None, zipcode=None)
+            logger.info('Nulled district fields for %d obsolete properties (not in PLUTO import)', obsolete_count)
+        else:
+            logger.info('No obsolete properties found')
+
         logger.info('adding property annotations')
         self.create_property_annotations()
         if settings.TESTING:
