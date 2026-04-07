@@ -312,6 +312,14 @@ See `datasets/tests/filters/test_property.py` for examples.
 
 ## Troubleshooting
 
+**User sees "email notifications paused" banner:**
+The app checks SendGrid's suppression list on login (cached 24h in Redis). If the user's email has bounced, a warning banner shows on My Dashboard and notifications are auto-disabled. To fix:
+1. Ask the user for their new/correct email address
+2. Update their email in Django admin: `api.displacementalert.org/admin/users/customuser/`
+3. Remove the bounce from SendGrid: go to SendGrid dashboard → Suppressions → Bounces → search and delete the entry
+4. Clear the Redis cache: `docker exec app python manage.py shell -c "from django.core.cache import cache; cache.delete('email_suppressed_<USER_ID>')"`
+5. The user can then re-enable notifications from their My Dashboard
+
 **Tasks not running automatically:**
 Docker-compose now uses `--pidfile=` (empty) to prevent stale PID files. If tasks still don't run, restart celerybeat: `docker compose restart celerybeat`.
 
@@ -345,4 +353,4 @@ Use `docker compose` (with a space) — Compose v2 dropped the hyphenated comman
 | `setup-db.dev.sh` | Load a production DB dump locally |
 | `celery1.sh` / `celery2.sh` | Manual celery worker startup (for detached debugging) |
 | `CHANGELOG.md` | Detailed change history |
-| `dataset_field_audit.md` | Field-level audit of all datasets |
+| `DATASET_REFERENCE.md` | Comprehensive dataset reference — sources, import methods, date ranges, field-level audit |
