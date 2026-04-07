@@ -114,7 +114,7 @@ class DataFileAdmin(admin.ModelAdmin):
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "dataset":
             # Show all datasets alphabetically to ensure validation works
-            kwargs["queryset"] = Dataset.objects.all().order_by('name')
+            kwargs["queryset"] = Dataset.objects.filter(deprecated=False).order_by('name')
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     list_display = ['id', 'dataset_link',
@@ -205,7 +205,7 @@ class UpdateAdmin(admin.ModelAdmin):
             return super().formfield_for_foreignkey(db_field, request, **kwargs)
         elif db_field.name == "dataset":
             # Show all datasets alphabetically
-            kwargs["queryset"] = Dataset.objects.all().order_by('name')
+            kwargs["queryset"] = Dataset.objects.filter(deprecated=False).order_by('name')
         elif db_field.name == "task_result":
             # Only show 10 most recent TaskResults for display
             kwargs["queryset"] = TaskResult.objects.order_by('-date_created')[:10]

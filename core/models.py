@@ -39,6 +39,7 @@ class Dataset(models.Model):
     records_end = models.DateField(blank=True, null=True)
     update_schedule = models.CharField(
         max_length=255, choices=UPDATE_SCHEDULE_CHOICES, blank=True, null=True)
+    deprecated = models.BooleanField(default=False, blank=True)
 
     @classmethod
     def annotate_properties_all(cls):

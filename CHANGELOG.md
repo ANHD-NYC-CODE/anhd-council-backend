@@ -2,9 +2,25 @@
 
 ### 2026-04-06 — Download Optimization, Custom Search Fixes & Auth Improvements
 
-**Auth**
+**Auth & UX**
 - Login now accepts username OR email address
 - Login form label updated to "Username or Email"
+- Registration errors now show specific messages ("This username is already taken") instead of generic error
+
+**Email**
+- SendGrid suppression check before sending — skips bounced/blocked/invalid emails
+- Saves resources and protects sender reputation
+
+**Admin**
+- Added `deprecated` field to Dataset model — hides deprecated datasets from admin dropdowns
+- Marked Foreclosure, LisPenden, LisPendenComment, HPDProblem as deprecated
+- Restored missing core migration files (0001-0006) from git history
+
+**Monitoring**
+- New monthly task: checks manual datasets for source data updates on Socrata, emails alert if stale
+
+**Data Import**
+- Fixed empty PK rows causing batch upsert fallback to slow single-row mode
 
 **Performance**
 - HPD Violations: switched from `inspectiondate` 1yr to `currentstatusdate` 2mo + nulls (270K vs 10.8M rows)

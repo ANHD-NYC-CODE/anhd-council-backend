@@ -305,15 +305,20 @@ def batch_upsert_rows(model, rows, batch_size=750000, update=None, ignore_confli
     # Deduplicate by PK and unique_together to avoid executemany failures
     # when source data has duplicate keys within the same batch
     pk_name = model._meta.pk.name
-    if any(row.get(pk_name) is not None for row in rows[:1]):
-        # Only dedup by PK if rows actually have PK values (not auto-generated)
+    first_row_pk = rows[0].get(pk_name) if rows else None
+    has_explicit_pk = first_row_pk is not None and str(first_row_pk).strip() not in ('', 'None')
+    if has_explicit_pk:
+        # Dedup by PK and skip rows with missing/empty PK
         seen_pk = {}
+        skipped = 0
         for row in rows:
             key = row.get(pk_name)
-            if key is not None:
+            if key is not None and str(key).strip() not in ('', 'None'):
                 seen_pk[key] = row
             else:
-                seen_pk[id(row)] = row  # keep rows with no PK
+                skipped += 1
+        if skipped:
+            logger.debug('Skipped %d rows with empty/null PK (%s)', skipped, pk_name)
         rows = list(seen_pk.values())
 
     if model._meta.unique_together:

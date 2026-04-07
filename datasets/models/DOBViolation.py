@@ -57,17 +57,15 @@ class DOBViolation(BaseDatasetModel, models.Model):
         two_months_ago = (datetime.datetime.now() - datetime.timedelta(days=60)).strftime('%Y%m%d')
 
         query_params = (
-            f"$select=isn_dob_bis_viol,boro,block,lot,issue_date,violation_type_code,"
+            f"$select=isn_dob_bis_viol,boro,bin,block,lot,issue_date,violation_type_code,"
             f"violation_number,house_number,street,disposition_date,disposition_comments,"
-            f"device_number,description,ecb_number,number,violation_category,violation_type,"
-            f"bin,bbl"
-            f"&$where=issue_date >= '{two_months_ago}' OR disposition_date >= '{two_months_ago}' "
-            f"OR disposition_date IS NULL"
+            f"device_number,description,ecb_number,number,violation_category,violation_type"
+            f"&$where=(issue_date >= '{two_months_ago}' OR disposition_date >= '{two_months_ago}') AND isn_dob_bis_viol IS NOT NULL"
             f"&$limit=100000000"
         )
 
         download_url = f"{cls.base_download_endpoint}?{query_params}"
-        logger.info("Downloading DOB Violation data - past 2 months + null dispositions")
+        logger.info("Downloading DOB Violation data - past 2 months by issue_date or disposition_date")
         return cls.download_file(download_url, file_name=file_name)
 
     @classmethod

@@ -362,3 +362,85 @@ def async_db_health_check(self):
             logger.info("DB health check alert sent")
         except Exception as mail_err:
             logger.error("Failed to send DB health check alert: %s", mail_err)
+
+
+# Mapping of model_name to Socrata dataset ID for datasets we can check for updates
+MANUAL_DATASET_SOCRATA_IDS = {
+    'Property': '64uk-42ks',           # PLUTO
+    'Building': 'bc8t-ecyu',           # PAD (same source as PadRecord)
+    'PadRecord': 'bc8t-ecyu',          # PAD
+    'Council': 'yusd-j4xi',            # Council Districts
+    'Community': 'jp9i-3b7y',          # Community Districts
+    'StateAssembly': 'schi-dem7',       # State Assembly
+    'StateSenate': 'h87e-shkl',        # State Senate
+    'ZipCode': 'pri4-ifjk',            # Zip Codes
+    'PublicHousingRecord': 'evjd-dqpz', # NYCHA Developments
+}
+
+
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', max_retries=0)
+def async_check_manual_dataset_updates(self):
+    """Weekly check: compare manual dataset timestamps against Socrata source data.
+    Sends email alert if any source has been updated since our last import."""
+    import requests
+    from datetime import datetime
+
+    stale_datasets = []
+
+    for model_name, socrata_id in MANUAL_DATASET_SOCRATA_IDS.items():
+        try:
+            dataset = c.Dataset.objects.get(model_name=model_name)
+            # Get Socrata's last update timestamp
+            resp = requests.get(f'https://data.cityofnewyork.us/api/views/{socrata_id}.json', timeout=15)
+            if resp.status_code != 200:
+                continue
+            socrata_data = resp.json()
+            socrata_updated = datetime.fromtimestamp(socrata_data.get('rowsUpdatedAt', 0), tz=timezone.utc)
+
+            # Compare with our last update
+            our_last_update = dataset.api_last_updated
+            if not our_last_update:
+                # Never imported — check the latest Update record
+                from core.models import Update
+                last_update = Update.objects.filter(dataset=dataset).order_by('-created_date').first()
+                our_last_update = last_update.created_date if last_update else None
+
+            if our_last_update and socrata_updated > our_last_update:
+                days_stale = (socrata_updated - our_last_update).days
+                stale_datasets.append({
+                    'name': dataset.name,
+                    'our_update': our_last_update.strftime('%Y-%m-%d'),
+                    'source_update': socrata_updated.strftime('%Y-%m-%d'),
+                    'days_stale': days_stale,
+                })
+                logger.info('Dataset %s has new source data (source: %s, ours: %s, %d days stale)',
+                           dataset.name, socrata_updated.strftime('%Y-%m-%d'),
+                           our_last_update.strftime('%Y-%m-%d'), days_stale)
+        except c.Dataset.DoesNotExist:
+            continue
+        except Exception as e:
+            logger.warning('Error checking dataset %s: %s', model_name, e)
+
+    if stale_datasets:
+        subject = f"DAP Portal - {len(stale_datasets)} dataset(s) have new source data available"
+        rows = ''.join(
+            f"<tr><td>{d['name']}</td><td>{d['our_update']}</td><td>{d['source_update']}</td><td>{d['days_stale']} days</td></tr>"
+            for d in stale_datasets
+        )
+        body = (
+            f"<p>The following datasets have newer data available from their source:</p>"
+            f"<table border='1' cellpadding='5'>"
+            f"<tr><th>Dataset</th><th>Our Last Update</th><th>Source Updated</th><th>Stale By</th></tr>"
+            f"{rows}</table>"
+            f"<p>Please update these datasets via the admin panel at "
+            f"<a href='https://api.displacementalert.org/admin/core/dataset/'>api.displacementalert.org/admin</a>.</p>"
+        )
+        from app.mailer import send_mail
+        for to_email in ['dapadmin@anhd.org', 'scott@blueprintinteractive.com']:
+            try:
+                send_mail(to_email, subject, body)
+            except Exception as e:
+                logger.error('Failed to send stale dataset alert: %s', e)
+        logger.info('Stale dataset alert sent for %d datasets', len(stale_datasets))
+    else:
+        logger.info('All manual datasets are up to date')

@@ -57,14 +57,13 @@ class DOBComplaint(BaseDatasetModel, models.Model):
         query_params = (
             f"$select=complaint_number,status,date_entered,house_number,zip_code,house_street,"
             f"community_board,special_district,complaint_category,unit,disposition_date,"
-            f"disposition_code,inspection_date,dobrundate,bin,bbl"
-            f"&$where=disposition_date >= '{two_months_ago}' OR date_entered >= '{two_months_ago}' "
-            f"OR inspection_date >= '{two_months_ago}' OR disposition_date IS NULL"
+            f"disposition_code,inspection_date,dobrundate,bin"
+            f"&$where=(date_entered >= '{two_months_ago}' OR disposition_date >= '{two_months_ago}') AND complaint_number IS NOT NULL"
             f"&$limit=100000000"
         )
 
         download_url = f"{cls.base_download_endpoint}?{query_params}"
-        logger.info("Downloading DOB Complaint data - past 2 months + null dispositions")
+        logger.info("Downloading DOB Complaint data - past 2 months by date_entered")
         return cls.download_file(download_url, file_name=file_name)
 
     @classmethod
