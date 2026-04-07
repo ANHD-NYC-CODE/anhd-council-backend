@@ -44,11 +44,11 @@ class UserRegisterView(mixins.CreateModelMixin,
         if not ('username' in data_dict and 'email' in data_dict and 'first_name' in data_dict and 'last_name' in data_dict):
             return Response('Your request must include username, email, first_name, last_name.', status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-        if u.CustomUser.objects.filter(username=data_dict['username'].lower()):
-            return Response('This username is already taken', status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+        if u.CustomUser.objects.filter(username__iexact=data_dict['username']):
+            return Response('This username is already taken. If you already have an account, please log in or contact dapadmin@anhd.org for help.', status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-        if u.CustomUser.objects.filter(email=data_dict['email'].lower()):
-            return Response('This email is already taken', status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+        if u.CustomUser.objects.filter(email__iexact=data_dict['email']):
+            return Response('An account with this email already exists. Please log in or contact dapadmin@anhd.org for help.', status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
         new_user = u.CustomUser(
             username=data_dict['username'],
@@ -106,10 +106,10 @@ class AccessRequestCollection(mixins.CreateModelMixin,
         mutable_query_dict.__setitem__('user_id', request.user.id)
 
         if u.AccessRequest.objects.filter(user_id=request.user.id):
-            return Response('A user can only make one access request', status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+            return Response('You already have a pending access request. Please contact dapadmin@anhd.org if you need to check your status.', status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-        if 'organization_email' in data_dict and u.CustomUser.objects.filter(email=data_dict['organization_email'].lower()):
-            return Response('This email is already taken', status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+        if 'organization_email' in data_dict and u.CustomUser.objects.filter(email__iexact=data_dict['organization_email']):
+            return Response('This email is already associated with another account. Please contact dapadmin@anhd.org for help.', status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
         serializer = self.get_serializer(data=mutable_query_dict)
         serializer.is_valid(raise_exception=True)

@@ -327,6 +327,12 @@ Emails are skipped when `DEBUG=True`. To test email content, check the celery lo
 **`docker-compose` command not found:**
 Use `docker compose` (with a space) — Compose v2 dropped the hyphenated command.
 
+## Potential Improvements
+
+- **User email change**: Users currently cannot change their email address in the app. An admin must update it in the Django admin panel. A self-service "change email" feature would improve UX, especially for users whose notification emails are bouncing.
+- **Bounced email banner**: Show a warning on the user's home screen when their notifications have been auto-disabled due to bounced emails, with instructions to contact admin.
+- **Google Street View embed**: Ready to enable once the Maps Embed API is activated on the Google Cloud project (set `REACT_APP_STREET_VIEW_ENABLED=true`).
+
 ## Files Reference
 
 | File | Purpose |
