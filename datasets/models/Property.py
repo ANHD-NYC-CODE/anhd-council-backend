@@ -489,16 +489,16 @@ class Property(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        import datetime as dt
-        from django.utils.timezone import make_aware
-        import_start = make_aware(dt.datetime.now())
+        # Reset last_modified so we can identify which properties are in the new import
+        self.objects.update(last_modified=None)
+        logger.info('Reset last_modified for all properties')
 
         self.copy_upsert(**kwargs)
 
         # Null district fields for properties not in this PLUTO import (obsolete BBLs)
-        # Properties in the import have last_modified set by transform_self; older ones were not in the file
+        # Properties that were imported have last_modified set; those without are obsolete
         obsolete = self.objects.filter(
-            models.Q(last_modified__lt=import_start) | models.Q(last_modified__isnull=True)
+            last_modified__isnull=True
         ).exclude(
             council=None, cd=None, stateassembly=None, statesenate=None, zipcode=None
         )
