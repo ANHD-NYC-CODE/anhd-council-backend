@@ -407,13 +407,7 @@ class Property(BaseDatasetModel, models.Model):
 
     @classmethod
     def transform_self(self, file_path, update=None):
-        import datetime as dt
-        now = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        def add_timestamp(gen):
-            for row in gen:
-                row['last_modified'] = now
-                yield row
-        return add_timestamp(self.pre_validation_filters(from_csv_file_to_gen(file_path, update, self.clean_null_bytes_headers)))
+        return self.pre_validation_filters(from_csv_file_to_gen(file_path, update, self.clean_null_bytes_headers))
 
     # DEPRECATED - KEEP FOR TESTS
     # UPDATE MOCK PLUTO FILES TO versin 20+ which have latitude and longitude included
@@ -454,8 +448,11 @@ class Property(BaseDatasetModel, models.Model):
         temp_file = tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False, dir='/tmp')
         writer = csv.DictWriter(temp_file, fieldnames=field_names, extrasaction='ignore')
         writer.writeheader()
+        import datetime as dt
+        now = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         row_count = 0
         for row in gen:
+            row['last_modified'] = now
             writer.writerow(row)
             row_count += 1
         temp_file.close()
