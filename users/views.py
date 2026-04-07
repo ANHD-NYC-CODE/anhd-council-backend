@@ -82,6 +82,10 @@ class UserViewSet(ApplicationViewSet, viewsets.ReadOnlyModelViewSet):
         else:
             response_data['accessRequestStatus'] = None
 
+        # Check if user's email is on SendGrid suppression list
+        from app.mailer import is_email_suppressed
+        response_data['emailSuppressed'] = is_email_suppressed(request.user.email)
+
         return Response(response_data)
 
 
