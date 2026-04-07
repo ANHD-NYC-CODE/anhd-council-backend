@@ -82,9 +82,15 @@ class UserViewSet(ApplicationViewSet, viewsets.ReadOnlyModelViewSet):
         else:
             response_data['accessRequestStatus'] = None
 
-        # Check if user's email is on SendGrid suppression list
+        # Check if user's email is on SendGrid suppression list (cached in Django cache for 24h)
+        from django.core.cache import cache
         from app.mailer import is_email_suppressed
-        response_data['emailSuppressed'] = is_email_suppressed(request.user.email)
+        cache_key = f'email_suppressed_{request.user.id}'
+        suppressed = cache.get(cache_key)
+        if suppressed is None:
+            suppressed = is_email_suppressed(request.user.email)
+            cache.set(cache_key, suppressed, 86400)  # cache for 24 hours
+        response_data['emailSuppressed'] = suppressed
 
         return Response(response_data)
 
