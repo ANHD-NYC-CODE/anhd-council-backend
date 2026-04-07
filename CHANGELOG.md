@@ -42,6 +42,11 @@
 **Data Import**
 - Fixed empty PK rows causing batch upsert fallback to slow single-row mode
 - Fixed: `api_last_updated` now only set after successful seed, not before — failed imports will retry on next cycle (Trello: "API last updated set even on dataset failure")
+- PLUTO import 15-20x faster: COPY+upsert via temp table (858K rows in ~3 min vs 30-60 min)
+- Fixed N+1 query in Property pre_validation: Council.objects.get() called 872K times → preloaded into set
+- Added `last_modified` field to Property for obsolete BBL detection
+- After PLUTO import, automatically nulls district fields for obsolete BBLs (847 properties not in current PLUTO)
+- Address Record: added .iterator() to generators for memory reduction
 
 **Performance**
 - HPD Violations: switched from `inspectiondate` 1yr to `currentstatusdate` 2mo + nulls (270K vs 10.8M rows)
