@@ -1,0 +1,9 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+
+{% block submit_buttons_bottom %}
+{{ block.super }}
+<div class="submit-row">
+    <input type="submit" value="Clear Email Bounce" name="_clear-email-bounce" class="default" style="background: #e67e22; float: left;">
+</div>
+{% endblock %}

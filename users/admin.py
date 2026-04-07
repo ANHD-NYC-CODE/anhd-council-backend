@@ -94,6 +94,7 @@ def remove_user_to_trusted(modeladmin, request, queryset):
         trusted_group.user_set.remove(user)
 remove_user_to_trusted.short_description = 'Removes user to trusted'
 
+
 class CustomUserAdmin(auth_admin.UserAdmin):
     def get_urls(self):
         urls = super(CustomUserAdmin, self).get_urls()
@@ -103,12 +104,46 @@ class CustomUserAdmin(auth_admin.UserAdmin):
         ]
         return password_url + urls
 
+    def response_change(self, request, obj):
+        if "_clear-email-bounce" in request.POST:
+            import requests as http_requests
+            import os
+            from django.core.cache import cache
+
+            api_key = os.environ.get('SENDGRID_API_KEY', '')
+            headers = {'Authorization': f'Bearer {api_key}'}
+            cleared = False
+            for list_type in ['bounces', 'blocks', 'invalid_emails']:
+                try:
+                    resp = http_requests.delete(
+                        f'https://api.sendgrid.com/v3/suppression/{list_type}/{obj.email}',
+                        headers=headers, timeout=10
+                    )
+                    if resp.status_code == 204:
+                        cleared = True
+                except Exception:
+                    pass
+            cache.delete(f'email_suppressed_{obj.id}')
+            if cleared:
+                messages.info(request, f"Email bounce cleared for {obj.email}. User can now re-enable notifications.")
+            else:
+                messages.info(request, f"No bounces found for {obj.email} — email is not suppressed.")
+            return HttpResponseRedirect(".")
+        return super().response_change(request, obj)
+
     def group(self, user):
         groups = []
         for group in user.groups.all():
             groups.append(group.name)
         return ' '.join(groups)
     group.short_description = 'Groups'
+
+    def email_status(self, obj):
+        from app.mailer import is_email_suppressed
+        if is_email_suppressed(obj.email):
+            return mark_safe('<span style="color: red; font-weight: bold;">BOUNCING</span>')
+        return mark_safe('<span style="color: green;">OK</span>')
+    email_status.short_description = 'Email Status'
 
     def request_status(self, obj):
         try:
@@ -125,6 +160,8 @@ class CustomUserAdmin(auth_admin.UserAdmin):
     fieldsets = (
         (None, {'fields': ('username', 'email', 'password')}),
         ('Personal info', {'fields': ('first_name', 'last_name')}),
+        ('Email', {'fields': ('email_status',),
+                   'description': 'If email is BOUNCING, click "Clear Email Bounce" below to remove it from SendGrid suppression list.'}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'request_status'
                                     )}),
         ('Important dates', {'fields': ('last_login', 'date_joined')}),
@@ -143,13 +180,14 @@ class CustomUserAdmin(auth_admin.UserAdmin):
     form = CustomUserChangeForm
     add_form = CustomUserCreationForm
     change_password_form = auth_admin.AdminPasswordChangeForm
+    change_form_template = 'admin/users/customuser/change_form.html'
     list_display = ('email', 'username', 'first_name',
                     'last_name', 'is_superuser', 'request_status',
-                    'group')
+                    'group', 'email_status')
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups')
     search_fields = ('first_name', 'last_name', 'email')
     ordering = ('email',)
-    readonly_fields = ('last_login', 'date_joined', 'request_status')
+    readonly_fields = ('last_login', 'date_joined', 'request_status', 'email_status')
     actions = [add_user_to_trusted, remove_user_to_trusted]
 
 
