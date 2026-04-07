@@ -22,6 +22,18 @@
 - Email bounce warning banner on My Dashboard (orange, white text)
 - My Dashboard top section stacks on mobile/tablet
 - Deleted 22MB of accidentally committed RPM files
+- Registration/access request 422 errors now show specific messages
+- Login form label updated to "Username or Email"
+
+**Dev Environment**
+- Fixed CSRF cookie for localhost (was set to .displacementalert.org domain)
+- Trello API helper script added to parent directory
+
+**Documentation**
+- Merged dataset_field_audit.md into DATASET_REFERENCE.md
+- Fixed 8 errors in DATASET_REFERENCE (OCA import method, Socrata IDs, filter descriptions)
+- Added email suppression troubleshooting to README
+- Added Potential Improvements section to README
 
 **Monitoring**
 - New monthly task: checks manual datasets for source data updates on Socrata, emails alert if stale

@@ -10,6 +10,11 @@ ADMINS = (
 
 CACHE_MIDDLEWARE_ANONYMOUS_ONLY = True
 
+# Override CSRF settings for localhost
+CSRF_COOKIE_DOMAIN = None
+CSRF_COOKIE_SECURE = False
+CSRF_TRUSTED_ORIGINS = ['http://localhost:8000', 'http://localhost:3000']
+
 # Dummy cache for dev use
 # CACHES = {
 #     'default': {
