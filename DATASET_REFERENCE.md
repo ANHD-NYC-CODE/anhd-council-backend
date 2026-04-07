@@ -38,8 +38,6 @@ These return 403 for unauthenticated API requests (`REQUIRES_AUTHENTICATION = Tr
 | HPD Complaints | `$select` + `$where` | `problem_status_date >= 2mo ago OR NULL` | ~228K | 16M |
 | DOB Complaints | `$select` + `$where` | `(date_entered >= 2mo OR disposition_date >= 2mo) AND complaint_number IS NOT NULL` | ~2.8M | 3M |
 | DOB Violations | `$select` + `$where` | `(issue_date >= 2mo OR disposition_date >= 2mo) AND isn_dob_bis_viol IS NOT NULL` | ~7.3K | 2.5M |
-| DOB Complaints | `$select` + `$where` | `(date_entered >= 2mo OR disposition_date >= 2mo) AND complaint_number IS NOT NULL` | ~2.8M | 3M |
-| DOB Violations | `$select` + `$where` | `(issue_date >= 2mo OR disposition_date >= 2mo) AND isn_dob_bis_viol IS NOT NULL` | ~7.3K | 2.5M |
 | DOB NOW Filed Permits | `$select` only | All rows (truncate + reload) | ~886K | 886K |
 | DOB Permit Issued NOW | `$select` only | All rows (truncate + reload) | ~918K | 918K |
 | DOB Legacy Filed Permits | `$select` only | All rows (truncate + reload) | ~2.7M | 2.7M |
