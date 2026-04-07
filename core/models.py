@@ -129,6 +129,12 @@ class Dataset(models.Model):
 
     def split_seed_dataset(self, **kwargs):
         getattr(ds, self.model_name).split_seed_or_update_self(**kwargs)
+        # Only update api_last_updated AFTER successful seeding
+        api_last_updated = getattr(ds, self.model_name).fetch_last_updated()
+        if api_last_updated:
+            self.api_last_updated = api_last_updated
+            self.save()
+            logger.info('Updated api_last_updated for {} to {}'.format(self.name, api_last_updated))
 
     def latest_update(self):
         from core.models import Dataset
