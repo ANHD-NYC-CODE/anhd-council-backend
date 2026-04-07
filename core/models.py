@@ -97,9 +97,12 @@ class Dataset(models.Model):
                 logger.warning(e)
 
     def check_api_for_update(self):
-        self.api_last_updated = getattr(
+        # Only fetches and stores the timestamp — does NOT save to DB yet
+        self._pending_api_last_updated = getattr(
             ds, self.model_name).fetch_last_updated()
-        if self.api_last_updated:
+        # Still save for backwards compat with manual check_api_for_update calls
+        if self._pending_api_last_updated:
+            self.api_last_updated = self._pending_api_last_updated
             self.save()
 
     def check_api_for_update_and_update(self):
@@ -116,6 +119,12 @@ class Dataset(models.Model):
 
     def seed_dataset(self, **kwargs):
         getattr(ds, self.model_name).seed_or_update_self(**kwargs)
+        # Only update api_last_updated AFTER successful seeding
+        api_last_updated = getattr(ds, self.model_name).fetch_last_updated()
+        if api_last_updated:
+            self.api_last_updated = api_last_updated
+            self.save()
+            logger.info('Updated api_last_updated for {} to {}'.format(self.name, api_last_updated))
         self.delete_old_files()
 
     def split_seed_dataset(self, **kwargs):
