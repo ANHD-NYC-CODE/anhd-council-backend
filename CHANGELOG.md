@@ -28,6 +28,7 @@
 
 **Data Import**
 - Fixed empty PK rows causing batch upsert fallback to slow single-row mode
+- Fixed: `api_last_updated` now only set after successful seed, not before — failed imports will retry on next cycle (Trello: "API last updated set even on dataset failure")
 
 **Performance**
 - HPD Violations: switched from `inspectiondate` 1yr to `currentstatusdate` 2mo + nulls (270K vs 10.8M rows)
