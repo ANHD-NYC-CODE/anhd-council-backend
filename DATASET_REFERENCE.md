@@ -2,8 +2,7 @@
 
 *Last updated: 2026-04-07*
 
-This document covers all datasets in the DAP Portal: what they are, where they come from, how they're imported, and how to update them.
-
+This document covers all datasets in the DAP Portal: what they are, where they come from, how they're imported, and how to update them. Dataset update instructions are also stored in the `core_dataset` table — update both this doc and the DB when instructions change.
 
 ---
 
@@ -899,8 +898,9 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 
 - **Description:** Searchable address table built from Properties, Buildings, and PAD Records.
 - **Model:** `AddressRecord`
-- **Update instructions:** Create an update in admin with only the dataset selected (no file needed). Runs automatically after the above three are updated.
-- **Warning:** Requires ~6GB RAM (atomic transaction). Takes 2-4 hours. Run on weekends. Restart app/postgres first to free memory.
+- **Update instructions:** Create an update in admin with only the dataset selected (no file needed). Runs automatically after Properties, Buildings, and PAD Records are updated.
+- **Warning:** Requires ~6GB RAM (atomic transaction). Takes 2-4 hours. Best done on weekend mornings. Don't run during regular updates after 6pm. Restart app/postgres first to free memory.
+- **Note:** When extracting the PAD ZIP, you may need to convert `bobaadr.txt` to `.csv` format.
 
 **Field Audit:**
 **Healthy fields (10):** 7 fields >=99% populated; 1 fields 50-98% populated; 2 fields 11-49% populated.
@@ -914,9 +914,15 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 ### Rent Stabilization Records (TaxBills)
 
 - **Description:** Registered rent-stabilized units per property, scraped from DOF tax bill PDFs.
-- **Source:** [NYCDB](https://github.com/nycdb/nycdb/wiki/Dataset:-Rent-Stabilized-Buildings)
+- **Source:** [NYCDB](https://github.com/nycdb/nycdb/wiki/Dataset:-Rent-Stabilized-Buildings) | Data: `https://s3.amazonaws.com/justfix-data/rentstab_counts_from_doffer_2024.csv`
 - **Model:** `RentStabilizationRecord` | **PK:** `id` (derived from `ucbbl`)
-- **Manual upload**
+- **Current data:** `MANUAL_YEAR = 2023`. 2024 data available but not imported. Columns exist up to uc2027.
+- **Update instructions:**
+  1. Download CSV from NYCDB `rentstab_v2` table — ensure it has `ucbbl` and `uc{YEAR}` columns
+  2. Change `MANUAL_YEAR` in `datasets/models/RentStabilizationRecord.py` to the year being uploaded
+  3. No migration needed for years up to 2027 (columns already exist)
+  4. Upload CSV via admin, create update
+  5. After import: run "annotate properties all" and "Reset cache" periodic tasks
 
 **Field Audit:**
 **100% NULL (34 fields):**
@@ -1043,9 +1049,14 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 ### Tax Liens
 
 - **Description:** Properties with tax liens for unpaid property taxes.
-- **Source:** [NYC DOF](https://www.nyc.gov/site/finance/taxes/property-lien-sales.page)
+- **Source:** [NYC Open Data](https://data.cityofnewyork.us/City-Government/Tax-Lien-Sale-Lists/9rz4-mjek) | [DOF](https://www.nyc.gov/site/finance/taxes/property-lien-sales.page)
 - **Model:** `TaxLien`
-- **Note:** No date field — stored as boolean on PropertyAnnotation (`taxlien`). Only final sales are imported.
+- **Note:** No date field — stored as boolean on PropertyAnnotation (`taxlien`). Only final sales are imported. No new tax lien sale since 2021.
+- **Update instructions:**
+  1. Go to NYC Open Data link above, filter by current year
+  2. Export data
+  3. Add a `year` column with the appropriate year value for each row
+  4. Upload file to app and create update
 
 **Field Audit:**
 **Healthy fields (15):** 11 fields >=99% populated; 4 fields 50-98% populated.
@@ -1166,6 +1177,7 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Description:** State Assembly district boundaries.
 - **Source:** [NY LATFOR](https://www.latfor.state.ny.us/maps/?sec=2024_assembly)
 - **Model:** `StateAssembly`
+- **Note:** New districts effective Jan 1, 2025. Not expected to change until after 2030 Census.
 
 **Field Audit:**
 **Healthy fields (1):** 1 fields >=99% populated.
@@ -1175,8 +1187,9 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 ### State Senates
 
 - **Description:** State Senate district boundaries.
-- **Source:** [NYC Planning](https://www.nyc.gov/site/planning/data-maps/open-data/districts-download-metadata.page)
+- **Source:** [NY LATFOR](https://www.latfor.state.ny.us/maps/?sec=2022_senate) | [NYC Planning](https://www.nyc.gov/site/planning/data-maps/open-data/districts-download-metadata.page)
 - **Model:** `StateSenate`
+- **Note:** Districts took effect 2022. Not expected to change until after 2030 Census.
 
 **Field Audit:**
 **Healthy fields (1):** 1 fields >=99% populated.
@@ -1186,8 +1199,9 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 ### Zip Codes
 
 - **Description:** Modified Zip Code Tabulation Areas.
-- **Source:** [NYC Open Data](https://data.cityofnewyork.us/Health/Modified-Zip-Code-Tabulation-Areas-MODZCTA-/pri4-ifjk)
+- **Source:** [NYC Open Data](https://data.cityofnewyork.us/Health/Modified-Zip-Code-Tabulation-Areas-MODZCTA-/pri4-ifjk) | [Census ZCTA](https://www.census.gov/geographies/mapping-files/time-series/geo/tiger-line-file.html)
 - **Model:** `ZipCode`
+- **Update instructions:** Download national ZCTA shapefile from Census, clip to NYC boundaries using GIS software (e.g., Borough Boundaries from NYC Planning). Not expected to change until after 2030 Census.
 
 **Field Audit:**
 **Healthy fields (1):** 1 fields >=99% populated.

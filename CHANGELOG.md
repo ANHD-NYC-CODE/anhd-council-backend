@@ -30,8 +30,9 @@
 - Trello API helper script added to parent directory
 
 **Documentation**
-- Merged dataset_field_audit.md into DATASET_REFERENCE.md
+- Merged dataset_field_audit.md into DATASET_REFERENCE.md, organized by dataset
 - Fixed 8 errors in DATASET_REFERENCE (OCA import method, Socrata IDs, filter descriptions)
+- Updated dataset instructions in DB and fixtures for 14 datasets (421a URL fix, CoreData, Rent Stab MANUAL_YEAR, Tax Liens, Public Housing scraper, State Assembly/Senate/Zip redistricting notes, deprecated datasets)
 - Added email suppression troubleshooting to README
 - Added Potential Improvements section to README
 

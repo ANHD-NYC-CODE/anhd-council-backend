@@ -3,318 +3,658 @@
   fields:
     name: Council Districts
     model_name: Council
-    automated: False
-    update_schedule: "when needed"
-    update_instructions: "1) Visit http://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/nycc/FeatureServer/0/query?where=1=1&outFields=*&outSR=4326&f=geojson 2) Copy all of the data on the screen into a .geojson file. 3) Upload the file to the app. 4) Create an update with the file."
+    automated: false
+    update_instructions: 1) Visit http://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/nycc/FeatureServer/0/query?where=1=1&outFields=*&outSR=4326&f=geojson
+      2) Copy all of the data on the screen into a .geojson file. 3) Upload the file
+      to the app. 4) Create an update with the file.
+    download_endpoint: null
+    api_last_updated: null
+    records_start: null
+    records_end: null
+    update_schedule: when needed
+    deprecated: false
 - model: core.dataset
   pk: 2
   fields:
     name: Properties
     model_name: Property
-    automated: True
-    update_schedule: "when needed"
-    update_instructions: "1) Visit https://www1.nyc.gov/site/planning/data-maps/open-data/dwn-pluto-mappluto.page 2) Download latest Pluto version in CSV format (comes in zipfile). 3) Upload zipfile to app. 4) Create an update. 5) Update the version number in the codebase."
+    automated: true
+    update_instructions: 'For automatic update, click ''Properties'' to view it, and
+      then click ''Update Dataset''. To do it manually: 1) Visit https://www1.nyc.gov/site/planning/data-maps/open-data/dwn-pluto-mappluto.page
+      2) Download latest Pluto version in CSV format (comes in zipfile). 3) Upload
+      zipfile to app. 4) Create an update. 5) Update the version number in the codebase.'
+    download_endpoint: ''
+    api_last_updated: null
+    records_start: null
+    records_end: null
+    update_schedule: when needed
+    deprecated: false
 - model: core.dataset
   pk: 3
   fields:
     name: Buildings
     model_name: Building
-    automated: False
-    update_schedule: "when needed"
-    update_instructions: "Visit https://data.cityofnewyork.us/City-Government/Property-Address-Directory/bc8t-ecyu 2) Download latest zipfile. 3) Extract zipfile and open bobaadr.csv. 4) Upload bobaadr.csv to app. 5) Update"
+    automated: false
+    update_instructions: Visit https://data.cityofnewyork.us/City-Government/Property-Address-Directory/bc8t-ecyu
+      2) Download latest zipfile. 3) Extract zipfile and open bobaadr.csv. 4) Upload
+      bobaadr.csv to app. 5) Update
+    download_endpoint: null
+    api_last_updated: null
+    records_start: null
+    records_end: null
+    update_schedule: when needed
+    deprecated: false
 - model: core.dataset
   pk: 4
   fields:
     name: Acris Real Property Legals
     model_name: AcrisRealLegal
-    automated: True
-    update_schedule: "monthly"
+    automated: true
+    update_instructions: ''
+    download_endpoint: ''
+    api_last_updated: null
+    records_start: null
+    records_end: null
+    update_schedule: monthly
+    deprecated: false
 - model: core.dataset
   pk: 5
   fields:
     name: Acris Real Property Masters
     model_name: AcrisRealMaster
-    automated: True
-    update_schedule: "monthly"
+    automated: true
+    update_instructions: ''
+    download_endpoint: ''
+    api_last_updated: 2026-03-09 13:38:52+00:00
+    records_start: 1863-11-01
+    records_end: 2026-03-01
+    update_schedule: monthly
+    deprecated: false
 - model: core.dataset
   pk: 6
   fields:
     name: Acris Real Property Party
     model_name: AcrisRealParty
-    automated: True
-    update_schedule: "monthly"
+    automated: true
+    update_instructions: null
+    download_endpoint: null
+    api_last_updated: null
+    records_start: null
+    records_end: null
+    update_schedule: monthly
+    deprecated: false
 - model: core.dataset
   pk: 7
   fields:
     name: CoreData Subsidy Records
     model_name: CoreSubsidyRecord
-    automated: False
-    update_schedule: "when needed"
-    update_instructions: "Consult developer when latest version is released. Dev Note: Please make sure to add new fields to the python model and migrate to live server when needed, (ie. "serviolation2021" to "serviolation2022" as it changes yearly)"
+    automated: false
+    update_instructions: 'Updated once per year (month varies).
+
+      1) Visit https://app.coredata.nyc
+
+      2) Go to Table View > Download > Full property and subsidy data set
+
+      3) Check the file date against our last import — if newer, update
+
+      4) Upload file to app and create update'
+    download_endpoint: null
+    api_last_updated: null
+    records_start: null
+    records_end: null
+    update_schedule: when needed
+    deprecated: false
 - model: core.dataset
   pk: 8
   fields:
     name: DOB Complaints
     model_name: DOBComplaint
-    automated: True
-    update_schedule: "daily"
+    automated: true
+    update_instructions: ''
+    download_endpoint: ''
+    api_last_updated: 2026-04-04 16:19:59+00:00
+    records_start: 1988-12-30
+    records_end: 2026-04-04
+    update_schedule: daily
+    deprecated: false
 - model: core.dataset
   pk: 9
   fields:
     name: DOB Permits Filed (Legacy)
     model_name: DOBLegacyFiledPermit
-    automated: True
-    update_schedule: "daily"
+    automated: true
+    update_instructions: ''
+    download_endpoint: ''
+    api_last_updated: 2026-04-04 20:15:01+00:00
+    records_start: null
+    records_end: null
+    update_schedule: daily
+    deprecated: false
 - model: core.dataset
   pk: 10
   fields:
     name: DOB Permits Issued (Legacy)
     model_name: DOBPermitIssuedLegacy
-    automated: True
-    update_schedule: "daily"
+    automated: true
+    update_instructions: ''
+    download_endpoint: ''
+    api_last_updated: 2026-04-04 20:14:49+00:00
+    records_start: null
+    records_end: null
+    update_schedule: daily
+    deprecated: false
 - model: core.dataset
   pk: 11
   fields:
     name: DOB Permits Issued (NOW)
     model_name: DOBPermitIssuedNow
-    automated: True
-    update_schedule: "daily"
+    automated: true
+    update_instructions: ''
+    download_endpoint: ''
+    api_last_updated: 2026-04-04 18:42:06+00:00
+    records_start: null
+    records_end: null
+    update_schedule: daily
+    deprecated: false
 - model: core.dataset
   pk: 12
   fields:
     name: DOB Violations
     model_name: DOBViolation
-    automated: True
-    update_schedule: "daily"
+    automated: true
+    update_instructions: null
+    download_endpoint: null
+    api_last_updated: 2026-04-06 17:43:34+00:00
+    records_start: 1901-12-15
+    records_end: 2026-04-05
+    update_schedule: daily
+    deprecated: false
 - model: core.dataset
   pk: 13
   fields:
     name: ECB Violations
     model_name: ECBViolation
-    automated: True
-    update_schedule: "daily"
+    automated: true
+    update_instructions: null
+    download_endpoint: null
+    api_last_updated: 2026-04-04 17:01:47+00:00
+    records_start: 1951-05-16
+    records_end: 2026-04-02
+    update_schedule: daily
+    deprecated: false
 - model: core.dataset
   pk: 14
   fields:
     name: Evictions
     model_name: Eviction
-    automated: True
-    update_schedule: "daily"
+    automated: true
+    update_instructions: ''
+    download_endpoint: ''
+    api_last_updated: 2026-04-04 11:45:16+00:00
+    records_start: 2017-01-03
+    records_end: 2026-04-03
+    update_schedule: daily
+    deprecated: false
 - model: core.dataset
   pk: 15
   fields:
     name: Housing Litigations
     model_name: HousingLitigation
-    automated: True
-    update_schedule: "monthly"
+    automated: true
+    update_instructions: ''
+    download_endpoint: ''
+    api_last_updated: 2026-04-01 20:32:33+00:00
+    records_start: 1999-01-28
+    records_end: 2026-03-31
+    update_schedule: monthly
+    deprecated: false
 - model: core.dataset
   pk: 16
   fields:
     name: HPD Building Records
     model_name: HPDBuildingRecord
-    automated: false
-    update_schedule: "when needed"
-    update_instructions: "1) https://data.cityofnewyork.us/api/views/kj4p-ruqc/rows.csv?accessType=DOWNLOAD 2) Add File 3) update"
+    automated: true
+    update_instructions: ''
+    download_endpoint: ''
+    api_last_updated: 2026-04-05 00:01:42.086897+00:00
+    records_start: null
+    records_end: null
+    update_schedule: when needed
+    deprecated: false
 - model: core.dataset
   pk: 17
   fields:
-    name: HPD Complaints & Problems
+    name: HPD Complaints
     model_name: HPDComplaint
-    automated: True
-    update_schedule: "daily"
+    automated: true
+    update_instructions: ''
+    download_endpoint: ''
+    api_last_updated: 2026-04-06 19:31:46+00:00
+    records_start: 2001-12-16
+    records_end: 2026-04-06
+    update_schedule: monthly
+    deprecated: false
+- model: core.dataset
+  pk: 18
+  fields:
+    name: HPD Problems
+    model_name: HPDProblem
+    automated: true
+    update_instructions: null
+    download_endpoint: null
+    api_last_updated: null
+    records_start: null
+    records_end: null
+    update_schedule: monthly
+    deprecated: true
 - model: core.dataset
   pk: 19
   fields:
     name: HPD Registration Contacts
     model_name: HPDContact
-    automated: True
-    update_schedule: "monthly"
+    automated: true
+    update_instructions: null
+    download_endpoint: null
+    api_last_updated: 2026-04-01 19:27:43+00:00
+    records_start: null
+    records_end: null
+    update_schedule: monthly
+    deprecated: false
 - model: core.dataset
   pk: 20
   fields:
     name: HPD Registrations
     model_name: HPDRegistration
-    automated: True
-    update_schedule: "monthly"
+    automated: true
+    update_instructions: null
+    download_endpoint: null
+    api_last_updated: 2026-04-01 19:26:15+00:00
+    records_start: null
+    records_end: null
+    update_schedule: monthly
+    deprecated: false
 - model: core.dataset
   pk: 21
   fields:
     name: HPD Violations
     model_name: HPDViolation
-    automated: True
-    update_schedule: "daily"
+    automated: true
+    update_instructions: ''
+    download_endpoint: ''
+    api_last_updated: 2026-04-06 14:52:20+00:00
+    records_start: 1933-04-29
+    records_end: 2026-04-05
+    update_schedule: daily
+    deprecated: false
 - model: core.dataset
   pk: 22
   fields:
     name: TaxBills Rent Stabilization Records
     model_name: RentStabilizationRecord
-    automated: False
-    update_schedule: "when needed"
-    update_instructions: "1) Lucy or user downloads most recent version of 'rentstab_v2' etc from NYCDB [GitHub - nycdb/nycdb: Database of NYC Housing Data] and gives it to developers as a CSV. 2) Remove all columns in csv that don't start with 'uc20' and make sure most recent column is on right (ie. uc2023 if most recent year is 2023). Do NOT remove "uc" from column names - the app will filter it automatically. 2) Upload file to app. 3) Create update to this dataset with that file. App will only accept years with 'uc20' as the prefix (ie. 'uc2025'). 4) If you do not automatically see new data when viewing property, run 'reset cache' task at https://api.displacementalert.org/admin/django_celery_beat/periodictask/."
+    automated: false
+    update_instructions: '1) Download CSV from NYCDB ''rentstab_v2'' table (https://github.com/nycdb/nycdb).
+      Ensure it has ucbbl and uc{YEAR} columns.
+
+      2) In datasets/models/RentStabilizationRecord.py, change MANUAL_YEAR to the
+      year being uploaded (currently 2023, 2024 data available).
+
+      3) Columns up to uc2027 already exist — no migration needed unless uploading
+      beyond 2027.
+
+      4) Upload CSV via admin, create update for TaxBills Rent Stabilization Records.
+
+      5) After import: run ''annotate properties all'' and ''Reset cache'' tasks at
+      admin periodic tasks page.'
+    download_endpoint: null
+    api_last_updated: null
+    records_start: null
+    records_end: null
+    update_schedule: when needed
+    deprecated: false
 - model: core.dataset
   pk: 23
   fields:
     name: J-51 Subsidy Records
     model_name: SubsidyJ51
-    automated: False
-    update_schedule: "when needed"
-    update_instructions: "1) Download all 5 borough .xlsx Excel files from https://www1.nyc.gov/site/finance/benefits/benefits-j51.page 2) Manually combine all files into single .csv file. 3) Remove Borough Column 4) Upload file to app. 5) Create Update."
+    automated: false
+    update_instructions: 1) Download all 5 borough .xlsx Excel files from https://www1.nyc.gov/site/finance/benefits/benefits-j51.page
+      2) Manually combine all files into single .csv file. 3) Upload file to app.
+      4) Create Update. Please make sure headers match EXACTLY the model. (like BUILDINGCLASSATPRESENT
+      vs just BUILDING CLASS). Please also ensure properties, addresses, and BBL are
+      updated first.
+    download_endpoint: null
+    api_last_updated: null
+    records_start: null
+    records_end: null
+    update_schedule: when needed
+    deprecated: false
 - model: core.dataset
   pk: 24
   fields:
     name: 421a Subsidy Records
     model_name: Subsidy421a
-    automated: False
-    update_schedule: "when needed"
-    update_instructions: "1) Download all 5 borough .xlsx Excel files from https://www1.nyc.gov/site/finance/benefits/benefits-421a.page 2) Manually combine all files into single .csv file. 3)  Remove Borough Column  4) Upload file to app. 5) Create Update."
+    automated: false
+    update_instructions: '1) Download all 5 borough .xlsx Excel files from https://www.nyc.gov/site/finance/property/benefits-421a.page
+
+      2) Manually combine all files into single .csv file.
+
+      3) Upload file to app.
+
+      4) Create Update. Headers must match model exactly (e.g., BUILDINGCLASSATPRESENT
+      not BUILDING CLASS).
+
+      5) Ensure Properties, Buildings, Addresses, and BBLs are updated first.
+
+      6) Borough values must be letter abbreviations, not numbers.'
+    download_endpoint: null
+    api_last_updated: null
+    records_start: null
+    records_end: null
+    update_schedule: when needed
+    deprecated: true
 - model: core.dataset
   pk: 25
   fields:
     name: Public Housing Records
     model_name: PublicHousingRecord
-    automated: False
-    update_schedule: "when needed"
-    update_instructions: "1) Download csv from https://github.com/JustFixNYC/nycha-scraper/blob/master/Block-and-Lot-Guide-08272018.csv 2) Upload file to app. 3) Create Update."
+    automated: false
+    update_instructions: '1) Download the NYCHA Property Directory Block and Lot Guide
+      PDF from https://www.nyc.gov/site/nycha/about/developments.page
+
+      2) Clone https://github.com/itzamnahuerta/nycha-scraper-anhd
+
+      3) Update the PDF file path in the script and run it — CSV generated automatically
+
+      4) Upload CSV to backend and create update'
+    download_endpoint: null
+    api_last_updated: null
+    records_start: null
+    records_end: null
+    update_schedule: when needed
+    deprecated: false
 - model: core.dataset
   pk: 26
   fields:
     name: DOB Permits Issued (Joined)
     model_name: DOBIssuedPermit
-    automated: True
-    update_schedule: "daily"
+    automated: true
+    update_instructions: ''
+    download_endpoint: ''
+    api_last_updated: 2026-04-05 05:35:57.083219+00:00
+    records_start: 1989-05-11
+    records_end: 2026-04-03
+    update_schedule: daily
+    deprecated: false
 - model: core.dataset
   pk: 27
   fields:
     name: Tax Liens
     model_name: TaxLien
-    automated: False
-    update_schedule: "when needed"
-    update_instructions: "1) Download every borough's .xlsx file for the current year from https://www1.nyc.gov/site/finance/taxes/property-lien-sales.page 2) Create a .csv file with all borough data. 3) Add a 'year' column to the file and provide the appropriate year value for each row. 4) Upload file to app. 5) Create Update."
+    automated: true
+    update_instructions: 'Note: No new tax lien sale since 2021.
+
+      1) Go to https://data.cityofnewyork.us/City-Government/Tax-Lien-Sale-Lists/9rz4-mjek
+
+      2) Filter by current year
+
+      3) Export data
+
+      4) Add a ''year'' column with the appropriate year value for each row
+
+      5) Upload file to app and create update'
+    download_endpoint: null
+    api_last_updated: null
+    records_start: null
+    records_end: null
+    update_schedule: when needed
+    deprecated: false
 - model: core.dataset
   pk: 28
   fields:
     name: LisPendens
     model_name: LisPenden
-    automated: False
-    update_schedule: "monthly"
-    update_instructions: "1) merge all boroughs into single file - lp_lispendens_<month><year>.csv - use these headers: KEY,BBL,ENTEREDDATE,ZIP,BC,FILEDDATE,INDEX,DEBTOR,CR,ATTORNEY,Third Party,SAT DATE,SAT TYPE,DISP 2) upload file to app 3) update"
+    automated: false
+    update_instructions: DEPRECATED — replaced by PropertyShark. No longer updated.
+    download_endpoint: null
+    api_last_updated: null
+    records_start: null
+    records_end: null
+    update_schedule: when needed
+    deprecated: true
 - model: core.dataset
   pk: 29
   fields:
     name: LisPenden Comments
     model_name: LisPendenComment
-    automated: False
-    update_schedule: "monthly"
-    update_instructions: "1) merge all boroughs into single file - lp_lispendens_comments_<month><year>.csv - use these headers: KEY,DATE-COMMENTS 2) Clean extra columns out 3) upload file to app 4) update"
+    automated: false
+    update_instructions: DEPRECATED — replaced by PropertyShark. No longer updated.
+    download_endpoint: null
+    api_last_updated: null
+    records_start: null
+    records_end: null
+    update_schedule: when needed
+    deprecated: true
 - model: core.dataset
   pk: 30
   fields:
     name: Address Record
     model_name: AddressRecord
-    automated: False
-    update_schedule: "when needed"
-    update_instructions: "# Download latest https://data.cityofnewyork.us/City-Government/Property-Address-Directory/bc8t-ecyu - # Extract ZIP and upload bobaadr.csv file through admin, then update using bobaadr AND settng dataset = PadRecord # Make sure to run this update AFTER updating the Building table w/ the same file."
+    automated: false
+    update_instructions: ' Download latest
+
+      # https://data.cityofnewyork.us/City-Government/Property-Address-Directory/bc8t-ecyu
+
+      # Extract ZIP and upload bobaadr.csv file through admin (associated w/ Building
+      model), then update Building, PadRecord, and finally this one when all others
+      finished.
+
+      # ** RESOURCE INTENSIVE UPDATE ** - don''t run during regular updates after
+      6pm
+
+      # ** Best done on a weekend morning. can take many hours.
+
+      # ** May need to run build_search method alone in console if runs out of memory
+      after seeding properties and buildings'
+    download_endpoint: null
+    api_last_updated: null
+    records_start: null
+    records_end: null
+    update_schedule: when needed
+    deprecated: false
 - model: core.dataset
   pk: 31
   fields:
     name: Tax Lots
     model_name: TaxLot
     automated: false
-    update_schedule: "when needed"
-    update_instructions: "Visit https://data.cityofnewyork.us/City-Government/Property-Address-Directory/bc8t-ecyu 2) Download latest zipfile. 3) Extract zipfile and open bobabbl.csv. 4) Upload bobabbl.csv to app. 5) Update"
+    update_instructions: Visit https://data.cityofnewyork.us/City-Government/Property-Address-Directory/bc8t-ecyu
+      2) Download latest zipfile. 3) Extract zipfile and open bobabbl.csv. 4) Upload
+      bobabbl.csv to app. 5) Update
+    download_endpoint: null
+    api_last_updated: null
+    records_start: null
+    records_end: null
+    update_schedule: when needed
+    deprecated: false
 - model: core.dataset
   pk: 32
   fields:
     name: Community Districts
     model_name: Community
     automated: false
-    update_schedule: "when needed"
-    update_instructions: "1) Visit http://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/nycd/FeatureServer/0/query?where=1=1&outFields=*&outSR=4326&f=geojson 2) Copy all of the data on the screen into a .geojson file. 3) Upload the file to the app. 4) Create an update with the file."
+    update_instructions: 1) Visit http://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/nycd/FeatureServer/0/query?where=1=1&outFields=*&outSR=4326&f=geojson
+      2) Copy all of the data on the screen into a .geojson file. 3) Upload the file
+      to the app. 4) Create an update with the file.
+    download_endpoint: null
+    api_last_updated: null
+    records_start: null
+    records_end: null
+    update_schedule: when needed
+    deprecated: false
 - model: core.dataset
   pk: 33
   fields:
     name: Certificate of No Harassment Record
     model_name: CONHRecord
     automated: true
-    update_schedule: "when needed"
-    update_instructions: "1) Visit https://data.cityofnewyork.us/api/views/bzxi-2tsw/rows.csv?accessType=DOWNLOAD 2) Upload the file to the app w/ Version year. 3) Create an update with the file."
+    update_instructions: ''
+    download_endpoint: null
+    api_last_updated: 2026-04-01 18:20:48+00:00
+    records_start: null
+    records_end: null
+    update_schedule: when needed
+    deprecated: false
 - model: core.dataset
   pk: 34
   fields:
     name: DOB NOW Filed Permits
     model_name: DOBNowFiledPermit
     automated: true
-    update_schedule: "daily"
+    update_instructions: ''
+    download_endpoint: ''
+    api_last_updated: 2026-04-04 20:20:23+00:00
+    records_start: null
+    records_end: null
+    update_schedule: daily
+    deprecated: false
 - model: core.dataset
   pk: 35
   fields:
     name: DOB Filed Permits (Joined)
     model_name: DOBFiledPermit
     automated: true
-    update_schedule: "daily"
+    update_instructions: ''
+    download_endpoint: ''
+    api_last_updated: 2026-04-05 07:11:11.808618+00:00
+    records_start: 1994-07-28
+    records_end: 2026-04-03
+    update_schedule: daily
+    deprecated: false
 - model: core.dataset
   pk: 36
   fields:
     name: PAD Record
     model_name: PadRecord
     automated: false
-    update_schedule: "when needed"
+    update_instructions: Download latest https://data.cityofnewyork.us/City-Government/Property-Address-Directory/bc8t-ecyu
+    download_endpoint: null
+    api_last_updated: null
+    records_start: null
+    records_end: null
+    update_schedule: when needed
+    deprecated: false
 - model: core.dataset
   pk: 37
   fields:
     name: PropertyShark PreForeclosures
     model_name: PSPreForeclosure
     automated: false
-    update_schedule: "weekly"
+    update_instructions: Bi-weekly manual download from PropertyShark subscription.
+      Upload via admin.
+    download_endpoint: null
+    api_last_updated: null
+    records_start: 2019-07-01
+    records_end: 2026-03-13
+    update_schedule: weekly
+    deprecated: false
 - model: core.dataset
   pk: 38
   fields:
     name: PropertyShark Foreclosures
     model_name: PSForeclosure
     automated: false
-    update_schedule: "weekly"
+    update_instructions: Bi-weekly manual download from PropertyShark subscription.
+      Upload via admin.
+    download_endpoint: null
+    api_last_updated: null
+    records_start: 2019-05-15
+    records_end: 2026-04-02
+    update_schedule: weekly
+    deprecated: false
 - model: core.dataset
   pk: 39
   fields:
     name: Foreclosures
     model_name: Foreclosure
     automated: false
-    update_schedule: "weekly"
+    update_instructions: DEPRECATED — auto-populated from PropertyShark imports. Do
+      not update directly.
+    download_endpoint: null
+    api_last_updated: null
+    records_start: 1988-06-08
+    records_end: 2022-11-04
+    update_schedule: when needed
+    deprecated: true
 - model: core.dataset
   pk: 40
   fields:
     name: ZipCodes
     model_name: ZipCode
     automated: false
-    update_schedule: "when needed"
+    update_instructions: 'National ZCTA from Census: https://www.census.gov/geographies/mapping-files/time-series/geo/tiger-line-file.html
+
+      Must clip to NYC boundaries using GIS software (e.g., Borough Boundaries from
+      NYC Planning).
+
+      Not expected to change until after 2030 Census.'
+    download_endpoint: null
+    api_last_updated: null
+    records_start: null
+    records_end: null
+    update_schedule: when needed
+    deprecated: false
 - model: core.dataset
   pk: 41
   fields:
     name: State Assemblies
     model_name: StateAssembly
     automated: false
-    update_schedule: "when needed"
+    update_instructions: 'New districts effective Jan 1, 2025. Source: https://latfor.state.ny.us/maps/?sec=2024_assembly.
+      Not expected to change until after 2030 Census.'
+    download_endpoint: null
+    api_last_updated: null
+    records_start: null
+    records_end: null
+    update_schedule: when needed
+    deprecated: false
 - model: core.dataset
   pk: 42
   fields:
     name: State Senates
     model_name: StateSenate
     automated: false
-    update_schedule: "when needed"
-    update_instructions: "1) At https://www1.nyc.gov/site/planning/data-maps/open-data/districts-download-metadata.page, download the State Senate Districts (Clipped to Shoreline) as a .GeoJSON file 2) Update the dataset on this admin panel."
+    update_instructions: 'Districts took effect 2022. Source: https://latfor.state.ny.us/maps/?sec=2022_senate.
+      Not expected to change until after 2030 Census.'
+    download_endpoint: null
+    api_last_updated: null
+    records_start: null
+    records_end: null
+    update_schedule: when needed
+    deprecated: false
 - model: core.dataset
   pk: 43
   fields:
     name: AEP Buildings
     model_name: AEPBuilding
-    automated: false
-    update_schedule: "when needed"
+    automated: true
+    update_instructions: null
+    download_endpoint: null
+    api_last_updated: 2026-04-04 23:06:15.685652+00:00
+    records_start: null
+    records_end: null
+    update_schedule: when needed
+    deprecated: false
 - model: core.dataset
   pk: 44
   fields:
     name: OCA Housing Court
     model_name: OCAHousingCourt
     automated: true
-    update_schedule: "when needed"
-
-# NOTE: In one instance, resource model "Oca Housing Courts" wasn't added to the core-datasets table upon new app generation. Please ensure it is there or you will get errors in the admin panel.
+    update_instructions: 'Automated via AWS S3 (bucket: oca-2-dev). Requires OCA_AWS_SECRET_KEY_ID
+      and OCA_AWS_SECRET_ACCESS_KEY in .env.'
+    download_endpoint: Nothing yet.
+    api_last_updated: null
+    records_start: 2016-01-01
+    records_end: 2026-03-27
+    update_schedule: monthly
+    deprecated: false
