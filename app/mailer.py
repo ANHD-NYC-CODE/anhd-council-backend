@@ -10,7 +10,8 @@ logger = logging.getLogger('app')
 
 
 def is_email_suppressed(email):
-    """Check if an email is on SendGrid's suppression lists (bounces, blocks, invalid)."""
+    """Check if an email is on SendGrid's suppression lists (bounces, blocks, invalid).
+    If suppressed, also disables notification subscriptions for that user."""
     try:
         import requests
         api_key = os.environ.get('SENDGRID_API_KEY', '')
@@ -23,8 +24,18 @@ def is_email_suppressed(email):
                 f'https://api.sendgrid.com/v3/suppression/{list_type}/{email}',
                 headers=headers, timeout=10
             )
-            if resp.status_code == 200:
-                logger.info('Email %s is on SendGrid %s suppression list — skipping', email, list_type)
+            if resp.status_code == 200 and resp.json():
+                logger.info('Email %s is on SendGrid %s suppression list — skipping and disabling notifications', email, list_type)
+                # Auto-disable notification subscriptions for this user
+                try:
+                    user = CustomUser.objects.filter(email__iexact=email).first()
+                    if user:
+                        from users.models import UserCustomSearch
+                        disabled = UserCustomSearch.objects.filter(user=user).exclude(notification_frequency='N').update(notification_frequency='N')
+                        if disabled:
+                            logger.info('Disabled %d notification subscriptions for suppressed email %s', disabled, email)
+                except Exception as db_err:
+                    logger.warning('Error disabling notifications for %s: %s', email, db_err)
                 return True
         return False
     except Exception as e:
