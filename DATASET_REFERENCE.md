@@ -138,19 +138,50 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Stale data caveat:** Status changes on records older than 2 months won't be caught until the record's `currentstatusdate` is updated by HPD. Socrata has no per-row `updated_at` field.
 - **Temporal scope:** Records from 1913 to present (EARLIEST_RECORD filter set to 1933, but older records exist in DB)
 
-**Field Audit:**
-**>90% NULL (2 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `newcertifybydate` | 92,950 | 10,712,399 | 0.9% |
-| `newcorrectbydate` | 92,950 | 10,712,399 | 0.9% |
-
-**Healthy fields (39):** 31 fields >=99% populated; 7 fields 50-98% populated; 1 fields 11-49% populated.
-
-*Partially populated (11-49%):*
-- `certifieddate`: 35.4%
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `violationid` | VISIBLE |  |
+| `bbl` | VISIBLE |  |
+| `bin` | VISIBLE | 0.0% null |
+| `buildingid` | HIDDEN |  |
+| `registrationid` | VISIBLE |  |
+| `boroid` | HIDDEN |  |
+| `borough` | HIDDEN |  |
+| `housenumber` | HIDDEN | 0.0% null |
+| `lowhousenumber` | HIDDEN |  |
+| `highhousenumber` | HIDDEN |  |
+| `streetname` | HIDDEN | 0.0% null |
+| `streetcode` | HIDDEN |  |
+| `postcode` | HIDDEN |  |
+| `apartment` | VISIBLE |  |
+| `story` | VISIBLE |  |
+| `block` | HIDDEN |  |
+| `lot` | HIDDEN |  |
+| `class_name` | VISIBLE |  |
+| `inspectiondate` | HIDDEN |  |
+| `approveddate` | VISIBLE | 0.0% null |
+| `originalcertifybydate` | HIDDEN |  |
+| `originalcorrectbydate` | HIDDEN |  |
+| `newcertifybydate` | HIDDEN | 0.9% null |
+| `newcorrectbydate` | HIDDEN | 0.9% null |
+| `certifieddate` | HIDDEN |  |
+| `ordernumber` | HIDDEN |  |
+| `novid` | HIDDEN |  |
+| `novdescription` | VISIBLE |  |
+| `novissueddate` | HIDDEN |  |
+| `currentstatusid` | HIDDEN |  |
+| `currentstatus` | HIDDEN |  |
+| `currentstatusdate` | HIDDEN | 0.0% null |
+| `novtype` | HIDDEN |  |
+| `violationstatus` | VISIBLE |  |
+| `latitude` | HIDDEN | 0.0% null |
+| `longitude` | HIDDEN | 0.0% null |
+| `communityboard` | HIDDEN | 0.0% null |
+| `councildistrict` | HIDDEN | 0.0% null |
+| `censustract` | HIDDEN | 0.0% null |
+| `nta` | HIDDEN | 0.0% null |
+| `rentimpairing` | VISIBLE |  |
 ---
 
 ### HPD Complaints & Problems
@@ -163,9 +194,42 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Download filter:** `$select` (31 fields) + `$where` (problem_status_date >= 2 months ago OR NULL)
 - **Note:** HPD Problems was merged into HPD Complaints. The `problemid` is the PK, not `complaintid` — one complaint can have multiple problems.
 
-**Field Audit:**
-**Healthy fields (33):** 31 fields >=99% populated; 2 fields 50-98% populated.
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `zip` | VISIBLE | 0.0% null |
+| `receiveddate` | VISIBLE |  |
+| `problemid` | VISIBLE |  |
+| `complaintid` | VISIBLE |  |
+| `council_district` | HIDDEN |  |
+| `census_tract` | HIDDEN |  |
+| `nta` | HIDDEN | 0.0% null |
+| `bbl` | VISIBLE |  |
+| `bin` | VISIBLE | 0.0% null |
+| `buildingid` | HIDDEN |  |
+| `borough` | HIDDEN |  |
+| `housenumber` | HIDDEN | 0.0% null |
+| `streetname` | HIDDEN | 0.0% null |
+| `latitude` | HIDDEN | 0.0% null |
+| `longitude` | HIDDEN | 0.0% null |
+| `block` | HIDDEN |  |
+| `lot` | HIDDEN |  |
+| `apartment` | VISIBLE |  |
+| `communityboard` | HIDDEN | 0.0% null |
+| `unittype` | VISIBLE |  |
+| `spacetype` | VISIBLE |  |
+| `type` | VISIBLE |  |
+| `majorcategory` | VISIBLE |  |
+| `minorcategory` | VISIBLE |  |
+| `code` | VISIBLE |  |
+| `status` | VISIBLE |  |
+| `statusdate` | HIDDEN |  |
+| `problemstatus` | VISIBLE |  |
+| `problemstatusdate` | HIDDEN |  |
+| `statusdescription` | VISIBLE |  |
+| `problemduplicateflag` | HIDDEN |  |
+| `complaintanonymousflag` | HIDDEN |  |
+| `uniquekey` | HIDDEN |  |
 ---
 
 ### DOB Complaints
@@ -178,15 +242,25 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Download filter:** `$select` (15 fields) + `$where` ((date_entered >= 2mo OR disposition_date >= 2mo) AND complaint_number IS NOT NULL)
 - **Note:** After import, BBLs are populated from BIN via Building lookup (`add_bbls_from_bin`)
 
-**Field Audit:**
-**>90% NULL (1 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `specialdistrict` | 16,734 | 3,070,410 | 0.5% |
-
-**Healthy fields (15):** 11 fields >=99% populated; 4 fields 50-98% populated.
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `complaintnumber` | VISIBLE |  |
+| `bbl` | VISIBLE |  |
+| `bin` | VISIBLE | 0.0% null |
+| `status` | VISIBLE |  |
+| `dateentered` | VISIBLE |  |
+| `housenumber` | HIDDEN | 0.0% null |
+| `zipcode` | VISIBLE | 0.0% null |
+| `housestreet` | HIDDEN |  |
+| `communityboard` | HIDDEN | 0.0% null |
+| `specialdistrict` | HIDDEN | 0.5% null |
+| `complaintcategory` | VISIBLE |  |
+| `unit` | HIDDEN |  |
+| `dispositiondate` | HIDDEN |  |
+| `dispositioncode` | HIDDEN |  |
+| `inspectiondate` | HIDDEN |  |
+| `dobrundate` | HIDDEN |  |
 ---
 
 ### DOB Violations
@@ -199,18 +273,28 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Download filter:** `$select` (18 fields) + `$where` ((issue_date >= 2mo OR disposition_date >= 2mo) AND isn_dob_bis_viol IS NOT NULL)
 - **Note:** 662K records have NULL disposition dates (mostly 5+ years old, perpetually "Active")
 
-**Field Audit:**
-**>90% NULL (1 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `ecbnumber` | 238,622 | 2,524,360 | 8.6% |
-
-**Healthy fields (18):** 14 fields >=99% populated; 3 fields 50-98% populated; 1 fields 11-49% populated.
-
-*Partially populated (11-49%):*
-- `description`: 36.3%
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `isndobbisviol` | VISIBLE |  |
+| `bbl` | VISIBLE |  |
+| `bin` | VISIBLE | 0.0% null |
+| `boro` | HIDDEN |  |
+| `block` | HIDDEN |  |
+| `lot` | HIDDEN |  |
+| `issuedate` | VISIBLE |  |
+| `violationtypecode` | HIDDEN |  |
+| `violationnumber` | HIDDEN |  |
+| `housenumber` | HIDDEN | 0.0% null |
+| `street` | HIDDEN |  |
+| `dispositiondate` | HIDDEN |  |
+| `dispositioncomments` | HIDDEN |  |
+| `devicenumber` | HIDDEN |  |
+| `description` | VISIBLE |  |
+| `ecbnumber` | HIDDEN | 8.6% null |
+| `number` | VISIBLE |  |
+| `violationcategory` | VISIBLE |  |
+| `violationtype` | VISIBLE |  |
 ---
 
 ### ECB Violations
@@ -223,37 +307,56 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Download filter:** Full CSV (no `$select`)
 - **Post-download filter:** `update_set_filter` skips records older than 4 years by ISSUE_DATE
 
-**Field Audit:**
-**100% NULL (6 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `infractioncode10` | 314 | 1,803,886 | 0.0% |
-| `infractioncode8` | 638 | 1,803,562 | 0.0% |
-| `infractioncode9` | 474 | 1,803,726 | 0.0% |
-| `sectionlawdescription10` | 314 | 1,803,886 | 0.0% |
-| `sectionlawdescription8` | 638 | 1,803,562 | 0.0% |
-| `sectionlawdescription9` | 474 | 1,803,726 | 0.0% |
-
-**>90% NULL (12 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `infractioncode2` | 107,587 | 1,696,613 | 6.0% |
-| `infractioncode3` | 10,463 | 1,793,737 | 0.6% |
-| `infractioncode4` | 3,729 | 1,800,471 | 0.2% |
-| `infractioncode5` | 2,074 | 1,802,126 | 0.1% |
-| `infractioncode6` | 1,336 | 1,802,864 | 0.1% |
-| `infractioncode7` | 939 | 1,803,261 | 0.1% |
-| `sectionlawdescription2` | 106,339 | 1,697,861 | 5.9% |
-| `sectionlawdescription3` | 10,408 | 1,793,792 | 0.6% |
-| `sectionlawdescription4` | 3,717 | 1,800,483 | 0.2% |
-| `sectionlawdescription5` | 2,068 | 1,802,132 | 0.1% |
-| `sectionlawdescription6` | 1,334 | 1,802,866 | 0.1% |
-| `sectionlawdescription7` | 938 | 1,803,262 | 0.1% |
-
-**Healthy fields (29):** 18 fields >=99% populated; 11 fields 50-98% populated.
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `ecbviolationnumber` | VISIBLE |  |
+| `isndobbisextract` | HIDDEN |  |
+| `bbl` | VISIBLE |  |
+| `bin` | VISIBLE | 0.0% null |
+| `ecbviolationstatus` | VISIBLE |  |
+| `dobviolationnumber` | HIDDEN |  |
+| `boro` | HIDDEN |  |
+| `block` | HIDDEN |  |
+| `lot` | HIDDEN |  |
+| `hearingdate` | HIDDEN |  |
+| `hearingtime` | HIDDEN |  |
+| `serveddate` | HIDDEN |  |
+| `issuedate` | VISIBLE |  |
+| `severity` | VISIBLE |  |
+| `violationtype` | VISIBLE |  |
+| `respondentname` | HIDDEN |  |
+| `respondenthousenumber` | HIDDEN |  |
+| `respondentstreet` | HIDDEN |  |
+| `respondentcity` | HIDDEN |  |
+| `respondentzip` | HIDDEN |  |
+| `violationdescription` | VISIBLE |  |
+| `penalityimposed` | VISIBLE |  |
+| `amountpaid` | VISIBLE |  |
+| `balancedue` | HIDDEN |  |
+| `infractioncode1` | HIDDEN |  |
+| `sectionlawdescription1` | HIDDEN |  |
+| `infractioncode2` | HIDDEN | 6.0% null |
+| `sectionlawdescription2` | HIDDEN | 5.9% null |
+| `infractioncode3` | HIDDEN | 0.6% null |
+| `sectionlawdescription3` | HIDDEN | 0.6% null |
+| `infractioncode4` | HIDDEN | 0.2% null |
+| `sectionlawdescription4` | HIDDEN | 0.2% null |
+| `infractioncode5` | HIDDEN | 0.1% null |
+| `sectionlawdescription5` | HIDDEN | 0.1% null |
+| `infractioncode6` | HIDDEN | 0.1% null |
+| `sectionlawdescription6` | HIDDEN | 0.1% null |
+| `infractioncode7` | HIDDEN | 0.1% null |
+| `sectionlawdescription7` | HIDDEN | 0.1% null |
+| `infractioncode8` | HIDDEN | 0.0% null |
+| `sectionlawdescription8` | HIDDEN | 0.0% null |
+| `infractioncode9` | HIDDEN | 0.0% null |
+| `sectionlawdescription9` | HIDDEN | 0.0% null |
+| `infractioncode10` | HIDDEN | 0.0% null |
+| `sectionlawdescription10` | HIDDEN | 0.0% null |
+| `aggravatedlevel` | VISIBLE |  |
+| `hearingstatus` | VISIBLE |  |
+| `certificationstatus` | HIDDEN |  |
 ---
 
 ### DOB NOW Filed Permits
@@ -265,80 +368,97 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Import method:** Truncate + reload (`overwrite=True`)
 - **Download filter:** `$select` (21 fields), all rows
 
-**Field Audit:**
-**100% NULL (66 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `antenna` | 0 | 885,852 | 0.0% |
-| `applicantsmiddleinitial` | 0 | 885,852 | 0.0% |
-| `aptcondonos` | 0 | 885,852 | 0.0% |
-| `bin_2` | 0 | 885,852 | 0.0% |
-| `boilerequipmentworktype` | 0 | 885,852 | 0.0% |
-| `buildingtype` | 0 | 885,852 | 0.0% |
-| `built1informationvalue` | 0 | 885,852 | 0.0% |
-| `built2ainformationvalue` | 0 | 885,852 | 0.0% |
-| `built2binformationvalue` | 0 | 885,852 | 0.0% |
-| `built2informationvalue` | 0 | 885,852 | 0.0% |
-| `censustract` | 0 | 885,852 | 0.0% |
-| `commmunityboard` | 0 | 885,852 | 0.0% |
-| `councildistrict` | 0 | 885,852 | 0.0% |
-| `curbcut` | 0 | 885,852 | 0.0% |
-| `currentstatusdate` | 0 | 885,852 | 0.0% |
-| `earthworkworktype` | 0 | 885,852 | 0.0% |
-| `exemptfromnycecc` | 0 | 885,852 | 0.0% |
-| `existingdwellingunits` | 0 | 885,852 | 0.0% |
-| `existingheight` | 0 | 885,852 | 0.0% |
-| `existingstories` | 0 | 885,852 | 0.0% |
-| `fence` | 0 | 885,852 | 0.0% |
-| `filingrepresentativebusinessname` | 0 | 885,852 | 0.0% |
-| `filingrepresentativecity` | 0 | 885,852 | 0.0% |
-| `filingrepresentativefirstname` | 0 | 885,852 | 0.0% |
-| `filingrepresentativelastname` | 0 | 885,852 | 0.0% |
-| `filingrepresentativemiddleinitial` | 0 | 885,852 | 0.0% |
-| `filingrepresentativestate` | 0 | 885,852 | 0.0% |
-| `filingrepresentativestreetname` | 0 | 885,852 | 0.0% |
-| `filingrepresentativezip` | 0 | 885,852 | 0.0% |
-| `firstpermitdate` | 0 | 885,852 | 0.0% |
-| `foundationworktype` | 0 | 885,852 | 0.0% |
-| `generalconstructionworktype` | 0 | 885,852 | 0.0% |
-| `includespermanentremoval` | 0 | 885,852 | 0.0% |
-| `incompliancewithnycecc` | 0 | 885,852 | 0.0% |
-| `latitude` | 0 | 885,852 | 0.0% |
-| `littlee` | 0 | 885,852 | 0.0% |
-| `longitude` | 0 | 885,852 | 0.0% |
-| `mechanicalsystemsworktype` | 0 | 885,852 | 0.0% |
-| `nta` | 0 | 885,852 | 0.0% |
-| `ownerscity` | 1 | 885,851 | 0.0% |
-| `ownersstate` | 1 | 885,851 | 0.0% |
-| `ownersstreetname` | 0 | 885,852 | 0.0% |
-| `ownerszip` | 1 | 885,851 | 0.0% |
-| `permitissuedate` | 0 | 885,852 | 0.0% |
-| `placeofassemblyworktype` | 0 | 885,852 | 0.0% |
-| `plumbingworktype` | 0 | 885,852 | 0.0% |
-| `progressinspectionrequirement` | 0 | 885,852 | 0.0% |
-| `proposeddwellingunits` | 0 | 885,852 | 0.0% |
-| `proposedheight` | 0 | 885,852 | 0.0% |
-| `proposednoofstories` | 0 | 885,852 | 0.0% |
-| `protectionmechanicalmethodsworktype` | 0 | 885,852 | 0.0% |
-| `requestlegalization` | 0 | 885,852 | 0.0% |
-| `reviewbuildingcode` | 0 | 885,852 | 0.0% |
-| `scaffold` | 0 | 885,852 | 0.0% |
-| `shed` | 0 | 885,852 | 0.0% |
-| `sidewalkshedworktype` | 0 | 885,852 | 0.0% |
-| `sign` | 0 | 885,852 | 0.0% |
-| `specialinspectionagencynumber` | 0 | 885,852 | 0.0% |
-| `specialinspectionrequirement` | 0 | 885,852 | 0.0% |
-| `sprinklerworktype` | 0 | 885,852 | 0.0% |
-| `standpipe` | 0 | 885,852 | 0.0% |
-| `structuralworktype` | 0 | 885,852 | 0.0% |
-| `supportofexcavationworktype` | 0 | 885,852 | 0.0% |
-| `temporaryplaceofassemblyworktype` | 0 | 885,852 | 0.0% |
-| `totalconstructionfloorarea` | 0 | 885,852 | 0.0% |
-| `unmappedccostreet` | 0 | 885,852 | 0.0% |
-
-**Healthy fields (21):** 19 fields >=99% populated; 2 fields 50-98% populated.
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `id` | VISIBLE |  |
+| `jobfilingnumber` | VISIBLE |  |
+| `bbl` | VISIBLE |  |
+| `bin` | VISIBLE | 0.0% null |
+| `filingstatus` | HIDDEN |  |
+| `houseno` | HIDDEN |  |
+| `streetname` | HIDDEN | 0.0% null |
+| `borough` | HIDDEN |  |
+| `block` | HIDDEN |  |
+| `lot` | HIDDEN |  |
+| `commmunityboard` | HIDDEN | 0.0% null |
+| `workonfloor` | HIDDEN | 0.0% null |
+| `aptcondonos` | HIDDEN | 0.0% null |
+| `applicantprofessionaltitle` | HIDDEN |  |
+| `applicantlicense` | HIDDEN | 0.0% null |
+| `applicantfirstname` | HIDDEN | 0.0% null |
+| `applicantsmiddleinitial` | HIDDEN | 0.0% null |
+| `applicantlastname` | HIDDEN | 0.0% null |
+| `ownersbusinessname` | HIDDEN |  |
+| `ownersstreetname` | HIDDEN | 0.0% null |
+| `city` | VISIBLE | 0.0% null |
+| `state` | VISIBLE | 0.0% null |
+| `zip` | VISIBLE | 0.0% null |
+| `filingrepresentativefirstname` | HIDDEN | 0.0% null |
+| `filingrepresentativemiddleinitial` | HIDDEN | 0.0% null |
+| `filingrepresentativelastname` | HIDDEN | 0.0% null |
+| `filingrepresentativebusinessname` | HIDDEN | 0.0% null |
+| `filingrepresentativestreetname` | HIDDEN | 0.0% null |
+| `filingrepresentativecity` | HIDDEN | 0.0% null |
+| `filingrepresentativestate` | HIDDEN | 0.0% null |
+| `filingrepresentativezip` | HIDDEN | 0.0% null |
+| `sprinklerworktype` | HIDDEN | 0.0% null |
+| `plumbingworktype` | HIDDEN | 0.0% null |
+| `initialcost` | HIDDEN |  |
+| `totalconstructionfloorarea` | HIDDEN | 0.0% null |
+| `reviewbuildingcode` | HIDDEN | 0.0% null |
+| `littlee` | HIDDEN | 0.0% null |
+| `unmappedccostreet` | HIDDEN | 0.0% null |
+| `requestlegalization` | HIDDEN | 0.0% null |
+| `includespermanentremoval` | HIDDEN | 0.0% null |
+| `incompliancewithnycecc` | HIDDEN | 0.0% null |
+| `exemptfromnycecc` | HIDDEN | 0.0% null |
+| `buildingtype` | HIDDEN | 0.0% null |
+| `existingstories` | HIDDEN | 0.0% null |
+| `existingheight` | HIDDEN | 0.0% null |
+| `existingdwellingunits` | HIDDEN | 0.0% null |
+| `proposednoofstories` | HIDDEN | 0.0% null |
+| `proposedheight` | HIDDEN | 0.0% null |
+| `proposeddwellingunits` | HIDDEN | 0.0% null |
+| `specialinspectionrequirement` | HIDDEN | 0.0% null |
+| `specialinspectionagencynumber` | HIDDEN | 0.0% null |
+| `progressinspectionrequirement` | HIDDEN | 0.0% null |
+| `built1informationvalue` | HIDDEN | 0.0% null |
+| `built2informationvalue` | HIDDEN | 0.0% null |
+| `built2ainformationvalue` | HIDDEN | 0.0% null |
+| `built2binformationvalue` | HIDDEN | 0.0% null |
+| `standpipe` | VISIBLE | 0.0% null |
+| `antenna` | VISIBLE | 0.0% null |
+| `curbcut` | HIDDEN | 0.0% null |
+| `sign` | VISIBLE | 0.0% null |
+| `fence` | HIDDEN | 0.0% null |
+| `scaffold` | HIDDEN | 0.0% null |
+| `shed` | HIDDEN | 0.0% null |
+| `latitude` | HIDDEN | 0.0% null |
+| `longitude` | HIDDEN | 0.0% null |
+| `councildistrict` | HIDDEN | 0.0% null |
+| `censustract` | HIDDEN | 0.0% null |
+| `nta` | HIDDEN | 0.0% null |
+| `bin_2` | HIDDEN | 0.0% null |
+| `currentstatusdate` | HIDDEN | 0.0% null |
+| `filingdate` | HIDDEN | 0.0% null |
+| `firstpermitdate` | HIDDEN | 0.0% null |
+| `permitissuedate` | HIDDEN | 0.0% null |
+| `boilerequipmentworktype` | HIDDEN | 0.0% null |
+| `earthworkworktype` | HIDDEN | 0.0% null |
+| `foundationworktype` | HIDDEN | 0.0% null |
+| `generalconstructionworktype` | HIDDEN | 0.0% null |
+| `mechanicalsystemsworktype` | HIDDEN | 0.0% null |
+| `placeofassemblyworktype` | HIDDEN | 0.0% null |
+| `protectionmechanicalmethodsworktype` | HIDDEN | 0.0% null |
+| `sidewalkshedworktype` | HIDDEN | 0.0% null |
+| `structuralworktype` | HIDDEN | 0.0% null |
+| `supportofexcavationworktype` | HIDDEN | 0.0% null |
+| `temporaryplaceofassemblyworktype` | HIDDEN | 0.0% null |
+| `jobtype` | VISIBLE |  |
+| `ownerscity` | HIDDEN | 0.0% null |
+| `ownersstate` | HIDDEN | 0.0% null |
+| `ownerszip` | HIDDEN | 0.0% null |
 ---
 
 ### DOB Permit Issued NOW
@@ -350,36 +470,46 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Import method:** Truncate + reload (`overwrite=True`)
 - **Download filter:** `$select` (fields filtered), all rows
 
-**Field Audit:**
-**100% NULL (22 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `applicantbusinessaddress` | 0 | 918,418 | 0.0% |
-| `applicantbusinessname` | 0 | 918,418 | 0.0% |
-| `applicantfirstname` | 0 | 918,418 | 0.0% |
-| `applicantlastname` | 0 | 918,418 | 0.0% |
-| `applicantlicense` | 0 | 918,418 | 0.0% |
-| `applicantmiddlename` | 0 | 918,418 | 0.0% |
-| `approveddate` | 0 | 918,418 | 0.0% |
-| `aptcondonos` | 0 | 918,418 | 0.0% |
-| `cbno` | 0 | 918,418 | 0.0% |
-| `estimatedjobcosts` | 0 | 918,418 | 0.0% |
-| `filingrepresentativebusinessname` | 0 | 918,418 | 0.0% |
-| `filingrepresentativefirstname` | 0 | 918,418 | 0.0% |
-| `filingrepresentativelastname` | 0 | 918,418 | 0.0% |
-| `filingrepresentativemiddleinitial` | 0 | 918,418 | 0.0% |
-| `ownerbusinessname` | 0 | 918,418 | 0.0% |
-| `ownercity` | 0 | 918,418 | 0.0% |
-| `ownername` | 0 | 918,418 | 0.0% |
-| `ownerstate` | 0 | 918,418 | 0.0% |
-| `ownerstreetaddress` | 0 | 918,418 | 0.0% |
-| `ownerzipcode` | 0 | 918,418 | 0.0% |
-| `permitteeslicensetype` | 0 | 918,418 | 0.0% |
-| `workonfloor` | 0 | 918,418 | 0.0% |
-
-**Healthy fields (14):** 14 fields >=99% populated.
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `id` | VISIBLE |  |
+| `jobfilingnumber` | VISIBLE |  |
+| `workpermit` | VISIBLE |  |
+| `bin` | VISIBLE | 0.0% null |
+| `bbl` | VISIBLE |  |
+| `filingreason` | HIDDEN |  |
+| `houseno` | HIDDEN |  |
+| `streetname` | HIDDEN | 0.0% null |
+| `borough` | HIDDEN |  |
+| `lot` | HIDDEN |  |
+| `block` | HIDDEN |  |
+| `cbno` | HIDDEN | 0.0% null |
+| `aptcondonos` | HIDDEN | 0.0% null |
+| `workonfloor` | HIDDEN | 0.0% null |
+| `worktype` | VISIBLE |  |
+| `permitteeslicensetype` | HIDDEN | 0.0% null |
+| `applicantlicense` | HIDDEN | 0.0% null |
+| `applicantfirstname` | HIDDEN | 0.0% null |
+| `applicantmiddlename` | HIDDEN | 0.0% null |
+| `applicantlastname` | HIDDEN | 0.0% null |
+| `applicantbusinessname` | HIDDEN | 0.0% null |
+| `applicantbusinessaddress` | HIDDEN | 0.0% null |
+| `filingrepresentativefirstname` | HIDDEN | 0.0% null |
+| `filingrepresentativemiddleinitial` | HIDDEN | 0.0% null |
+| `filingrepresentativelastname` | HIDDEN | 0.0% null |
+| `filingrepresentativebusinessname` | HIDDEN | 0.0% null |
+| `approveddate` | VISIBLE | 0.0% null |
+| `issueddate` | HIDDEN |  |
+| `expireddate` | HIDDEN |  |
+| `jobdescription` | VISIBLE |  |
+| `estimatedjobcosts` | HIDDEN | 0.0% null |
+| `ownerbusinessname` | HIDDEN | 0.0% null |
+| `ownername` | HIDDEN | 0.0% null |
+| `ownerstreetaddress` | HIDDEN | 0.0% null |
+| `ownercity` | HIDDEN | 0.0% null |
+| `ownerstate` | HIDDEN | 0.0% null |
+| `ownerzipcode` | HIDDEN | 0.0% null |
 ---
 
 ### DOB Legacy Filed Permits
@@ -391,88 +521,107 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Import method:** Truncate + reload (`overwrite=True`)
 - **Download filter:** `$select` (22 fields), all rows
 
-**Field Audit:**
-**100% NULL (74 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `adultestab` | 0 | 2,714,598 | 0.0% |
-| `approved` | 0 | 2,714,598 | 0.0% |
-| `assigned` | 0 | 2,714,598 | 0.0% |
-| `boiler` | 0 | 2,714,598 | 0.0% |
-| `buildingclass` | 0 | 2,714,598 | 0.0% |
-| `buildingtype` | 0 | 2,714,598 | 0.0% |
-| `city` | 0 | 2,714,598 | 0.0% |
-| `cityowned` | 0 | 2,714,598 | 0.0% |
-| `cluster` | 0 | 2,714,598 | 0.0% |
-| `communityboard` | 0 | 2,714,598 | 0.0% |
-| `curbcut` | 0 | 2,714,598 | 0.0% |
-| `efilingfiled` | 0 | 2,714,598 | 0.0% |
-| `enlargementsqfootage` | 0 | 2,714,598 | 0.0% |
-| `equipment` | 0 | 2,714,598 | 0.0% |
-| `existingdwellingunits` | 0 | 2,714,598 | 0.0% |
-| `existingheight` | 0 | 2,714,598 | 0.0% |
-| `existingnoofstories` | 0 | 2,714,598 | 0.0% |
-| `existingoccupancy` | 0 | 2,714,598 | 0.0% |
-| `existingzoningsqft` | 0 | 2,714,598 | 0.0% |
-| `feestatus` | 0 | 2,714,598 | 0.0% |
-| `firealarm` | 0 | 2,714,598 | 0.0% |
-| `firesuppression` | 0 | 2,714,598 | 0.0% |
-| `fuelburning` | 0 | 2,714,598 | 0.0% |
-| `fuelstorage` | 0 | 2,714,598 | 0.0% |
-| `fullypaid` | 0 | 2,714,598 | 0.0% |
-| `fullypermitted` | 0 | 2,714,598 | 0.0% |
-| `gisbin` | 0 | 2,714,598 | 0.0% |
-| `giscensustract` | 0 | 2,714,598 | 0.0% |
-| `giscouncildistrict` | 0 | 2,714,598 | 0.0% |
-| `gislatitude` | 0 | 2,714,598 | 0.0% |
-| `gislongitude` | 0 | 2,714,598 | 0.0% |
-| `gisntaname` | 0 | 2,714,598 | 0.0% |
-| `horizontalenlrgmt` | 0 | 2,714,598 | 0.0% |
-| `jobnogoodcount` | 0 | 2,714,598 | 0.0% |
-| `landmarked` | 0 | 2,714,598 | 0.0% |
-| `littlee` | 0 | 2,714,598 | 0.0% |
-| `loftboard` | 0 | 2,714,598 | 0.0% |
-| `mechanical` | 0 | 2,714,598 | 0.0% |
-| `nonprofit` | 0 | 2,714,598 | 0.0% |
-| `other` | 0 | 2,714,598 | 0.0% |
-| `otherdescription` | 0 | 2,714,598 | 0.0% |
-| `ownersfirstname` | 0 | 2,714,598 | 0.0% |
-| `ownershousenumber` | 0 | 2,714,598 | 0.0% |
-| `ownershousestreetname` | 0 | 2,714,598 | 0.0% |
-| `ownerslastname` | 0 | 2,714,598 | 0.0% |
-| `ownersphone` | 0 | 2,714,598 | 0.0% |
-| `ownertype` | 0 | 2,714,598 | 0.0% |
-| `paid` | 0 | 2,714,598 | 0.0% |
-| `pcfiled` | 0 | 2,714,598 | 0.0% |
-| `plumbing` | 0 | 2,714,598 | 0.0% |
-| `professionalcert` | 0 | 2,714,598 | 0.0% |
-| `proposeddwellingunits` | 0 | 2,714,598 | 0.0% |
-| `proposedheight` | 0 | 2,714,598 | 0.0% |
-| `proposednoofstories` | 0 | 2,714,598 | 0.0% |
-| `proposedoccupancy` | 0 | 2,714,598 | 0.0% |
-| `proposedzoningsqft` | 0 | 2,714,598 | 0.0% |
-| `signoffdate` | 0 | 2,714,598 | 0.0% |
-| `sitefill` | 0 | 2,714,598 | 0.0% |
-| `specialactiondate` | 0 | 2,714,598 | 0.0% |
-| `specialactionstatus` | 0 | 2,714,598 | 0.0% |
-| `specialdistrict1` | 0 | 2,714,598 | 0.0% |
-| `specialdistrict2` | 0 | 2,714,598 | 0.0% |
-| `sprinkler` | 0 | 2,714,598 | 0.0% |
-| `standpipe` | 0 | 2,714,598 | 0.0% |
-| `state` | 0 | 2,714,598 | 0.0% |
-| `streetfrontage` | 0 | 2,714,598 | 0.0% |
-| `totalconstructionfloorarea` | 0 | 2,714,598 | 0.0% |
-| `totalestfee` | 0 | 2,714,598 | 0.0% |
-| `verticalenlrgmt` | 0 | 2,714,598 | 0.0% |
-| `withdrawalflag` | 0 | 2,714,598 | 0.0% |
-| `zip` | 0 | 2,714,598 | 0.0% |
-| `zoningdist1` | 0 | 2,714,598 | 0.0% |
-| `zoningdist2` | 0 | 2,714,598 | 0.0% |
-| `zoningdist3` | 0 | 2,714,598 | 0.0% |
-
-**Healthy fields (23):** 20 fields >=99% populated; 3 fields 50-98% populated.
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `id` | VISIBLE |  |
+| `job` | HIDDEN |  |
+| `jobs1no` | HIDDEN |  |
+| `bbl` | VISIBLE |  |
+| `bin` | VISIBLE | 0.0% null |
+| `doc` | HIDDEN |  |
+| `borough` | HIDDEN |  |
+| `house` | HIDDEN |  |
+| `streetname` | HIDDEN | 0.0% null |
+| `block` | HIDDEN |  |
+| `lot` | HIDDEN |  |
+| `jobtype` | VISIBLE |  |
+| `jobstatus` | VISIBLE |  |
+| `jobstatusdescrp` | HIDDEN |  |
+| `latestactiondate` | HIDDEN |  |
+| `buildingtype` | HIDDEN | 0.0% null |
+| `communityboard` | HIDDEN | 0.0% null |
+| `cluster` | HIDDEN | 0.0% null |
+| `landmarked` | HIDDEN | 0.0% null |
+| `adultestab` | HIDDEN | 0.0% null |
+| `loftboard` | HIDDEN | 0.0% null |
+| `cityowned` | HIDDEN | 0.0% null |
+| `littlee` | HIDDEN | 0.0% null |
+| `pcfiled` | HIDDEN | 0.0% null |
+| `efilingfiled` | HIDDEN | 0.0% null |
+| `plumbing` | VISIBLE | 0.0% null |
+| `mechanical` | VISIBLE | 0.0% null |
+| `boiler` | VISIBLE | 0.0% null |
+| `fuelburning` | HIDDEN | 0.0% null |
+| `fuelstorage` | HIDDEN | 0.0% null |
+| `standpipe` | VISIBLE | 0.0% null |
+| `sprinkler` | VISIBLE | 0.0% null |
+| `firealarm` | HIDDEN | 0.0% null |
+| `equipment` | HIDDEN | 0.0% null |
+| `firesuppression` | HIDDEN | 0.0% null |
+| `curbcut` | HIDDEN | 0.0% null |
+| `other` | VISIBLE | 0.0% null |
+| `otherdescription` | HIDDEN | 0.0% null |
+| `applicantsfirstname` | HIDDEN |  |
+| `applicantslastname` | HIDDEN |  |
+| `applicantprofessionaltitle` | HIDDEN |  |
+| `applicantlicense` | HIDDEN | 0.0% null |
+| `professionalcert` | HIDDEN | 0.0% null |
+| `prefilingdate` | HIDDEN |  |
+| `paid` | HIDDEN | 0.0% null |
+| `fullypaid` | HIDDEN | 0.0% null |
+| `assigned` | HIDDEN | 0.0% null |
+| `approved` | HIDDEN | 0.0% null |
+| `fullypermitted` | HIDDEN | 0.0% null |
+| `initialcost` | HIDDEN |  |
+| `totalestfee` | HIDDEN | 0.0% null |
+| `feestatus` | HIDDEN | 0.0% null |
+| `existingzoningsqft` | HIDDEN | 0.0% null |
+| `proposedzoningsqft` | HIDDEN | 0.0% null |
+| `horizontalenlrgmt` | HIDDEN | 0.0% null |
+| `verticalenlrgmt` | HIDDEN | 0.0% null |
+| `enlargementsqfootage` | HIDDEN | 0.0% null |
+| `streetfrontage` | HIDDEN | 0.0% null |
+| `existingnoofstories` | HIDDEN | 0.0% null |
+| `proposednoofstories` | HIDDEN | 0.0% null |
+| `existingheight` | HIDDEN | 0.0% null |
+| `proposedheight` | HIDDEN | 0.0% null |
+| `existingdwellingunits` | HIDDEN | 0.0% null |
+| `proposeddwellingunits` | HIDDEN | 0.0% null |
+| `existingoccupancy` | HIDDEN | 0.0% null |
+| `proposedoccupancy` | HIDDEN | 0.0% null |
+| `sitefill` | HIDDEN | 0.0% null |
+| `zoningdist1` | HIDDEN | 0.0% null |
+| `zoningdist2` | HIDDEN | 0.0% null |
+| `zoningdist3` | HIDDEN | 0.0% null |
+| `specialdistrict1` | HIDDEN | 0.0% null |
+| `specialdistrict2` | HIDDEN | 0.0% null |
+| `ownertype` | HIDDEN | 4.7% null |
+| `nonprofit` | HIDDEN | 0.0% null |
+| `ownersfirstname` | HIDDEN | 0.0% null |
+| `ownerslastname` | HIDDEN | 0.0% null |
+| `ownersbusinessname` | HIDDEN |  |
+| `ownershousenumber` | HIDDEN | 0.0% null |
+| `ownershousestreetname` | HIDDEN | 0.0% null |
+| `city` | VISIBLE | 0.0% null |
+| `state` | VISIBLE | 0.0% null |
+| `zip` | VISIBLE | 0.0% null |
+| `ownersphone` | HIDDEN | 0.0% null |
+| `jobdescription` | VISIBLE |  |
+| `dobrundate` | HIDDEN |  |
+| `totalconstructionfloorarea` | HIDDEN | 0.0% null |
+| `withdrawalflag` | HIDDEN | 0.0% null |
+| `signoffdate` | HIDDEN | 0.0% null |
+| `specialactionstatus` | HIDDEN | 0.0% null |
+| `specialactiondate` | HIDDEN | 0.0% null |
+| `buildingclass` | HIDDEN | 0.0% null |
+| `jobnogoodcount` | HIDDEN | 0.0% null |
+| `gislatitude` | HIDDEN | 0.0% null |
+| `gislongitude` | HIDDEN | 0.0% null |
+| `giscouncildistrict` | HIDDEN | 0.0% null |
+| `giscensustract` | HIDDEN | 0.0% null |
+| `gisntaname` | HIDDEN | 0.0% null |
+| `gisbin` | HIDDEN | 0.0% null |
 ---
 
 ### DOB Permit Issued Legacy
@@ -484,51 +633,71 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Import method:** Truncate + reload (`overwrite=True`)
 - **Download filter:** `$select` (23 fields), all rows
 
-**Field Audit:**
-**100% NULL (37 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `actassuperintendent` | 0 | 3,965,376 | 0.0% |
-| `bldgtype` | 0 | 3,965,376 | 0.0% |
-| `censustract` | 0 | 3,965,376 | 0.0% |
-| `communityboard` | 0 | 3,965,376 | 0.0% |
-| `councildistrict` | 0 | 3,965,376 | 0.0% |
-| `filingdate` | 0 | 3,965,376 | 0.0% |
-| `hiclicense` | 0 | 3,965,376 | 0.0% |
-| `jobdoc` | 0 | 3,965,376 | 0.0% |
-| `jobstartdate` | 0 | 3,965,376 | 0.0% |
-| `latitude` | 0 | 3,965,376 | 0.0% |
-| `longitude` | 0 | 3,965,376 | 0.0% |
-| `nonprofit` | 0 | 3,965,376 | 0.0% |
-| `ntaname` | 0 | 3,965,376 | 0.0% |
-| `oilgas` | 0 | 3,965,376 | 0.0% |
-| `ownersbusinesstype` | 0 | 3,965,376 | 0.0% |
-| `ownershouse` | 0 | 3,965,376 | 0.0% |
-| `ownershousecity` | 0 | 3,965,376 | 0.0% |
-| `ownershousestate` | 0 | 3,965,376 | 0.0% |
-| `ownershousestreetname` | 0 | 3,965,376 | 0.0% |
-| `ownershousezipcode` | 0 | 3,965,376 | 0.0% |
-| `ownersphone` | 0 | 3,965,376 | 0.0% |
-| `permitsequence` | 0 | 3,965,376 | 0.0% |
-| `permitteeslicense` | 0 | 3,965,376 | 0.0% |
-| `permitteeslicensetype` | 0 | 3,965,376 | 0.0% |
-| `permitteesothertitle` | 0 | 3,965,376 | 0.0% |
-| `permitteesphone` | 0 | 3,965,376 | 0.0% |
-| `residential` | 0 | 3,965,376 | 0.0% |
-| `selfcert` | 0 | 3,965,376 | 0.0% |
-| `sitefill` | 0 | 3,965,376 | 0.0% |
-| `sitesafetymgrbusinessname` | 0 | 3,965,376 | 0.0% |
-| `sitesafetymgrsfirstname` | 0 | 3,965,376 | 0.0% |
-| `sitesafetymgrslastname` | 0 | 3,965,376 | 0.0% |
-| `specialdistrict1` | 0 | 3,965,376 | 0.0% |
-| `specialdistrict2` | 0 | 3,965,376 | 0.0% |
-| `superintendentbusinessname` | 0 | 3,965,376 | 0.0% |
-| `superintendentfirstlastname` | 0 | 3,965,376 | 0.0% |
-| `zipcode` | 0 | 3,965,376 | 0.0% |
-
-**Healthy fields (24):** 21 fields >=99% populated; 3 fields 50-98% populated.
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `id` | VISIBLE |  |
+| `job` | HIDDEN |  |
+| `permitsino` | HIDDEN |  |
+| `bbl` | VISIBLE |  |
+| `bin` | VISIBLE | 0.0% null |
+| `borough` | HIDDEN |  |
+| `house` | HIDDEN |  |
+| `streetname` | HIDDEN | 0.0% null |
+| `jobdoc` | HIDDEN | 0.0% null |
+| `jobtype` | VISIBLE |  |
+| `selfcert` | HIDDEN | 0.0% null |
+| `block` | HIDDEN |  |
+| `lot` | HIDDEN |  |
+| `communityboard` | HIDDEN | 0.0% null |
+| `zipcode` | VISIBLE | 0.0% null |
+| `bldgtype` | HIDDEN | 0.0% null |
+| `residential` | VISIBLE | 0.0% null |
+| `specialdistrict1` | HIDDEN | 0.0% null |
+| `specialdistrict2` | HIDDEN | 0.0% null |
+| `worktype` | VISIBLE |  |
+| `permitstatus` | HIDDEN |  |
+| `filingstatus` | HIDDEN |  |
+| `permittype` | HIDDEN |  |
+| `permitsequence` | HIDDEN | 0.0% null |
+| `permitsubtype` | HIDDEN |  |
+| `oilgas` | HIDDEN | 0.0% null |
+| `sitefill` | HIDDEN | 0.0% null |
+| `filingdate` | HIDDEN | 0.0% null |
+| `issuancedate` | HIDDEN |  |
+| `expirationdate` | HIDDEN |  |
+| `jobstartdate` | HIDDEN | 0.0% null |
+| `permitteesfirstname` | HIDDEN |  |
+| `permitteeslastname` | HIDDEN |  |
+| `permitteesbusinessname` | HIDDEN |  |
+| `permitteesphone` | HIDDEN | 0.0% null |
+| `permitteeslicensetype` | HIDDEN | 0.0% null |
+| `permitteeslicense` | HIDDEN | 0.0% null |
+| `actassuperintendent` | HIDDEN | 0.0% null |
+| `permitteesothertitle` | HIDDEN | 0.0% null |
+| `hiclicense` | HIDDEN | 0.0% null |
+| `sitesafetymgrsfirstname` | HIDDEN | 0.0% null |
+| `sitesafetymgrslastname` | HIDDEN | 0.0% null |
+| `sitesafetymgrbusinessname` | HIDDEN | 0.0% null |
+| `superintendentfirstlastname` | HIDDEN | 0.0% null |
+| `superintendentbusinessname` | HIDDEN | 0.0% null |
+| `ownersbusinesstype` | HIDDEN | 0.0% null |
+| `nonprofit` | HIDDEN | 0.0% null |
+| `ownersbusinessname` | HIDDEN |  |
+| `ownersfirstname` | HIDDEN | 0.0% null |
+| `ownerslastname` | HIDDEN | 0.0% null |
+| `ownershouse` | HIDDEN | 0.0% null |
+| `ownershousestreetname` | HIDDEN | 0.0% null |
+| `ownershousecity` | HIDDEN | 0.0% null |
+| `ownershousestate` | HIDDEN | 0.0% null |
+| `ownershousezipcode` | HIDDEN | 0.0% null |
+| `ownersphone` | HIDDEN | 0.0% null |
+| `dobrundate` | HIDDEN |  |
+| `latitude` | HIDDEN | 0.0% null |
+| `longitude` | HIDDEN | 0.0% null |
+| `councildistrict` | HIDDEN | 0.0% null |
+| `censustract` | HIDDEN | 0.0% null |
+| `ntaname` | HIDDEN | 0.0% null |
 ---
 
 ### DOB Filed Permits (Joined)
@@ -539,9 +708,29 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Import method:** Upsert from child tables via SQL
 - **Note:** Has both `jobtype` (raw) and `job_type` (display) fields. NULL `job_type` values are cleaned up post-import.
 
-**Field Audit:**
-**Healthy fields (20):** 17 fields >=99% populated; 3 fields 50-98% populated.
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `key` | VISIBLE |  |
+| `jobfilingnumber` | VISIBLE |  |
+| `bbl` | VISIBLE |  |
+| `bin` | VISIBLE | 0.0% null |
+| `housenumber` | HIDDEN | 0.0% null |
+| `streetname` | HIDDEN | 0.0% null |
+| `borough` | HIDDEN |  |
+| `jobstatus` | VISIBLE |  |
+| `jobtype` | VISIBLE |  |
+| `job_type` | VISIBLE |  |
+| `jobdescription` | VISIBLE |  |
+| `datefiled` | VISIBLE |  |
+| `applicantsfirstname` | HIDDEN |  |
+| `applicantslastname` | HIDDEN |  |
+| `applicantprofessionaltitle` | HIDDEN |  |
+| `applicantlicense` | HIDDEN | 0.0% null |
+| `ownerbusinessname` | HIDDEN | 0.0% null |
+| `initialcost` | HIDDEN |  |
+| `foreign_key` | HIDDEN |  |
+| `type` | VISIBLE |  |
 ---
 
 ### DOB Issued Permits (Joined)
@@ -551,13 +740,32 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Automated:** Yes (runs after children import)
 - **Import method:** Upsert from child tables via SQL
 
-**Field Audit:**
-**Healthy fields (23):** 14 fields >=99% populated; 7 fields 50-98% populated; 2 fields 11-49% populated.
-
-*Partially populated (11-49%):*
-- `filing_reason`: 24.6%
-- `permit_subtype`: 42.5%
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `key` | VISIBLE |  |
+| `jobfilingnumber` | VISIBLE |  |
+| `workpermit` | VISIBLE |  |
+| `bbl` | VISIBLE |  |
+| `bin` | VISIBLE | 0.0% null |
+| `borough` | HIDDEN |  |
+| `houseno` | HIDDEN |  |
+| `streetname` | HIDDEN | 0.0% null |
+| `worktype` | VISIBLE |  |
+| `jobdescription` | VISIBLE |  |
+| `issuedate` | VISIBLE |  |
+| `expirationdate` | HIDDEN |  |
+| `applicantname` | HIDDEN |  |
+| `applicantbusinessname` | HIDDEN | 0.0% null |
+| `ownername` | HIDDEN | 0.0% null |
+| `ownerbusinessname` | HIDDEN | 0.0% null |
+| `foreign_key` | HIDDEN |  |
+| `type` | VISIBLE |  |
+| `filing_reason` | HIDDEN |  |
+| `permit_type` | VISIBLE |  |
+| `permit_subtype` | HIDDEN |  |
+| `permit_status` | HIDDEN |  |
+| `filing_status` | VISIBLE |  |
 ---
 
 ### Evictions
@@ -571,24 +779,34 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Temporal scope:** 2017 to present (when NYC began publishing)
 - **Note:** Addresses are cleaned and matched to BBLs via geosearch with 15s timeout
 
-**Field Audit:**
-**100% NULL (3 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `evictionzip` | 0 | 108,455 | 0.0% |
-| `geosearch_address` | 0 | 108,455 | 0.0% |
-| `schedulestatus` | 0 | 108,455 | 0.0% |
-
-**>90% NULL (2 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `cleaned_address` | 6,517 | 101,938 | 6.0% |
-| `uniqueid` | 6,517 | 101,938 | 6.0% |
-
-**Healthy fields (20):** 11 fields >=99% populated; 9 fields 50-98% populated.
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `courtindexnumber` | VISIBLE |  |
+| `bbl` | VISIBLE |  |
+| `borough` | HIDDEN |  |
+| `docketnumber` | VISIBLE |  |
+| `evictionaddress` | VISIBLE |  |
+| `evictionapartmentnumber` | HIDDEN |  |
+| `evictionzip` | HIDDEN | 0.0% null |
+| `uniqueid` | HIDDEN | 6.0% null |
+| `executeddate` | VISIBLE |  |
+| `marshal1stname` | HIDDEN |  |
+| `marshallastname` | HIDDEN |  |
+| `residentialcommercial` | VISIBLE |  |
+| `schedulestatus` | HIDDEN | 0.0% null |
+| `cleaned_address` | HIDDEN | 6.0% null |
+| `geosearch_address` | HIDDEN | 0.0% null |
+| `councildistrict` | HIDDEN | 0.0% null |
+| `evictionpostcode` | HIDDEN |  |
+| `ejectment` | HIDDEN |  |
+| `evictionlegalpossession` | HIDDEN |  |
+| `latitude` | HIDDEN | 0.0% null |
+| `longitude` | HIDDEN | 0.0% null |
+| `communityboard` | HIDDEN | 0.0% null |
+| `censustract` | HIDDEN | 0.0% null |
+| `bin` | VISIBLE | 0.0% null |
+| `nta` | HIDDEN | 0.0% null |
 ---
 
 ### ACRIS Real Property Masters
@@ -601,9 +819,23 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Post-download filter:** Skips records older than 1 year by `docdate`
 - **Temporal scope:** Records from 1863 to present
 
-**Field Audit:**
-**Healthy fields (14):** 12 fields >=99% populated; 2 fields 50-98% populated.
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `documentid` | VISIBLE |  |
+| `recordtype` | HIDDEN |  |
+| `crfn` | HIDDEN |  |
+| `borough` | HIDDEN |  |
+| `doctype` | VISIBLE |  |
+| `docdate` | VISIBLE |  |
+| `docamount` | VISIBLE |  |
+| `recordedfiled` | VISIBLE |  |
+| `modifieddate` | HIDDEN |  |
+| `reelyear` | HIDDEN |  |
+| `reelnbr` | HIDDEN |  |
+| `reelpage` | HIDDEN |  |
+| `pcttransferred` | HIDDEN |  |
+| `goodthroughdate` | HIDDEN |  |
 ---
 
 ### ACRIS Real Property Legals
@@ -613,14 +845,25 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Model:** `AcrisRealLegal` | **PK:** `key`
 - **Automated:** Yes (monthly)
 
-**Field Audit:**
-**No 100% NULL fields.**
-
-**Healthy fields (16):** 13 fields 100% populated; 2 fields 50-98% populated (`streetnumber`: 71.3%, `streetname`: 71.8%); 1 field 11-49% populated.
-
-*Partially populated (11-49%):*
-- `unit`: 22.4%
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `key` | VISIBLE |  |
+| `documentid` | VISIBLE |  |
+| `bbl` | VISIBLE |  |
+| `recordtype` | HIDDEN |  |
+| `borough` | HIDDEN |  |
+| `block` | HIDDEN |  |
+| `lot` | HIDDEN |  |
+| `easement` | HIDDEN |  |
+| `partiallot` | HIDDEN |  |
+| `airrights` | HIDDEN |  |
+| `subterraneanrights` | HIDDEN |  |
+| `propertytype` | VISIBLE |  |
+| `streetnumber` | HIDDEN |  |
+| `streetname` | HIDDEN | 0.0% null |
+| `unit` | HIDDEN |  |
+| `goodthroughdate` | HIDDEN |  |
 ---
 
 ### ACRIS Real Property Parties
@@ -630,15 +873,21 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Model:** `AcrisRealParty` | **PK:** `key`
 - **Automated:** Yes (monthly)
 
-**Field Audit:**
-**>90% NULL (1 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `address2` | 3,904,277 | 41,367,393 | 8.6% |
-
-**Healthy fields (11):** 6 fields >=99% populated; 5 fields 50-98% populated.
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `key` | VISIBLE |  |
+| `documentid` | VISIBLE |  |
+| `recordtype` | HIDDEN |  |
+| `partytype` | VISIBLE |  |
+| `name` | VISIBLE |  |
+| `address1` | HIDDEN |  |
+| `address2` | HIDDEN | 8.6% null |
+| `country` | VISIBLE |  |
+| `city` | VISIBLE | 0.0% null |
+| `state` | VISIBLE | 0.0% null |
+| `zip` | VISIBLE | 0.0% null |
+| `goodthroughdate` | HIDDEN |  |
 ---
 
 ### Housing Litigations
@@ -650,17 +899,33 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Import method:** Upsert
 - **Note:** Does not include Supreme Court cases.
 
-**Field Audit:**
-**>90% NULL (3 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `findingdate` | 318 | 236,554 | 0.1% |
-| `findingofharassment` | 8,014 | 228,858 | 3.4% |
-| `penalty` | 320 | 236,552 | 0.1% |
-
-**Healthy fields (21):** 20 fields >=99% populated; 1 fields 50-98% populated.
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `litigationid` | VISIBLE |  |
+| `bin` | VISIBLE | 0.0% null |
+| `bbl` | VISIBLE |  |
+| `buildingid` | HIDDEN |  |
+| `boro` | HIDDEN |  |
+| `housenumber` | HIDDEN | 0.0% null |
+| `streetname` | HIDDEN | 0.0% null |
+| `zip` | VISIBLE | 0.0% null |
+| `block` | HIDDEN |  |
+| `lot` | HIDDEN |  |
+| `casetype` | VISIBLE |  |
+| `caseopendate` | VISIBLE |  |
+| `casestatus` | VISIBLE |  |
+| `openjudgement` | VISIBLE |  |
+| `findingofharassment` | VISIBLE | 3.4% null |
+| `findingdate` | VISIBLE | 0.1% null |
+| `penalty` | VISIBLE | 0.1% null |
+| `respondent` | VISIBLE |  |
+| `latitude` | HIDDEN | 0.0% null |
+| `longitude` | HIDDEN | 0.0% null |
+| `communitydistrict` | HIDDEN |  |
+| `councildistrict` | HIDDEN | 0.0% null |
+| `censustract` | HIDDEN | 0.0% null |
+| `nta` | HIDDEN | 0.0% null |
 ---
 
 ### OCA Housing Court
@@ -673,31 +938,50 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Requires authentication:** Yes (403 for unauthenticated users)
 - **Note:** Requires AWS credentials (`OCA_AWS_SECRET_KEY_ID`, `OCA_AWS_SECRET_ACCESS_KEY`) in `.env`. Bucket changed to `oca-2-dev` in 2023.
 
-**Field Audit:**
-**100% NULL (13 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `bin` | 0 | 2,259,564 | 0.0% |
-| `boroughcode` | 0 | 2,259,564 | 0.0% |
-| `dateofjurydemand` | 877 | 2,258,687 | 0.0% |
-| `hnum` | 0 | 2,259,564 | 0.0% |
-| `housenumber` | 0 | 2,259,564 | 0.0% |
-| `lat` | 0 | 2,259,564 | 0.0% |
-| `lng` | 0 | 2,259,564 | 0.0% |
-| `lon` | 0 | 2,259,564 | 0.0% |
-| `placename` | 0 | 2,259,564 | 0.0% |
-| `sname` | 0 | 2,259,564 | 0.0% |
-| `street1` | 0 | 2,259,564 | 0.0% |
-| `street2` | 0 | 2,259,564 | 0.0% |
-| `streetname` | 0 | 2,259,564 | 0.0% |
-
-**Healthy fields (28):** 10 fields >=99% populated; 16 fields 50-98% populated; 2 fields 11-49% populated.
-
-*Partially populated (11-49%):*
-- `msg`: 29.3%
-- `msg2`: 36.4%
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `indexnumberid` | VISIBLE |  |
+| `street1` | HIDDEN | 0.0% null |
+| `street2` | HIDDEN | 0.0% null |
+| `city` | VISIBLE | 0.0% null |
+| `state` | VISIBLE | 0.0% null |
+| `postalcode` | HIDDEN |  |
+| `status` | VISIBLE |  |
+| `housenumber` | HIDDEN | 0.0% null |
+| `streetname` | HIDDEN | 0.0% null |
+| `sname` | HIDDEN | 0.0% null |
+| `hnum` | HIDDEN | 0.0% null |
+| `lat` | HIDDEN | 0.0% null |
+| `lng` | HIDDEN | 0.0% null |
+| `lon` | HIDDEN | 0.0% null |
+| `boroughcode` | HIDDEN | 0.0% null |
+| `placename` | HIDDEN | 0.0% null |
+| `boro` | HIDDEN |  |
+| `cd` | HIDDEN |  |
+| `ct` | HIDDEN |  |
+| `council` | HIDDEN |  |
+| `grc` | HIDDEN |  |
+| `grc2` | HIDDEN |  |
+| `msg` | HIDDEN |  |
+| `msg2` | HIDDEN |  |
+| `unitsres` | VISIBLE |  |
+| `bin` | VISIBLE | 0.0% null |
+| `bbl` | VISIBLE |  |
+| `court` | VISIBLE |  |
+| `fileddate` | VISIBLE |  |
+| `propertytype` | VISIBLE |  |
+| `classification` | VISIBLE |  |
+| `specialtydesignationtypes` | HIDDEN |  |
+| `disposeddate` | VISIBLE |  |
+| `disposedreason` | VISIBLE |  |
+| `firstpaper` | HIDDEN |  |
+| `primaryclaimtotal` | HIDDEN |  |
+| `dateofjurydemand` | HIDDEN | 0.0% null |
+| `bct2020` | HIDDEN |  |
+| `bctcb2020` | HIDDEN |  |
+| `ct2010` | HIDDEN |  |
+| `cb2010` | HIDDEN |  |
 ---
 
 ### HPD Registrations
@@ -707,9 +991,26 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Model:** `HPDRegistration` | **PK:** `registrationid`
 - **Automated:** Yes (monthly)
 
-**Field Audit:**
-**Healthy fields (17):** 16 fields >=99% populated; 1 fields 50-98% populated.
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `registrationid` | VISIBLE |  |
+| `bbl` | VISIBLE |  |
+| `bin` | VISIBLE | 0.0% null |
+| `buildingid` | HIDDEN |  |
+| `boroid` | HIDDEN |  |
+| `boro` | HIDDEN |  |
+| `housenumber` | HIDDEN | 0.0% null |
+| `lowhousenumber` | HIDDEN |  |
+| `highhousenumber` | HIDDEN |  |
+| `streetname` | HIDDEN | 0.0% null |
+| `streetcode` | HIDDEN |  |
+| `zip` | VISIBLE | 0.0% null |
+| `block` | HIDDEN |  |
+| `lot` | HIDDEN |  |
+| `communityboard` | HIDDEN | 0.0% null |
+| `lastregistrationdate` | VISIBLE |  |
+| `registrationenddate` | HIDDEN |  |
 ---
 
 ### HPD Registration Contacts
@@ -719,15 +1020,24 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Model:** `HPDContact` | **PK:** `registrationcontactid`
 - **Automated:** Yes (monthly)
 
-**Field Audit:**
-**Healthy fields (15):** 4 fields >=99% populated; 7 fields 50-98% populated; 4 fields 11-49% populated.
-
-*Partially populated (11-49%):*
-- `businessapartment`: 34.5%
-- `corporationname`: 26.2%
-- `middleinitial`: 13.6%
-- `title`: 16.4%
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `registrationcontactid` | VISIBLE |  |
+| `registrationid` | VISIBLE |  |
+| `type` | VISIBLE |  |
+| `contactdescription` | HIDDEN |  |
+| `corporationname` | VISIBLE |  |
+| `title` | VISIBLE |  |
+| `firstname` | VISIBLE |  |
+| `middleinitial` | HIDDEN |  |
+| `lastname` | VISIBLE |  |
+| `businesshousenumber` | VISIBLE |  |
+| `businessstreetname` | VISIBLE |  |
+| `businessapartment` | VISIBLE |  |
+| `businesscity` | VISIBLE |  |
+| `businessstate` | VISIBLE |  |
+| `businesszip` | VISIBLE |  |
 ---
 
 ### HPD Building Records
@@ -738,9 +1048,33 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Automated:** Yes (monthly)
 - **Update instructions:** Download from https://data.cityofnewyork.us/api/views/kj4p-ruqc/rows.csv?accessType=DOWNLOAD, add file, update.
 
-**Field Audit:**
-**Healthy fields (24):** 18 fields >=99% populated; 6 fields 50-98% populated.
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `buildingid` | HIDDEN |  |
+| `bbl` | VISIBLE |  |
+| `bin` | VISIBLE | 0.0% null |
+| `registrationid` | VISIBLE |  |
+| `boroid` | HIDDEN |  |
+| `boro` | HIDDEN |  |
+| `housenumber` | HIDDEN | 0.0% null |
+| `lowhousenumber` | HIDDEN |  |
+| `highhousenumber` | HIDDEN |  |
+| `streetname` | HIDDEN | 0.0% null |
+| `zip` | VISIBLE | 0.0% null |
+| `block` | HIDDEN |  |
+| `lot` | HIDDEN |  |
+| `communityboard` | HIDDEN | 0.0% null |
+| `censustract` | HIDDEN | 0.0% null |
+| `managementprogram` | HIDDEN |  |
+| `dobbuildingclassid` | HIDDEN |  |
+| `dobbuildingclass` | HIDDEN |  |
+| `legalstories` | HIDDEN |  |
+| `legalclassa` | HIDDEN |  |
+| `legalclassb` | HIDDEN |  |
+| `lifecycle` | HIDDEN |  |
+| `recordstatusid` | HIDDEN |  |
+| `recordstatus` | HIDDEN |  |
 ---
 
 ### AEP Buildings
@@ -751,9 +1085,29 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Automated:** Yes (when needed)
 - **Note:** Temporary status flag. Records from 2007+.
 
-**Field Audit:**
-**Healthy fields (19):** 18 fields >=99% populated; 1 fields 50-98% populated.
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `id` | VISIBLE |  |
+| `buildingid` | HIDDEN |  |
+| `borough` | HIDDEN |  |
+| `number` | VISIBLE |  |
+| `street` | HIDDEN |  |
+| `totalunits` | HIDDEN |  |
+| `aepstartdate` | HIDDEN | 0.4% null |
+| `ofbcviolationsatstart` | HIDDEN |  |
+| `currentstatus` | HIDDEN |  |
+| `dischargedate` | HIDDEN |  |
+| `aepround` | HIDDEN |  |
+| `postcode` | HIDDEN |  |
+| `latitude` | HIDDEN | 0.0% null |
+| `longitude` | HIDDEN | 0.0% null |
+| `councildistrict` | HIDDEN | 0.0% null |
+| `communityboard` | HIDDEN | 0.0% null |
+| `censustract` | HIDDEN | 0.0% null |
+| `bbl` | VISIBLE |  |
+| `bin` | VISIBLE | 0.0% null |
+| `nta` | HIDDEN | 0.0% null |
 ---
 
 ### Certificate of No Harassment (CONH) Records
@@ -764,17 +1118,35 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Automated:** Yes (when needed)
 - **Note:** Temporary status flag.
 
-**Field Audit:**
-**100% NULL (3 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `aeporder` | 0 | 1,519 | 0.0% |
-| `censustract` | 0 | 1,519 | 0.0% |
-| `ntaneighborhoodtabulationarea` | 0 | 1,519 | 0.0% |
-
-**Healthy fields (22):** 22 fields >=99% populated.
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `id` | VISIBLE |  |
+| `bbl` | VISIBLE |  |
+| `buildingid` | HIDDEN |  |
+| `bin` | VISIBLE | 0.0% null |
+| `streetaddress` | HIDDEN |  |
+| `block` | HIDDEN |  |
+| `lot` | HIDDEN |  |
+| `bqi` | HIDDEN |  |
+| `aeporder` | HIDDEN | 0.0% null |
+| `hpdvacateorder` | HIDDEN |  |
+| `dobvacateorder` | HIDDEN |  |
+| `harassmentfinding` | HIDDEN |  |
+| `dateadded` | VISIBLE |  |
+| `borocode` | HIDDEN |  |
+| `borough` | HIDDEN |  |
+| `postcode` | HIDDEN |  |
+| `latitude` | HIDDEN | 0.0% null |
+| `longitude` | HIDDEN | 0.0% null |
+| `communityboard` | HIDDEN | 0.0% null |
+| `councildistrict` | HIDDEN | 0.0% null |
+| `censustract` | HIDDEN | 0.0% null |
+| `ntaneighborhoodtabulationarea` | HIDDEN | 0.0% null |
+| `dischargedaep` | HIDDEN |  |
+| `discharged7a` | HIDDEN |  |
+| `censustract2020` | HIDDEN |  |
+| `neighborhoodtabulationareanta2020` | HIDDEN |  |
 ---
 
 ### Properties (PLUTO)
@@ -792,53 +1164,121 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Known issue:** Obsolete/defunct BBLs are never deleted — only new/updated BBLs are upserted. Obsolete properties remain on district maps until their district fields (council, cd, assembly, senate, zipcode) are manually nulled. A future fix should auto-null district fields for BBLs not present in the latest PLUTO import.
 - **Tip:** Space updates by a day if possible (Property day 1, Building+PAD day 2, Address day 3).
 
-**Field Audit:**
-**100% NULL (10 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `mapplutof` | 1 | 872,839 | 0.0% |
-| `masdate` | 0 | 872,840 | 0.0% |
-| `newnotinold` | 1 | 872,839 | 0.0% |
-| `notes` | 0 | 872,840 | 0.0% |
-| `overlay2` | 188 | 872,652 | 0.0% |
-| `polidate` | 0 | 872,840 | 0.0% |
-| `spdist2` | 323 | 872,517 | 0.0% |
-| `spdist3` | 0 | 872,840 | 0.0% |
-| `zonedist3` | 223 | 872,617 | 0.0% |
-| `zonedist4` | 12 | 872,828 | 0.0% |
-
-**>90% NULL (19 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `basempdate` | 2,438 | 870,402 | 0.3% |
-| `condono` | 14,487 | 858,353 | 1.7% |
-| `dcasdate` | 2,438 | 870,402 | 0.3% |
-| `dcpedited` | 42,058 | 830,782 | 4.8% |
-| `edesigdate` | 2,438 | 870,402 | 0.3% |
-| `edesignum` | 11,574 | 861,266 | 1.3% |
-| `firm07flag` | 35,052 | 837,788 | 4.0% |
-| `geom` | 2,572 | 870,268 | 0.3% |
-| `histdist` | 31,727 | 841,113 | 3.6% |
-| `landmark` | 1,494 | 871,346 | 0.2% |
-| `landmkdate` | 2,438 | 870,402 | 0.3% |
-| `ltdheight` | 3,069 | 869,771 | 0.4% |
-| `overlay1` | 75,348 | 797,492 | 8.6% |
-| `ownertype` | 41,363 | 831,477 | 4.7% |
-| `pfirm15flag` | 66,239 | 806,601 | 7.6% |
-| `rpaddate` | 2,438 | 870,402 | 0.3% |
-| `zmcode` | 15,724 | 857,116 | 1.8% |
-| `zonedist2` | 20,017 | 852,823 | 2.3% |
-| `zoningdate` | 2,438 | 870,402 | 0.3% |
-
-**Healthy fields (82):** 51 fields >=99% populated; 28 fields 50-98% populated; 3 fields 11-49% populated.
-
-*Partially populated (11-49%):*
-- `appbbl`: 12.0%
-- `appdate`: 11.6%
-- `spdist1`: 12.5%
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `bbl` | VISIBLE |  |
+| `council` | HIDDEN |  |
+| `borough` | HIDDEN |  |
+| `block` | HIDDEN |  |
+| `lot` | HIDDEN |  |
+| `cd` | HIDDEN |  |
+| `zipcode` | VISIBLE | 0.0% null |
+| `stateassembly` | HIDDEN |  |
+| `statesenate` | HIDDEN |  |
+| `last_modified` | HIDDEN |  |
+| `ct2010` | HIDDEN |  |
+| `cb2010` | HIDDEN |  |
+| `schooldist` | HIDDEN |  |
+| `firecomp` | HIDDEN |  |
+| `policeprct` | HIDDEN |  |
+| `healthcenterdistrict` | HIDDEN |  |
+| `healtharea` | HIDDEN |  |
+| `sanitboro` | HIDDEN |  |
+| `sanitdistrict` | HIDDEN |  |
+| `sanitsub` | HIDDEN |  |
+| `address` | VISIBLE |  |
+| `zonedist1` | HIDDEN |  |
+| `zonedist2` | HIDDEN | 2.3% null |
+| `zonedist3` | HIDDEN | 0.0% null |
+| `zonedist4` | HIDDEN | 0.0% null |
+| `overlay1` | HIDDEN | 8.6% null |
+| `overlay2` | HIDDEN | 0.0% null |
+| `spdist1` | HIDDEN |  |
+| `spdist2` | HIDDEN | 0.0% null |
+| `spdist3` | HIDDEN | 0.0% null |
+| `ltdheight` | HIDDEN | 0.4% null |
+| `splitzone` | HIDDEN |  |
+| `bldgclass` | VISIBLE |  |
+| `landuse` | HIDDEN |  |
+| `easements` | HIDDEN |  |
+| `ownertype` | HIDDEN | 4.7% null |
+| `ownername` | HIDDEN | 0.0% null |
+| `lotarea` | HIDDEN |  |
+| `bldgarea` | HIDDEN |  |
+| `comarea` | HIDDEN |  |
+| `resarea` | HIDDEN |  |
+| `officearea` | HIDDEN |  |
+| `retailarea` | HIDDEN |  |
+| `garagearea` | HIDDEN |  |
+| `strgearea` | HIDDEN |  |
+| `factryarea` | HIDDEN |  |
+| `otherarea` | HIDDEN |  |
+| `areasource` | HIDDEN |  |
+| `numbldgs` | HIDDEN |  |
+| `numfloors` | HIDDEN |  |
+| `unitsres` | VISIBLE |  |
+| `unitstotal` | VISIBLE |  |
+| `lotfront` | HIDDEN |  |
+| `lotdepth` | HIDDEN |  |
+| `bldgfront` | HIDDEN |  |
+| `bldgdepth` | HIDDEN |  |
+| `ext` | HIDDEN |  |
+| `proxcode` | HIDDEN |  |
+| `irrlotcode` | HIDDEN |  |
+| `lottype` | HIDDEN |  |
+| `bsmtcode` | HIDDEN |  |
+| `assessland` | HIDDEN |  |
+| `assesstot` | HIDDEN |  |
+| `exemptland` | HIDDEN |  |
+| `exempttot` | HIDDEN |  |
+| `yearbuilt` | VISIBLE |  |
+| `yearalter1` | HIDDEN |  |
+| `yearalter2` | HIDDEN |  |
+| `histdist` | HIDDEN | 3.6% null |
+| `landmark` | HIDDEN | 0.2% null |
+| `bct2020` | HIDDEN |  |
+| `bctcb2020` | HIDDEN |  |
+| `builtfar` | HIDDEN |  |
+| `residfar` | HIDDEN |  |
+| `commfar` | HIDDEN |  |
+| `facilfar` | HIDDEN |  |
+| `borocode` | HIDDEN |  |
+| `condono` | HIDDEN | 1.7% null |
+| `tract2010` | HIDDEN |  |
+| `xcoord` | HIDDEN |  |
+| `ycoord` | HIDDEN |  |
+| `zonemap` | HIDDEN |  |
+| `zmcode` | HIDDEN | 1.8% null |
+| `sanborn` | HIDDEN |  |
+| `taxmap` | HIDDEN |  |
+| `edesignum` | HIDDEN | 1.3% null |
+| `appbbl` | HIDDEN |  |
+| `appdate` | HIDDEN |  |
+| `mapplutof` | HIDDEN | 0.0% null |
+| `plutomapid` | HIDDEN |  |
+| `firm07flag` | HIDDEN | 4.0% null |
+| `pfirm15flag` | HIDDEN | 7.6% null |
+| `rpaddate` | HIDDEN | 0.3% null |
+| `dcasdate` | HIDDEN | 0.3% null |
+| `zoningdate` | HIDDEN | 0.3% null |
+| `landmkdate` | HIDDEN | 0.3% null |
+| `basempdate` | HIDDEN | 0.3% null |
+| `masdate` | HIDDEN | 0.0% null |
+| `polidate` | HIDDEN | 0.0% null |
+| `edesigdate` | HIDDEN | 0.3% null |
+| `geom` | HIDDEN | 0.3% null |
+| `version` | HIDDEN |  |
+| `dcpedited` | HIDDEN | 4.8% null |
+| `notes` | HIDDEN | 0.0% null |
+| `latitude` | HIDDEN | 0.0% null |
+| `longitude` | HIDDEN | 0.0% null |
+| `newnotinold` | HIDDEN | 0.0% null |
+| `censustract2010` | HIDDEN |  |
+| `councildistrict` | HIDDEN | 0.0% null |
+| `lng` | HIDDEN | 0.0% null |
+| `lat` | HIDDEN | 0.0% null |
+| `original_address` | HIDDEN |  |
 ---
 
 ### Buildings
@@ -848,25 +1288,37 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Model:** `Building`
 - **Update instructions:** Download PAD ZIP, extract `bobaadr.csv`, upload via admin. Update whenever PLUTO is updated.
 
-**Field Audit:**
-**100% NULL (2 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `dapsflag` | 0 | 1,084,857 | 0.0% |
-| `naubflag` | 0 | 1,084,857 | 0.0% |
-
-**>90% NULL (4 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `addrtype` | 573 | 1,084,284 | 0.1% |
-| `hcontpar` | 4,045 | 1,080,812 | 0.4% |
-| `lcontpar` | 4,041 | 1,080,816 | 0.4% |
-| `realb7sc` | 583 | 1,084,274 | 0.1% |
-
-**Healthy fields (22):** 21 fields >=99% populated; 1 fields 50-98% populated.
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `bin` | VISIBLE | 0.0% null |
+| `bbl` | VISIBLE |  |
+| `boro` | HIDDEN |  |
+| `block` | HIDDEN |  |
+| `lot` | HIDDEN |  |
+| `lhnd` | HIDDEN |  |
+| `lhns` | HIDDEN |  |
+| `lcontpar` | HIDDEN | 0.6% null |
+| `lsos` | HIDDEN |  |
+| `hhnd` | HIDDEN |  |
+| `hhns` | HIDDEN |  |
+| `hcontpar` | HIDDEN | 0.6% null |
+| `hsos` | HIDDEN |  |
+| `scboro` | HIDDEN |  |
+| `sc5` | HIDDEN |  |
+| `sclgc` | HIDDEN |  |
+| `stname` | HIDDEN |  |
+| `addrtype` | HIDDEN | 0.9% null |
+| `realb7sc` | HIDDEN | 0.1% null |
+| `validlgcs` | HIDDEN |  |
+| `dapsflag` | HIDDEN | 0.0% null |
+| `naubflag` | HIDDEN | 0.0% null |
+| `parity` | HIDDEN |  |
+| `b10sc` | HIDDEN |  |
+| `segid` | HIDDEN |  |
+| `zipcode` | VISIBLE | 0.0% null |
+| `physicalid` | HIDDEN |  |
+| `pad_addresses` | HIDDEN |  |
 ---
 
 ### PAD Records
@@ -876,25 +1328,37 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Model:** `PadRecord`
 - **Update instructions:** Same file as Buildings (`bobaadr.csv`). Update whenever PLUTO is updated.
 
-**Field Audit:**
-**100% NULL (2 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `dapsflag` | 0 | 1,236,507 | 0.0% |
-| `naubflag` | 0 | 1,236,507 | 0.0% |
-
-**>90% NULL (4 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `addrtype` | 11,136 | 1,225,371 | 0.9% |
-| `hcontpar` | 7,396 | 1,229,111 | 0.6% |
-| `lcontpar` | 7,396 | 1,229,111 | 0.6% |
-| `realb7sc` | 1,242 | 1,235,265 | 0.1% |
-
-**Healthy fields (22):** 21 fields >=99% populated; 1 fields 50-98% populated.
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `key` | VISIBLE |  |
+| `bin` | VISIBLE | 0.0% null |
+| `bbl` | VISIBLE |  |
+| `boro` | HIDDEN |  |
+| `block` | HIDDEN |  |
+| `lot` | HIDDEN |  |
+| `lhnd` | HIDDEN |  |
+| `lhns` | HIDDEN |  |
+| `lcontpar` | HIDDEN | 0.6% null |
+| `lsos` | HIDDEN |  |
+| `hhnd` | HIDDEN |  |
+| `hhns` | HIDDEN |  |
+| `hcontpar` | HIDDEN | 0.6% null |
+| `hsos` | HIDDEN |  |
+| `scboro` | HIDDEN |  |
+| `sc5` | HIDDEN |  |
+| `sclgc` | HIDDEN |  |
+| `stname` | HIDDEN |  |
+| `addrtype` | HIDDEN | 0.9% null |
+| `realb7sc` | HIDDEN | 0.1% null |
+| `validlgcs` | HIDDEN |  |
+| `dapsflag` | HIDDEN | 0.0% null |
+| `naubflag` | HIDDEN | 0.0% null |
+| `parity` | HIDDEN |  |
+| `b10sc` | HIDDEN |  |
+| `segid` | HIDDEN |  |
+| `zipcode` | VISIBLE | 0.0% null |
+| `physicalid` | HIDDEN |  |
 ---
 
 ### Address Records
@@ -905,13 +1369,19 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Warning:** Requires ~6GB RAM. Takes 2-4 hours. Best done on weekend mornings. Don't run during regular updates after 6pm. Restart app/postgres first to free memory. Note: despite earlier docs saying "atomic," the rebuild is NOT wrapped in a transaction — if it fails midway, partial data may exist alongside old records.
 - **Note:** When extracting the PAD ZIP, you may need to convert `bobaadr.txt` to `.csv` format.
 
-**Field Audit:**
-**Healthy fields (10):** 7 fields >=99% populated; 1 fields 50-98% populated; 2 fields 11-49% populated.
-
-*Partially populated (11-49%):*
-- `bin`: 38.4%
-- `pad_address`: 38.5%
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `key` | VISIBLE |  |
+| `bbl` | VISIBLE |  |
+| `bin` | VISIBLE | 0.0% null |
+| `number` | VISIBLE |  |
+| `street` | HIDDEN |  |
+| `borough` | HIDDEN |  |
+| `zipcode` | VISIBLE | 0.0% null |
+| `address` | VISIBLE |  |
+| `pad_address` | HIDDEN |  |
+| `created` | HIDDEN |  |
 ---
 
 ### Rent Stabilization Records (TaxBills)
@@ -927,59 +1397,105 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
   4. Upload CSV via admin, create update
   5. After import: run "annotate properties all" and "Reset cache" periodic tasks
 
-**Field Audit:**
-**100% NULL (34 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `abat2007` | 0 | 52,172 | 0.0% |
-| `abat2008` | 0 | 52,172 | 0.0% |
-| `abat2018` | 0 | 52,172 | 0.0% |
-| `abat2019` | 0 | 52,172 | 0.0% |
-| `abat2020` | 0 | 52,172 | 0.0% |
-| `abat2021` | 0 | 52,172 | 0.0% |
-| `abat2022` | 0 | 52,172 | 0.0% |
-| `abat2023` | 0 | 52,172 | 0.0% |
-| `abat2024` | 0 | 52,172 | 0.0% |
-| `dhcr2007` | 0 | 52,172 | 0.0% |
-| `dhcr2008` | 0 | 52,172 | 0.0% |
-| `dhcr2010` | 0 | 52,172 | 0.0% |
-| `dhcr2014` | 0 | 52,172 | 0.0% |
-| `dhcr2015` | 0 | 52,172 | 0.0% |
-| `dhcr2016` | 0 | 52,172 | 0.0% |
-| `dhcr2017` | 0 | 52,172 | 0.0% |
-| `dhcr2018` | 0 | 52,172 | 0.0% |
-| `dhcr2019` | 0 | 52,172 | 0.0% |
-| `dhcr2020` | 0 | 52,172 | 0.0% |
-| `dhcr2021` | 0 | 52,172 | 0.0% |
-| `dhcr2022` | 0 | 52,172 | 0.0% |
-| `dhcr2023` | 0 | 52,172 | 0.0% |
-| `dhcr2024` | 0 | 52,172 | 0.0% |
-| `est2018` | 0 | 52,172 | 0.0% |
-| `est2019` | 0 | 52,172 | 0.0% |
-| `est2020` | 0 | 52,172 | 0.0% |
-| `est2021` | 0 | 52,172 | 0.0% |
-| `est2022` | 0 | 52,172 | 0.0% |
-| `est2023` | 0 | 52,172 | 0.0% |
-| `est2024` | 0 | 52,172 | 0.0% |
-| `uc2024` | 0 | 52,172 | 0.0% |
-| `uc2025` | 0 | 52,172 | 0.0% |
-| `uc2026` | 0 | 52,172 | 0.0% |
-| `uc2027` | 0 | 52,172 | 0.0% |
-
-**Healthy fields (61):** 1 fields >=99% populated; 51 fields 50-98% populated; 9 fields 11-49% populated.
-
-*Partially populated (11-49%):*
-- `abat2009`: 43.0%
-- `abat2010`: 43.8%
-- `abat2011`: 44.5%
-- `abat2012`: 44.7%
-- `abat2013`: 45.8%
-- `abat2014`: 42.2%
-- `abat2015`: 23.7%
-- `abat2016`: 21.6%
-- `abat2017`: 43.2%
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `id` | VISIBLE |  |
+| `ucbbl` | VISIBLE |  |
+| `borough` | HIDDEN |  |
+| `uc2007` | HIDDEN |  |
+| `est2007` | HIDDEN |  |
+| `dhcr2007` | HIDDEN | 0.0% null |
+| `abat2007` | HIDDEN | 0.0% null |
+| `uc2008` | HIDDEN |  |
+| `est2008` | HIDDEN |  |
+| `dhcr2008` | HIDDEN | 0.0% null |
+| `abat2008` | HIDDEN | 0.0% null |
+| `uc2009` | HIDDEN |  |
+| `est2009` | HIDDEN |  |
+| `dhcr2009` | HIDDEN |  |
+| `abat2009` | HIDDEN |  |
+| `uc2010` | HIDDEN |  |
+| `est2010` | HIDDEN |  |
+| `dhcr2010` | HIDDEN | 0.0% null |
+| `abat2010` | HIDDEN |  |
+| `uc2011` | HIDDEN |  |
+| `est2011` | HIDDEN |  |
+| `dhcr2011` | HIDDEN |  |
+| `abat2011` | HIDDEN |  |
+| `uc2012` | HIDDEN |  |
+| `est2012` | HIDDEN |  |
+| `dhcr2012` | HIDDEN |  |
+| `abat2012` | HIDDEN |  |
+| `uc2013` | HIDDEN |  |
+| `est2013` | HIDDEN |  |
+| `dhcr2013` | HIDDEN |  |
+| `abat2013` | HIDDEN |  |
+| `uc2014` | HIDDEN |  |
+| `est2014` | HIDDEN |  |
+| `dhcr2014` | HIDDEN | 0.0% null |
+| `abat2014` | HIDDEN |  |
+| `uc2015` | HIDDEN |  |
+| `est2015` | HIDDEN |  |
+| `dhcr2015` | HIDDEN | 0.0% null |
+| `abat2015` | HIDDEN |  |
+| `uc2016` | HIDDEN |  |
+| `est2016` | HIDDEN |  |
+| `dhcr2016` | HIDDEN | 0.0% null |
+| `abat2016` | HIDDEN |  |
+| `uc2017` | HIDDEN |  |
+| `est2017` | HIDDEN |  |
+| `dhcr2017` | HIDDEN | 0.0% null |
+| `abat2017` | HIDDEN |  |
+| `uc2018` | HIDDEN |  |
+| `est2018` | HIDDEN | 0.0% null |
+| `dhcr2018` | HIDDEN | 0.0% null |
+| `abat2018` | HIDDEN | 0.0% null |
+| `uc2019` | HIDDEN |  |
+| `est2019` | HIDDEN | 0.0% null |
+| `dhcr2019` | HIDDEN | 0.0% null |
+| `abat2019` | HIDDEN | 0.0% null |
+| `uc2020` | HIDDEN |  |
+| `est2020` | HIDDEN | 0.0% null |
+| `dhcr2020` | HIDDEN | 0.0% null |
+| `abat2020` | HIDDEN | 0.0% null |
+| `uc2021` | HIDDEN |  |
+| `est2021` | HIDDEN | 0.0% null |
+| `dhcr2021` | HIDDEN | 0.0% null |
+| `abat2021` | HIDDEN | 0.0% null |
+| `uc2022` | HIDDEN |  |
+| `est2022` | HIDDEN | 0.0% null |
+| `dhcr2022` | HIDDEN | 0.0% null |
+| `abat2022` | HIDDEN | 0.0% null |
+| `uc2023` | HIDDEN |  |
+| `uc2025` | HIDDEN | 0.0% null |
+| `uc2026` | HIDDEN | 0.0% null |
+| `uc2027` | HIDDEN | 0.0% null |
+| `est2023` | HIDDEN | 0.0% null |
+| `dhcr2023` | HIDDEN | 0.0% null |
+| `abat2023` | HIDDEN | 0.0% null |
+| `uc2024` | HIDDEN | 0.0% null |
+| `est2024` | HIDDEN | 0.0% null |
+| `dhcr2024` | HIDDEN | 0.0% null |
+| `abat2024` | HIDDEN | 0.0% null |
+| `cd` | HIDDEN |  |
+| `ct2010` | HIDDEN |  |
+| `cb2010` | HIDDEN |  |
+| `council` | HIDDEN |  |
+| `zipcode` | VISIBLE | 0.0% null |
+| `address` | VISIBLE |  |
+| `ownername` | HIDDEN | 0.0% null |
+| `numbldgs` | HIDDEN |  |
+| `numfloors` | HIDDEN |  |
+| `unitsres` | VISIBLE |  |
+| `unitstotal` | VISIBLE |  |
+| `yearbuilt` | VISIBLE |  |
+| `condono` | HIDDEN | 1.7% null |
+| `lon` | HIDDEN | 0.0% null |
+| `lat` | HIDDEN | 0.0% null |
+| `pdfsoa2018` | HIDDEN |  |
+| `pdfsoa2019` | HIDDEN |  |
+| `latestuctotals` | HIDDEN |  |
 ---
 
 ### CoreData Subsidy Records
@@ -991,33 +1507,49 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Update frequency:** Yearly (month varies)
 - **Update instructions:** Visit CoreData.nyc → Table View → Download → Full property and subsidy data set. Compare date against last import.
 
-**Field Audit:**
-**100% NULL (6 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `serviolation2017` | 0 | 21,133 | 0.0% |
-| `serviolation2018` | 0 | 21,133 | 0.0% |
-| `serviolation2019` | 0 | 21,133 | 0.0% |
-| `taxdelinquency2016` | 0 | 21,133 | 0.0% |
-| `taxdelinquency2018` | 0 | 21,133 | 0.0% |
-| `taxdelinquency2019` | 0 | 21,133 | 0.0% |
-
-**>90% NULL (2 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `reacdate` | 23 | 21,110 | 0.1% |
-| `reacscore` | 785 | 20,348 | 3.7% |
-
-**Healthy fields (31):** 19 fields >=99% populated; 8 fields 50-98% populated; 4 fields 11-49% populated.
-
-*Partially populated (11-49%):*
-- `agencysuppliedid2`: 18.4%
-- `serviolation2021`: 41.0%
-- `taxdelinquency2021`: 38.1%
-- `tenure`: 21.0%
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `id` | VISIBLE |  |
+| `bbl` | VISIBLE |  |
+| `fcsubsidyid` | HIDDEN |  |
+| `agencysuppliedid1` | HIDDEN |  |
+| `agencysuppliedid2` | HIDDEN |  |
+| `agencyname` | HIDDEN |  |
+| `regulatorytool` | HIDDEN |  |
+| `programname` | HIDDEN |  |
+| `projectname` | HIDDEN |  |
+| `preservation` | HIDDEN |  |
+| `tenure` | HIDDEN |  |
+| `startdate` | HIDDEN |  |
+| `enddate` | HIDDEN |  |
+| `reacscore` | HIDDEN | 3.7% null |
+| `reacdate` | HIDDEN | 0.1% null |
+| `cdid` | HIDDEN |  |
+| `ccdid` | HIDDEN |  |
+| `pumaid` | HIDDEN |  |
+| `tract10id` | HIDDEN |  |
+| `boroname` | HIDDEN |  |
+| `cdname` | HIDDEN |  |
+| `ccdname` | HIDDEN |  |
+| `pumaname` | HIDDEN |  |
+| `assessedvalue` | HIDDEN |  |
+| `yearbuilt` | VISIBLE |  |
+| `ownername` | HIDDEN | 0.0% null |
+| `resunits` | HIDDEN |  |
+| `standardaddress` | HIDDEN |  |
+| `buildings` | HIDDEN |  |
+| `serviolation2017` | HIDDEN | 0.0% null |
+| `taxdelinquency2016` | HIDDEN | 0.0% null |
+| `serviolation2018` | HIDDEN | 0.0% null |
+| `taxdelinquency2018` | HIDDEN | 0.0% null |
+| `serviolation2019` | HIDDEN | 0.0% null |
+| `taxdelinquency2019` | HIDDEN | 0.0% null |
+| `serviolation2021` | HIDDEN |  |
+| `taxdelinquency2021` | HIDDEN |  |
+| `dataoutputdate` | HIDDEN |  |
+| `longitude` | HIDDEN | 0.0% null |
+| `latitude` | HIDDEN | 0.0% null |
 ---
 
 ### 421a Subsidy Records
@@ -1033,7 +1565,27 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
   4. Ensure borough values are letter abbreviations, not numbers
   5. Upload and create update
 
-**Field Audit:**
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `id` | VISIBLE |  |
+| `bbl` | VISIBLE |  |
+| `borough` | HIDDEN |  |
+| `neighborhood` | HIDDEN |  |
+| `buildingclasscategory` | HIDDEN |  |
+| `taxclassatpresent` | HIDDEN |  |
+| `taxclass` | HIDDEN |  |
+| `block` | HIDDEN |  |
+| `lot` | HIDDEN |  |
+| `buildingclassatpresent` | HIDDEN |  |
+| `address` | VISIBLE |  |
+| `zipcode` | VISIBLE | 0.0% null |
+| `residentialunits` | HIDDEN |  |
+| `commercialunits` | HIDDEN |  |
+| `totalunits` | HIDDEN |  |
+| `landsquarefeet` | HIDDEN |  |
+| `grosssquarefeet` | HIDDEN |  |
+| `yearbuilt` | VISIBLE |  |
 ---
 
 ### J-51 Subsidy Records
@@ -1044,9 +1596,26 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Update frequency:** Yearly (check June 1)
 - **Update instructions:** Same process as 421a (download 5 boroughs, combine, upload)
 
-**Field Audit:**
-**Healthy fields (16):** 16 fields >=99% populated.
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `id` | VISIBLE |  |
+| `bbl` | VISIBLE |  |
+| `borough` | HIDDEN |  |
+| `neighborhood` | HIDDEN |  |
+| `buildingclasscategory` | HIDDEN |  |
+| `taxclassatpresent` | HIDDEN |  |
+| `block` | HIDDEN |  |
+| `lot` | HIDDEN |  |
+| `buildingclassatpresent` | HIDDEN |  |
+| `address` | VISIBLE |  |
+| `zipcode` | VISIBLE | 0.0% null |
+| `residentialunits` | HIDDEN |  |
+| `commercialunits` | HIDDEN |  |
+| `totalunits` | HIDDEN |  |
+| `landsquarefeet` | HIDDEN |  |
+| `grosssquarefeet` | HIDDEN |  |
+| `yearbuilt` | VISIBLE |  |
 ---
 
 ### Tax Liens
@@ -1061,9 +1630,25 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
   3. Add a `year` column with the appropriate year value for each row
   4. Upload file to app and create update
 
-**Field Audit:**
-**Healthy fields (15):** 11 fields >=99% populated; 4 fields 50-98% populated.
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `id` | VISIBLE |  |
+| `bbl` | VISIBLE |  |
+| `borough` | HIDDEN |  |
+| `block` | HIDDEN |  |
+| `lot` | HIDDEN |  |
+| `taxclasscode` | HIDDEN |  |
+| `buildingclass` | HIDDEN | 0.0% null |
+| `communityboard` | HIDDEN | 0.0% null |
+| `councildistrict` | HIDDEN | 0.0% null |
+| `housenumber` | HIDDEN | 0.0% null |
+| `streetname` | HIDDEN | 0.0% null |
+| `zipcode` | VISIBLE | 0.0% null |
+| `waterdebtonly` | HIDDEN |  |
+| `year` | VISIBLE |  |
+| `month` | HIDDEN |  |
+| `cycle` | HIDDEN |  |
 ---
 
 ### Public Housing Records
@@ -1078,12 +1663,20 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
   4. Upload CSV to backend
 - **Note:** Last updated 2019. New address guide PDF available as of 1/1/2024.
 
-**Field Audit:**
-**Healthy fields (10):** 9 fields >=99% populated; 1 fields 11-49% populated.
-
-*Partially populated (11-49%):*
-- `facility`: 47.0%
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `id` | VISIBLE |  |
+| `bbl` | VISIBLE |  |
+| `borough` | HIDDEN |  |
+| `block` | HIDDEN |  |
+| `lot` | HIDDEN |  |
+| `address` | VISIBLE |  |
+| `zipcode` | VISIBLE | 0.0% null |
+| `development` | HIDDEN |  |
+| `managedby` | HIDDEN |  |
+| `cd` | HIDDEN |  |
+| `facility` | HIDDEN |  |
 ---
 
 ### PropertyShark Foreclosures
@@ -1093,19 +1686,32 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Model:** `PSForeclosure`
 - **Update frequency:** Bi-weekly manual download and upload via admin
 
-**Field Audit:**
-**100% NULL (1 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `bldgareasqft` | 0 | 14,439 | 0.0% |
-
-**Healthy fields (22):** 15 fields >=99% populated; 5 fields 50-98% populated; 2 fields 11-49% populated.
-
-*Partially populated (11-49%):*
-- `legalprocess`: 49.9%
-- `unitnumber`: 16.4%
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `key` | VISIBLE |  |
+| `bbl` | VISIBLE |  |
+| `indexno` | VISIBLE |  |
+| `address` | VISIBLE |  |
+| `zipcode` | VISIBLE | 0.0% null |
+| `neighborhood` | HIDDEN |  |
+| `schooldistrict` | HIDDEN |  |
+| `buildingclass` | HIDDEN | 0.0% null |
+| `bldgareasqft` | HIDDEN | 0.0% null |
+| `auction` | VISIBLE |  |
+| `auctiontime` | HIDDEN |  |
+| `auctionlocation` | VISIBLE |  |
+| `dateadded` | VISIBLE |  |
+| `plaintiff` | VISIBLE |  |
+| `defendant` | VISIBLE |  |
+| `lien` | VISIBLE |  |
+| `judgment` | HIDDEN |  |
+| `referee` | HIDDEN |  |
+| `plaintiffsattorney` | HIDDEN |  |
+| `foreclosuretype` | VISIBLE |  |
+| `legalprocess` | HIDDEN |  |
+| `hasphoto` | HIDDEN |  |
+| `unitnumber` | HIDDEN |  |
 ---
 
 ### PropertyShark PreForeclosures
@@ -1115,19 +1721,29 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Model:** `PSPreForeclosure`
 - **Update frequency:** Bi-weekly manual download and upload via admin
 
-**Field Audit:**
-**100% NULL (2 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `bldgareasqft` | 0 | 52,123 | 0.0% |
-| `mortgageamount` | 12 | 52,111 | 0.0% |
-
-**Healthy fields (18):** 8 fields >=99% populated; 9 fields 50-98% populated; 1 fields 11-49% populated.
-
-*Partially populated (11-49%):*
-- `debtoraddress`: 16.7%
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `key` | VISIBLE |  |
+| `bbl` | VISIBLE |  |
+| `address` | VISIBLE |  |
+| `indexno` | VISIBLE |  |
+| `zipcode` | VISIBLE | 0.0% null |
+| `creditor` | VISIBLE |  |
+| `neighborhood` | HIDDEN |  |
+| `documenttype` | HIDDEN |  |
+| `schooldistrict` | HIDDEN |  |
+| `lientype` | HIDDEN |  |
+| `buildingclass` | HIDDEN | 0.0% null |
+| `taxvalue` | HIDDEN |  |
+| `dateadded` | VISIBLE |  |
+| `bldgareasqft` | HIDDEN | 0.0% null |
+| `debtor` | VISIBLE |  |
+| `debtoraddress` | HIDDEN |  |
+| `mortgagedate` | HIDDEN |  |
+| `effectivedate` | HIDDEN |  |
+| `mortgageamount` | HIDDEN | 0.0% null |
+| `hasphoto` | HIDDEN |  |
 ---
 
 ### Tax Lots
@@ -1136,19 +1752,18 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 - **Source:** [NYC Planning — PLUTO](https://www.nyc.gov/site/planning/data-maps/open-data/dwn-pluto-mappluto.page)
 - **Model:** `TaxLot`
 
-**Field Audit:**
-**>90% NULL (1 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `coopnum` | 7,736 | 1,131,009 | 0.7% |
-
-**Healthy fields (8):** 6 fields >=99% populated; 2 fields 11-49% populated.
-
-*Partially populated (11-49%):*
-- `bbbl`: 25.4%
-- `condonum`: 26.1%
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `bbl` | VISIBLE |  |
+| `bbbl` | HIDDEN |  |
+| `condoflag` | HIDDEN |  |
+| `condonum` | HIDDEN |  |
+| `coopnum` | HIDDEN | 0.7% null |
+| `numbf` | HIDDEN |  |
+| `numaddr` | HIDDEN |  |
+| `vacant` | HIDDEN |  |
+| `interior` | HIDDEN |  |
 ---
 
 ### Council Districts
@@ -1231,70 +1846,134 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 
 ### Foreclosure (Joined)
 
-**Field Audit:**
-**100% NULL (1 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `mortgage_amount` | 10 | 56,833 | 0.0% |
-
-**Healthy fields (13):** 8 fields >=99% populated; 3 fields 50-98% populated; 2 fields 11-49% populated.
-
-*Partially populated (11-49%):*
-- `auction`: 10.8%
-- `mortgage_date`: 44.1%
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `key` | VISIBLE |  |
+| `bbl` | VISIBLE |  |
+| `index` | VISIBLE |  |
+| `address` | VISIBLE |  |
+| `document_type` | VISIBLE |  |
+| `lien_type` | VISIBLE |  |
+| `date_added` | VISIBLE |  |
+| `creditor` | VISIBLE |  |
+| `debtor` | VISIBLE |  |
+| `mortgage_date` | VISIBLE |  |
+| `mortgage_amount` | VISIBLE | 0.0% null |
+| `auction` | VISIBLE |  |
+| `foreign_key` | HIDDEN |  |
+| `source` | VISIBLE |  |
 ---
 
 ---
 
 ### Lis Penden Comments (Deprecated)
 
-**Field Audit:**
-**Healthy fields (2):** 2 fields >=99% populated.
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `id` | VISIBLE |  |
+| `key` | VISIBLE |  |
+| `datecomments` | HIDDEN |  |
 ---
 
 ---
 
 ### Lis Pendens (Deprecated)
 
-**Field Audit:**
-**100% NULL (1 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `thirdparty` | 0 | 13,295 | 0.0% |
-
-**Healthy fields (15):** 8 fields >=99% populated; 3 fields 50-98% populated; 4 fields 11-49% populated.
-
-*Partially populated (11-49%):*
-- `attorney`: 30.6%
-- `disp`: 12.5%
-- `satdate`: 31.2%
-- `source`: 30.6%
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `key` | VISIBLE |  |
+| `bbl` | VISIBLE |  |
+| `entereddate` | HIDDEN |  |
+| `zip` | VISIBLE | 0.0% null |
+| `bc` | HIDDEN |  |
+| `fileddate` | VISIBLE |  |
+| `index` | VISIBLE |  |
+| `debtor` | VISIBLE |  |
+| `cr` | VISIBLE |  |
+| `attorney` | HIDDEN |  |
+| `thirdparty` | HIDDEN | 0.0% null |
+| `satdate` | HIDDEN |  |
+| `sattype` | HIDDEN |  |
+| `disp` | HIDDEN |  |
+| `type` | VISIBLE |  |
+| `source` | VISIBLE |  |
 ---
 
 ---
 
 ### Property Annotations
 
-**Field Audit:**
-**>90% NULL (3 fields):**
-
-| Field | Non-null | Null | Populated % |
-|-------|----------|------|-------------|
-| `aepdischargedate` | 2,765 | 870,075 | 0.3% |
-| `aepstartdate` | 3,640 | 869,200 | 0.4% |
-| `subsidyprograms` | 21,079 | 851,761 | 2.4% |
-
-**Healthy fields (61):** 57 fields >=99% populated; 2 fields 50-98% populated; 2 fields 11-49% populated.
-
-*Partially populated (11-49%):*
-- `legalclassa`: 38.5%
-- `legalclassb`: 37.8%
-
+**Fields (as of 04/2026):**
+| Field | Frontend | Null % |
+|---|---|---|
+| `id` | VISIBLE |  |
+| `bbl` | VISIBLE |  |
+| `unitsrentstabilized` | VISIBLE |  |
+| `latestsaleprice` | VISIBLE |  |
+| `latestsaledate` | HIDDEN |  |
+| `hpdviolations_last30` | HIDDEN |  |
+| `hpdviolations_lastyear` | HIDDEN |  |
+| `hpdviolations_last3years` | HIDDEN |  |
+| `hpdviolations_lastupdated` | HIDDEN |  |
+| `hpdcomplaints_last30` | HIDDEN |  |
+| `hpdcomplaints_lastyear` | HIDDEN |  |
+| `hpdcomplaints_last3years` | HIDDEN |  |
+| `hpdcomplaints_lastupdated` | HIDDEN |  |
+| `dobviolations_last30` | HIDDEN |  |
+| `dobviolations_lastyear` | HIDDEN |  |
+| `dobviolations_last3years` | HIDDEN |  |
+| `dobviolations_lastupdated` | HIDDEN |  |
+| `dobcomplaints_last30` | HIDDEN |  |
+| `dobcomplaints_lastyear` | HIDDEN |  |
+| `dobcomplaints_last3years` | HIDDEN |  |
+| `dobcomplaints_lastupdated` | HIDDEN |  |
+| `ecbviolations_last30` | HIDDEN |  |
+| `ecbviolations_lastyear` | HIDDEN |  |
+| `ecbviolations_last3years` | HIDDEN |  |
+| `ecbviolations_lastupdated` | HIDDEN |  |
+| `housinglitigations_last30` | HIDDEN |  |
+| `housinglitigations_lastyear` | HIDDEN |  |
+| `housinglitigations_last3years` | HIDDEN |  |
+| `housinglitigations_lastupdated` | HIDDEN |  |
+| `dobfiledpermits_last30` | HIDDEN |  |
+| `dobfiledpermits_lastyear` | HIDDEN |  |
+| `dobfiledpermits_last3years` | HIDDEN |  |
+| `dobfiledpermits_lastupdated` | HIDDEN |  |
+| `dobissuedpermits_last30` | HIDDEN |  |
+| `dobissuedpermits_lastyear` | HIDDEN |  |
+| `dobissuedpermits_last3years` | HIDDEN |  |
+| `dobissuedpermits_lastupdated` | HIDDEN |  |
+| `evictions_last30` | HIDDEN |  |
+| `evictions_lastyear` | HIDDEN |  |
+| `evictions_last3years` | HIDDEN |  |
+| `evictions_lastupdated` | HIDDEN |  |
+| `acrisrealmasters_last30` | HIDDEN |  |
+| `acrisrealmasters_lastyear` | HIDDEN |  |
+| `acrisrealmasters_last3years` | HIDDEN |  |
+| `acrisrealmasters_lastupdated` | HIDDEN |  |
+| `foreclosures_last30` | HIDDEN |  |
+| `foreclosures_lastyear` | HIDDEN |  |
+| `foreclosures_last3years` | HIDDEN |  |
+| `foreclosures_lastupdated` | HIDDEN |  |
+| `taxlien` | HIDDEN |  |
+| `conhrecord` | HIDDEN |  |
+| `nycha` | VISIBLE |  |
+| `subsidyj51` | HIDDEN |  |
+| `subsidy421a` | HIDDEN |  |
+| `subsidyprograms` | VISIBLE | 2.4% null |
+| `legalclassa` | HIDDEN |  |
+| `legalclassb` | HIDDEN |  |
+| `managementprogram` | HIDDEN |  |
+| `aepstatus` | HIDDEN |  |
+| `aepstartdate` | HIDDEN | 0.4% null |
+| `aepdischargedate` | HIDDEN | 0.3% null |
+| `ocahousingcourts_last30` | HIDDEN |  |
+| `ocahousingcourts_lastyear` | HIDDEN |  |
+| `ocahousingcourts_last3years` | HIDDEN |  |
+| `ocahousingcourts_lastupdated` | HIDDEN |  |
 ---
 
 ---
