@@ -147,11 +147,11 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 | `buildingid` | HIDDEN |  |
 | `registrationid` | VISIBLE |  |
 | `boroid` | HIDDEN |  |
-| `borough` | HIDDEN |  |
+| `borough` | VISIBLE (via join) |  |
 | `housenumber` | HIDDEN | 0.0% null |
 | `lowhousenumber` | HIDDEN |  |
 | `highhousenumber` | HIDDEN |  |
-| `streetname` | HIDDEN | 0.0% null |
+| `streetname` | VISIBLE (via join) | 0.0% null |
 | `streetcode` | HIDDEN |  |
 | `postcode` | HIDDEN |  |
 | `apartment` | VISIBLE |  |
@@ -207,9 +207,9 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 | `bbl` | VISIBLE |  |
 | `bin` | VISIBLE | 0.0% null |
 | `buildingid` | HIDDEN |  |
-| `borough` | HIDDEN |  |
+| `borough` | VISIBLE (via join) |  |
 | `housenumber` | HIDDEN | 0.0% null |
-| `streetname` | HIDDEN | 0.0% null |
+| `streetname` | VISIBLE (via join) | 0.0% null |
 | `latitude` | HIDDEN | 0.0% null |
 | `longitude` | HIDDEN | 0.0% null |
 | `block` | HIDDEN |  |
@@ -375,21 +375,21 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 | `jobfilingnumber` | VISIBLE |  |
 | `bbl` | VISIBLE |  |
 | `bin` | VISIBLE | 0.0% null |
-| `filingstatus` | HIDDEN |  |
-| `houseno` | HIDDEN |  |
-| `streetname` | HIDDEN | 0.0% null |
-| `borough` | HIDDEN |  |
+| `filingstatus` | VISIBLE (via join) |  |
+| `houseno` | VISIBLE (via join) |  |
+| `streetname` | VISIBLE (via join) | 0.0% null |
+| `borough` | VISIBLE (via join) |  |
 | `block` | HIDDEN |  |
 | `lot` | HIDDEN |  |
 | `commmunityboard` | HIDDEN | 0.0% null |
 | `workonfloor` | HIDDEN | 0.0% null |
 | `aptcondonos` | HIDDEN | 0.0% null |
-| `applicantprofessionaltitle` | HIDDEN |  |
-| `applicantlicense` | HIDDEN | 0.0% null |
-| `applicantfirstname` | HIDDEN | 0.0% null |
+| `applicantprofessionaltitle` | VISIBLE (via join) |  |
+| `applicantlicense` | VISIBLE (via join) | 0.0% null |
+| `applicantfirstname` | VISIBLE (via join) | 0.0% null |
 | `applicantsmiddleinitial` | HIDDEN | 0.0% null |
-| `applicantlastname` | HIDDEN | 0.0% null |
-| `ownersbusinessname` | HIDDEN |  |
+| `applicantlastname` | VISIBLE (via join) | 0.0% null |
+| `ownersbusinessname` | VISIBLE (via join) |  |
 | `ownersstreetname` | HIDDEN | 0.0% null |
 | `city` | VISIBLE | 0.0% null |
 | `state` | VISIBLE | 0.0% null |
@@ -404,7 +404,7 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 | `filingrepresentativezip` | HIDDEN | 0.0% null |
 | `sprinklerworktype` | HIDDEN | 0.0% null |
 | `plumbingworktype` | HIDDEN | 0.0% null |
-| `initialcost` | HIDDEN |  |
+| `initialcost` | VISIBLE (via join) |  |
 | `totalconstructionfloorarea` | HIDDEN | 0.0% null |
 | `reviewbuildingcode` | HIDDEN | 0.0% null |
 | `littlee` | HIDDEN | 0.0% null |
@@ -441,7 +441,7 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 | `nta` | HIDDEN | 0.0% null |
 | `bin_2` | HIDDEN | 0.0% null |
 | `currentstatusdate` | HIDDEN | 0.0% null |
-| `filingdate` | HIDDEN | 0.0% null |
+| `filingdate` | VISIBLE (via join) | 0.0% null |
 | `firstpermitdate` | HIDDEN | 0.0% null |
 | `permitissuedate` | HIDDEN | 0.0% null |
 | `boilerequipmentworktype` | HIDDEN | 0.0% null |
@@ -479,9 +479,9 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 | `bin` | VISIBLE | 0.0% null |
 | `bbl` | VISIBLE |  |
 | `filingreason` | HIDDEN |  |
-| `houseno` | HIDDEN |  |
-| `streetname` | HIDDEN | 0.0% null |
-| `borough` | HIDDEN |  |
+| `houseno` | VISIBLE (via join) |  |
+| `streetname` | VISIBLE (via join) | 0.0% null |
+| `borough` | VISIBLE (via join) |  |
 | `lot` | HIDDEN |  |
 | `block` | HIDDEN |  |
 | `cbno` | HIDDEN | 0.0% null |
@@ -489,7 +489,7 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 | `workonfloor` | HIDDEN | 0.0% null |
 | `worktype` | VISIBLE |  |
 | `permitteeslicensetype` | HIDDEN | 0.0% null |
-| `applicantlicense` | HIDDEN | 0.0% null |
+| `applicantlicense` | VISIBLE (via join) | 0.0% null |
 | `applicantfirstname` | HIDDEN | 0.0% null |
 | `applicantmiddlename` | HIDDEN | 0.0% null |
 | `applicantlastname` | HIDDEN | 0.0% null |
@@ -500,8 +500,8 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 | `filingrepresentativelastname` | HIDDEN | 0.0% null |
 | `filingrepresentativebusinessname` | HIDDEN | 0.0% null |
 | `approveddate` | VISIBLE | 0.0% null |
-| `issueddate` | HIDDEN |  |
-| `expireddate` | HIDDEN |  |
+| `issueddate` | VISIBLE (via join) |  |
+| `expireddate` | VISIBLE (via join) |  |
 | `jobdescription` | VISIBLE |  |
 | `estimatedjobcosts` | HIDDEN | 0.0% null |
 | `ownerbusinessname` | HIDDEN | 0.0% null |
@@ -525,19 +525,19 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 | Field | Frontend | Null % |
 |---|---|---|
 | `id` | VISIBLE |  |
-| `job` | HIDDEN |  |
+| `job` | VISIBLE (via join) |  |
 | `jobs1no` | HIDDEN |  |
 | `bbl` | VISIBLE |  |
 | `bin` | VISIBLE | 0.0% null |
 | `doc` | HIDDEN |  |
 | `borough` | HIDDEN |  |
-| `house` | HIDDEN |  |
+| `house` | VISIBLE (via join) |  |
 | `streetname` | HIDDEN | 0.0% null |
 | `block` | HIDDEN |  |
 | `lot` | HIDDEN |  |
 | `jobtype` | VISIBLE |  |
 | `jobstatus` | VISIBLE |  |
-| `jobstatusdescrp` | HIDDEN |  |
+| `jobstatusdescrp` | VISIBLE (via join) |  |
 | `latestactiondate` | HIDDEN |  |
 | `buildingtype` | HIDDEN | 0.0% null |
 | `communityboard` | HIDDEN | 0.0% null |
@@ -562,18 +562,18 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 | `curbcut` | HIDDEN | 0.0% null |
 | `other` | VISIBLE | 0.0% null |
 | `otherdescription` | HIDDEN | 0.0% null |
-| `applicantsfirstname` | HIDDEN |  |
-| `applicantslastname` | HIDDEN |  |
-| `applicantprofessionaltitle` | HIDDEN |  |
+| `applicantsfirstname` | VISIBLE (via join) |  |
+| `applicantslastname` | VISIBLE (via join) |  |
+| `applicantprofessionaltitle` | VISIBLE (via join) |  |
 | `applicantlicense` | HIDDEN | 0.0% null |
 | `professionalcert` | HIDDEN | 0.0% null |
-| `prefilingdate` | HIDDEN |  |
+| `prefilingdate` | VISIBLE (via join) |  |
 | `paid` | HIDDEN | 0.0% null |
 | `fullypaid` | HIDDEN | 0.0% null |
 | `assigned` | HIDDEN | 0.0% null |
 | `approved` | HIDDEN | 0.0% null |
 | `fullypermitted` | HIDDEN | 0.0% null |
-| `initialcost` | HIDDEN |  |
+| `initialcost` | VISIBLE (via join) |  |
 | `totalestfee` | HIDDEN | 0.0% null |
 | `feestatus` | HIDDEN | 0.0% null |
 | `existingzoningsqft` | HIDDEN | 0.0% null |
@@ -600,7 +600,7 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 | `nonprofit` | HIDDEN | 0.0% null |
 | `ownersfirstname` | HIDDEN | 0.0% null |
 | `ownerslastname` | HIDDEN | 0.0% null |
-| `ownersbusinessname` | HIDDEN |  |
+| `ownersbusinessname` | VISIBLE (via join) |  |
 | `ownershousenumber` | HIDDEN | 0.0% null |
 | `ownershousestreetname` | HIDDEN | 0.0% null |
 | `city` | VISIBLE | 0.0% null |
@@ -637,12 +637,12 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 | Field | Frontend | Null % |
 |---|---|---|
 | `id` | VISIBLE |  |
-| `job` | HIDDEN |  |
-| `permitsino` | HIDDEN |  |
+| `job` | VISIBLE (via join) |  |
+| `permitsino` | VISIBLE (via join) |  |
 | `bbl` | VISIBLE |  |
 | `bin` | VISIBLE | 0.0% null |
 | `borough` | HIDDEN |  |
-| `house` | HIDDEN |  |
+| `house` | VISIBLE (via join) |  |
 | `streetname` | HIDDEN | 0.0% null |
 | `jobdoc` | HIDDEN | 0.0% null |
 | `jobtype` | VISIBLE |  |
@@ -664,8 +664,8 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 | `oilgas` | HIDDEN | 0.0% null |
 | `sitefill` | HIDDEN | 0.0% null |
 | `filingdate` | HIDDEN | 0.0% null |
-| `issuancedate` | HIDDEN |  |
-| `expirationdate` | HIDDEN |  |
+| `issuancedate` | VISIBLE (via join) |  |
+| `expirationdate` | VISIBLE (via join) |  |
 | `jobstartdate` | HIDDEN | 0.0% null |
 | `permitteesfirstname` | HIDDEN |  |
 | `permitteeslastname` | HIDDEN |  |
