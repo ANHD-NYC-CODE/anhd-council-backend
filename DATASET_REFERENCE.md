@@ -1731,18 +1731,18 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 | `zipcode` | VISIBLE | 0.0% null |
 | `creditor` | VISIBLE |  |
 | `neighborhood` | HIDDEN |  |
-| `documenttype` | HIDDEN |  |
+| `documenttype` | VISIBLE (via Foreclosure join) |  |
 | `schooldistrict` | HIDDEN |  |
-| `lientype` | HIDDEN |  |
+| `lientype` | VISIBLE (via Foreclosure join) |  |
 | `buildingclass` | HIDDEN | 0.0% null |
 | `taxvalue` | HIDDEN |  |
 | `dateadded` | VISIBLE |  |
 | `bldgareasqft` | HIDDEN | 0.0% null |
 | `debtor` | VISIBLE |  |
 | `debtoraddress` | HIDDEN |  |
-| `mortgagedate` | HIDDEN |  |
+| `mortgagedate` | VISIBLE (via Foreclosure join) |  |
 | `effectivedate` | HIDDEN |  |
-| `mortgageamount` | HIDDEN | 0.0% null |
+| `mortgageamount` | VISIBLE (via Foreclosure join) | 0.0% null |
 | `hasphoto` | HIDDEN |  |
 ---
 
@@ -1913,67 +1913,67 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 | `bbl` | VISIBLE |  |
 | `unitsrentstabilized` | VISIBLE |  |
 | `latestsaleprice` | VISIBLE |  |
-| `latestsaledate` | HIDDEN |  |
-| `hpdviolations_last30` | HIDDEN |  |
-| `hpdviolations_lastyear` | HIDDEN |  |
-| `hpdviolations_last3years` | HIDDEN |  |
-| `hpdviolations_lastupdated` | HIDDEN |  |
-| `hpdcomplaints_last30` | HIDDEN |  |
-| `hpdcomplaints_lastyear` | HIDDEN |  |
-| `hpdcomplaints_last3years` | HIDDEN |  |
-| `hpdcomplaints_lastupdated` | HIDDEN |  |
-| `dobviolations_last30` | HIDDEN |  |
-| `dobviolations_lastyear` | HIDDEN |  |
-| `dobviolations_last3years` | HIDDEN |  |
-| `dobviolations_lastupdated` | HIDDEN |  |
-| `dobcomplaints_last30` | HIDDEN |  |
-| `dobcomplaints_lastyear` | HIDDEN |  |
-| `dobcomplaints_last3years` | HIDDEN |  |
-| `dobcomplaints_lastupdated` | HIDDEN |  |
-| `ecbviolations_last30` | HIDDEN |  |
-| `ecbviolations_lastyear` | HIDDEN |  |
-| `ecbviolations_last3years` | HIDDEN |  |
-| `ecbviolations_lastupdated` | HIDDEN |  |
-| `housinglitigations_last30` | HIDDEN |  |
-| `housinglitigations_lastyear` | HIDDEN |  |
-| `housinglitigations_last3years` | HIDDEN |  |
-| `housinglitigations_lastupdated` | HIDDEN |  |
-| `dobfiledpermits_last30` | HIDDEN |  |
-| `dobfiledpermits_lastyear` | HIDDEN |  |
-| `dobfiledpermits_last3years` | HIDDEN |  |
-| `dobfiledpermits_lastupdated` | HIDDEN |  |
-| `dobissuedpermits_last30` | HIDDEN |  |
-| `dobissuedpermits_lastyear` | HIDDEN |  |
-| `dobissuedpermits_last3years` | HIDDEN |  |
-| `dobissuedpermits_lastupdated` | HIDDEN |  |
-| `evictions_last30` | HIDDEN |  |
-| `evictions_lastyear` | HIDDEN |  |
-| `evictions_last3years` | HIDDEN |  |
-| `evictions_lastupdated` | HIDDEN |  |
-| `acrisrealmasters_last30` | HIDDEN |  |
-| `acrisrealmasters_lastyear` | HIDDEN |  |
-| `acrisrealmasters_last3years` | HIDDEN |  |
-| `acrisrealmasters_lastupdated` | HIDDEN |  |
-| `foreclosures_last30` | HIDDEN |  |
-| `foreclosures_lastyear` | HIDDEN |  |
-| `foreclosures_last3years` | HIDDEN |  |
-| `foreclosures_lastupdated` | HIDDEN |  |
-| `taxlien` | HIDDEN |  |
-| `conhrecord` | HIDDEN |  |
+| `latestsaledate` | VISIBLE (via Property API) |  |
+| `hpdviolations_last30` | VISIBLE (via Property API) |  |
+| `hpdviolations_lastyear` | VISIBLE (via Property API) |  |
+| `hpdviolations_last3years` | VISIBLE (via Property API) |  |
+| `hpdviolations_lastupdated` | VISIBLE (via Property API) |  |
+| `hpdcomplaints_last30` | VISIBLE (via Property API) |  |
+| `hpdcomplaints_lastyear` | VISIBLE (via Property API) |  |
+| `hpdcomplaints_last3years` | VISIBLE (via Property API) |  |
+| `hpdcomplaints_lastupdated` | VISIBLE (via Property API) |  |
+| `dobviolations_last30` | VISIBLE (via Property API) |  |
+| `dobviolations_lastyear` | VISIBLE (via Property API) |  |
+| `dobviolations_last3years` | VISIBLE (via Property API) |  |
+| `dobviolations_lastupdated` | VISIBLE (via Property API) |  |
+| `dobcomplaints_last30` | VISIBLE (via Property API) |  |
+| `dobcomplaints_lastyear` | VISIBLE (via Property API) |  |
+| `dobcomplaints_last3years` | VISIBLE (via Property API) |  |
+| `dobcomplaints_lastupdated` | VISIBLE (via Property API) |  |
+| `ecbviolations_last30` | VISIBLE (via Property API) |  |
+| `ecbviolations_lastyear` | VISIBLE (via Property API) |  |
+| `ecbviolations_last3years` | VISIBLE (via Property API) |  |
+| `ecbviolations_lastupdated` | VISIBLE (via Property API) |  |
+| `housinglitigations_last30` | VISIBLE (via Property API) |  |
+| `housinglitigations_lastyear` | VISIBLE (via Property API) |  |
+| `housinglitigations_last3years` | VISIBLE (via Property API) |  |
+| `housinglitigations_lastupdated` | VISIBLE (via Property API) |  |
+| `dobfiledpermits_last30` | VISIBLE (via Property API) |  |
+| `dobfiledpermits_lastyear` | VISIBLE (via Property API) |  |
+| `dobfiledpermits_last3years` | VISIBLE (via Property API) |  |
+| `dobfiledpermits_lastupdated` | VISIBLE (via Property API) |  |
+| `dobissuedpermits_last30` | VISIBLE (via Property API) |  |
+| `dobissuedpermits_lastyear` | VISIBLE (via Property API) |  |
+| `dobissuedpermits_last3years` | VISIBLE (via Property API) |  |
+| `dobissuedpermits_lastupdated` | VISIBLE (via Property API) |  |
+| `evictions_last30` | VISIBLE (via Property API) |  |
+| `evictions_lastyear` | VISIBLE (via Property API) |  |
+| `evictions_last3years` | VISIBLE (via Property API) |  |
+| `evictions_lastupdated` | VISIBLE (via Property API) |  |
+| `acrisrealmasters_last30` | VISIBLE (via Property API) |  |
+| `acrisrealmasters_lastyear` | VISIBLE (via Property API) |  |
+| `acrisrealmasters_last3years` | VISIBLE (via Property API) |  |
+| `acrisrealmasters_lastupdated` | VISIBLE (via Property API) |  |
+| `foreclosures_last30` | VISIBLE (via Property API) |  |
+| `foreclosures_lastyear` | VISIBLE (via Property API) |  |
+| `foreclosures_last3years` | VISIBLE (via Property API) |  |
+| `foreclosures_lastupdated` | VISIBLE (via Property API) |  |
+| `taxlien` | VISIBLE (via Property API) |  |
+| `conhrecord` | VISIBLE (via Property API) |  |
 | `nycha` | VISIBLE |  |
-| `subsidyj51` | HIDDEN |  |
-| `subsidy421a` | HIDDEN |  |
+| `subsidyj51` | VISIBLE (via Property API) |  |
+| `subsidy421a` | VISIBLE (via Property API) |  |
 | `subsidyprograms` | VISIBLE | 2.4% null |
-| `legalclassa` | HIDDEN |  |
-| `legalclassb` | HIDDEN |  |
-| `managementprogram` | HIDDEN |  |
-| `aepstatus` | HIDDEN |  |
-| `aepstartdate` | HIDDEN | 0.4% null |
-| `aepdischargedate` | HIDDEN | 0.3% null |
-| `ocahousingcourts_last30` | HIDDEN |  |
-| `ocahousingcourts_lastyear` | HIDDEN |  |
-| `ocahousingcourts_last3years` | HIDDEN |  |
-| `ocahousingcourts_lastupdated` | HIDDEN |  |
+| `legalclassa` | VISIBLE (via Property API) |  |
+| `legalclassb` | VISIBLE (via Property API) |  |
+| `managementprogram` | VISIBLE (via Property API) |  |
+| `aepstatus` | VISIBLE (via Property API) |  |
+| `aepstartdate` | VISIBLE (via Property API) | 0.4% null |
+| `aepdischargedate` | VISIBLE (via Property API) | 0.3% null |
+| `ocahousingcourts_last30` | VISIBLE (via Property API) |  |
+| `ocahousingcourts_lastyear` | VISIBLE (via Property API) |  |
+| `ocahousingcourts_last3years` | VISIBLE (via Property API) |  |
+| `ocahousingcourts_lastupdated` | VISIBLE (via Property API) |  |
 ---
 
 ---
