@@ -60,13 +60,46 @@ Django + Celery + PostgreSQL backend for the [Displacement Alert Project (DAP)](
 
 ### Creating a Fresh Database Dump from Production
 
-If the Box dump is outdated:
+If the Box dump is outdated, create a new one from production:
 
+**Custom format (recommended — 3-5x faster restore):**
+```bash
+ssh root@138.197.79.10 "docker exec app pg_dump -U anhd -d anhd -Fc" > dap_prod.dump
+```
+
+**Plain SQL (legacy — slower restore):**
 ```bash
 PGPASSWORD=<DATABASE_PASSWORD> pg_dump -h <DATABASE_HOST> -U anhd -d anhd | gzip > dap_prod.gz
 ```
 
-Requires your IP to be whitelisted in DigitalOcean's database droplet firewall. Credentials are in the production `.env` file at `/var/www/anhd-council-backend/.env`. The dump is ~7GB compressed.
+The setup script auto-detects the format: `sh setup-db.dev.sh dap_prod.dump` or `sh setup-db.dev.sh dap_prod.gz`.
+
+| Format | Extension | Restore Time | Parallel | File Size |
+|---|---|---|---|---|
+| Custom | `.dump` | ~30 min | Yes (`-j 4`) | ~6-7GB |
+| Plain SQL | `.gz` | ~2 hours | No | ~6-7GB |
+
+Requires your IP to be whitelisted in DigitalOcean's firewall. Credentials are in the production `.env` at `/var/www/anhd-council-backend/.env`.
+
+### VACUUM FULL (after loading a dump)
+
+After loading a production dump, the database is bloated (~80GB). Running VACUUM FULL compacts it to ~56GB and improves query speed:
+
+```bash
+# Stop celery workers first
+docker compose -f docker-compose.yml -f docker-compose.dev.yml stop celery_default celery_update celerybeat
+
+# Run VACUUM FULL (locks tables — takes 30-60 min)
+docker exec postgres psql -U anhd -d anhd -c "VACUUM FULL;"
+
+# Re-dump in custom format for faster future restores
+docker exec -t postgres pg_dump -U anhd -d anhd -Fc > dap_prod_vacuumed.dump
+
+# Restart workers
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+```
+
+> **Warning:** `docker volume prune` and `docker system prune` can delete the database volume if containers are stopped. Always verify which volumes are in use before pruning.
 
 ## Common Commands
 
