@@ -47,6 +47,25 @@
 - Added `last_modified` field to Property for obsolete BBL detection
 - After PLUTO import, automatically nulls district fields for obsolete BBLs (847 properties not in current PLUTO)
 - Address Record: added .iterator() to generators for memory reduction
+- Bad date nulling: dates before 1850 auto-nulled on import for all datasets with QUERY_DATE_KEY
+- Bad yearbuilt nulling: yearbuilt < 1600 auto-nulled on import for Property, SubsidyJ51, RentStabilization
+- Fixed AddressRecord SearchVector bug: `rank=` → `weight=` (borough/zipcode weren't weighted in search)
+
+**Data Quality**
+- 3,692 ACRIS records with dates in years 1-1799 (data entry errors)
+- 11 DOB Violations, 2 Housing Litigations with impossible dates
+- 49,432 Properties with yearbuilt=0, 145 J51, 380 RentStab with yearbuilt < 1600
+- All nulled on next import (records kept, only bad date/year fields nulled)
+
+**Testing**
+- Added 16 new mock data files from production/Socrata (100 rows each, real data)
+- Fixed Property test to fall back to seed_with_upsert in test mode
+- Fixed RentStabilization test to use dynamic MANUAL_YEAR
+
+**Database Setup**
+- setup-db.dev.sh now supports custom format dumps (.dump) for 3-5x faster restore
+- Updated README with Option A (Box download) and Option B (fresh from production) with both formats
+- Added VACUUM FULL instructions and Docker volume prune warning
 
 **Performance**
 - HPD Violations: switched from `inspectiondate` 1yr to `currentstatusdate` 2mo + nulls (270K vs 10.8M rows)
