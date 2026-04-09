@@ -42,7 +42,15 @@ class SubsidyJ51(BaseDatasetModel, models.Model):
 
     @classmethod
     def pre_validation_filters(self, gen_rows):
-        return gen_rows
+        for row in gen_rows:
+            yb = row.get('yearbuilt')
+            if yb is not None:
+                try:
+                    if int(yb) < 1600:
+                        row['yearbuilt'] = None
+                except (ValueError, TypeError):
+                    pass
+            yield row
 
     @classmethod
     def transform_self(self, file_path, update=None):

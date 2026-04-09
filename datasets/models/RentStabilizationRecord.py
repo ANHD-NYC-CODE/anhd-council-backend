@@ -224,7 +224,16 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
     
             if row[key] > 0:
                 row['latestuctotals'] = row[key]
-    
+
+            # Null yearbuilt if < 1600 (data entry errors, yearbuilt=0 means unknown)
+            yb = row.get('yearbuilt')
+            if yb is not None:
+                try:
+                    if int(yb) < 1600:
+                        row['yearbuilt'] = None
+                except (ValueError, TypeError):
+                    pass
+
             yield row  # Return processed row
 
 
