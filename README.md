@@ -34,13 +34,23 @@ Django + Celery + PostgreSQL backend for the [Displacement Alert Project (DAP)](
 
 1. Clone the repo and get `.env` + `.env.dev` files from a team member. Place both in the repo root.
 
-2. **Option A — Clone production database (recommended):**
-   ```bash
-   sh setup-db.dev.sh /path/to/dap_prod.gz
-   ```
-   Get the database dump (`dap_prod.gz`) from [Box](https://blueprint.box.com/shared/static/ehsr8thnn511wk1hx3mre0drfmrms2d7.gz) (password-protected — ask a team member).
+2. Load the database (pick one):
 
-   **Option B — Build fresh (empty database):**
+   **Option A — Download from Box (recommended for most developers):**
+   Download the pre-built dump from [Box](https://blueprint.box.com/shared/static/ehsr8thnn511wk1hx3mre0drfmrms2d7.gz) (password-protected — ask a team member), then:
+   ```bash
+   sh setup-db.dev.sh /path/to/dap_prod.dump   # custom format (~30 min)
+   sh setup-db.dev.sh /path/to/dap_prod.gz      # or plain SQL (~2 hours)
+   ```
+
+   **Option B — Pull fresh from production (only if you need the most recent data):**
+   ```bash
+   ssh root@138.197.79.10 "docker exec app pg_dump -U anhd -d anhd -Fc" > dap_prod.dump
+   sh setup-db.dev.sh dap_prod.dump
+   ```
+   Requires your IP to be whitelisted in DigitalOcean's firewall. Use this only when the Box dump is outdated and you need recent dataset imports.
+
+   **Option C — Build fresh (empty database, no production data):**
    ```bash
    sh build.dev.sh
    ```
