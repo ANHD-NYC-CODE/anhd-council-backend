@@ -493,7 +493,10 @@ class Property(BaseDatasetModel, models.Model):
         self.objects.update(last_modified=None)
         logger.info('Reset last_modified for all properties')
 
-        self.copy_upsert(**kwargs)
+        if settings.TESTING:
+            self.seed_with_upsert(**kwargs)
+        else:
+            self.copy_upsert(**kwargs)
 
         # Null district fields for properties not in this PLUTO import (obsolete BBLs)
         # Properties that were imported have last_modified set; those without are obsolete

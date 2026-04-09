@@ -285,7 +285,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
         logger.info(
             "Updating address search vector: {}".format(self.__name__))
         address_vector = SearchVector('number', weight='A') + SearchVector(
-            'street', weight='B') + SearchVector('borough', rank='C') + SearchVector('zipcode', rank='C')
+            'street', weight='B') + SearchVector('borough', weight='C') + SearchVector('zipcode', weight='C')
         self.objects.update(address=address_vector)
 
     def __str__(self):
