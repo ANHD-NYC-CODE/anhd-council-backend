@@ -27,6 +27,8 @@ Records with nulled dates still appear in property lookups but won't show in tim
 | DOB Violations | 11 | Missing leading "2" (e.g., "0010" instead of "2010") |
 | Housing Litigations | 2 | Same pattern |
 | Properties yearbuilt | ~49,432 | `yearbuilt = 0` means unknown |
+| SubsidyJ51 yearbuilt | 145 | `yearbuilt < 1600` |
+| RentStabilization yearbuilt | 380 | `yearbuilt < 1600` |
 
 ### Datasets Requiring Login
 
