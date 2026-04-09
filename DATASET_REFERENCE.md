@@ -16,19 +16,28 @@ Because we upsert (never delete) for most datasets, we preserve historical data 
 
 NYC source data contains some records with impossible dates (data entry errors). During import, these dates are automatically nulled — the record is kept but the date field is set to NULL:
 
-- **All datasets**: dates before 1850 are nulled (e.g., year 0001, 0202, 1010 — typically missing leading digits)
-- **Properties (PLUTO)**: `yearbuilt < 1600` is nulled (49K+ records with `yearbuilt = 0` meaning "unknown")
+- **All date/datetime fields**: any date before 1850 is automatically nulled on import across all models (not just the primary date field)
+- **yearbuilt fields**: `yearbuilt < 1600` is nulled for Property, SubsidyJ51, and RentStabilization (0 means "unknown")
+- **NOT touched**: `yearalter1/yearalter2 = 0` (means "no alteration"), `reelyear = 0` (means "no microfilm reel") — these zeros are intentional
 
 Records with nulled dates still appear in property lookups but won't show in time-filtered searches (last 30 days, last year, etc.).
 
-| Dataset | Bad Date Records | Typical Error |
-|---|---|---|
-| ACRIS Real Masters | ~3,691 | Year entered as 1-3 digits (e.g., "99" instead of "1899") |
-| DOB Violations | 11 | Missing leading "2" (e.g., "0010" instead of "2010") |
-| Housing Litigations | 2 | Same pattern |
-| Properties yearbuilt | ~49,432 | `yearbuilt = 0` means unknown |
-| SubsidyJ51 yearbuilt | 145 | `yearbuilt < 1600` |
-| RentStabilization yearbuilt | 380 | `yearbuilt < 1600` |
+| Dataset | Field | Bad Records | Typical Error |
+|---|---|---|---|
+| ACRIS Real Masters | docdate | 3,692 | Year entered as 1-3 digits (e.g., "99" instead of "1899") |
+| Property | zoningdate | 1,075 | Bad dates in PLUTO source |
+| DOB Complaints | inspectiondate | 178 | Data entry errors |
+| DOB Violations | issuedate | 11 | Missing leading "2" (e.g., "0010" instead of "2010") |
+| PropertyAnnotation | latestsaledate | 4 | Inherited from ACRIS |
+| HPD Violations | inspectiondate | 3 | Data entry errors |
+| Housing Litigations | caseopendate | 2 | Same pattern |
+| HPD Violations | certifieddate | 1 | Data entry error |
+| PSPreForeclosure | mortgagedate | 1 | Data entry error |
+| CoreSubsidyRecord | yearbuilt | 1 | Bad year |
+| Property | yearbuilt=0 | 49,432 | 0 means "unknown" |
+| Property | yearalter1 < 1600 | 3 | Bad year (762K with yearalter1=0 are intentional) |
+| RentStabilization | yearbuilt=0 | 380 | 0 means "unknown" |
+| SubsidyJ51 | yearbuilt=0 | 145 | 0 means "unknown" |
 
 ### Datasets Requiring Login
 
