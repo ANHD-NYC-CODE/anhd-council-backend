@@ -121,9 +121,9 @@ class BaseDatasetModel():
                 for row in gen:
                     for date_key in date_fields:
                         val = row.get(date_key)
-                        if val and hasattr(val, 'year') and val.year < 1850:
+                        if val and hasattr(val, 'year') and (val.year < 1850 or val.year > 2130):
                             row[date_key] = None
-                        elif val and isinstance(val, str) and len(val) >= 4 and val[:4].isdigit() and int(val[:4]) < 1850:
+                        elif val and isinstance(val, str) and len(val) >= 4 and val[:4].isdigit() and (int(val[:4]) < 1850 or int(val[:4]) > 2130):
                             row[date_key] = None
                     yield row
             return clean_bad_dates(rows)
