@@ -1,4 +1,4 @@
-shoul# DAP Portal — Dataset Reference
+# DAP Portal — Dataset Reference
 
 *Last updated: 2026-04-07*
 
@@ -16,7 +16,7 @@ Because we upsert (never delete) for most datasets, we preserve historical data 
 
 NYC source data contains some records with impossible dates (data entry errors). During import, these dates are automatically nulled — the record is kept but the date field is set to NULL:
 
-- **All date/datetime fields**: any date before 1850 is automatically nulled on import across all models (not just the primary date field)
+- **All date/datetime fields**: any date before 1850 or after 2130 is automatically nulled on import across all models
 - **yearbuilt fields**: `yearbuilt < 1600` is nulled for Property, SubsidyJ51, and RentStabilization (0 means "unknown")
 - **NOT touched**: `yearalter1/yearalter2 = 0` (means "no alteration"), `reelyear = 0` (means "no microfilm reel") — these zeros are intentional
 
