@@ -37,7 +37,7 @@ Django + Celery + PostgreSQL backend for the [Displacement Alert Project (DAP)](
 2. Load the database (pick one):
 
    **Option A — Download from Box (recommended):**
-   Download the pre-built dump from [Box](https://blueprint.box.com/shared/static/ehsr8thnn511wk1hx3mre0drfmrms2d7.gz) (password-protected — ask a team member), then:
+   Download the pre-built dump from [Box](https://blueprint.box.com/shared/static/ehsr8thnn511wk1hx3mre0drfmrms2d7.gz) (password is in `.env.dev` as a comment), then:
    ```bash
    sh setup-db.dev.sh /path/to/dap_prod.dump   # custom format (~30 min restore)
    sh setup-db.dev.sh /path/to/dap_prod.gz      # or plain SQL (~2 hours restore)
