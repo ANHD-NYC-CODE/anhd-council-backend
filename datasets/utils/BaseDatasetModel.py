@@ -109,7 +109,20 @@ class BaseDatasetModel():
 
     @classmethod
     def transform_self_from_file(self, file_path, update=None):
-        return Typecast(self).cast_rows(self.transform_self(file_path, update))
+        rows = Typecast(self).cast_rows(self.transform_self(file_path, update))
+        # Null dates before 1850 — these are data entry errors in the source
+        if hasattr(self, 'QUERY_DATE_KEY'):
+            date_key = self.QUERY_DATE_KEY
+            def clean_bad_dates(gen):
+                for row in gen:
+                    val = row.get(date_key)
+                    if val and hasattr(val, 'year') and val.year < 1850:
+                        row[date_key] = None
+                    elif val and isinstance(val, str) and len(val) >= 4 and val[:4].isdigit() and int(val[:4]) < 1850:
+                        row[date_key] = None
+                    yield row
+            return clean_bad_dates(rows)
+        return rows
 
     @classmethod
     def async_concurrent_seed(self, file_path, update=None):

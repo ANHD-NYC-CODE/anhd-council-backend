@@ -399,6 +399,16 @@ class Property(BaseDatasetModel, models.Model):
                 except (ValueError, TypeError):
                     row['council'] = None
             
+            # Null yearbuilt if 0 or before 1600 (data entry errors)
+            yearbuilt = row.get('yearbuilt')
+            if yearbuilt is not None:
+                try:
+                    yb = int(yearbuilt)
+                    if yb < 1600:
+                        row['yearbuilt'] = None
+                except (ValueError, TypeError):
+                    pass
+
             count = count + 1
             if count % 10000 == 0:
                 logger.info("prepared {} properties".format(count))
