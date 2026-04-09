@@ -12,6 +12,22 @@ This document covers all datasets in the DAP Portal: what they are, where they c
 
 Because we upsert (never delete) for most datasets, we preserve historical data that Socrata may remove. Our DB can have more records than the current Socrata source — this is by design. A full re-import of a dataset that was previously truncated would lose those extra records.
 
+### Data Quality: Bad Dates
+
+NYC source data contains some records with impossible dates (data entry errors). During import, these dates are automatically nulled — the record is kept but the date field is set to NULL:
+
+- **All datasets**: dates before 1850 are nulled (e.g., year 0001, 0202, 1010 — typically missing leading digits)
+- **Properties (PLUTO)**: `yearbuilt < 1600` is nulled (49K+ records with `yearbuilt = 0` meaning "unknown")
+
+Records with nulled dates still appear in property lookups but won't show in time-filtered searches (last 30 days, last year, etc.).
+
+| Dataset | Bad Date Records | Typical Error |
+|---|---|---|
+| ACRIS Real Masters | ~3,691 | Year entered as 1-3 digits (e.g., "99" instead of "1899") |
+| DOB Violations | 11 | Missing leading "2" (e.g., "0010" instead of "2010") |
+| Housing Litigations | 2 | Same pattern |
+| Properties yearbuilt | ~49,432 | `yearbuilt = 0` means unknown |
+
 ### Datasets Requiring Login
 
 These return 403 for unauthenticated API requests (`REQUIRES_AUTHENTICATION = True`):
