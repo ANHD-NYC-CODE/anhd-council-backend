@@ -36,24 +36,28 @@ Django + Celery + PostgreSQL backend for the [Displacement Alert Project (DAP)](
 
 2. Load the database (pick one):
 
-   **Option A — Download from Box (recommended for most developers):**
+   **Option A — Download from Box (recommended):**
    Download the pre-built dump from [Box](https://blueprint.box.com/shared/static/ehsr8thnn511wk1hx3mre0drfmrms2d7.gz) (password-protected — ask a team member), then:
    ```bash
-   sh setup-db.dev.sh /path/to/dap_prod.dump   # custom format (~30 min)
-   sh setup-db.dev.sh /path/to/dap_prod.gz      # or plain SQL (~2 hours)
+   sh setup-db.dev.sh /path/to/dap_prod.dump   # custom format (~30 min restore)
+   sh setup-db.dev.sh /path/to/dap_prod.gz      # or plain SQL (~2 hours restore)
    ```
 
-   **Option B — Pull fresh from production (only if you need the most recent data):**
+   **Option B — Pull fresh from production (only if Box dump is outdated and you need recent data):**
+   Requires your IP to be whitelisted in DigitalOcean's firewall.
+
+   Custom format (recommended — fast restore):
    ```bash
    ssh root@138.197.79.10 "docker exec app pg_dump -U anhd -d anhd -Fc" > dap_prod.dump
    sh setup-db.dev.sh dap_prod.dump
    ```
-   Requires your IP to be whitelisted in DigitalOcean's firewall. Use this only when the Box dump is outdated and you need recent dataset imports.
 
-   **Option C — Build fresh (empty database, no production data):**
+   Plain SQL (legacy — slow restore):
    ```bash
-   sh build.dev.sh
+   PGPASSWORD=<DATABASE_PASSWORD> pg_dump -h <DATABASE_HOST> -U anhd -d anhd | gzip > dap_prod.gz
+   sh setup-db.dev.sh dap_prod.gz
    ```
+   DB credentials are in the production `.env` at `/var/www/anhd-council-backend/.env`.
 
 3. First-time setup — shell into the app container and seed:
    ```bash
@@ -67,29 +71,6 @@ Django + Celery + PostgreSQL backend for the [Displacement Alert Project (DAP)](
 
 4. Admin panel: `http://localhost:8000/admin/`
 5. Flower (task monitor): `http://localhost:8888/`
-
-### Creating a Fresh Database Dump from Production
-
-If the Box dump is outdated, create a new one from production:
-
-**Custom format (recommended — 3-5x faster restore):**
-```bash
-ssh root@138.197.79.10 "docker exec app pg_dump -U anhd -d anhd -Fc" > dap_prod.dump
-```
-
-**Plain SQL (legacy — slower restore):**
-```bash
-PGPASSWORD=<DATABASE_PASSWORD> pg_dump -h <DATABASE_HOST> -U anhd -d anhd | gzip > dap_prod.gz
-```
-
-The setup script auto-detects the format: `sh setup-db.dev.sh dap_prod.dump` or `sh setup-db.dev.sh dap_prod.gz`.
-
-| Format | Extension | Restore Time | Parallel | File Size |
-|---|---|---|---|---|
-| Custom | `.dump` | ~30 min | Yes (`-j 4`) | ~6-7GB |
-| Plain SQL | `.gz` | ~2 hours | No | ~6-7GB |
-
-Requires your IP to be whitelisted in DigitalOcean's firewall. Credentials are in the production `.env` at `/var/www/anhd-council-backend/.env`.
 
 ### VACUUM FULL (after loading a dump)
 
