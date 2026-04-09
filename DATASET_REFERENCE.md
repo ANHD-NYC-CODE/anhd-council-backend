@@ -1,4 +1,4 @@
-# DAP Portal — Dataset Reference
+shoul# DAP Portal — Dataset Reference
 
 *Last updated: 2026-04-07*
 
@@ -8,16 +8,9 @@ This document covers all datasets in the DAP Portal: what they are, where they c
 
 ## Quick Reference
 
-### Row Counts: Local vs Socrata (as of 2026-04-06)
+### Data Retention Note
 
-| Dataset | Local DB | Socrata | Notes |
-|---|---|---|---|
-| HPD Violations | 10,810,736 | 10,809,392 | Counts closely aligned |
-| HPD Complaints | 15,978,830 | 15,977,424 | Counts closely aligned |
-| DOB Complaints | 3,087,308 | 3,071,556 | **We have 15K more** — Socrata purged old records |
-| DOB Violations | 2,762,989 | 2,473,472 | **We have 289K more** — Socrata purged old records |
-
-> **Important:** Because we upsert (never delete), we preserve historical data that Socrata removes. A full re-import would **lose** those records. This is by design.
+Because we upsert (never delete) for most datasets, we preserve historical data that Socrata may remove. Our DB can have more records than the current Socrata source — this is by design. A full re-import of a dataset that was previously truncated would lose those extra records.
 
 ### Datasets Requiring Login
 
@@ -41,7 +34,7 @@ These return 403 for unauthenticated API requests (`REQUIRES_AUTHENTICATION = Tr
 | DOB Permit Issued Legacy | `$select` only | All rows (truncate + reload) | ~4M | 4M |
 | All others | Full CSV | No filter | Full table | — |
 
-### Import Method, Record Counts & Date Ranges
+### Import Method, Record Counts & Date Ranges (production, April 2026)
 
 | Dataset | Rows | Import Behavior | Oldest Record | Newest Record | Bad Dates |
 |---|---|---|---|---|---|
