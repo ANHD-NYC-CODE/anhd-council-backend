@@ -4,7 +4,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('datasets', '0120_add_rentimpaired_annotation'),
+        ('datasets', '0126_add_rentimpaired_annotation'),
     ]
 
     operations = [
