@@ -50,7 +50,7 @@ class LisPendenComment(BaseDatasetModel, models.Model):
         # does all the foreclosure comments each time,
         # in case the data we receive is out of sync and newer comments refer to
         # older lispendens
-        for comment in self.objects.prefetch_related('key').all():
+        for comment in self.objects.prefetch_related('key').all().iterator():
             # search for word foreclosure
 
             if comment.key_id in keys:
@@ -74,7 +74,7 @@ class LisPendenComment(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        logger.info("Seeding/Updating {}", self.__name__)
+        logger.info("Seeding/Updating %s", self.__name__)
 
         self.seed_with_upsert(**kwargs)
         self.mark_lispenden_foreclosures()

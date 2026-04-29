@@ -227,6 +227,7 @@ def build_annotated_fields(request, datasets):
             # default time frame is set to "RECENT"
             fields_list.append(generate_date_key(params, dataset, dataset_prefix + 's', dataset_query_date_key, dataset_prefix, dataset_class)
                                )
+
     return fields_list
 
 

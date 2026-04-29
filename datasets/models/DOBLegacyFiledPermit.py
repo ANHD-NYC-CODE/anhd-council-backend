@@ -15,6 +15,7 @@ logger = logging.getLogger('app')
 
 class DOBLegacyFiledPermit(BaseDatasetModel, models.Model):
     download_endpoint = "https://data.cityofnewyork.us/api/views/ic3t-wcy2/rows.csv?accessType=DOWNLOAD"
+    base_download_endpoint = "https://data.cityofnewyork.us/resource/ic3t-wcy2.csv"
     API_ID = 'ic3t-wcy2'
 
     class Meta:
@@ -140,7 +141,19 @@ class DOBLegacyFiledPermit(BaseDatasetModel, models.Model):
 
     @classmethod
     def download(self, endpoint=None, file_name=None):
-        return self.download_file(self.download_endpoint, file_name=file_name)
+        fields = [
+            "job__", "job_s1_no", "doc__", "borough", "house__", "street_name",
+            "block", "lot", "bin__", "job_type", "job_status", "job_status_descrp",
+            "latest_action_date", "pre__filing_date",
+            "applicant_s_first_name", "applicant_s_last_name",
+            "applicant_professional_title", "applicant_license__",
+            "owner_s_business_name", "initial_cost", "job_description",
+            "dobrundate"
+        ]
+        download_url = "{}?$select={}&$limit=100000000".format(
+            self.base_download_endpoint, ','.join(fields))
+        logger.info("Downloading DOBLegacyFiledPermit filtered dataset from: %s", download_url)
+        return self.download_file(download_url, file_name=file_name or "DOBLegacyFiledPermit")
 
     @classmethod
     def pre_validation_filters(self, gen_rows):
@@ -164,13 +177,45 @@ class DOBLegacyFiledPermit(BaseDatasetModel, models.Model):
             #     continue
             yield row
 
+    # Socrata resource API returns different column names than the CSV export
+    SOCRATA_FIELD_MAP = {
+        'job__': 'job',
+        'job_s1_no': 'jobs1no',
+        'doc__': 'doc',
+        'house__': 'house',
+        'street_name': 'streetname',
+        'bin__': 'bin',
+        'job_type': 'jobtype',
+        'job_status': 'jobstatus',
+        'job_status_descrp': 'jobstatusdescrp',
+        'latest_action_date': 'latestactiondate',
+        'pre__filing_date': 'prefilingdate',
+        'applicant_s_first_name': 'applicantsfirstname',
+        'applicant_s_last_name': 'applicantslastname',
+        'applicant_professional_title': 'applicantprofessionaltitle',
+        'applicant_license__': 'applicantlicense',
+        'owner_s_business_name': 'ownersbusinessname',
+        'initial_cost': 'initialcost',
+        'job_description': 'jobdescription',
+    }
+
+    @classmethod
+    def remap_headers(cls, gen_rows):
+        for row in gen_rows:
+            remapped = {}
+            for key, value in row.items():
+                clean_key = key.lstrip('\ufeff')
+                new_key = cls.SOCRATA_FIELD_MAP.get(clean_key, clean_key)
+                remapped[new_key] = value
+            yield remapped
+
     @classmethod
     def transform_self(self, file_path, update=None):
-        return self.pre_validation_filters(with_bbl(from_csv_file_to_gen(file_path, update)))
+        return self.pre_validation_filters(with_bbl(self.remap_headers(from_csv_file_to_gen(file_path, update))))
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        logger.info("Seeding/Updating {}", self.__name__)
+        logger.info("Seeding/Updating %s", self.__name__)
         self.bulk_seed(**kwargs, overwrite=True)
 
     def __str__(self):

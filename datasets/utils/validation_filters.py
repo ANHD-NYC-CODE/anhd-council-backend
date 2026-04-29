@@ -7,7 +7,7 @@ from core.utils.typecast import date
 
 def is_null(value):
     if isinstance(value, str):
-        return not value.strip()
+        return not value.strip() or value.strip().lower() == 'null'
     else:
         return value is None
 

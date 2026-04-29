@@ -152,9 +152,6 @@ class PropertyManager(models.Manager):
     def community(self, number):
         return self.get_queryset().community(number)
 
-    def council(self, number):
-        return self.get_queryset().council(number)
-
     def zipcode(self, number):
         return self.get_queryset().zipcode(number)
 
@@ -215,6 +212,7 @@ class Property(BaseDatasetModel, models.Model):
                                       db_column='stateassembly', db_constraint=False)
     statesenate = models.ForeignKey('StateSenate', on_delete=models.SET_NULL, null=True,
                                     db_column='statesenate', db_constraint=False)
+    last_modified = models.DateTimeField(blank=True, null=True)
     ct2010 = models.TextField(blank=True, null=True)
     cb2010 = models.TextField(blank=True, null=True)
     schooldist = models.SmallIntegerField(blank=True, null=True)
@@ -354,13 +352,13 @@ class Property(BaseDatasetModel, models.Model):
 
     @classmethod
     def recreate_community_relations(self):
-        for property in self.objects.all():
+        for property in self.objects.all().iterator():
             try:
                 property.cd = ds.Community.objects.get(id=property.cd_id)
                 property.save()
             except Exception as e:
                 logger.debug(
-                    'Unable to find community for {}'.format(property))
+                    'Unable to find community for %s', property)
 
     @classmethod
     def update_set_filter(self, csv_reader, headers):
@@ -383,23 +381,34 @@ class Property(BaseDatasetModel, models.Model):
     @classmethod
     def pre_validation_filters(self, gen_rows):
         logger.info("prevalidating properties")
+        # Preload all council IDs to avoid 872K individual DB queries
+        council_ids = set(ds.Council.objects.values_list('id', flat=True))
         count = 0
         for row in gen_rows:
             # Address Standardizing
             row['original_address'] = row['address']
             row['address'] = clean_number_and_streets(
                 row['address'], True, clean_typos=False)
-            
+
             # Set CouncilDistrict row from Data to also be "Council" field
-            row['councildistrict'] = row.get('councildistrict')
             council_district_number = row.get('councildistrict')
             if council_district_number:
                 try:
-                    council_instance = ds.Council.objects.get(id=council_district_number)
-                    row['council'] = council_instance.id
-                except ds.Council.DoesNotExist:
-                    row['council'] = None  # Use None to represent NULL
+                    cd_int = int(council_district_number)
+                    row['council'] = cd_int if cd_int in council_ids else None
+                except (ValueError, TypeError):
+                    row['council'] = None
             
+            # Null yearbuilt if 0 or before 1600 (data entry errors)
+            yearbuilt = row.get('yearbuilt')
+            if yearbuilt is not None:
+                try:
+                    yb = int(yearbuilt)
+                    if yb < 1600:
+                        row['yearbuilt'] = None
+                except (ValueError, TypeError):
+                    pass
+
             count = count + 1
             if count % 10000 == 0:
                 logger.info("prepared {} properties".format(count))
@@ -427,8 +436,92 @@ class Property(BaseDatasetModel, models.Model):
                 logger.info("attached geos to {} properties".format(count))
 
     @classmethod
+    def copy_upsert(cls, **kwargs):
+        """Fast PLUTO import using COPY + temp table + INSERT ON CONFLICT UPDATE."""
+        import csv
+        import tempfile
+        import os
+        from django.db import connection
+
+        file_path = kwargs.get('file_path')
+        update = kwargs.get('update')
+
+        logger.info('Starting COPY upsert for Property (PLUTO)')
+
+        # Get transformed rows
+        gen = cls.transform_self_from_file(file_path, update)
+
+        # Get model field names (exclude auto fields)
+        field_names = [f.column for f in cls._meta.fields]
+
+        # Write transformed data to temp CSV
+        temp_file = tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False, dir='/tmp')
+        writer = csv.DictWriter(temp_file, fieldnames=field_names, extrasaction='ignore')
+        writer.writeheader()
+        import datetime as dt
+        now = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        row_count = 0
+        for row in gen:
+            row['last_modified'] = now
+            writer.writerow(row)
+            row_count += 1
+        temp_file.close()
+        logger.info('Wrote %d rows to temp CSV', row_count)
+
+        from django.db import transaction
+        with transaction.atomic(), connection.cursor() as cursor:
+            # Create temp table with same structure
+            cursor.execute(f'CREATE TEMP TABLE temp_property (LIKE {cls._meta.db_table} INCLUDING ALL) ON COMMIT DROP')
+
+            # COPY into temp table
+            with open(temp_file.name, 'r') as f:
+                columns = f.readline().strip()
+                sql = f"COPY temp_property ({columns}) FROM STDIN WITH CSV"
+                cursor.copy_expert(sql, f)
+            logger.info('COPY completed: %d rows loaded into temp table', row_count)
+
+            # Upsert from temp into real table
+            set_clause = ', '.join(f'{col} = EXCLUDED.{col}' for col in field_names if col != 'bbl')
+            cursor.execute(f"""
+                INSERT INTO {cls._meta.db_table} ({', '.join(field_names)})
+                SELECT {', '.join(field_names)} FROM temp_property
+                ON CONFLICT (bbl) DO UPDATE SET {set_clause}
+            """)
+            logger.info('Upsert completed: %d rows processed', cursor.rowcount)
+
+            if update:
+                update.rows_created = cursor.rowcount
+                update.save()
+
+        # Clean up temp file
+        os.unlink(temp_file.name)
+        logger.info('COPY upsert complete for Property')
+
+    @classmethod
     def seed_or_update_self(self, **kwargs):
-        self.seed_with_upsert(**kwargs)
+        # Reset last_modified so we can identify which properties are in the new import
+        self.objects.update(last_modified=None)
+        logger.info('Reset last_modified for all properties')
+
+        if settings.TESTING:
+            self.seed_with_upsert(**kwargs)
+        else:
+            self.copy_upsert(**kwargs)
+
+        # Null district fields for properties not in this PLUTO import (obsolete BBLs)
+        # Properties that were imported have last_modified set; those without are obsolete
+        obsolete = self.objects.filter(
+            last_modified__isnull=True
+        ).exclude(
+            council=None, cd=None, stateassembly=None, statesenate=None, zipcode=None
+        )
+        obsolete_count = obsolete.count()
+        if obsolete_count > 0:
+            obsolete.update(council=None, cd=None, stateassembly=None, statesenate=None, zipcode=None)
+            logger.info('Nulled district fields for %d obsolete properties (not in PLUTO import)', obsolete_count)
+        else:
+            logger.info('No obsolete properties found')
+
         logger.info('adding property annotations')
         self.create_property_annotations()
         if settings.TESTING:

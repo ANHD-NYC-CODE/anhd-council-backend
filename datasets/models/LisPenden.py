@@ -85,7 +85,7 @@ class LisPenden(BaseDatasetModel, models.Model):
 
     @classmethod
     def mark_foreclosure_with_creditor(self):
-        for lispenden in self.objects.filter(~Q(type=self.LISPENDEN_TYPES['foreclosure'])):
+        for lispenden in self.objects.filter(~Q(type=self.LISPENDEN_TYPES['foreclosure'])).iterator():
             if lispenden.has_bank_creditor():
 
                 lispenden.type = self.LISPENDEN_TYPES['foreclosure']
@@ -103,7 +103,7 @@ class LisPenden(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        logger.info("Seeding/Updating {}", self.__name__)
+        logger.info("Seeding/Updating %s", self.__name__)
         self.seed_with_upsert(**kwargs)
         logger.debug('marking foreclosures by creditor for {}', self.__name__)
         self.mark_foreclosure_with_creditor()

@@ -70,12 +70,12 @@ class AEPBuilding(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        logger.info("Seeding/Updating {}", self.__name__)
+        logger.info("Seeding/Updating %s", self.__name__)
         self.seed_with_upsert(**kwargs)
 
     @classmethod
     def annotate_properties(self):
-        for record in self.objects.all():
+        for record in self.objects.all().iterator():
             try:
                 annotation = record.bbl.propertyannotation
                 annotation.aepstatus = record.currentstatus

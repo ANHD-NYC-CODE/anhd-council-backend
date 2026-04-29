@@ -1,708 +1,380 @@
-# DAP Council Backend ReadMe
+# DAP Council Backend
 
-## Important urls
+Django + Celery + PostgreSQL backend for the [Displacement Alert Project (DAP)](https://portal.displacementalert.org).
 
-1. App: `portal.displacementalert.org`
-2. Staging app: `staging.portal.displacementalert.org`
-3. Api: `api.displacementalert.org`
-4. api docs: `api.displacementalert.org/docs`
-5. tasks: `tasks.displacementalert.org`
+> **Frontend repo:** [anhd-council-client](https://github.com/ANHD-NYC-CODE/anhd-council-client) — see its README for frontend setup, deployment, and the Mapbox tileset update guide.
 
-## Installation
+## URLs
 
-1. Install docker https://docs.docker.com/install/linux/docker-ce/ubuntu/#install-docker-ce and docker compose `sudo apt-get install docker-compose`
-2. Install git, clone repo
+| Environment | URL |
+|---|---|
+| Production app | `portal.displacementalert.org` |
+| Staging app | `staging.portal.displacementalert.org` |
+| Production API | `api.displacementalert.org` |
+| Celery tasks (Flower) | `tasks.displacementalert.org` |
+| Admin panel | `api.displacementalert.org/admin/` |
+| Periodic tasks | `api.displacementalert.org/admin/django_celery_beat/periodictask/` |
 
-## Restarting Server (Not Database Content)
+## Stack
 
-# PRODUCTION RESTART
+- **Python 3.12** / **Django 4.2** (LTS)
+- **Celery 5.4** with Redis broker and django-celery-beat scheduler
+- **PostgreSQL 15**
+- **Docker Compose** for local dev and production
+- Data sourced from **NYC Open Data (Socrata)**, **AWS S3** (OCA Housing Court), and manual uploads
 
-1. ssh in via `ssh anhd@138.197.79.10` in terminal (Make sure your device is whitelisted with digitalocean)
-2. `cd /var/www/anhd-council-backend`
-3. `sudo docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d`
-   Note: May need to rebuild/redeploy app (instead of the above restart command) if model changes have been made
+## Quick Start (Local Development)
 
-# DEV RESTART
+### Prerequisites
 
-In terminal, navigate to the 'anhd-council-backend' root folder on your local device and type:
-`sudo docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d`
-The dev restart progress should also appear in docker (you'll be able to see the resources restart, etc)
-(Build with sh build.dev.sh). A migration typically will only need to be done if a dataset structure has changed (ie. new fields added or removed)
-Note: May need to rebuild app (instead of the above restart command) if model changes have been made (`sudo sh build.dev.sh`)
+- [Docker Desktop](https://docs.docker.com/get-docker/) with Compose v2
+- Turn off Docker Desktop's "Resource Saver" in Settings (interrupts long-running DB loads)
 
-# DEV REBUILD
+### Setup
 
-Run: sudo sh build.dev.sh
+1. Clone the repo and get `.env` + `.env.dev` files from a team member. Place both in the repo root.
 
-(May have to restart dev after rebuild if DB hasn't finished loading)
+2. Load the database (pick one):
 
-## Production / Dev Startup
-
-1. Clone repo
-2. Get `.env` file from dev.
-3. Run build script `sh build.prod.sh` or `sudo sh build.dev.sh` depending on your environment
-
-   DEV:
-   If the build fails with an error regarding the database starting up, you may run
-   `sudo docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d` to restart it
-
-4. (first time startup) Shell into app container `docker exec -i -t app /bin/bash` and
-
-- create super user `python manage.py createsuperuser` (NOTE: check your email because the app will auto-generate a password despite you creating one in the wizard)
-- seed datasets `python manage.py loaddata /app/core/fixtures/datasets.yaml`
-- seed crontabs `python manage.py loaddata /app/core/fixtures/crontabs.yaml`
-- seed automation tasks `python manage.py loaddata /app/core/fixtures/tasks.yaml`
-
-5. Upload initial datafiles and update (or download the pre-seeded database `.tar` from here: https://www.dropbox.com/s/lxdzcjkoezsn086/dap_council_pgvol1.tar?dl=0)
-
-- councils
-- pluto properties
-- buildings
-- padrecord
-- hpdbuildings
-- tax liens
-- coredata
-- public housing data
-- taxbills
-- j51 data
-- 421a data
-
-## Development Setup (after cloning this repo)
-
-1. run `sh build.dev.sh`
-2. Download a pre-seeded database from dropbox here to move it to project root: https://www.dropbox.com/s/8iqkuk0ip39mtle/dap.gz?dl=0 This database comes with all the councils, communities, properties, buildings, address records, and subsidy programs pre-loaded.
-3. Run this command to copy the data - `gzip -d dap.gz && cat dap | docker exec -i postgres psql -U anhd -d anhd`
-4. If the site does not run as is, run `docker exec -it app /bin/bash` to connect to the running docker container, and then run `python manage.py migrate`
-
-## Migrations
-
-To add a migration, run `docker exec -it app /bin/bash` and then run `python manage.py makemigrations`
-
-## Dev Startup (post setup)
-
-1. After setting up the dev environment you can always restart it with `docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d` however you may want to have a non-dockerized and non-daemonized version of the app running for debugging purposes. (Note: PDB debugging is possible if you attach to the app container w/ `docker attach app` )
-2. (optional) To detach for local debugging, stop the docker app `docker-compose stop app`
-3. (optional) If the app is ejected, you'll need to eject the celery workers too if you plan on using them: `docker-compose stop app celery_default celery_update`.
-4. (optional) start the `celery_update` worker manually with the shell script `sh celery1.sh`
-5. (optional) start the `celery_default` worker manually with the shell script `sh celery2.sh`
-6. (optional) start the app in terminal `python manage.py runserver`
-7. Reset cache at: http://localhost:8000/admin/django_celery_beat/periodictask/
-
-**You can view logs in production with `docker-compose logs -f app`**
-
-**To add environmental variables into running workers, refer to https://stackoverflow.com/questions/27812548/how-to-set-an-environment-variable-in-a-running-docker-container**
-
-- `docker exec -i CONTAINER_ID /bin/bash -c "export VAR1=VAL1 && export VAR2=VAL2 && your_cmd"`
-
-## Continuous deployment
-
-- the production branch is `master`
-- Run this remote task to update the production server.
-- Updating the server will interrupt any running workers and clear the redis cache. Keep this in mind if any long running tasks are currently running.
-
-IMPORTANT NOTE: Please do not deploy while any tasks are in progress. You can check the status at https://tasks.displacementalert.org/.
-If an update must be done, you may revoke the dataset updates in progress - but note that if it's an automated updated - ie. a monthly periodic task - if it will not run again until the following day/month, etc - or manually ran under periodic tasks. As well, if the seeding has already began, you may need to clear the "API LAST CHECKED" value for that dataset in the production database, so it tries to re-import the data (otherwise if API date is same to current data being imported, it may skip the import).
-
-1. `sh deploy.sh`
-
-- or if already SSHed inside, Run the build script `sh build.prod.sh`
-
-Note: If deploy runs fast, the db may need time to start up. You can also restart the server (ie on dev `sudo docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d` after deployment)
-
-2. cache is preserved on deploy
-
-## Maintaining this App
-
-### 3rd Party Services
-
-- Rollbar - account through anhd github auth.
-
-### Opening a live shell
-
-1. ssh into the server
-2. open a shell into the container - `sudo docker exec -it app /bin/bash`
-3. open a django shell - `python manage.py shell`
-4. close the shell when finished (important!!) with `exit`
-
-### Adding new async tasks
-
-You can load tasks with `python manage.py loaddata crontabs` and `python manage.py loaddata tasks` or add them manually in the `periodic tasks` section of the admin panel.
-
-I recommend going through the admin panel and adding it in manually because rewriting all the tasks with a new bulk upload using the `loaddata` command has run into problems. Please also make sure to add them to the cron yaml if you add them manually to the backend.
-
-### Manually triggering tasks
-
-1. Login to admin
-2. go to https://api.displacementalert.org/admin/django_celery_beat/periodictask/
-3. Select the task
-4. in the "action" dropdown, select "run selected tasks" and click "go".
-5. monitor tasks in flower https://tasks.displacementalert.org (or localhost:8888 on dev)
-
-### Updating Pluto or PAD
-
-Updating either one of these will leave the old entries intact and overwrite any existing entries that conflict with the new entries. To update these records, create an update in the admin panel using the appropriate file containing the new data (Property will be an automated update, and AddressRecord will not need a file). Update one of these at a time - not all at once. Wait for one to be successful before going to the next.
-
-If you update Pluto / `Property`, you also need to update `Buildings`, `PADRecord`, and `AddressRecord` to make sure all the data for the frontend gets surfaced.
-
-1. Update `Property` with Pluto (NOT MAPPluto) data (automated)
-2. Update `Building` with PAD dataset
-3. Update `PADRecord` with PAD dataset (same file as Building)
-4. Update `AddressRecord` (no file needed - create manual update in the api panel for AddressRecord and don't choose a file)
-
-Some of the automated, backend steps involved in the AddressRecord update include:
-
-- Database - Batch upserts completed for AddressRecord.
-- Building search index...
-- Updating address search vector: AddressRecord
-- Address Record seeding complete!
-- Deleting older records...
-
-The celery_update log may show errors about missing BBL or duplicate key values (ie. `[06/Dec/2023 21:49:54] ERROR [app:323] Database Error * - unable to upsert single record. Error: duplicate key value violates unique constraint "datasets_addressrecord_bbl_number_street_b8e5351f_uniq" DETAIL:  Key (bbl, number, street)=(3049360053, 1177, Brooklyn Avenue) already exists.`) - and also not show any progress in the ADMIN panel. This is expected based on how the app was built. The entire Address update takes 2-4 hours.
-
-### Downloading an open-data file to your local computer
-
-1. Login to admin
-2. go to https://api.displacementalert.org/admin/core/dataset/
-3. select a dataset
-4. click "Download CSV"
-<!-- DEV NOTE: The download source button may not work, and the download data-file from updates history doesn't work at all. Error "Not Found. The requested resource was not found on this server." will occur -->
-
-### Manually updating datasets
-
-If the dataset is automated,
-
-1. Login to admin
-2. navigate to https://api.displacementalert.org/admin/core/dataset/
-3. Select an automated dataset
-4. Click the "Update Dataset" button, which will run the normally automated task on command.
-
-If the dataset ISN'T automated, you need to download the file to your local computer, upload & associate it to a dataset manually, then create an update manually. Each model file has a link to the download endpoint. One exception to this is the AddressRecords dataset - which is built off of Properties, Buildings, and PAD Record.
-
-1. Login to admin
-2. navigate to https://api.displacementalert.org/admin/core/update/
-3. Click "Add update"
-4. Click the green "+" icon in the "File" field.
-5. In the popup window, upload your file where is says "choose file"
-6. Select the dataset to associate thi file with in the "Dataset" field.
-7. Click "Save" and monitor its progress in flower https://tasks.displacementalert.org
-
-### Manually updating property shark data
-
-1. Download the monthly pre-foreclosures from property shark and manually upload it via admin associating it with the PSPreforeclosure dataset.
-2. Download the monthly foreclosure auctions from property shark and manually upload it via admin associating it with the PSForeclosure dataset.
-
-### Building the address table
-
-Whenever you update Pluto or PAD, you'll need to update the address records to make the new properties searchable. Updating the address records will delete all address records and seed new ones from the existing property and building records within an atomic transaction, meaning if it fails, the old records will be preserved. This runs within an atomic transaction, so there will be no interruption to the live address data while this is happening.
-
-To do so, create an update within the admin panel with only the dataset attribute selected, and set it to `AddressRecord`.
-
-This process requires around 6GB of available RAM due to performing an atomic transaction in the DB. Existing address records will be stored in memory while the new records populate to ensure continuous operation of the search feature while the process takes place over several hours. The existing records will only be deleted once the process is complete. Because of this, please restart the app and postgres containers in docker first to clear up memory usage from long-lived workers. (ssh in and run `sh build.prod.sh` to clear memory)
-
-Caveats:
-
-1. Best to run `Property`, `Building`, `PADRecord`, and `AddressRecord` updates around noon so they finish before 7pm (which is the when daily updates start.)
-2. Space out the updates by a day. (property 1 day, building + pad on day 2, address on day 3)
-
-### Maintaining the daily cache.
-
-Every night at around 1am (at the time of this writing) a task runs which caches ALL of the community and council district endpoints that serve the property data to District Dashboard in the frontend. The file which runs this task is in `cache.py`.
-
-This script uses a unique token for authentication to cache both the authenticated and unauthenticated responses.
-
-It visits each GET endpoint that the frontend calls when users visit this page, so if the client ever changes this endpoint, make sure to also update the endpoint in `cache.py`
-
-###### Here's an example:
-
-If you want `"All properties with 10 HPD violations after 2018/01/01 AND EITHER (10 DOB violations after 2018/01/01 OR 10 ECB violations after 2018/01/01)"`:
-
-The query string would look like this:
-
-`localhost:3000/properties?q=*condition_0=AND filter_0=condition_1 filter_1=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__count__gte=10 *condition_1=OR filter_0=dobviolations__issueddate__gte=2018-01-01,dobviolations__count__gte=10 filter_1=ecbviolations__issueddate__gte=2018-01-01,ecbviolations__count__gte=10`
-
-Let's break this down first.
-
-- This query has 2 `conditions`. An `AND` condition (HPD Violations AND...) and an `OR` condition (DOB violations OR ECB violations.)
-- Each `filter` ("10 HPD violations after 2018/01/01" is a `filter`) has 2 `parameters` (after 2018/01/01 is a parameter, and >= 10 is a parameter).
-- The first condition (the `AND` condition) has a single nested condition (the `OR` condition is nested inside it).
-
-With these in mind, this is how you start defining a new condition in the query string:
-
-- `*condition_0=AND` - define the TYPE and give it a unique id ("0")
-- The first condition MUST have a unique ID of "0", but all subsequent conditions can have any unique ID you want.
-- Next, each `filter` is separated with a `SPACE`
-- In this case, a `nested condition` is assigned as a `filter`. In this example, `filter_0=condition_1` references `condition_1` (the unique ID here is "1" but it can be anything as long as it's referenced correctly.)
-- Then, the last filter of this condition is added with each `parameter` separated by a `COMMA` like so: `filter_1=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__count__gte=10`
-- The parameters are `raw django query language`. [Reference](https://docs.djangoproject.com/en/2.2/topics/db/queries/)
-- When condition_0's expression is complete, you can begin the next condition's expression after a `SPACE` using the same format.
-
-Please view the test suite `PropertyAdvancedFilterTests` in `datasets/tests/filters/test_property.py`. There are numerous examples of this language that cover all of the special cases and advanced query types. This feature was very well tested!
-
-### Debugging
-
-1. attach to app with `docker attach app`
-2. use PDB to create a breakpoint: `import pdb; pdb.set_trace()`
-
-### Running tests
-
-1. bash into the app `docker exec -it app bash`
-2. run `python manage.py test`
-<!-- Dev Note: Most likely, these tests will fail as they may not have been updated since inception of app -->
-
-### Database Dumps
-
-To create a database dump, run the following at the directory root (/var/www/anhd-council-backend)
-
-`docker exec -t postgres pg_dump --column-inserts -v -t datasets_council -t datasets_community -t datasets_stateassembly -t datasets_statesenate -t datasets_zipcode -t datasets_coresubsidyrecord -t datasets_property -t datasets_building -t datasets_padrecord -t datasets_addressrecord -t datasets_publichousingrecord -t django_celery_beat* -t core_dataset -c -U anhd | gzip > dap.gz`
-
-Then SFTP in and transfer the file locally and DELETE from the production server - it's a big file!
-
-- restore it with `gzip -d dap.gz && cat dap | docker exec -i postgres psql -U anhd -d anhd` on your local machine at repo root
-- Be sure to to create a superuser (`python manage.py createsuperuser` inside the `app` docker container)
-
-docker exec postgres pg_dump -U anhd anhd -t datasets_council > dap.sql
-
-docker exec -t postgres pg_dump --column-inserts -v -t datasets_council -c -U anhd | gzip > dap.gz
-
-gzip -d dap.gz && cat dap | docker exec -i postgres psql -U anhd -d anhd
-
-### CRON / Periodic Tasks Not Running
-
-If the Flower Periodic Tasks fail to automatically run, like the nightly cache reset or any automatic updates:
-
-- 1. log into the droplet / remote server via terminal or digitalocean console
-- 2. delete the celerybeat PID file from its backend folder
-- 3. redeploy the backend
-
-### Viewing the OCA Housing Raw Data (As of 8/15/23)
-
-- If you need to view the two files that are being joined to update the OCA Housing Dataset, here are the instructions:
-  - After installing Amazon CLI, run "aws configure" in your command line, typing in the credentials from the env.
-  - It will prompt you for the following:
-    AWS Access Key ID - Enter your OCA_AWS_SECRET_KEY_ID.  
-    AWS Secret Access Key - Enter your OCA_AWS_SECRET_ACCESS_KEY.
-    Default region name - Default.
-    Default output format - You can leave this as the default (blank)
-    - Download the Files by directly accessing the buckets: You can use the following commands to download to the current directory you're in on your local device (make sure it's not the app's directory or it may add to the repo)
-      aws s3 cp s3://BUCKET_NAME/public/oca_addresses_with_bbl.csv . <!-- Bucketname is in .env file -->
-      aws s3 cp s3://BUCKET_NAME/public/oca_index.csv . <!-- Bucketname is in .env file -->
-      <!-- ie:
-          `aws s3 cp s3://oca-2-dev/public/oca_index.csv .` 
-      and `aws s3 cp s3://oca-2-dev/public/oca_addresses_with_bbl.csv . `
-            NOTE:  make sure the ' .' is included or relevant destination for the downloaded files
-      - Note: Prior to August 2023, the bucket name used was different and also didn't use the /public/ directory. Please consult a dev and make sure it's updated to the most recent bucket in any backend ENV and commands you issue. The access is being given on AWS under the IAM settings - and not via IP whitelist. The aws was moved to 'oca-2-dev' bucket in 2023. Please verify your .env AND .env.dev have that
-
-## Further Troubleshooting and Q&As:
-
-Backend Local setup
-May need to Comment out lines 175 and 176 on docker-compose.yml - NGINX and CERBOT
-Copy .env.dev and file named .env to root directory (make sure they have the "." in front of them - and that the files are hidden)
-
-Run build script
-sh build.dev.sh
-
-Setup/Access docker container
-docker exec -it app bash (may need sudo)
-must run all commands in container\*
-Import fixtures (within container)
-python manage.py loaddata core/fixtures/
-Include all: crontabs.yaml, datasets.yaml, tasks.yaml
-Create superuser to access admin page (within container)
-python manage.py createsuperuser
-(NOTE: check your email because the app will auto-generate a password despite you creating one in the wizard)
-Login to Local Admin DB @ http://localhost:8000/admin/login/?next=/admin/core/
-
-# For local testing:
-
-comment out: #REACT_APP_API_URL=https://api.displacementalert.org
-comment in: REACT_APP_API_URL=http://localhost:8000
-Update dataset on admin page (that you're testing)
-Check flower that it's done updating (localhost:8888)
-
-# Connect local via PSQL / Postgres
-
-docker exec -it postgres psql -U anhd
-\dt to list tables
-SELECT \* FROM datasets_eviction; (to see eviction data)
-
-(Note: DBeaver or POSTGRESQL command line are recommended to view raw data )
-
-# Manual dataset updates:
-
-Check dataset models for specific instructions\*
-
-# Using DBeaver
-
-Stop postgres (if necessary) brew services stop postgresql
-Connect to database (host anhd, user anhd)
-
-# To Stop Docker from Command Line
-
-docker-compose stop app
-
-# Frontend Staging URL: staging.portal.displacementalert.org
-
-Deployment
-Deployed via “deploy.sh”
-
-# Troubleshooting
-
-Check logs for the containers
-To see names of containers (or just open Docker if dev envirnoment)
-docker ps
-docker-compose logs -f app
-docker-compose logs -f postgres
-
-## Troubleshooting FAQ:
-
-# Q How do I download dataset files from the remote ssh server?
-
-You may use the SCP command and point to the file/directory path on the remote server:
-ie. `scp anhd@138.197.79.10:/var/www/anhd-council-backend/data/FILE-NAME-HERE.csv .`
-Ensure you have the ` .` at the end, or a different destination in your local device. Please do not run this command in your anhd-council-backend folder (the repo folder) or any of it's subsequent folders - as it will then add the CSV to the repo.
-
-# Q I get an error when running my react build that certain node modules or scss cannot be accessed.
-
-A: Please ensure ENV file is in the root directory and also hidden (appended with “.” in the filename). The env.dev is for the backend, env.development.local is for the front end.
-
-# Q View raw data/set files on server:
-
-1. ssh to server `ssh anhd@138.197.79.10`
-2. `cd /var/www/`
-3. To see datasets, go to anhd-council-backend/data
-4. View raw dataset: ‘sudo cat filename’
-
-# Q I’m getting Postgres errors. What do I do?
-
-Please make sure your postgress is running (it should also show up in your docker)
-
-# Q Updating State Senate Districts Map:
-
-At https://www1.nyc.gov/site/planning/data-maps/open-data/districts-download-metadata.page, download the State Senate Districts (Clipped to Shoreline) as a .GeoJSON file, and then update the dataset on the admin panel (most likely, https://api.displacementalert.org/admin/core/update/?dataset=42). You will also need to update the mapbox dataset (see pdf in root re: this).
-
-# Q After updating a geojson / shapefile on MAPBOX, I now see overlays of the OLD and NEW boundaries on the portal.
-
-This is a LOCAL bug that occurs because of caching/cookies. We found you can resolve this by clearing all site data from your browser. The issue persisted in other browsers and even in incognito mode.
-
-# Q CeleryBeat seems to be restarting constantly - even after a backend redeploy or system restart. What can I do?
-
-A: Delete the celerybeat.pid file in the app's root and restart the backend stack.
-
-# Q How do I restart (or start up) the Backend Dev DB?
-
-A: via “sh restart.dev.sh”
-
-# Q How do I shut down the local dev environment
-
-A: This can be down via down.dev.sh
-
-# Q How do I add my email to receive notifications?
-
-A: if you go to app > settings > development.py you can change it. “(Development)...” emails are only sent when the application is in debug mode (settings.DEBUG set to True).
-
-# Q Where do I update datasets on the live front end?
-
-A: From dashboard - specifically https://API.Displacementalert.org/admin/core/updates
-
-# Q What kinds of tasks does CeleryWorker run?
-
-A: Pulling Data, Custom Search Notifications, Sending Notifications, etc.
-It has separate workers for notifications and updates
-
-# Q I can’t connect to the DigitalOcean droplet(s)
-
-A: Please ensure your ip is whitelisted under the droplet’s firewall settings on Digital Ocean’s dashboard.
-
-# Q Is the application cached?
-
-A: Yes, It uses Redis.
-
-# Q Where can I view Celery Tasks on Production? What about “scheduled” or caching tasks?
-
-A. Via the dashboard at https://tasks.displacementalert.org/dashboard or https://api.displacementalert.org/admin/django_celery_beat/periodictask/ for the scheduled tasks
-
-# Q What languages/frameworks does the app use?
-
-A: React, SASS, Flower, Celery, Docker (Compose), Postgres, Python, Django, Reddis
-
-# Q How do I access the Database via PostgresQL in the local environment?
-
-A: Once inside docker, and postgresql CL:
-log in with:
-psql -h localhost -U anhd -d anhd
-
-view all tables:
-\dt
-
-# Q How do I view all columns of a table (note:table name is case sensitive) in Postgresql?
-
-A: As an example:
-ie:
-SELECT \* FROM information_schema.columns WHERE table_name='datasets_hpdcomplaint';
-
-# Q: I'm getting Postgres Error when trying to deploy locally?
-
-A: Make sure Postgres part of your docker container:
-docker exec -i postgres psql -U anhd -d anhd
-
-As well, make sure you're not running Postgres locally (outside of the app) like in your OS.
-
-# Q: I get a Docker Ownership error when trying my docker commands
-
-A: If you've ensured you have the correct dockerfile in your backend root directly:
-Reset the docker image permissions and include your home folder name:
-`sudo chown -R $USER /Users/YOUR-APPLE-HOME-FOLDER-NAME-HERE/.docker/`
-.ie: 'sudo chown -R $USER /Users/scottkutler/.docker/'
-
-# How long does 'async_annotate_properties_with_all_datasets' task take?
-
-A: About 30-45 minutes if successful. It will appear in the Celery Tasks while running.
-
-# OCA Housing Court Data has API errors locally when trying to update / access AWS on dev. How can I resolve?
-
-A: Please make sure your device ip is whitelisted with oca / route53. You can test it by doing the `Viewing the OCA Housing Raw Data (As of 8/15/23)` instructions from your terminal
-
-# I'm getting an error when trying a dataset update that says it downloads correctly (as seen in Celery), but when seeding it can't find the file in the /app/data directory (may only occur on M1 Dockerized apps). `ie. FileNotFoundError: [Errno 2] No such file or directory: '/app/data/temp/clean_csv_6626886.csv'```
-
-A: Open the 'app' container in Docker via the terminal option in Docker. Type
-`mkdir -p /app/data/temp && chmod 777 /app/data/temp`
-This will create the temp folder and also ensure it's permissions are correct.
-
-# When I go to http://localhost:8000/ocahousingcourts/ or https://api.displacementalert.org/ocahousingcourts/, it says `{"detail": "Authentication credentials were not provided."}` and has no results.
-
-A: This is the correct action since this individual API is not open. You may view the raw data via postgres or the portal.
-
-# Q: There seems to be an orphaned / failed CeleryWorker that I cannot remove that is stopping further tasks and deleting the task doesn't work or has an error.
-
-A: You can reboot the celeryworker via command line and the log:
-`sudo docker exec -it app celery -A app worker -Q update -l debug -n update_worker --concurrency=8 --logfile=./celery/logs/update.log``
-
-If that doesn't work, you may restart (or even remove) the celery containers and celerybeat.pid. You will need to re-deploy the app (compose) to recreate them.
-
-# Q: I attempted to run a Periodic Task via celery (dev: http://localhost:8000/admin/django_celery_beat/periodictask/ or production: https://api.displacementalert.org/admin/django_celery_beat/periodictask/) and it doesn't seem to run - and there are no new workers or tasks listed in celery (dev: localhost:8000 or prod: https://tasks.displacementalert.org/tasksto show it's running (or even failed to run). Why?
-
-A: The application's task scheduler Celerybeat (the equivalent of a CRON controller) wasn't fully implemented when the app was first built. If simply restarting the backend itself doesn't work, try to delete the 'celerybeat.pid' in the app's backend root folder and then restart the backend. You will not lose any data.
-
-# Q: I'm getting an error about a missing 'resourcemodel' on the Properties page when running the frontend AND backend on dev. Why?
-
-A: It's possible that a specific expected dataset is missing. Please check your backend and ensure that all datasets have up-to-date data - and that all active datasets are listed in the core-datasets table, as well.
-
-# Q: My datasets property table is correct and I'm getting correct data for advanced searches, but the District Dashboard has the wrong data (or none at all) for my dataset. Why?
-
-A: The Property Annotations are used to run this specific dashboard / view. Please ensure that the propertyannotations table has data - and more specifically the updated data you're looking for. If it doesn't, attempt to re-run the Property Annotating via Celery's PeriodicTasks. If that doesn't work, ensure that you're Properties > Buildings > PAD Records > Addresses are all updated - and then try to run the Annotations again. If the annotations themselves aren't running, see above for troubleshooting instructions.
-
-Dev Note: Each dataset seems to attempt to annotate the properties affected by it when a dataset has imported and is done seeding. I believe if the annotation fails, you may need to run "annotate properties all" from the periodic tasks dashboard (dev: http://localhost:8000/admin/django_celery_beat/periodictask/, production: http://api.displacementalert.org/admin/django_celery_beat/periodictask/) or re-run the update. The data may be present when looking at the raw dataset table - or even an individual property (as it pulls the data directly from the table), but the Dashboard will not show the data if the annotation failed. Also consider looking at the error during the annotation - as it may be due to other datasets missing data that your dataset relies on (ie. bbls, etc) or datasets may be outdated). - Scott
-
-# Q: The # of results / count for my dataset is wrong in the Property tables and Custom Search results - but the update was succesful for that dataset. Why?
-
-A: It's possible the cache needs to be reset on the backend. You may do so (dev: http://localhost:8000/admin/django_celery_beat/periodictask/, production: http://api.displacementalert.org/admin/django_celery_beat/periodictask/) and then verify.
-
-If it's still an issue, I'd recommend making sure the data is in the raw database in postgres. If the data is present, but still not showing up in search results or the property table - ensure that other datasets that may be dependent on that data are up to date - ie. creating Address Records depends on the PAD record which depends on the Building record which depends on the Properties being up to date.
-
-Other issues may be occuring like a failed join / merge of the source csv or a failed data cleaning upon updating from the datasets. You may consider checking the celery logs for specific errors in this regard (in the celery folder) or if dev and dockerized, you may look in the containers themselves.
-
-## Error 'failed to solve: python:3.6.14: error getting credentials - err: exec: "docker-credential-desktop": executable file not found in \$PATH, out...' when trying to make dev build or restart it.
-
-1. Please make sure you have the correct Dockerfile in your backend root directory
-2. If the issue persists and your Dockerfile and env are correct:
-   `nano ~/.docker/config.json`
-   and change `credsStore` to `credStore` (plural to singular)
-3. As a note: you may have to do this sometimes when you rebuild the app's docker container. There seems to be a bug reverting it.
-
-## I have an automated dataset update with the correct "API LAST CHECKED" date, but the data is not up to date for that dataset
-
-1. Please reset the site cache to verify if the data is truly not updated - OR -
-2. Look at the live data on the Production Database to see if the missing data is actually present
-3. Check the UPDATES log to see if the last update failed for the dataset - OR
-4. Check the Celery Tasks log on tasks.displacementalert.org to see if such update failed.
-5. If it's been determined the update failed - or you'd simply like to re-run it - it's best to do so from the Periodic Tasks at api.displacementalert.org/admin
-6. If the Data has not changed since the last update, it's likely the periodic task will not run. This can be circumvented by truncating the API LAST CHECKED value for that dataset in the production table. Alternately, you may wait for the next API update of the data.
-
-## My update failed with a ' deadlock detected ' error.
-
-This is likely because another dataset update is already in progress for the current dataset - or a related one. Please check tasks.displacementalert.org prior to updates to ensure one is not already in progress for the same dataset. It's recommended to let an update fail or timeout before trying the dataset update again.
-
-## For S3 Buckets
-
-- Download the Files by directly accessing the buckets: You can use the following commands to download to the current directory you're in on your local device:
-  aws s3 cp s3://BUCKET_NAME/public/oca_addresses_with_bbl.csv .
-  aws s3 cp s3://BUCKET_NAME/public/oca_index.csv .
-
-- Note: Prior to August 2023, the bucket name used was different and also didn't use the /public/ directory. Please consult a dev and make sure it's updated to the most recent bucket in any backend ENV and commands you issue. The access is being given on AWS under the IAM settings - and not via IP whitelist.
-
-### Receiving error "failed to solve: python:3.6.14: error getting credentials - err: exec: "docker-credential-desktop": executable file not found in $PATH, out" on build
-
-- In terminal on your system, type:
-  sudo nano ~/.docker/config.json
-  in that file, rename `credsStore` to `credStore` and save.
-
-=======
-
-### To connect to local postgres db / backend using DBeaver:
-
-- Use localhost as the host (assuming you're running Docker on your local machine).
-- Use 5432 as the port (assuming you've mapped this port from your Docker container to your host, as mentioned in the previous steps).
-
-If this doesn't work, it might be because port mapping or other restrictions.
-
-1.           Disable your local host's version of postgres if it's running via osx or bash (brew services stop postgresql)
-2.            You can verify the port mapping by running this in bash:
-        docker ps | grep postgres
-        - This will show you the running PostgreSQL container and its port mappings. Ensure that 5432 inside the container is mapped to 5432 (or another port) on your host machine.
-            ie. "e4ce2dc31284 postgres:11 "docker-entrypoint.s…" 5 hours ago Up 11 minutes 0.0.0.0:5432->5432/tcp postgres"
-
-3.  If it's still not working:
-    1. Edit the config filesfor the postgres container
-       docker exec -it postgres bash -c "echo 'host all all 0.0.0.0/0 trust' >> /var/lib/postgresql/data/pg*hba.conf"
-       docker exec -it postgres bash -c "sed -i 's/^#listen_addresses =.*/listen*addresses = '*'/' /var/lib/postgresql/data/postgresql.conf"
-    2. restart postgresql
-
-### Database error on docker restart or deploy:
-
-    To check the status of the postgres database, you may type:
-        docker logs postgres
-    This will return the most recent log entry - ie. "the database system is starting up"
-
-### After a DigitalOcean restart, the app is unable to rebuild with errors regarding port:8000. Why? For example:
-
-1. ERROR: for app Cannot start service app: driver failed programming external connectivity on endpoint app
-2. Error starting userland proxy: listen tcp 0.0.0.0:8000: bind: address already in use
-3. ERROR: Encountered errors while bringing up the project.
-4. Error response from daemon: Container f207d39251754777eade6641b69cd4b634140247f124dc395fead4012a3ce8a2 is not running
-
-We found that NGINX may automatically start prior to the project rebuild and use port 8000. Use `lsof -i tcp:8000` in the root of the production folder: root@anhdnyc:/var/www/anhd-council-backend# lsof -i tcp:8000
-You should see a table like this:
-
-<!-- COMMAND PID USER FD TYPE DEVICE SIZE/OFF NODE NAME
-nginx 1226 root 6u IPv4 22104 0t0 TCP _:8000 (LISTEN)
-nginx 1228 www-data 6u IPv4 22104 0t0 TCP _:8000 (LISTEN)
-nginx 1229 www-data 6u IPv4 22104 0t0 TCP _:8000 (LISTEN)
-nginx 1231 www-data 6u IPv4 22104 0t0 TCP _:8000 (LISTEN)
-nginx 1232 www-data 6u IPv4 22104 0t0 TCP _:8000 (LISTEN)
-nginx 1233 www-data 6u IPv4 22104 0t0 TCP _:8000 (LISTEN)
-nginx 1234 www-data 6u IPv4 22104 0t0 TCP \*:8000 (LISTEN) -->
-
-If you see a table like this with TCP as 8000 set, run `sudo service nginx stop` to stop NGINX. It should redeploy dockered automatically when the app is created and run. You may then proceed with rebuilding the app.
-
-### I'm getting python migration errors after table changes and cannot build the app. What do I do?
-
-WARNING: Make sure you have a backup before doing these steps.
-
-1. If you're 100% sure that you need to skip certain migration steps (like if they're already been done) you may navigate to the specific migration causing the issue (ie. `root@anhdnyc:/var/www/anhd-council-backend# nano ./datasets/migrations/0112_auto_20230822_2217.py `) and edit the migration file.
-
- After this, re-run `docker exec -it app /bin/bash` in the root of the project and then re-create the migration: ie.
-   root@anhdnyc:/var/www/anhd-council-backend# `docker exec -it app /bin/bash`
-   root@7fd4271bcdd8:/app# python `manage.py makemigrations`
-   Then re-run `sh build.prod.sh`
-   Alternatively, you may skip the entire migration (not recommended) by logging into the postgres db (via docker exec) and faking that migration as complete. ie `python manage.py migrate --fake datasets 0118_delete_hpdproblem`
-
-### How can I see the network usage?
-
-- `sudo iftop` can be run in the DigitalOcean console or locally
-- To see what is using which sockets, you can do: `sudo netstat -tulpn`
-
-### How can I view what system resources are running on the app?
-
-- To check the usage of a specific CPU core `mpstat -P ALL 1` - which continuously updates CPU usage data every second  
-   (To exit while the command is running, press Ctrl + C on your keyboard)
-- Identify High CPU Usage Processes:`ps -eo pid,psr,comm,%cpu,%mem --sort=-%cpu`
-  - To investigate processes further, you can use the following command in your terminal, using the PIDs of the tasks you'd like to investigate in place of 25508 and 748 -> `ps -p 25508,748 -o %cpu,%mem,cmd`
-- To get more real-time data, use: `vmstat 1`
-
-### Upon restarting the anhd production server, re-deployment is failing with error "ERROR: for app Cannot start service app: driver failed programming external connectivity on endpoint app (etc): Error starting userland proxy: listen tcp 0.0.0.0:8000: bind: address already in use, ERROR: Encountered errors while bringing up the project.
-
-This is LIKELY because NGINX is already running upon system boot or a prior docker image/conatiner is running.
-
-1.  Log into the server via SSH: Ssh anhd@45.55.44.160
-2.  Check if NGINX already running is the issue `sudo lsof -i :8000`
-    A. If it is running, stop NGINX (It will start up again during deployment)
-3.  If that didn't resolve it, while still in the server, delete all current images (no data will be lost)
-    `docker rm -f $(docker ps -aq)
-    (Please make sure Database YAML files are up to date prior to this, or it could alter data)
-
-
-    
-## Resolving State Assemblies or State Senates Not Displaying Correctly on the Portal
-
-If updated assembly or senate data is not displaying correctly, follow these steps:
-
----
-
-#### 1. Update the Mapbox Dataset
-- **Upload the Dataset**:  
-  Upload the updated shapefile dataset (ZIP) to [Mapbox Studio](https://studio.mapbox.com/). Refer to the **Mapbox PDF instructions** in the front-end repository for detailed steps.
-- **Update the Front-End App**:  
-  If a new API link is created, update it in the front-end app at:  
-  `/src/LeafletMap/index.js`.  
-  Following the PDF instructions should suffice to update the existing dataset/endpoint.
-
----
-
-#### 2. Clear Cache
-- **Portal Cache**:  
-  Clear the cache on the portal at:  
-  [https://api.displacementalert.org/admin/login/?next=/admin/django_celery_beat/periodictask/](https://api.displacementalert.org/admin/login/?next=/admin/django_celery_beat/periodictask/).
-- **Browser Cache**:  
-  Clear your local browser cache. If overlapping layers or outdated data persist:
-  - Perform a hard refresh in your browser.
-  - Test in incognito mode or a different browser.
-  - **Note**: Mapbox overlays may remain cached, even in incognito mode.  
-    A full browser refresh and removal of all site data from your Chrome browser may be required.
-
----
-
-#### 3. Recalculating State Assembly/Senate Data
-
-##### Why This Happens
-The portal does not automatically recalculate state assembly or senate data if these values already exist for a property. This is designed to avoid unnecessary processing, as recalculating each property's assembly or senate requires geospatial checks (2-3 seconds per property). However, when new shapefiles are uploaded, properties retain outdated assembly/senate designations until recalculation is manually triggered.  
-
-**Note**: State assembly and senate data are not included in the Pluto dataset, unlike council districts, requiring this extra step.
-
----
-
-##### How to Fix It
-
-1. **Nullify Existing Values**  
-   Clear all state assembly and/or senate values in the `Properties` table.  
-   This step removes outdated data and flags properties for recalculation.  
-
-   Example SQL Command:  
-   ```sql
-   UPDATE public.datasets_property
-   SET stateassembly = NULL
-   WHERE version IS NOT NULL;
+   **Option A — Download from Box (recommended):**
+   Download the pre-built dump from [Box](https://blueprint.box.com/shared/static/lzl7pbfzsomc11amhej93jr5syi2y749.dump) (password is in `.env.dev` as a comment), then:
+   ```bash
+   sh setup-db.dev.sh /path/to/dap_prod.dump   # custom format (~30 min restore)
+   sh setup-db.dev.sh /path/to/dap_prod.gz      # or plain SQL (~2 hours restore)
    ```
 
-2. **Re-run the Pluto/Property Update**  
-   Trigger a Pluto/Property update to recalculate the now-empty assemblies and/or senates for each property. During this process:
-   - The portal assigns new assembly or senate values based on the updated shapefiles and each property's geolocation.
+   **Option B — Pull fresh from production (only if Box dump is outdated and you need recent data):**
+   Requires your IP to be whitelisted in DigitalOcean's firewall.
 
-3. **Wait for Processing to Complete**  
-   Recalculation is time-consuming and may take several days for large datasets.  
-   If interrupted, it can be resumed by re-running the Property update.  
+   Custom format (recommended — fast restore):
+   ```bash
+   ssh root@138.197.79.10 "docker exec app pg_dump -U anhd -d anhd -Fc" > dap_prod.dump
+   sh setup-db.dev.sh dap_prod.dump
+   ```
 
-   **Monitoring Progress**:
-   - Check Docker logs to verify the process is still running.
-   - Use the state assembly maps to confirm if data is being filled in.
-   - Run SQL commands to assess progress:
-     ```sql
-     SELECT COUNT(*) FROM public.datasets_property
-     WHERE stateassembly IS NOT NULL;
+   Plain SQL (legacy — slow restore):
+   ```bash
+   PGPASSWORD=<DATABASE_PASSWORD> pg_dump -h <DATABASE_HOST> -U anhd -d anhd | gzip > dap_prod.gz
+   sh setup-db.dev.sh dap_prod.gz
+   ```
+   DB credentials are in the production `.env` at `/var/www/anhd-council-backend/.env`.
 
-     SELECT COUNT(*) FROM public.datasets_property
-     WHERE stateassembly IS NULL AND version = '24v4';
-     ```
+3. First-time setup — shell into the app container and seed:
+   ```bash
+   docker exec -it app bash
+   python manage.py createsuperuser
+   python manage.py loaddata /app/core/fixtures/datasets.yaml
+   python manage.py loaddata /app/core/fixtures/crontabs.yaml
+   python manage.py loaddata /app/core/fixtures/tasks.yaml
+   ```
+   > **Note:** The app auto-generates a password email despite the wizard — check your email.
 
----
+4. Admin panel: `http://localhost:8000/admin/`
+5. Flower (task monitor): `http://localhost:8888/`
 
-##### Known Behavior Without Recalculation
-- Properties will remain associated with outdated assemblies or senates, even if updated boundary lines are displayed on the map.
-- This misalignment results in incorrect filtering and inaccurate data visualization.
+### VACUUM FULL (after loading a dump)
 
----
+After loading a production dump, the database is bloated (~80GB). Running VACUUM FULL compacts it to ~56GB and improves query speed:
 
-##### In Summary
-- After uploading updated shapefiles:  
-  - The portal will immediately display updated map boundaries.  
-  - Properties, however, will still show old assembly or senate designations.  
-- To resolve this, developers must manually nullify existing values in the database and run the recalculation via a Property dataset update. This ensures properties align with the new boundaries, guaranteeing accurate data across the portal.
+```bash
+# Stop celery workers first
+docker compose -f docker-compose.yml -f docker-compose.dev.yml stop celery_default celery_update celerybeat
+
+# Run VACUUM FULL (locks tables — takes 30-60 min)
+docker exec postgres psql -U anhd -d anhd -c "VACUUM FULL;"
+
+# Re-dump in custom format for faster future restores
+docker exec -t postgres pg_dump -U anhd -d anhd -Fc > dap_prod_vacuumed.dump
+
+# Restart workers
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+```
+
+> **Warning:** `docker volume prune` and `docker system prune` can delete the database volume if containers are stopped. Always verify which volumes are in use before pruning.
+
+## Common Commands
+
+| Action | Command |
+|---|---|
+| Start dev | `docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d` |
+| Stop dev | `sh down.dev.sh` |
+| Restart dev | `sh restart.dev.sh` |
+| Rebuild dev | `sh build.dev.sh` |
+| Shell into app | `docker exec -it app bash` |
+| Run migrations | `docker exec -it app python manage.py migrate` |
+| Create migration | `docker exec -it app python manage.py makemigrations` |
+| Django shell | `docker exec -it app python manage.py shell` |
+| View app logs | `docker compose -f docker-compose.yml -f docker-compose.dev.yml logs -f app` |
+| View celery logs | `docker compose -f docker-compose.yml -f docker-compose.dev.yml logs -f celery_update` |
+| Connect to DB | `docker exec -it postgres psql -U anhd -d anhd` |
+| Run tests | `docker exec -it app python manage.py test` |
+
+> **Tip:** Use `docker compose` (space) not `docker-compose` (hyphen) with Docker Desktop / Compose v2.
+
+## Database Access
+
+### Via command line
+
+```bash
+docker exec -it postgres psql -U anhd -d anhd
+\dt                              -- list tables
+SELECT COUNT(*) FROM datasets_eviction;
+```
+
+### Via DBeaver or other GUI
+
+Connect with: host `localhost`, port `5432`, database `anhd`, user `anhd`. Stop any local Postgres first if port conflicts: `brew services stop postgresql`.
+
+## Deployment
+
+### Production
+
+```bash
+sh deploy.sh
+```
+
+This SSHs into `138.197.79.10`, pulls `master`, and runs `build.prod.sh`.
+
+> **Do not deploy while tasks are running.** Check status at `tasks.displacementalert.org`. Deployment restarts workers and clears the Redis cache.
+
+If a task was interrupted mid-import, you may need to clear the "API LAST CHECKED" value for that dataset in the admin panel so it re-imports on the next run.
+
+### Production Restart (no code changes)
+
+```bash
+ssh anhd@138.197.79.10
+cd /var/www/anhd-council-backend
+sudo docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+```
+
+> Your IP must be whitelisted in DigitalOcean's firewall settings.
+
+## Debugging
+
+- **PDB:** Attach to app with `docker attach app`, then use `import pdb; pdb.set_trace()` in code
+- **Logs:** `docker compose logs -f app` (or `celery_update`, `celery_default`, `celerybeat`)
+- **Flower:** `http://localhost:8888` (dev) or `tasks.displacementalert.org` (prod)
+
+## Dataset Management
+
+### Automated Datasets
+
+Most datasets update automatically via Celery Beat periodic tasks. To manually trigger:
+
+1. Login to admin → Periodic Tasks
+2. Select the task → Action dropdown → "Run selected tasks" → Go
+3. Monitor in Flower
+
+### Manual Datasets
+
+For non-automated datasets (PropertyShark, CoreData, etc.):
+
+1. Admin → Updates → Add Update
+2. Upload the file and associate it with the correct dataset
+3. Monitor in Flower
+
+### Dataset Sources
+
+| Dataset | Source | Update |
+|---|---|---|
+| HPD Violations, Complaints, Registrations, Contacts | NYC Open Data (Socrata) | Automated |
+| DOB Violations, Complaints, Filed Permits, Issued Permits | NYC Open Data (Socrata) | Automated |
+| ECB Violations | NYC Open Data (Socrata) | Automated |
+| Evictions | NYC Open Data (Socrata) | Automated |
+| Housing Litigations | NYC Open Data (Socrata) | Automated |
+| DOB NOW Filed Permits, Issued Permits | NYC Open Data (Socrata) | Automated |
+| DOB Legacy Filed Permits, Issued Permits | NYC Open Data (Socrata) | Automated |
+| ACRIS Real Property (Masters, Legals, Parties) | NYC Open Data (Socrata) | Automated (monthly) |
+| OCA Housing Court | AWS S3 bucket (`oca-2-dev`) | Automated (monthly) |
+| Properties (PLUTO) | NYC Planning / manual upload | Manual |
+| Buildings, PAD Records | NYC Planning (PAD) | Manual |
+| Rent Stabilization Records | Tax bills data | Manual |
+| CoreData Subsidy Records | ANHD CoreData | Manual |
+| 421a / J-51 Subsidies | ANHD CoreData | Manual |
+| Tax Liens | NYC Open Data | Manual |
+| CONH Records | NYC Open Data (Socrata) | Automated |
+| AEP Buildings | NYC Open Data (Socrata) | Automated |
+| PSPreForeclosure, PSForeclosure | PropertyShark (manual download) | Manual (bi-weekly) |
+| Council/Community/Assembly/Senate Districts | NYC Planning (shapefiles) | Manual (redistricting) |
+
+### Socrata (NYC Open Data) Downloads
+
+Download URLs are in each model's `download_endpoint` or `download()` method. Some datasets use `$select` to limit fields:
+
+```
+https://data.cityofnewyork.us/resource/{API_ID}.csv?$select=field1,field2&$limit=100000000
+```
+
+The `$limit=100000000` returns all rows (Socrata defaults to 1000).
+
+### Updating Pluto / PAD (Property Data)
+
+Run in order, one at a time, waiting for each to complete:
+
+1. `Property` — with Pluto (not MapPLUTO) data (automated)
+2. `Building` — with PAD dataset
+3. `PADRecord` — same PAD file as Building
+4. `AddressRecord` — no file needed, just create an update in admin
+
+Best to start around noon so they finish before nightly tasks (7pm). Space updates by a day if possible.
+
+> **AddressRecord** rebuild requires ~6GB RAM (atomic transaction). Restart app and postgres containers first to free memory. Takes 2-4 hours. Duplicate key errors in logs are expected.
+
+### PropertyShark Data
+
+Monthly manual upload:
+1. Download pre-foreclosures → upload to `PSPreForeclosure` dataset
+2. Download foreclosure auctions → upload to `PSForeclosure` dataset
+
+### OCA Housing Court Data (AWS S3)
+
+```bash
+aws configure  # Use OCA_AWS_SECRET_KEY_ID and OCA_AWS_SECRET_ACCESS_KEY from .env
+aws s3 cp s3://oca-2-dev/public/oca_index.csv .
+aws s3 cp s3://oca-2-dev/public/oca_addresses_with_bbl.csv .
+```
+
+> Verify the bucket name in your `.env` — it was changed to `oca-2-dev` in 2023.
+
+## Property Annotations
+
+The `PropertyAnnotation` table stores pre-computed counts of dataset records per property (BBL) for three time periods: last 30 days, last year, and last 3 years. These power the District Dashboard's property tables, showing columns like "HPD Violations (date range)" without querying the full violation tables on every page load.
+
+**How it works:**
+- Each annotated dataset model (HPDViolation, DOBViolation, etc.) has an `annotate_properties()` method
+- After a dataset import completes, the annotation runs automatically — counting records per BBL within each time window
+- Results are stored in `datasets_propertyannotation` as integer columns (e.g., `hpdviolations_last30`, `hpdviolations_lastyear`)
+- The `PropertyShortAnnotatedSerializer` reads these columns and returns them with date-range keys like `hpdviolations__04/05/2025-04/04/2026`
+
+**Which datasets are annotated:**
+Defined in `settings.ANNOTATED_DATASETS`. See `app/settings/base.py` for the full list — includes HPDViolation, HPDComplaint, DOBViolation, DOBComplaint, ECBViolation, Eviction, DOBFiledPermit, DOBIssuedPermit, HousingLitigation, AcrisRealMaster, OCAHousingCourt, Foreclosure, and others (CONHRecord, HPDBuildingRecord, AEPBuilding, etc.).
+
+**Adding a new annotation:**
+1. Add fields to `PropertyAnnotation` model (e.g., `newdataset_last30`, `_lastyear`, `_last3years`, `_lastupdated`)
+2. Add the model name to `settings.ANNOTATED_DATASETS`
+3. Ensure the model has `QUERY_DATE_KEY` and an `annotate_properties()` method
+4. Create a migration and run it
+5. The serializer and API field builder pick up new annotations automatically from `ANNOTATED_DATASETS`
+
+**Note:** Annotations are aggregate counts. Sub-field filtering (e.g., only rent-impaired violations) is better handled via Custom Search query parameters, not annotations.
+
+## Data Notes
+
+### Datasets that require login
+
+These datasets have `REQUIRES_AUTHENTICATION = True` — unauthenticated API requests return 403:
+
+- **OCA Housing Court** (`OCAHousingCourt`)
+- **Foreclosures** (`Foreclosure`)
+- **Lis Pendens** (`LisPenden`)
+
+All other datasets are publicly accessible.
+
+### Datasets using `$select` field filtering
+
+These download only the fields the app uses, reducing file size and import time:
+
+- HPDViolation (also filters by `currentstatusdate` — **past 2 months + nulls**)
+- HPDComplaint (also filters by `problem_status_date` — **past 2 months + nulls**)
+- DOBComplaint (also filters by `disposition/entered/inspection date` — **past 2 months + null dispositions**)
+- DOBViolation (also filters by `issue/disposition date` — **past 2 months + null dispositions**)
+- DOBNowFiledPermit
+- DOBPermitIssuedNow
+- DOBLegacyFiledPermit
+- DOBPermitIssuedLegacy
+
+All other datasets download the full CSV from Socrata.
+
+### Data retention and deduplication
+
+- **HPD Violations**: Downloads records with `currentstatusdate` in the past 2 months (+ nulls), upserted (never truncated). Catches both new violations and status changes on old ones. Older unchanged records persist from previous imports. **Caveat:** status changes on records not touched in 2+ months won't be caught until HPD updates the record's `currentstatusdate`.
+- **HPD Complaints**: Same approach — downloads `problem_status_date` in the past 2 months (+ nulls), upserted.
+- **DOB Complaints**: Downloads records with any date field (disposition/entered/inspection) in the past 2 months, plus all records with null disposition dates. Upserted.
+- **DOB Violations**: Downloads records with issue or disposition date in the past 2 months, plus all records with null disposition dates (662K perpetually "Active" records). Upserted.
+- **Evictions**: Uses `ignore_conflict=True` on upsert — duplicate records (same `courtindexnumber`) are silently skipped. Uniqueness is also enforced on `(evictionaddress, evictionapartmentnumber, executeddate, marshallastname)`. Only data from 2017+ exists (when NYC started publishing eviction data).
+- **ACRIS**: Only `DEED` document types are counted as "sales" in property annotations. Other document types (mortgages, agreements, etc.) are stored but not counted in the sales column.
+- **DOB Permits (child tables)**: DOBNowFiledPermit, DOBPermitIssuedNow, DOBLegacyFiledPermit, and DOBPermitIssuedLegacy are **truncated and fully reloaded** on every import (`overwrite=True`). They download all records (no date filter).
+- **DOB Permits (join tables)**: `DOBFiledPermit` and `DOBIssuedPermit` upsert from the child tables above. Never truncated.
+- **DOB Complaints / DOB Violations**: upserted, never truncated.
+
+### Manual upload datasets
+
+- **PropertyShark** (PSPreForeclosure, PSForeclosure): bi-weekly manual download and upload via admin
+- **Properties** (PLUTO): manual upload when NYC Planning releases new data
+- **Buildings / PAD Records**: manual upload from PAD data
+- **CoreData Subsidies**: manual upload from ANHD CoreData
+- **Rent Stabilization Records**: manual upload from tax bills data
+- **Tax Liens**: manual upload, no date field — just current status (boolean on PropertyAnnotation)
+
+### Frontend behavior notes
+
+- **District Dashboard**: API responses cached in localStorage, invalidated daily at 7am Eastern
+- **Table filters** (Open/Closed, Class A/B/C, etc.): client-side filtering of already-loaded data, not additional API calls
+- **Custom Search**: uses the advanced query language to filter properties server-side (see Advanced Search section below)
+- **CSV Export**: exports the currently filtered/visible rows, not the full dataset
+
+## Caching
+
+The nightly cache task (`core/utils/cache.py`) pre-caches all council and community district dashboard endpoints. It uses a unique token to cache both authenticated and unauthenticated responses.
+
+If the frontend changes its API endpoints, update `cache.py` to match.
+
+## Advanced Search Query Language
+
+The API supports complex property queries with nested conditions:
+
+```
+/properties?q=*condition_0=AND filter_0=condition_1 filter_1=hpdviolations__approveddate__gte=2018-01-01,hpdviolations__count__gte=10 *condition_1=OR filter_0=dobviolations__issueddate__gte=2018-01-01,dobviolations__count__gte=10 filter_1=ecbviolations__issueddate__gte=2018-01-01,ecbviolations__count__gte=10
+```
+
+- `*condition_0=AND` — first condition (must be ID "0")
+- Filters separated by spaces, parameters by commas
+- Nested conditions referenced as `filter_N=condition_M`
+- Parameters use Django query syntax ([docs](https://docs.djangoproject.com/en/4.2/topics/db/queries/))
+
+See `datasets/tests/filters/test_property.py` for examples.
+
+## Troubleshooting
+
+**User sees "email notifications paused" banner:**
+The app checks SendGrid's suppression list on login (cached 24h in Redis). If the user's email has bounced, a warning banner shows on My Dashboard and notifications are auto-disabled. To fix:
+1. Ask the user for their new/correct email address
+2. Update their email in Django admin: `api.displacementalert.org/admin/users/customuser/`
+3. Remove the bounce from SendGrid: go to SendGrid dashboard → Suppressions → Bounces → search and delete the entry
+4. Clear the Redis cache: `docker exec app python manage.py shell -c "from django.core.cache import cache; cache.delete('email_suppressed_<USER_ID>')"`
+5. The user can then re-enable notifications from their My Dashboard
+
+**Tasks not running automatically:**
+Docker-compose now uses `--pidfile=` (empty) to prevent stale PID files. If tasks still don't run, restart celerybeat: `docker compose restart celerybeat`.
+
+**Build fails with database error:**
+The database may not be ready yet. Wait a moment, then: `docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d`
+
+**Can't connect to DigitalOcean droplet:**
+Whitelist your IP in the droplet's firewall settings on the DigitalOcean dashboard.
+
+**Notification emails in dev:**
+Emails are skipped when `DEBUG=True`. To test email content, check the celery logs.
+
+**`docker-compose` command not found:**
+Use `docker compose` (with a space) — Compose v2 dropped the hyphenated command.
+
+## Potential Improvements
+
+- **User email change**: Users currently cannot change their email address in the app. An admin must update it in the Django admin panel. A self-service "change email" feature would improve UX, especially for users whose notification emails are bouncing.
+- **Bounced email banner**: Show a warning on the user's home screen when their notifications have been auto-disabled due to bounced emails, with instructions to contact admin.
+- **Google Street View embed**: Ready to enable once the Maps Embed API is activated on the Google Cloud project (set `REACT_APP_STREET_VIEW_ENABLED=true`).
+
+## Files Reference
+
+| File | Purpose |
+|---|---|
+| `build.dev.sh` | Build/rebuild local dev environment |
+| `build.prod.sh` | Production build |
+| `restart.dev.sh` | Restart dev containers |
+| `down.dev.sh` | Stop dev containers |
+| `deploy.sh` | Deploy to production |
+| `setup-db.dev.sh` | Load a production DB dump locally |
+| `celery1.sh` / `celery2.sh` | Manual celery worker startup (for detached debugging) |
+| `CHANGELOG.md` | Detailed change history |
+| `DATASET_REFERENCE.md` | Comprehensive dataset reference — sources, import methods, date ranges, field-level audit |

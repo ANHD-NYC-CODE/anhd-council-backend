@@ -3,6 +3,7 @@ from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.utils.validation_filters import is_null, is_older_than
 import logging
+import datetime
 from django.dispatch import receiver
 from datasets import models as ds
 from core.tasks import async_download_and_update
@@ -17,6 +18,7 @@ class DOBViolation(BaseDatasetModel, models.Model):
             models.Index(fields=['-issuedate']),
         ]
     API_ID = '3h2n-5cm9'
+    base_download_endpoint = "https://data.cityofnewyork.us/resource/3h2n-5cm9.csv"
     download_endpoint = "https://data.cityofnewyork.us/api/views/3h2n-5cm9/rows.csv?accessType=DOWNLOAD"
     QUERY_DATE_KEY = 'issuedate'
     EARLIEST_RECORD = '1901-01-01'
@@ -51,8 +53,20 @@ class DOBViolation(BaseDatasetModel, models.Model):
             self.get_dataset().id, endpoint=endpoint, file_name=file_name)
 
     @classmethod
-    def download(self, endpoint=None, file_name=None):
-        return self.download_file(self.download_endpoint, file_name=file_name)
+    def download(cls, endpoint=None, file_name=None):
+        two_months_ago = (datetime.datetime.now() - datetime.timedelta(days=60)).strftime('%Y%m%d')
+
+        query_params = (
+            f"$select=isn_dob_bis_viol,boro,bin,block,lot,issue_date,violation_type_code,"
+            f"violation_number,house_number,street,disposition_date,disposition_comments,"
+            f"device_number,description,ecb_number,number,violation_category,violation_type"
+            f"&$where=(issue_date >= '{two_months_ago}' OR disposition_date >= '{two_months_ago}') AND isn_dob_bis_viol IS NOT NULL"
+            f"&$limit=100000000"
+        )
+
+        download_url = f"{cls.base_download_endpoint}?{query_params}"
+        logger.info("Downloading DOB Violation data - past 2 months by issue_date or disposition_date")
+        return cls.download_file(download_url, file_name=file_name)
 
     @classmethod
     def pre_validation_filters(self, gen_rows):
@@ -77,7 +91,7 @@ class DOBViolation(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        logger.info("Seeding/Updating {}", self.__name__)
+        logger.info("Seeding/Updating %s", self.__name__)
         self.seed_with_upsert(**kwargs)
 
     @classmethod

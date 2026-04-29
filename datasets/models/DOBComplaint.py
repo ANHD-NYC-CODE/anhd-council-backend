@@ -5,6 +5,7 @@ from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.utils.validation_filters import is_null, is_older_than
 from django.db.models import Subquery, OuterRef
 import logging
+import datetime
 from django.dispatch import receiver
 from datasets import models as ds
 from core.tasks import async_download_and_update
@@ -20,8 +21,7 @@ class DOBComplaint(BaseDatasetModel, models.Model):
         ]
     API_ID = 'eabe-havv'
     QUERY_DATE_KEY = 'dateentered'
-
-    download_endpoint = "https://nycopendata.socrata.com/api/views/eabe-havv/rows.csv?accessType=DOWNLOAD"
+    base_download_endpoint = "https://data.cityofnewyork.us/resource/eabe-havv.csv"
 
     complaintnumber = models.IntegerField(
         primary_key=True, blank=False, null=False)
@@ -51,8 +51,20 @@ class DOBComplaint(BaseDatasetModel, models.Model):
             self.get_dataset().id, endpoint=endpoint, file_name=file_name)
 
     @classmethod
-    def download(self, endpoint=None, file_name=None):
-        return self.download_file(self.download_endpoint, file_name=file_name)
+    def download(cls, endpoint=None, file_name=None):
+        two_months_ago = (datetime.datetime.now() - datetime.timedelta(days=60)).strftime('%m/%d/%Y')
+
+        query_params = (
+            f"$select=complaint_number,status,date_entered,house_number,zip_code,house_street,"
+            f"community_board,special_district,complaint_category,unit,disposition_date,"
+            f"disposition_code,inspection_date,dobrundate,bin"
+            f"&$where=(date_entered >= '{two_months_ago}' OR disposition_date >= '{two_months_ago}') AND complaint_number IS NOT NULL"
+            f"&$limit=100000000"
+        )
+
+        download_url = f"{cls.base_download_endpoint}?{query_params}"
+        logger.info("Downloading DOB Complaint data - past 2 months by date_entered")
+        return cls.download_file(download_url, file_name=file_name)
 
     @classmethod
     def pre_validation_filters(self, gen_rows):
@@ -92,23 +104,6 @@ class DOBComplaint(BaseDatasetModel, models.Model):
     @classmethod
     def seed_or_update_self(self, **kwargs):
         logger.info("Seeding/Updating %s", self.__name__)
-    
-        if "rows" not in kwargs:
-            file_path = kwargs.get("file_path")
-            if not file_path:
-                return  # Silent exit instead of logging a warning
-            kwargs["rows"] = list(self.transform_self(file_path=file_path, update=kwargs.get("update")))
-    
-        original_len = len(kwargs["rows"])
-        kwargs["rows"] = [
-            row for row in kwargs["rows"]
-            if row.get("complaintnumber") not in (None, "", "null")
-        ]
-    
-        if not kwargs["rows"]:
-            return  # Again, silent exit — no warning
-    
-        logger.info("Filtered out %d rows missing complaintnumber", original_len - len(kwargs["rows"]))
         self.seed_with_upsert(callback=self.add_bbls_from_bin, **kwargs)
 
 

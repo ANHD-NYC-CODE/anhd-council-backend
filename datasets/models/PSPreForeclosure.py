@@ -94,7 +94,7 @@ class PSPreForeclosure(BaseDatasetModel, models.Model):
 
     @classmethod
     def update_foreclosure_table(self, **kwargs):
-        logger.info("Seeding/Updating {}", ds.Foreclosure.__name__)
+        logger.info("Seeding/Updating %s", ds.Foreclosure.__name__)
         # Add records from both tables
         preforeclosure_table = ds.PSPreForeclosure
         preforeclosure_count = preforeclosure_table.objects.count()
@@ -103,7 +103,7 @@ class PSPreForeclosure(BaseDatasetModel, models.Model):
 
         execute(self.upsert_sql(preforeclosure_table, preforeclosure_cols))
 
-        logger.info("Completed seed into {} for {}",
+        logger.info("Completed seed into %s for %s",
                     ds.Foreclosure.__name__, preforeclosure_table._meta.db_table)
 
     @classmethod
@@ -116,7 +116,7 @@ class PSPreForeclosure(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        logger.info("Seeding/Updating {}", self.__name__)
+        logger.info("Seeding/Updating %s", self.__name__)
         self.seed_with_upsert(**kwargs)
         self.switch_effectivedate_to_dateadded()
 

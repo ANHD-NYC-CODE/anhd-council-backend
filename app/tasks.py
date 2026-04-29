@@ -64,17 +64,47 @@ def async_ensure_update_task_results(self):
 def clean_temp_directory(self):
     try:
         flushexpiredtokens.Command().handle()
+        # Clean temp files
         folder = settings.MEDIA_TEMP_ROOT
-        for the_file in os.listdir(folder):
-            file_path = os.path.join(folder, the_file)
-            try:
-                if os.path.isfile(file_path):
-                    os.unlink(file_path)
-            except Exception as e:
-                print(e)
+        if os.path.isdir(folder):
+            for the_file in os.listdir(folder):
+                file_path = os.path.join(folder, the_file)
+                try:
+                    if os.path.isfile(file_path):
+                        os.unlink(file_path)
+                except Exception as e:
+                    logger.warning('Error deleting temp file %s: %s', file_path, e)
+
+        # Clean downloaded CSV files (keep only the 2 most recent per dataset)
+        data_folder = settings.MEDIA_ROOT
+        if os.path.isdir(data_folder):
+            import glob
+            from collections import defaultdict
+            csv_files = glob.glob(os.path.join(data_folder, '*.csv'))
+            # Group by dataset name prefix (everything before the date stamp)
+            groups = defaultdict(list)
+            for f in csv_files:
+                basename = os.path.basename(f)
+                # Split at the date pattern __MMDDYYYY
+                prefix = basename.rsplit('__', 1)[0] if '__' in basename else basename
+                groups[prefix].append(f)
+
+            deleted = 0
+            for prefix, files in groups.items():
+                # Sort by modification time, newest first
+                files.sort(key=os.path.getmtime, reverse=True)
+                # Keep 2 most recent, delete the rest
+                for old_file in files[2:]:
+                    try:
+                        os.unlink(old_file)
+                        deleted += 1
+                    except Exception as e:
+                        logger.warning('Error deleting old CSV %s: %s', old_file, e)
+            if deleted:
+                logger.info('Cleaned up %s old CSV files from data directory', deleted)
 
     except Exception as e:
-        logger.error('Error during task: {}'.format(e))
+        logger.error('Error during cleanup task: %s', e)
         async_send_general_task_error_mail.delay(str(e))
         raise e
 
@@ -173,14 +203,15 @@ def async_send_user_notification_email(self, user_id, save_name, save_url, new_r
     
     if len(added_items) > 0:
         for item in added_items:
-            content += f'<p><a href="https://portal.displacementalert.org/property/{item["bbl"]}">{item["address"]}</a></p>'
+            if item.get("address"):
+                content += f'<p><a href="https://portal.displacementalert.org/property/{item["bbl"]}">{item["address"]}</a></p>'
         
     content += f'<p><a href="{save_url}">Click here</a> to view your original search, including new results.</p>'
 
     content += '<p>If you would like to stop receiving these emails from DAP Portal, <a href="https://portal.displacementalert.org/me">visit your dashboard</a> to manage/unsubscribe from notifications.</p>'
     
     send_mail(user.email, subject, content)
-    slack_send(f"Emailed user {user.username} for custom search {save_name} the content: {content}")
+    # slack_send(f"Emailed user {user.username} for custom search {save_name} the content: {content}")
 
 
 
@@ -196,68 +227,25 @@ def async_test_celery(self):
 
 
 def get_query_result_hash_and_length(query_string):
-    token = settings.CACHE_REQUEST_KEY
-    auth_headers = {'whoisit': token}
-    root_url = 'http://app:8000' if settings.DEBUG else 'https://api.displacementalert.org'
-    
-    try:
-        # Run query on server and hash results
-        r = requests.get(root_url + query_string, headers=auth_headers)
-        r.raise_for_status()  # Raise an exception for bad status codes
-        
-        result = r.json()
-        
-        # Ensure result is a valid data structure
-        if result is not None:
-            result_json = json.dumps(result, sort_keys=True).encode('utf-8')
-            result_hash = hashlib.sha256(result_json).hexdigest()
-            result_length = len(result) if isinstance(result, (list, dict)) else 0
-            
-            return {
-                'hash': result_hash,
-                'length': result_length
-            }
-        
-        # Return default hash for empty/null results
-        default_hash = hashlib.sha256(b'empty_result').hexdigest()
-        return {
-            'hash': default_hash,
-            'length': 0
-        }
-        
-    except requests.RequestException as e:
-        logger.error(f"Request error in get_query_result_hash_and_length: {str(e)}")
-        error_hash = hashlib.sha256(b'request_error').hexdigest()
-        return {
-            'hash': error_hash,
-            'length': 0
-        }
-    except ValueError as e:
-        logger.error(f"JSON parsing error in get_query_result_hash_and_length: {str(e)}")
-        error_hash = hashlib.sha256(b'json_error').hexdigest()
-        return {
-            'hash': error_hash,
-            'length': 0
-        }
-    except Exception as e:
-        logger.error(f"Unexpected error in get_query_result_hash_and_length: {str(e)}")
-        error_hash = hashlib.sha256(b'unexpected_error').hexdigest()
-        return {
-            'hash': error_hash,
-            'length': 0
-        }
-    
+    """Deprecated: use get_query_result_hash_and_length_bbl instead."""
+    return get_query_result_hash_and_length_bbl(query_string)
+
+
 # We created this function to resolve the issue with current date appearing in search results.
 def get_query_result_hash_and_length_bbl(query_string):
     token = settings.CACHE_REQUEST_KEY
-    auth_headers = {'whoisit': token}
-    root_url = 'http://app:8000' if settings.DEBUG else 'https://api.displacementalert.org'
-    
+
     try:
-        r = requests.get(root_url + query_string, headers=auth_headers)
-        r.raise_for_status()  # Raise an exception for bad status codes
-        
-        result = r.json()
+        # Use Django test client to call the view internally, bypassing nginx
+        from django.test import Client
+        client = Client()
+        r = client.get(query_string, HTTP_WHOISIT=token, **{'SERVER_NAME': 'localhost'})
+
+        if r.status_code != 200:
+            logger.warning("Internal API call returned %s for query: %s", r.status_code, query_string[:100])
+            return {'hash': None, 'length': 0, 'result': [], 'bbls_and_addresses': []}
+
+        result = json.loads(r.content)
         
         # Set default values
         bbls = []
@@ -293,12 +281,10 @@ def get_query_result_hash_and_length_bbl(query_string):
             'bbls_and_addresses': []
         }
         
-    except (requests.RequestException, ValueError) as e:
-        logger.error(f"Error in get_query_result_hash_and_length_bbl: {str(e)}")
-        # Return a default hash for error cases
-        error_hash = hashlib.sha256(b'error_result').hexdigest()
+    except Exception as e:
+        logger.warning("Error in get_query_result_hash_and_length_bbl: %s", e)
         return {
-            'hash': error_hash,
+            'hash': None,
             'length': 0,
             'result': [],
             'bbls_and_addresses': []
@@ -357,7 +343,9 @@ def replace_date_in_url(url, last_date, now_date):
     for parsed_f in mapping['0']['filters']:
         model_name = parsed_f['model']
         model_class = apps.get_model(app_label='datasets', model_name=model_name)
-        query_date_key = model_class.QUERY_DATE_KEY
+        query_date_key = getattr(model_class, 'QUERY_DATE_KEY', None)
+        if not query_date_key:
+            continue  # Skip models without date-based filtering (e.g., TaxLien)
         
         # Construct both plural date patterns
         date_start_plural = f'{model_name}s__{query_date_key}__gte='
@@ -381,7 +369,7 @@ def replace_date_in_url(url, last_date, now_date):
                         # slack_send(f"filter_key: {filter_key}")
                         # Check if the model_name is in the key
                         model_position = filter_key.find(model_name)
-                        slack_send(f"model_name: {model_name}")
+                        # slack_send(f"model_name: {model_name}")
                         if model_position != -1:
                             # slack_send(f"model_position: {filter_key}")
                             # Check if the character after the model_name is an 's' (to see if it's already plural)
@@ -391,11 +379,11 @@ def replace_date_in_url(url, last_date, now_date):
                             if not is_plural_in_key:
                                 plural_model_name = model_name + 's'
                                 new_key = filter_key.replace(model_name, plural_model_name, 1)
-                                slack_send(f"Model Updated to Plural: {new_key}")
+                                # slack_send(f"Model Updated to Plural: {new_key}")
                             else:
                                 # Keep the same key if it's already plural
                                 new_key = filter_key
-                                slack_send(f"Model Already Plural: {new_key}")
+                                # slack_send(f"Model Already Plural: {new_key}")
                             
                             # Replace the old key with the new key in the dictionary if it was modified
                             if new_key != filter_key:
@@ -451,10 +439,18 @@ def bp_compare_bbls(old_array, new_array):
     
 def check_notifications_custom_search(notification_frequency):
     try:
-        custom_searches = u.CustomSearch.objects.all()
-        logger.info(f'Starting notification check for frequency: {notification_frequency}')
-        
-        for custom_search in custom_searches:
+        import time as _time
+        # Only check searches that have users subscribed at this frequency
+        custom_searches = u.CustomSearch.objects.filter(
+            usercustomsearch__notification_frequency=notification_frequency
+        ).distinct()
+        logger.info('Starting notification check for frequency: %s (%s searches)',
+                     notification_frequency, custom_searches.count())
+
+        for i, custom_search in enumerate(custom_searches):
+            # Space out requests to avoid overwhelming the database
+            if i > 0:
+                _time.sleep(5)
             try:
                 query = custom_search.query_string
                 past_result_hash = custom_search.result_hash_digest
@@ -504,14 +500,14 @@ def check_notifications_custom_search(notification_frequency):
                                 # Store results for future comparison
                                 if user_custom_search.last_notified_result is None:
                                     logger.info(f"Initial seeding for custom search id: {custom_search.id}")
-                                    slack_send(f"Seeding for custom search with id: {custom_search.id}")
+                                    # slack_send(f"Seeding for custom search with id: {custom_search.id}")
                                     serialized_result = json.dumps(new_result_rows)
                                     user_custom_search.last_notified_result = serialized_result
                                     user_custom_search.save()
                                     added_items = new_result_rows
                                 else:
                                     logger.info(f"Comparing results for custom search id: {custom_search.id}")
-                                    slack_send(f"Comparing results for custom search with id: {custom_search.id}")
+                                    # slack_send(f"Comparing results for custom search with id: {custom_search.id}")
                                     
                                     logger.info(f"Processing UserCustomSearch ID: {user_custom_search.id}")
                                     
@@ -677,8 +673,8 @@ def slack_send(message):
 
 def get_addresses_by_bbls(bbls, bbls_and_addresses):
     return [
-        {'bbl': bbl, 'address': next((item['address'] for item in bbls_and_addresses if item['bbl'] == bbl), None)}
-        for bbl in bbls[:10]  # Limit to the first 10 BBLs
+        {'bbl': bbl, 'address': next((item['address'] for item in bbls_and_addresses if str(item.get('bbl')) == str(bbl)), None)}
+        for bbl in bbls[:10]  # Preview limited to first 10
     ]
     
 def convert_mapping_to_query_string(mapping):    

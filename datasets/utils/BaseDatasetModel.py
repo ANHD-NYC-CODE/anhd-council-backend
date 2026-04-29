@@ -34,7 +34,7 @@ class BaseDatasetModel():
                     'https://data.cityofnewyork.us/api/views/{}.json'.format(self.API_ID)).text)
                 return datetime.fromtimestamp(response['rowsUpdatedAt'], timezone.utc)
             else:
-                return make_aware(datetime.datetime.now())
+                return make_aware(datetime.now())
         except Exception as e:
             logger.warning("Unable to retrieve last API update date", e)
             return None
@@ -109,7 +109,25 @@ class BaseDatasetModel():
 
     @classmethod
     def transform_self_from_file(self, file_path, update=None):
-        return Typecast(self).cast_rows(self.transform_self(file_path, update))
+        from django.db import models as django_models
+        rows = Typecast(self).cast_rows(self.transform_self(file_path, update))
+
+        # Find ALL date/datetime fields on this model
+        date_fields = [f.column for f in self._meta.fields
+                       if isinstance(f, (django_models.DateField, django_models.DateTimeField))]
+
+        if date_fields:
+            def clean_bad_dates(gen):
+                for row in gen:
+                    for date_key in date_fields:
+                        val = row.get(date_key)
+                        if val and hasattr(val, 'year') and (val.year < 1850 or val.year > 2130):
+                            row[date_key] = None
+                        elif val and isinstance(val, str) and len(val) >= 4 and val[:4].isdigit() and (int(val[:4]) < 1850 or int(val[:4]) > 2130):
+                            row[date_key] = None
+                    yield row
+            return clean_bad_dates(rows)
+        return rows
 
     @classmethod
     def async_concurrent_seed(self, file_path, update=None):
@@ -147,7 +165,8 @@ class BaseDatasetModel():
         # ignore_conflict = true does nothing, false upserts
         update = kwargs['update'] if 'update' in kwargs else None
         callback = kwargs['callback'] if 'callback' in kwargs else None
-        return batch_upsert_from_gen(self, self.transform_self_from_file(kwargs['file_path'], update=update), settings.BATCH_SIZE, update=update, callback=callback)
+        ignore_conflict = kwargs.get('ignore_conflict', False)
+        return batch_upsert_from_gen(self, self.transform_self_from_file(kwargs['file_path'], update=update), settings.BATCH_SIZE, update=update, callback=callback, ignore_conflict=ignore_conflict)
 
     @classmethod
     # Good for overwrites
@@ -202,8 +221,18 @@ class BaseDatasetModel():
                                        .values('count')
                                        )
 
-        ds.PropertyAnnotation.objects.update(**{self.__name__.lower() + 's_last30': Coalesce(last30_subquery, 0), self.__name__.lower(
-        ) + 's_lastyear': Coalesce(lastyear_subquery, 0), self.__name__.lower() + 's_last3years': Coalesce(last3years_subquery, 0), self.__name__.lower() + 's_lastupdated': make_aware(datetime.now())})
+        import time
+        for attempt in range(3):
+            try:
+                ds.PropertyAnnotation.objects.update(**{self.__name__.lower() + 's_last30': Coalesce(last30_subquery, 0), self.__name__.lower(
+                ) + 's_lastyear': Coalesce(lastyear_subquery, 0), self.__name__.lower() + 's_last3years': Coalesce(last3years_subquery, 0), self.__name__.lower() + 's_lastupdated': make_aware(datetime.now())})
+                break
+            except Exception as e:
+                if 'deadlock' in str(e).lower() and attempt < 2:
+                    logger.warning('Deadlock during annotation for %s, retrying (attempt %s)...', self.__name__, attempt + 1)
+                    time.sleep(5 * (attempt + 1))
+                else:
+                    raise
 
     @classmethod
     def annotate_property_standard(self, annotation):

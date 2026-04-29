@@ -105,9 +105,9 @@ class HPDComplaint(BaseDatasetModel, models.Model):
 
     @classmethod
     def download(cls, endpoint=None, file_name=None):
-        # Filter the CSV being downloaded from Socrata to just past year
-        one_year_ago = (datetime.datetime.now(
-        ) - datetime.timedelta(days=365)).strftime('%Y-%m-%dT%H:%M:%S')
+        # Filter to past 2 months + null status dates to catch status changes on old records
+        two_months_ago = (datetime.datetime.now(
+        ) - datetime.timedelta(days=60)).strftime('%Y-%m-%dT%H:%M:%S')
 
         # Construct the dynamic URL with query parameters
         query_params = (
@@ -117,7 +117,7 @@ class HPDComplaint(BaseDatasetModel, models.Model):
             f"complaint_status,complaint_status_date,problem_status,problem_status_date,"
             f"status_description,problem_duplicate_flag,complaint_anonymous_flag,unique_key,"
             f"latitude,longitude,council_district,census_tract,bin,bbl,nta"
-            f"&$where=problem_status_date >= '{one_year_ago}'"
+            f"&$where=problem_status_date >= '{two_months_ago}' OR problem_status_date IS NULL"
             f"&$limit=100000000"
         )
 
@@ -125,7 +125,7 @@ class HPDComplaint(BaseDatasetModel, models.Model):
         download_endpoint = f"{cls.base_download_endpoint}?{query_params}"
 
         logger.info(
-            f"Downloading HPD Complaint & Problem Data - filtered by Problem Status Date in the past year - from {download_endpoint}")
+            f"Downloading HPD Complaint & Problem Data - filtered by problem_status_date in past 2 months + nulls - from {download_endpoint}")
 
         # Use the download_file method with the dynamic URL
         return cls.download_file(download_endpoint, file_name=file_name)

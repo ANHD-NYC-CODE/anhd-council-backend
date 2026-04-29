@@ -19,6 +19,22 @@ import logging
 
 logger = logging.getLogger('app')
 
+TRANSIENT_ERRORS = ['connection already closed', 'connection to server', 'server closed the connection', 'server terminated abnormally']
+
+def is_transient_error(e):
+    error_str = str(e).lower()
+    return any(msg in error_str for msg in TRANSIENT_ERRORS)
+
+def handle_task_error(e, update=None):
+    if is_transient_error(e):
+        logger.warning('Transient connection error during task: %s', e)
+    else:
+        logger.error('Error during task: %s', e)
+        if update:
+            async_send_update_error_mail.delay(update.id, str(e))
+        else:
+            async_send_general_task_error_mail.delay(str(e))
+
 
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 5})
 def async_cache_council_property_summaries_full(self, token):
@@ -120,8 +136,7 @@ def async_create_update(self, dataset_id, file_id=None):
                 "*ERROR* - Task Failure - No dataset found in async_download_start")
             raise Exception("No dataset.")
     except Exception as e:
-        logger.error('Error during task: {}'.format(e))
-        async_send_general_task_error_mail.delay(str(e))
+        handle_task_error(e)
         raise e
 
 
@@ -143,11 +158,7 @@ def async_seed_split_file(self, file_path, update_id, dataset_id=None):
             "Beginning async seeding (split) - {} - c.Update: {}".format(update.dataset.name, update.id))
         dataset.split_seed_dataset(file_path=file_path, update=update)
     except Exception as e:
-        logger.error('Error during task: {}'.format(e))
-        if update:
-            async_send_update_error_mail.delay(update.id, str(e))
-        else:
-            async_send_general_task_error_mail.delay(str(e))
+        handle_task_error(e, update=update)
         raise e
 
 
@@ -166,11 +177,7 @@ def async_seed_file(self, file_path, update_id, dataset_id=None):
         logger.info(
             "{} updated successfully".format(update.dataset.name))
     except Exception as e:
-        logger.error('Error during task: {}'.format(e))
-        if update:
-            async_send_update_error_mail.delay(update.id, str(e))
-        else:
-            async_send_general_task_error_mail.delay(str(e))
+        handle_task_error(e, update=update)
         raise e
 
 
@@ -182,11 +189,7 @@ def async_seed_table(self, update_id):
             "Beginning async seeding (table) - {} - c.Update: {}".format(update.dataset.name, update.id))
         update.dataset.seed_dataset(update=update, logger=logger)
     except Exception as e:
-        logger.error('Error during task: {}'.format(e))
-        if update:
-            async_send_update_error_mail.delay(update.id, str(e))
-        else:
-            async_send_general_task_error_mail.delay(str(e))
+        handle_task_error(e, update=update)
         raise e
 
 
@@ -203,8 +206,7 @@ def async_download_start(self, dataset_id):
                 "*ERROR* - Task Failure - No dataset found in async_download_start")
             raise Exception("No dataset.")
     except Exception as e:
-        logger.error('Error during task: {}'.format(e))
-        async_send_general_task_error_mail.delay(str(e))
+        handle_task_error(e)
         raise e
 
 
@@ -225,8 +227,7 @@ def async_download_and_update(self, dataset_id, endpoint=None, file_name=None):
                 "*ERROR* - Task Failure - No dataset found in async_download_start")
             raise Exception("No dataset.")
     except Exception as e:
-        logger.error('Error during task: {}'.format(e))
-        async_send_general_task_error_mail.delay(str(e))
+        handle_task_error(e)
         raise e
 
 
@@ -246,8 +247,7 @@ def get_gmail_property_shark_links(self):
                 ds.PSPreForeclosure.create_async_update_worker(
                     endpoint=link, file_name=file_name)
     except Exception as e:
-        logger.error('Error during task: {}'.format(e))
-        async_send_general_task_error_mail.delay(str(e))
+        handle_task_error(e)
         raise e
 
 
@@ -256,18 +256,20 @@ def async_update_from_file(self, file_id, previous_file_id):
     try:
         update = None
         file = c.DataFile.objects.get(id=file_id)
-        previous_file = c.DataFile.objects.filter(id=previous_file_id).first()
+        previous_file = c.DataFile.objects.filter(id=previous_file_id).first() if previous_file_id else None
         dataset = file.dataset
         logger.info(
             "Starting async update for dataset: {}".format(dataset.name))
-        update = c.Update.objects.create(
-            dataset=dataset, file=file, previous_file=previous_file)
+        try:
+            update = c.Update.objects.create(
+                dataset=dataset, file=file, previous_file=previous_file)
+        except Exception:
+            # previous_file may have been deleted between lookup and insert
+            logger.warning("previous_file_id {} no longer exists, creating update without it".format(previous_file_id))
+            update = c.Update.objects.create(
+                dataset=dataset, file=file, previous_file=None)
     except Exception as e:
-        logger.error('Error during task: {}'.format(e))
-        if update:
-            async_send_update_error_mail.delay(update.id, str(e))
-        else:
-            async_send_general_task_error_mail.delay(str(e))
+        handle_task_error(e, update=update)
         raise e
 
 
@@ -282,8 +284,7 @@ def async_download_all_dob_construction(self):
         dob_now_issued.download()
 
     except Exception as e:
-        logger.error('Error during task: {}'.format(e))
-        async_send_general_task_error_mail.delay(str(e))
+        handle_task_error(e)
         raise e
 
 
@@ -298,8 +299,7 @@ def async_download_all_dob_construction(self):
         dob_now_issued.download()
 
     except Exception as e:
-        logger.error('Error during task: {}'.format(e))
-        async_send_general_task_error_mail.delay(str(e))
+        handle_task_error(e)
         raise e
 
 
@@ -335,6 +335,112 @@ def async_check_on_updates(self):
                     )
 
     except Exception as e:
-        logger.error('Error during task: {}'.format(e))
-        async_send_general_task_error_mail.delay(str(e))
+        handle_task_error(e)
         raise e
+
+
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', max_retries=0)
+def async_db_health_check(self):
+    """Periodic task to verify database connectivity. Sends alert email if DB is unreachable."""
+    from django.db import connection
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+        logger.debug("DB health check passed")
+    except Exception as e:
+        logger.error("DB health check FAILED: %s", e)
+        alert_subject = "DAP Portal - CRITICAL - Database Unreachable"
+        alert_body = "The database health check failed.<br><br>Error: {}<br><br>The database server may need to be restarted.".format(str(e))
+        try:
+            from sendgrid import SendGridAPIClient
+            from sendgrid.helpers.mail import Mail
+            sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY', ''))
+            from_email = os.environ.get('EMAIL_USER', '')
+            for to_email in ['dapadmin@anhd.org', 'scott@blueprintinteractive.com']:
+                message = Mail(from_email=from_email, to_emails=to_email, subject=alert_subject, html_content=alert_body)
+                sg.send(message)
+            logger.info("DB health check alert sent")
+        except Exception as mail_err:
+            logger.error("Failed to send DB health check alert: %s", mail_err)
+
+
+# Mapping of model_name to Socrata dataset ID for datasets we can check for updates
+MANUAL_DATASET_SOCRATA_IDS = {
+    'Property': '64uk-42ks',           # PLUTO
+    'Building': 'bc8t-ecyu',           # PAD (same source as PadRecord)
+    'PadRecord': 'bc8t-ecyu',          # PAD
+    'Council': 'yusd-j4xi',            # Council Districts
+    'Community': 'jp9i-3b7y',          # Community Districts
+    'StateAssembly': 'schi-dem7',       # State Assembly
+    'StateSenate': 'h87e-shkl',        # State Senate
+    'ZipCode': 'pri4-ifjk',            # Zip Codes
+    'PublicHousingRecord': 'evjd-dqpz', # NYCHA Developments
+}
+
+
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', max_retries=0)
+def async_check_manual_dataset_updates(self):
+    """Weekly check: compare manual dataset timestamps against Socrata source data.
+    Sends email alert if any source has been updated since our last import."""
+    import requests
+    from datetime import datetime
+
+    stale_datasets = []
+
+    for model_name, socrata_id in MANUAL_DATASET_SOCRATA_IDS.items():
+        try:
+            dataset = c.Dataset.objects.get(model_name=model_name)
+            # Get Socrata's last update timestamp
+            resp = requests.get(f'https://data.cityofnewyork.us/api/views/{socrata_id}.json', timeout=15)
+            if resp.status_code != 200:
+                continue
+            socrata_data = resp.json()
+            socrata_updated = datetime.fromtimestamp(socrata_data.get('rowsUpdatedAt', 0), tz=timezone.utc)
+
+            # Compare with our last update
+            our_last_update = dataset.api_last_updated
+            if not our_last_update:
+                # Never imported — check the latest Update record
+                from core.models import Update
+                last_update = Update.objects.filter(dataset=dataset).order_by('-created_date').first()
+                our_last_update = last_update.created_date if last_update else None
+
+            if our_last_update and socrata_updated > our_last_update:
+                days_stale = (socrata_updated - our_last_update).days
+                stale_datasets.append({
+                    'name': dataset.name,
+                    'our_update': our_last_update.strftime('%Y-%m-%d'),
+                    'source_update': socrata_updated.strftime('%Y-%m-%d'),
+                    'days_stale': days_stale,
+                })
+                logger.info('Dataset %s has new source data (source: %s, ours: %s, %d days stale)',
+                           dataset.name, socrata_updated.strftime('%Y-%m-%d'),
+                           our_last_update.strftime('%Y-%m-%d'), days_stale)
+        except c.Dataset.DoesNotExist:
+            continue
+        except Exception as e:
+            logger.warning('Error checking dataset %s: %s', model_name, e)
+
+    if stale_datasets:
+        subject = f"DAP Portal - {len(stale_datasets)} dataset(s) have new source data available"
+        rows = ''.join(
+            f"<tr><td>{d['name']}</td><td>{d['our_update']}</td><td>{d['source_update']}</td><td>{d['days_stale']} days</td></tr>"
+            for d in stale_datasets
+        )
+        body = (
+            f"<p>The following datasets have newer data available from their source:</p>"
+            f"<table border='1' cellpadding='5'>"
+            f"<tr><th>Dataset</th><th>Our Last Update</th><th>Source Updated</th><th>Stale By</th></tr>"
+            f"{rows}</table>"
+            f"<p>Please update these datasets via the admin panel at "
+            f"<a href='https://api.displacementalert.org/admin/core/dataset/'>api.displacementalert.org/admin</a>.</p>"
+        )
+        from app.mailer import send_mail
+        for to_email in ['dapadmin@anhd.org', 'scott@blueprintinteractive.com']:
+            try:
+                send_mail(to_email, subject, body)
+            except Exception as e:
+                logger.error('Failed to send stale dataset alert: %s', e)
+        logger.info('Stale dataset alert sent for %d datasets', len(stale_datasets))
+    else:
+        logger.info('All manual datasets are up to date')

@@ -9,11 +9,48 @@ from users import models as us
 logger = logging.getLogger('app')
 
 
+def is_email_suppressed(email):
+    """Check if an email is on SendGrid's suppression lists (bounces, blocks, invalid).
+    If suppressed, also disables notification subscriptions for that user."""
+    try:
+        import requests
+        api_key = os.environ.get('SENDGRID_API_KEY', '')
+        if not api_key:
+            return False
+        headers = {'Authorization': f'Bearer {api_key}'}
+        # Check bounces, blocks, and invalid emails
+        for list_type in ['bounces', 'blocks', 'invalid_emails']:
+            resp = requests.get(
+                f'https://api.sendgrid.com/v3/suppression/{list_type}/{email}',
+                headers=headers, timeout=10
+            )
+            if resp.status_code == 200 and resp.json():
+                logger.info('Email %s is on SendGrid %s suppression list — skipping and disabling notifications', email, list_type)
+                # Auto-disable notification subscriptions for this user
+                try:
+                    user = CustomUser.objects.filter(email__iexact=email).first()
+                    if user:
+                        from users.models import UserCustomSearch
+                        disabled = UserCustomSearch.objects.filter(user=user).exclude(notification_frequency='N').update(notification_frequency='N')
+                        if disabled:
+                            logger.info('Disabled %d notification subscriptions for suppressed email %s', disabled, email)
+                except Exception as db_err:
+                    logger.warning('Error disabling notifications for %s: %s', email, db_err)
+                return True
+        return False
+    except Exception as e:
+        logger.warning('Error checking SendGrid suppression for %s: %s', email, e)
+        return False  # Send if we can't check
+
+
 def send_mail(to_email, subject, content_string):
+    if settings.DEBUG:
+        logger.debug("Skipping email in DEBUG mode: %s", subject)
+        return
+    if is_email_suppressed(to_email):
+        return
     sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY', ''))
     from_email = os.environ.get('EMAIL_USER', '')
-    if settings.DEBUG:
-        subject = "(DEVELOPMENT) " + subject
     message = Mail(from_email=from_email,
                    to_emails=to_email,
                    subject=subject,

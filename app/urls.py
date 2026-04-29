@@ -16,7 +16,6 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include, re_path as url
 # from django.conf.urls import url, include
-from rest_framework.documentation import include_docs_urls
 from django.conf import settings
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.contrib.auth import views as auth_views
@@ -27,7 +26,7 @@ from datasets import views as datasets
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('docs/', include_docs_urls(title='API', description='API Documentation')),
+    # path('docs/', ...) — disabled: coreapi incompatible with Python 3.12 (missing pkg_resources)
     path('api/token/', jwt_views.TokenObtainPairView.as_view(),
          name='token_obtain_pair'),
     path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(),

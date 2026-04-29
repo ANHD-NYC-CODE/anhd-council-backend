@@ -187,17 +187,17 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
 
     def get_percent_lost(self):
         try:
-            earliest = int(self.get_earliest_count())  # ✅ Convert to int
-            latest = int(self.get_latest_count())  # ✅ Convert to int
+            earliest = int(self.get_earliest_count())  # Convert to int
+            latest = int(self.get_latest_count())  # Convert to int
             difference = earliest - latest
     
-            if earliest == 0:  # ✅ Avoid division by zero
+            if earliest == 0:  # Avoid division by zero
                 return 0
     
             return -(difference / earliest) if difference >= 0 else (-difference / earliest)
     
         except Exception:
-            return 0  # ✅ Failsafe return
+            return 0  # Failsafe return
 
 
     @classmethod
@@ -213,18 +213,27 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
             row['ucbbl'] = str(row['ucbbl'])
             row['id'] = row['ucbbl']
     
-            # ✅ Ensure `uc{MANUAL_YEAR}` is converted to an integer
+            # Ensure `uc{MANUAL_YEAR}` is converted to an integer
             key = f"uc{cls.MANUAL_YEAR}"
     
             if key in row:
                 try:
                     row[key] = int(row[key]) if row[key] and row[key].strip() else 0
                 except ValueError:
-                    row[key] = 0  # ✅ If conversion fails, set to 0
+                    row[key] = 0  # If conversion fails, set to 0
     
             if row[key] > 0:
                 row['latestuctotals'] = row[key]
-    
+
+            # Null yearbuilt if < 1600 (data entry errors, yearbuilt=0 means unknown)
+            yb = row.get('yearbuilt')
+            if yb is not None:
+                try:
+                    if int(yb) < 1600:
+                        row['yearbuilt'] = None
+                except (ValueError, TypeError):
+                    pass
+
             yield row  # Return processed row
 
 

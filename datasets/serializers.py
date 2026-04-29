@@ -306,6 +306,7 @@ class PropertyShortAnnotatedSerializer(serializers.ModelSerializer):
                         obj.propertyannotation, dataset_prefix + 's_last30')
             except ds.PropertyAnnotation.DoesNotExist:
                 logger.warning('No property annotation for {}'.format(obj.bbl))
+
         return rep
 
 

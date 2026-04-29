@@ -88,12 +88,12 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
     # Join DOBPermitIssuedLegacy table with DOBPermitIssuedNow table
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        logger.info("Starting seeding/updating process for {}", self.__name__)
+        logger.info("Starting seeding/updating process for %s", self.__name__)
         
         # Add records from both tables
         legacy_table = ds.DOBPermitIssuedLegacy
         legacy_count = legacy_table.objects.count()
-        logger.info("Found {} records in legacy table", legacy_count)
+        logger.info("Found %s records in legacy table", legacy_count)
         
         legacy_cols = """
         SELECT DISTINCT ON ({other_table_name}.job)
@@ -126,7 +126,7 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
 
         now_table = ds.DOBPermitIssuedNow
         now_count = now_table.objects.count()
-        logger.info("Found {} records in now table", now_count)
+        logger.info("Found %s records in now table", now_count)
         
         now_cols = """
         SELECT DISTINCT ON (jobfilingnumber)
@@ -159,18 +159,18 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
 
         kwargs['update'].total_rows = legacy_count + now_count
         kwargs['update'].save()
-        logger.info("Total records to process: {}", kwargs['update'].total_rows)
+        logger.info("Total records to process: %s", kwargs['update'].total_rows)
 
         # Process legacy records
         starting_count = self.objects.count()
-        logger.info("Starting legacy table import. Current count: {}", starting_count)
+        logger.info("Starting legacy table import. Current count: %s", starting_count)
         try:
             execute(self.upsert_permit_sql(legacy_table, legacy_cols, raw_select=True))
             rows_created_legacy = self.objects.count() - starting_count
-            logger.info("Legacy import complete. Created: {}, Updated: {}", 
+            logger.info("Legacy import complete. Created: %s, Updated: %s", 
                        rows_created_legacy, legacy_count - rows_created_legacy)
         except Exception as e:
-            logger.error("Error during legacy import: {}", str(e))
+            logger.error("Error during legacy import: %s", str(e))
             raise
         
         kwargs['update'].rows_created = kwargs['update'].rows_created + rows_created_legacy
@@ -179,14 +179,14 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
 
         # Process now records
         starting_count = self.objects.count()
-        logger.info("Starting now table import. Current count: {}", starting_count)
+        logger.info("Starting now table import. Current count: %s", starting_count)
         try:
             execute(self.upsert_permit_sql(now_table, now_cols, raw_select=True))
             rows_created_now = self.objects.count() - starting_count
-            logger.info("Now import complete. Created: {}, Updated: {}", 
+            logger.info("Now import complete. Created: %s, Updated: %s", 
                        rows_created_now, now_count - rows_created_now)
         except Exception as e:
-            logger.error("Error during now import: {}", str(e))
+            logger.error("Error during now import: %s", str(e))
             raise
         
         kwargs['update'].rows_created = kwargs['update'].rows_created + rows_created_now
@@ -200,12 +200,12 @@ class DOBIssuedPermit(BaseDatasetModel, models.Model):
         dataset.save()
         
         final_count = self.objects.count()
-        logger.info("✅ Seeding complete for {}. Final counts:", self.__name__)
-        logger.info("📊 Total records: {}", final_count)
-        logger.info("📊 Records created: {}", kwargs['update'].rows_created)
-        logger.info("📊 Records updated: {}", kwargs['update'].rows_updated)
-        logger.info("📊 Legacy records: {}", legacy_count)
-        logger.info("📊 Now records: {}", now_count)
+        logger.info("Seeding complete for %s. Final counts:", self.__name__)
+        logger.info("Total records: %s", final_count)
+        logger.info("Records created: %s", kwargs['update'].rows_created)
+        logger.info("Records updated: %s", kwargs['update'].rows_updated)
+        logger.info("Legacy records: %s", legacy_count)
+        logger.info("Now records: %s", now_count)
 
     @classmethod
     def annotate_properties(self):

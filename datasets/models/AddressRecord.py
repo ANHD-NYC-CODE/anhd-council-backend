@@ -128,7 +128,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
     def build_building_gen(self):
         # TODO: Switch this to use raw PAD csv
         # Do not create address record for buildings without bbls
-        for building in ds.PadRecord.objects.filter(bbl__isnull=False).all():
+        for building in ds.PadRecord.objects.filter(bbl__isnull=False).iterator():
             try:
                 building.bbl
             except Exception as e:
@@ -247,7 +247,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
     @classmethod
     def build_property_gen(self):
         logger.info("Generating Addresses from property objects...")
-        for property in ds.Property.objects.all():
+        for property in ds.Property.objects.all().iterator():
             record = self.address_row_from_property(property)
             if record:
                 yield record
@@ -285,7 +285,7 @@ class AddressRecord(BaseDatasetModel, models.Model):
         logger.info(
             "Updating address search vector: {}".format(self.__name__))
         address_vector = SearchVector('number', weight='A') + SearchVector(
-            'street', weight='B') + SearchVector('borough', rank='C') + SearchVector('zipcode', rank='C')
+            'street', weight='B') + SearchVector('borough', weight='C') + SearchVector('zipcode', weight='C')
         self.objects.update(address=address_vector)
 
     def __str__(self):

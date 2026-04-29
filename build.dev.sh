@@ -7,5 +7,6 @@ docker build -f Dockerfile --tag app_image .
 docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d --force-recreate --build --remove-orphans
 docker exec -it app python manage.py migrate
 docker image prune -f
+docker builder prune -f
 
 echo "Dev build complete! View logs with 'docker-compose logs -f app' or attach to the app for debugging with 'docker attach app'"

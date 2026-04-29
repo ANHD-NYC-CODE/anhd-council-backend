@@ -17,6 +17,7 @@ services:
       - CELERY_BROKER_URL=redis://redis
       - FLOWER_PORT=8888
       - TZ=America/New_York
+      - FLOWER_UNAPPLY_DJANGO_FIXUPS=true
     networks:
       - network1
       - nginx_network
@@ -26,7 +27,7 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-    command: sh -c "apk add --no-cache tzdata && cp /usr/share/zoneinfo/America/New_York /etc/localtime && echo 'America/New_York' > /etc/timezone && apk del tzdata"
+    command: celery flower --broker=redis://redis --port=8888
   nginx:
     restart: always
     ports:

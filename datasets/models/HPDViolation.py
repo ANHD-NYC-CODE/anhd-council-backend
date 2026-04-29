@@ -87,9 +87,10 @@ class HPDViolation(BaseDatasetModel, models.Model):
     # New Download method via API Soda Filtering by Date
     @classmethod
     def download(cls, endpoint=None, file_name=None):
-        # Filter the CSV being downloaded from Socrata to just past year
-        one_year_ago = (datetime.datetime.now(
-        ) - datetime.timedelta(days=365)).strftime('%Y-%m-%dT%H:%M:%S')
+        # Filter by currentstatusdate to catch new violations AND status changes on old ones
+        # Also include records with NULL currentstatusdate (shouldn't exist but safety net)
+        two_months_ago = (datetime.datetime.now(
+        ) - datetime.timedelta(days=60)).strftime('%Y-%m-%dT%H:%M:%S')
 
         # Construct the dynamic URL with query parameters
         query_params = (
@@ -99,7 +100,7 @@ class HPDViolation(BaseDatasetModel, models.Model):
             f"ordernumber,novid,novdescription,novissueddate,currentstatusid,currentstatus,currentstatusdate,"
             f"novtype,violationstatus,rentimpairing,latitude,longitude,communityboard,councildistrict,censustract,"
             f"bin,bbl,nta"
-            f"&$where=inspectiondate >= '{one_year_ago}'"
+            f"&$where=currentstatusdate >= '{two_months_ago}' OR currentstatusdate IS NULL"
             f"&$limit=100000000"
         )
 
@@ -107,7 +108,7 @@ class HPDViolation(BaseDatasetModel, models.Model):
         download_endpoint = f"{cls.base_download_endpoint}?{query_params}"
 
         logger.info(
-            f"Downloading HPD Violation data - filtered by inspection dates in the past year -  from {download_endpoint}")
+            f"Downloading HPD Violation data - filtered by currentstatusdate in past 2 months + nulls - from {download_endpoint}")
 
         # Use the download_file method with the dynamic URL
         return cls.download_file(download_endpoint, file_name=file_name)
@@ -155,7 +156,7 @@ class HPDViolation(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        logger.info("Seeding/Updating {}", self.__name__)
+        logger.info("Seeding/Updating %s", self.__name__)
         self.seed_with_upsert(**kwargs)
 
     @classmethod
