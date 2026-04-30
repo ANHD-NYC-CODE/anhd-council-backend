@@ -68,7 +68,7 @@ class PSForeclosure(BaseDatasetModel, models.Model):
 
     @classmethod
     def transform_self(self, file_path, update=None):
-        return self.pre_validation_filters(from_xlsx_file_to_gen(file_path, 'Foreclosure Auctions Details', update, skip_rows=7))
+        return self.pre_validation_filters(from_xlsx_file_to_gen(file_path, 'Foreclosure Auctions Details', update, header_marker='Address'))
 
     @classmethod
     def update_foreclosure_auction_dates(self, **kwargs):

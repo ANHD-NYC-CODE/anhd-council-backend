@@ -153,19 +153,29 @@ def convert_xls_to_xlsx_workbook(file_path):
     return book_xlsx
 
 
-def from_xlsx_file_to_gen(file_path, worksheet, update, skip_rows=0):
+def from_xlsx_file_to_gen(file_path, worksheet, update, skip_rows=0, header_marker=None):
     if 'xlsx' in file_path.split('.')[-1]:
         wb = openpyxl.load_workbook(file_path)
     else:
         wb = convert_xls_to_xlsx_workbook(file_path)
     worksheet = wb[worksheet]
     rows = worksheet.rows
-    for i in range(skip_rows):
-        next(rows)
 
-    headers = clean_headers(','.join([c.value for c in next(rows)]))
-    while not headers[0]:  # keeps going down if headers are blank
+    if header_marker:
+        marker = header_marker.lower()
+        for row in rows:
+            first = row[0].value
+            if isinstance(first, str) and first.strip().lower() == marker:
+                headers = clean_headers(','.join([c.value for c in row]))
+                break
+        else:
+            raise ValueError("header marker '{}' not found in {}".format(header_marker, file_path))
+    else:
+        for i in range(skip_rows):
+            next(rows)
         headers = clean_headers(','.join([c.value for c in next(rows)]))
+        while not headers[0]:  # keeps going down if headers are blank
+            headers = clean_headers(','.join([c.value for c in next(rows)]))
 
     for row in rows:
         values = [clean_string(c.value) if isinstance(

@@ -1,5 +1,12 @@
 # API CHANGELOG
 
+### 2026-04-29 — PropertyShark Parser Resilience
+
+**Imports**
+- PropertyShark Pre-Foreclosures + Foreclosure Auctions parsers now auto-detect the header row by scanning for `Address` instead of skipping a fixed number of rows
+- Fixes silent row-skip when PropertyShark adds/removes banner rows above headers (caused 1000-row uploads to insert 0 records and trigger "no rows created or updated" errors)
+- `from_xlsx_file_to_gen` accepts new optional `header_marker` parameter
+
 ### 2026-04-06 — Download Optimization, Custom Search Fixes & Auth Improvements
 
 **Auth & UX**
