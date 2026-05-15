@@ -1,5 +1,12 @@
 # API CHANGELOG
 
+### 2026-05-15 — Typecast tolerant of unknown source columns
+
+**Imports**
+- `Typecast.cast_row` now silently skips columns that don't map to a model field instead of raising `KeyError`
+- Fixes CoreData Subsidy Records import failing on Furman's 2025 XLSX (which adds columns like `ser_violation_2024`, `net_inc_sqft_2025`, `data_output_date` etc. that aren't on our model)
+- Same robustness applies to all datasets — HPD, DOB, etc. won't break the whole import when source agencies add new columns
+
 ### 2026-04-29 — PropertyShark Parser Resilience
 
 **Imports**
