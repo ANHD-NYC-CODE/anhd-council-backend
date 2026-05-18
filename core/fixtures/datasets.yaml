@@ -317,17 +317,14 @@
     name: J-51 Subsidy Records
     model_name: SubsidyJ51
     automated: false
-    update_instructions: 1) Download all 5 borough .xlsx Excel files from https://www1.nyc.gov/site/finance/benefits/benefits-j51.page
-      2) Manually combine all files into single .csv file. 3) Upload file to app.
-      4) Create Update. Please make sure headers match EXACTLY the model. (like BUILDINGCLASSATPRESENT
-      vs just BUILDING CLASS). Please also ensure properties, addresses, and BBL are
-      updated first.
+    update_instructions: 'DEPRECATED — covered by CoreSubsidyRecord (Furman CoreData).
+      Do not update directly.'
     download_endpoint: null
     api_last_updated: null
     records_start: null
     records_end: null
     update_schedule: when needed
-    deprecated: false
+    deprecated: true
 - model: core.dataset
   pk: 24
   fields:

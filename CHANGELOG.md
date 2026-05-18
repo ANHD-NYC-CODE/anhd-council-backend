@@ -1,5 +1,16 @@
 # API CHANGELOG
 
+### 2026-05-18 (later) — Deprecated SubsidyJ51 and Subsidy421a datasets
+
+**Data**
+- Removed `Subsidy421a` and `SubsidyJ51` from `ANNOTATED_DATASETS` — the daily annotation cron no longer runs on these models
+- Marked both datasets as `deprecated=True` in fixtures so they're hidden from admin dropdowns
+- Both programs are now fully covered by `CoreSubsidyRecord` (Furman CoreData) — the standalone tables were redundant duplicates
+- One-time cleanup: reset `PropertyAnnotation.subsidyj51` and `subsidy421a` flags (cleared accumulated stale flags from past imports)
+- Truncated `SubsidyJ51` records (Subsidy421a was already empty)
+- Frontend `Subsidized Housing` and `Market Rate` compound filters continue to work correctly via the `subsidyprograms` text field (which captures J-51 and 421-a entries from Furman)
+- REST endpoints `/subsidyj51/` and `/subsidy421a/` remain but return empty results — left in place to avoid breaking any unknown third-party consumers
+
 ### 2026-05-18 — Annotation cleanup + BigAutoField migration
 
 **Data accuracy**
