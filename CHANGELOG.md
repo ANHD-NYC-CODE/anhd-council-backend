@@ -1,5 +1,15 @@
 # API CHANGELOG
 
+### 2026-05-18 — Annotation cleanup + BigAutoField migration
+
+**Data accuracy**
+- Fixed `CoreSubsidyRecord.annotate_properties()` to reset `PropertyAnnotation.subsidyprograms` before rebuilding — previous code only appended, causing expired program markers (421-a, J-51, etc.) to accumulate indefinitely
+- Manhattan CB 7 example: displayed subsidy count drops from 297 properties / 24,212 units (inflated by years of stale entries) to 176 properties / 14,392 units (current subsidies only)
+- The daily 8 AM "annotate properties all" cron now correctly reflects current source data each run
+
+**Migrations**
+- Added `core.0008_alter_*_id_*` — upgrades `datafile`, `dataset`, `update`, `usermessage` PKs from `AutoField` to `BigAutoField` to align with the project default. Postgres handles FK column cascade automatically. Clears the "models in app(s) 'core' have changes" warning seen on each `migrate` run
+
 ### 2026-05-15 — Typecast tolerant of unknown source columns
 
 **Imports**

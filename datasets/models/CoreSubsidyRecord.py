@@ -127,6 +127,9 @@ class CoreSubsidyRecord(BaseDatasetModel, models.Model):
 
     @classmethod
     def annotate_properties(self):
+        # Reset first — subsidyprograms is a text field of program names, not a count.
+        # The loop below only appends, so without a reset, expired/dropped programs accumulate forever.
+        ds.PropertyAnnotation.objects.exclude(subsidyprograms__isnull=True).exclude(subsidyprograms='').update(subsidyprograms='')
         for record in self.objects.all().iterator():
             try:
                 annotation = record.bbl.propertyannotation
