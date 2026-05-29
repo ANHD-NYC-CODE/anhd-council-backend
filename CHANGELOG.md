@@ -1,5 +1,11 @@
 # API CHANGELOG
 
+### 2026-05-28 (later) — Resilient dataset downloads
+
+**Imports**
+- `download_file` now retries transient connection failures (`ChunkedEncodingError`/`IncompleteRead`, `ConnectionError`, `Timeout`) up to 3× with a backoff sleep (10s, then 20s), using a fresh temp file each attempt. Large Socrata/PropertyShark downloads that drop mid-stream (e.g. DOBLegacyFiledPermit) now self-heal instead of failing the nightly update. An error email is sent only if all attempts fail — not per retry.
+- Added a 120s read timeout on the streamed download so a stalled connection fails fast (and retries) instead of hanging.
+
 ### 2026-05-28 — RentStabilizationRecord: auto-detected latest year + fully automated import
 
 **Automation**
