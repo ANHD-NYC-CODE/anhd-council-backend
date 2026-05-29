@@ -12,15 +12,19 @@ from core.tasks import async_download_and_update
 logger = logging.getLogger('app')
 
 
-# Update process: Manual
-# Update strategy: Overwrite
-#
-# Combine all borough xlsx files downloaded from DOF into single csv file
-# Add a "year" column and enter the year for every row in the CSV
-# https://www1.nyc.gov/site/finance/taxes/property-lien-sales.page
-# upload file through admin, then update
+# Update process: Automated (weekly via celerybeat) + manual CSV upload via admin
+# Update strategy: Upsert on (bbl, year, month, cycle) — preserves all historical
+# notice cycles and prior years. Source: NYC DOF Tax Lien Sale Lists.
+# https://data.cityofnewyork.us/City-Government/Tax-Lien-Sale-Lists/9rz4-mjek
 
 class TaxLien(BaseDatasetModel, models.Model):
+    class Meta:
+        unique_together = ('bbl', 'year', 'month', 'cycle')
+        indexes = [
+            models.Index(fields=['bbl', '-year']),
+            models.Index(fields=['-year']),
+        ]
+
     download_endpoint = "https://data.cityofnewyork.us/api/views/9rz4-mjek/rows.csv?accessType=DOWNLOAD"
     API_ID = '9rz4-mjek'
 
@@ -46,16 +50,32 @@ class TaxLien(BaseDatasetModel, models.Model):
     @classmethod
     def pre_validation_filters(self, gen_rows):
         for row in gen_rows:
-            if 'sale' in row['cycle'].lower():
-                if not is_null(row['waterdebtonly']):
-                    waterdebtonly = row['waterdebtonly'] == 'YES'
-                    row['waterdebtonly'] = waterdebtonly
-                if not is_null(row['month']):
-                    month = row['month'].split('/')[0]
-                    year = row['month'].split('/')[1]
-                    row['month'] = month
-                    row['year'] = year
-                yield row
+            if is_null(row.get('cycle')) or is_null(row.get('month')) or is_null(row.get('bbl')):
+                continue
+
+            # Keep only Final Sale rows (liens actually sold). The notice cycles
+            # (90/60/30/10 Day) are forward-looking eligibility — many resolve
+            # before the sale — and the portal only surfaces final sales.
+            if 'sale' not in row['cycle'].lower():
+                continue
+
+            if not is_null(row.get('waterdebtonly')):
+                row['waterdebtonly'] = row['waterdebtonly'] == 'YES'
+
+            # Month column has two known formats:
+            #   Socrata current: "MM/YYYY"
+            #   Older DOF xlsx (2021 era): "MM/DD/YYYY HH:MM:SS AM"
+            parts = row['month'].strip().split('/')
+            if len(parts) >= 3:
+                row['month'] = parts[0]
+                row['year'] = parts[2].split(' ')[0]
+            elif len(parts) == 2:
+                row['month'] = parts[0]
+                row['year'] = parts[1]
+            else:
+                continue
+
+            yield row
 
     @classmethod
     def transform_self(self, file_path, update=None):
@@ -72,7 +92,8 @@ class TaxLien(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        self.bulk_seed(**kwargs, overwrite=True)
+        logger.info("Seeding/Updating %s", self.__name__)
+        return self.seed_with_upsert(ignore_conflict=True, **kwargs)
 
     @classmethod
     def annotate_properties(self):

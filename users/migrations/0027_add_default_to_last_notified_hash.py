@@ -6,15 +6,10 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0025_alter_accessrequest_id_alter_customsearch_id_and_more'),
+        ('users', '0026_usercustomsearch_last_notified_result'),
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='usercustomsearch',
-            name='last_notified_result',
-            field=models.TextField(blank=True, null=True),
-        ),
         migrations.AlterField(
             model_name='usercustomsearch',
             name='last_notified_hash',

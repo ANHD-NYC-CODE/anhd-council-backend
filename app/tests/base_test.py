@@ -671,7 +671,7 @@ class BaseTest(APITestCase, URLPatternsTestCase):
                 bbl=random.randint(1000000000, 5999999999))
 
         latestuctotals = None
-        year_cursor = d_models.RentStabilizationRecord.MANUAL_YEAR
+        year_cursor = max(d_models.RentStabilizationRecord._uc_years())
         while latestuctotals == None and year_cursor > 2006:
             key = "uc{}".format(year_cursor)
             if key in kwargs and (kwargs[key] or kwargs[key] == 0):

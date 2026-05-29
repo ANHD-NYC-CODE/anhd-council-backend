@@ -340,7 +340,10 @@ class Typecast():
         try:
             d = {}
             for column, val in row.items():
-                d[column] = self.cast[column.lower()](val)
+                cast_fn = self.cast.get(column.lower())
+                if cast_fn is None:
+                    continue
+                d[column] = cast_fn(val)
             return d
         except:
             # print the row for debugging:

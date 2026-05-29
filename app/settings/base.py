@@ -428,8 +428,9 @@ ANNOTATED_DATASETS = ['HPDViolation', 'HPDComplaint', 'DOBViolation',
                       'DOBFiledPermit', 'Eviction', 'HousingLitigation',
                       'AcrisRealMaster', 'Foreclosure', 'CONHRecord',
                       'HPDBuildingRecord', 'PublicHousingRecord',
-                      'RentStabilizationRecord', 'Subsidy421a', 'SubsidyJ51',
+                      'RentStabilizationRecord',
                       'TaxLien', 'AEPBuilding', 'OCAHousingCourt']
+# Subsidy421a and SubsidyJ51 deprecated — both programs covered by CoreSubsidyRecord (Furman CoreData)
 
 
 TESTING = 'test' in sys.argv[1:]

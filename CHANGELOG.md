@@ -1,5 +1,82 @@
 # API CHANGELOG
 
+### 2026-05-28 (later) — Resilient dataset downloads + richer error emails
+
+**Imports**
+- `download_file` now retries transient connection failures (`ChunkedEncodingError`/`IncompleteRead`, `ConnectionError`, `Timeout`) up to 3× with a backoff sleep (10s, then 20s), using a fresh temp file each attempt. Large Socrata/PropertyShark downloads that drop mid-stream (e.g. DOBLegacyFiledPermit) now self-heal instead of failing the nightly update. An error email is sent only if all attempts fail — not per retry.
+- Added a 120s read timeout on the streamed download so a stalled connection fails fast (and retries) instead of hanging.
+
+**Error emails**
+- Dataset failure emails now include the **dataset name** (in the subject and body), the **full traceback** (not just the exception message), and a **timestamp**. Applies to both update-stage errors and download-stage errors (which previously had no dataset context and only surfaced in Flower).
+
+### 2026-05-28 — RentStabilizationRecord: auto-detected latest year + fully automated import
+
+**Automation**
+- Replaced the hardcoded `MANUAL_YEAR` constant with auto-detection: `latest_data_year()` finds the highest `uc{year}` column that has any data (cached per-process, reset after each import). No constant to bump when a new year is loaded.
+- Dataset is now **fully automated** (was manual). `latest_source()` probes JustFix's per-year doffer files (`rentstab_counts_from_doffer_{year}.csv` on `justfix-data` S3 — the NYCDB `rentstab_v2` source) newest-first and downloads the latest that exists; `fetch_last_updated()` reads the file's Last-Modified so a newly-published year triggers an update.
+- Added `Check and Update RentStabilizationRecord` celerybeat task (crontab 21 / monthly, dataset 22). Verified end-to-end: auto-discovered and imported the 2024 file (42,425 `uc2024` rows), latest year auto-advanced 2023→2024, prior years preserved via upsert.
+- Validated existing 2020–2023 values match the doffer source exactly before automating.
+
+**Schema**
+- Migration `0130_rentstabilizationrecord_uc2028_and_more` adds `uc2028`–`uc2030` (runway through 2030). Adding more years is now a field-only migration since the latest year is auto-detected.
+
+**Imports**
+- `pre_validation_filters` now sets `latestuctotals` from the latest `uc{year}` column actually present in each row (read-only — empty year columns stay NULL instead of being coerced to 0).
+
+### 2026-05-27 — TaxLien: upsert pattern (no more wipe), automated monthly
+
+**Bug fixes**
+- Switched `seed_or_update_self` from `bulk_seed(overwrite=True)` (which truncated the entire table before every load) to `seed_with_upsert(ignore_conflict=True)`. The old wipe-and-reload meant any data not present in NYC's current export was destroyed each run — including manually backfilled years. Upsert preserves all prior years permanently.
+- Date parser now accepts both `MM/YYYY` (current Socrata format) and `MM/DD/YYYY HH:MM:SS AM` (older DOF xlsx exports) — needed for the one-time pre-2019 PDF backfill.
+- Kept the `'sale'` cycle filter (Final Sale only). The notice cycles (90/60/30/10 Day) are forward-looking eligibility — many properties resolve before the sale — and the portal only surfaces confirmed final sales. This matches the existing frontend, which already filters to `cycle.includes('Sale')`.
+
+**Schema**
+- Migration `0129_taxlien_unique_together` adds `unique_together = ('bbl', 'year', 'month', 'cycle')` so the upsert conflict target is well-defined. Before adding the constraint it **dedupes in place** — deletes exact duplicate rows on those four columns (keeping the lowest `id`), a no-op on clean data — so the constraint applies without wiping existing tax lien history. (Earlier drafts truncated the table; switched to dedupe so production data is preserved on deploy.)
+- Added indexes on `(bbl, -year)` and `(-year)` for community-board and BBL lookups.
+
+**Automation**
+- Added `Check and Update TaxLien` celerybeat task (crontab 21 / monthly on the 6th) — runs `async_check_api_for_update_and_update[27]`, only triggers a real upsert when NYC publishes a new sale. NYC publishes annually (clustered Feb–Jun), so monthly cadence catches new sales within ~30 days. Closes the gap where the dataset was marked `automated=True` but had no registered periodic task.
+- Fixture `update_instructions` updated to drop the obsolete "add a year column manually" step (year is now parsed from the Month column automatically).
+
+**Data scope**
+- NYC's Socrata feed retains all Final Sale years it has ever published (2019, 2021, 2025; 2020 had no sale). Production already holds these via the live feed — no Wayback backfill needed.
+- Only genuine gap is **2011–2018**, which NYC publishes solely as archive PDFs (never on Socrata). Planned as a one-time manual import; the upsert change is what keeps it from being wiped by subsequent automated runs.
+
+### 2026-05-18 (later) — Deprecated SubsidyJ51 and Subsidy421a datasets
+
+**Data**
+- Removed `Subsidy421a` and `SubsidyJ51` from `ANNOTATED_DATASETS` — the daily annotation cron no longer runs on these models
+- Marked both datasets as `deprecated=True` in fixtures so they're hidden from admin dropdowns
+- Both programs are now fully covered by `CoreSubsidyRecord` (Furman CoreData) — the standalone tables were redundant duplicates
+- One-time cleanup: reset `PropertyAnnotation.subsidyj51` and `subsidy421a` flags (cleared accumulated stale flags from past imports)
+- Truncated `SubsidyJ51` records (Subsidy421a was already empty)
+- Frontend `Subsidized Housing` and `Market Rate` compound filters continue to work correctly via the `subsidyprograms` text field (which captures J-51 and 421-a entries from Furman)
+- REST endpoints `/subsidyj51/` and `/subsidy421a/` remain but return empty results — left in place to avoid breaking any unknown third-party consumers
+
+### 2026-05-18 — Annotation cleanup + BigAutoField migration
+
+**Data accuracy**
+- Fixed `CoreSubsidyRecord.annotate_properties()` to reset `PropertyAnnotation.subsidyprograms` before rebuilding — previous code only appended, causing expired program markers (421-a, J-51, etc.) to accumulate indefinitely
+- Manhattan CB 7 example: displayed subsidy count drops from 297 properties / 24,212 units (inflated by years of stale entries) to 176 properties / 14,392 units (current subsidies only)
+- The daily 8 AM "annotate properties all" cron now correctly reflects current source data each run
+
+**Migrations**
+- Added `core.0008_alter_*_id_*` — upgrades `datafile`, `dataset`, `update`, `usermessage` PKs from `AutoField` to `BigAutoField` to align with the project default. Postgres handles FK column cascade automatically. Clears the "models in app(s) 'core' have changes" warning seen on each `migrate` run
+
+### 2026-05-15 — Typecast tolerant of unknown source columns
+
+**Imports**
+- `Typecast.cast_row` now silently skips columns that don't map to a model field instead of raising `KeyError`
+- Fixes CoreData Subsidy Records import failing on Furman's 2025 XLSX (which adds columns like `ser_violation_2024`, `net_inc_sqft_2025`, `data_output_date` etc. that aren't on our model)
+- Same robustness applies to all datasets — HPD, DOB, etc. won't break the whole import when source agencies add new columns
+
+### 2026-04-29 — PropertyShark Parser Resilience
+
+**Imports**
+- PropertyShark Pre-Foreclosures + Foreclosure Auctions parsers now auto-detect the header row by scanning for `Address` instead of skipping a fixed number of rows
+- Fixes silent row-skip when PropertyShark adds/removes banner rows above headers (caused 1000-row uploads to insert 0 records and trigger "no rows created or updated" errors)
+- `from_xlsx_file_to_gen` accepts new optional `header_marker` parameter
+
 ### 2026-04-06 — Download Optimization, Custom Search Fixes & Auth Improvements
 
 **Auth & UX**

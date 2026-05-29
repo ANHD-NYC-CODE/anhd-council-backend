@@ -14,6 +14,7 @@ import tempfile
 import re
 import logging
 import math
+import time
 from datasets.utils import dates
 from django.db.models import Subquery, OuterRef, Count, IntegerField, F
 from django.db.models.functions import Coalesce
@@ -62,50 +63,72 @@ class BaseDatasetModel():
         if 'http' not in endpoint:
             endpoint = 'http://' + endpoint
 
-        if ps_requests:
-            file_request = self.get_ps_requests(endpoint)
-        else:
-            file_request = requests.get(endpoint, stream=True)
-        # Was the request OK?
-        if file_request.status_code != requests.codes.ok:
-            # Nope, error handling, skip file etc etc etc
-            logger.error(
-                "* ERROR * Download request failed: {}".format(endpoint))
-            raise Exception("Request error: {}".format(
-                file_request.status_code))
+        # Large Socrata / PropertyShark downloads occasionally drop mid-stream
+        # (ChunkedEncodingError / IncompleteRead) or stall. Retry the whole
+        # download a few times with a backoff sleep, using a fresh temp file each
+        # attempt so partial data is never carried over.
+        MAX_ATTEMPTS = 3
+        TRANSIENT_ERRORS = (
+            requests.exceptions.ChunkedEncodingError,
+            requests.exceptions.ConnectionError,
+            requests.exceptions.Timeout,
+        )
 
-        # Get filename
-        if not file_name:
+        logger.info("Download started for: {} at {}".format(dataset.name, endpoint))
+
+        for attempt in range(1, MAX_ATTEMPTS + 1):
+            lf = tempfile.NamedTemporaryFile()
             try:
-                file_name = re.findall(
-                    "filename=(.+)", file_request.headers['content-disposition'])[0]
-            except Exception as e:
-                # Use a more sensible default filename
-                timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-                file_name = f"dataset_{timestamp}.csv"
+                if ps_requests:
+                    file_request = self.get_ps_requests(endpoint)
+                else:
+                    file_request = requests.get(endpoint, stream=True, timeout=120)
 
-        # Create a temporary file
-        lf = tempfile.NamedTemporaryFile()
+                # Was the request OK?
+                if file_request.status_code != requests.codes.ok:
+                    logger.error(
+                        "* ERROR * Download request failed: {}".format(endpoint))
+                    raise Exception("Request error: {}".format(
+                        file_request.status_code))
 
-        # Read the streamed file in sections
-        downloaded = 0
-        logger.info("Download started for: {} at {}".format(
-            self.get_dataset().name, endpoint))
+                # Get filename
+                resolved_name = file_name
+                if not resolved_name:
+                    try:
+                        resolved_name = re.findall(
+                            "filename=(.+)", file_request.headers['content-disposition'])[0]
+                    except Exception:
+                        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+                        resolved_name = f"dataset_{timestamp}.csv"
 
-        for block in file_request.iter_content(1024 * 8):
-            downloaded += len(block)
-            logger.debug("{0} MB".format(downloaded / 1000000))
-            # If no more file then stop
-            if not block:
-                break
+                # Read the streamed file in sections
+                downloaded = 0
+                for block in file_request.iter_content(1024 * 8):
+                    downloaded += len(block)
+                    logger.debug("{0} MB".format(downloaded / 1000000))
+                    if not block:
+                        break
+                    lf.write(block)
 
-            # Write file block to temporary file
-            lf.write(block)
-        data_file = c_models.DataFile(dataset=dataset)
-        data_file.file.save(file_name, files.File(lf))
-        logger.info("Download completed for: {} and saved to: {}".format(
-            self.get_dataset().name, data_file.file.path))
-        return data_file
+                data_file = c_models.DataFile(dataset=dataset)
+                data_file.file.save(resolved_name, files.File(lf))
+                logger.info("Download completed for: {} and saved to: {}".format(
+                    dataset.name, data_file.file.path))
+                return data_file
+
+            except TRANSIENT_ERRORS as e:
+                lf.close()  # discard the partial temp file before retrying
+                if attempt < MAX_ATTEMPTS:
+                    wait = 10 * attempt  # 10s, then 20s
+                    logger.warning(
+                        "Download connection error for {} (attempt {}/{}): {} — retrying in {}s".format(
+                            dataset.name, attempt, MAX_ATTEMPTS, e, wait))
+                    time.sleep(wait)
+                    continue
+                logger.error(
+                    "Download failed for {} after {} attempts: {}".format(
+                        dataset.name, MAX_ATTEMPTS, e))
+                raise
 
     @classmethod
     def transform_self_from_file(self, file_path, update=None):

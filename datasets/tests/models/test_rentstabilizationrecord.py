@@ -50,12 +50,14 @@ class RentStabilizationRecordTests(BaseTest, TestCase):
         self.assertEqual(record.latestuctotals, 6)
 
     def test_get_percent_lost(self):
-        yr = f'uc{ds.RentStabilizationRecord.MANUAL_YEAR}'
-        record = self.rentstabilizationrecord_factory(uc2007=100, **{yr: 10})
+        # latest year is now auto-detected from the data; reset the cache so it
+        # recomputes against this test's records.
+        ds.RentStabilizationRecord._latest_data_year = None
+        record = self.rentstabilizationrecord_factory(uc2007=100, uc2023=10)
         self.assertEqual(record.get_percent_lost(), -0.9)
 
-        record2 = self.rentstabilizationrecord_factory(uc2007=10, **{yr: 11})
+        record2 = self.rentstabilizationrecord_factory(uc2007=10, uc2023=11)
         self.assertEqual(record2.get_percent_lost(), 0.1)
 
-        record2 = self.rentstabilizationrecord_factory(uc2007=34, **{yr: 23})
+        record2 = self.rentstabilizationrecord_factory(uc2007=34, uc2023=23)
         self.assertEqual(record2.get_percent_lost(), -0.3235294117647059)
