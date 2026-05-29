@@ -31,7 +31,7 @@
 - Kept the `'sale'` cycle filter (Final Sale only). The notice cycles (90/60/30/10 Day) are forward-looking eligibility — many properties resolve before the sale — and the portal only surfaces confirmed final sales. This matches the existing frontend, which already filters to `cycle.includes('Sale')`.
 
 **Schema**
-- Migration `0129_taxlien_unique_together` adds `unique_together = ('bbl', 'year', 'month', 'cycle')` so the upsert conflict target is well-defined. Migration also truncates the existing table once so the constraint applies cleanly; the next import reloads Final Sale rows from NYC's live feed.
+- Migration `0129_taxlien_unique_together` adds `unique_together = ('bbl', 'year', 'month', 'cycle')` so the upsert conflict target is well-defined. Before adding the constraint it **dedupes in place** — deletes exact duplicate rows on those four columns (keeping the lowest `id`), a no-op on clean data — so the constraint applies without wiping existing tax lien history. (Earlier drafts truncated the table; switched to dedupe so production data is preserved on deploy.)
 - Added indexes on `(bbl, -year)` and `(-year)` for community-board and BBL lookups.
 
 **Automation**

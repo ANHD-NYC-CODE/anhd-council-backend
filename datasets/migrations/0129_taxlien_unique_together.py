@@ -1,8 +1,24 @@
 from django.db import migrations, models
 
 
-def truncate_taxlien(apps, schema_editor):
-    schema_editor.execute('TRUNCATE TABLE datasets_taxlien;')
+def dedupe_taxlien(apps, schema_editor):
+    # Remove exact duplicates on (bbl, year, month, cycle), keeping the lowest
+    # id per group, so the unique constraint can be added WITHOUT wiping data.
+    # Only rows where all four columns are non-null and equal can violate the
+    # constraint (Postgres treats NULLs as distinct in unique indexes), so we
+    # match with '=' and leave NULL-bearing rows untouched. This preserves
+    # existing tax lien history on deploy.
+    schema_editor.execute(
+        """
+        DELETE FROM datasets_taxlien a
+        USING datasets_taxlien b
+        WHERE a.id > b.id
+          AND a.bbl = b.bbl
+          AND a.year = b.year
+          AND a.month = b.month
+          AND a.cycle = b.cycle;
+        """
+    )
 
 
 class Migration(migrations.Migration):
@@ -12,10 +28,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        # Old import used overwrite=True + a 'sale' cycle filter that together
-        # truncated to ~10% of rows per import. Wipe so the new unique
-        # constraint can be created cleanly; re-seed via Wayback/backup imports.
-        migrations.RunPython(truncate_taxlien, reverse_code=migrations.RunPython.noop),
+        # Old import used overwrite=True, which could leave duplicate rows.
+        # Dedupe in place (instead of truncating) so existing tax lien history
+        # is preserved on deploy and the new unique constraint applies cleanly.
+        migrations.RunPython(dedupe_taxlien, reverse_code=migrations.RunPython.noop),
         migrations.AlterUniqueTogether(
             name='taxlien',
             unique_together={('bbl', 'year', 'month', 'cycle')},
