@@ -72,6 +72,24 @@
     date_changed: "2019-04-25"
 - model: django_celery_beat.periodictask
   fields:
+    name: "Check and Update TaxLien"
+    description: "Checks api for TaxLien update and upserts new cycles."
+    task: "core.tasks.async_check_api_for_update_and_update"
+    crontab: 21 # once a month on the 6th
+    args: "[27]"
+    kwargs: "{}"
+    date_changed: "2026-05-27"
+- model: django_celery_beat.periodictask
+  fields:
+    name: "Check and Update RentStabilizationRecord"
+    description: "Checks JustFix doffer S3 for a newer rent-stab file and upserts it."
+    task: "core.tasks.async_check_api_for_update_and_update"
+    crontab: 21 # once a month on the 6th
+    args: "[22]"
+    kwargs: "{}"
+    date_changed: "2026-05-28"
+- model: django_celery_beat.periodictask
+  fields:
     name: "Check and Update Properties/Pluto"
     description: "Checks api for Properties/PLUTO update and updates."
     task: "core.tasks.async_check_api_for_update_and_update"

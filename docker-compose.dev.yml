@@ -112,6 +112,10 @@ services:
     image: postgres:15
     container_name: "postgres"
     restart: on-failure
+    # Default Docker stop timeout (10s) is too short for PG to flush its 4GB
+    # shared_buffers on shutdown, causing "not properly shut down" WAL recovery
+    # on every restart. Give it time to checkpoint cleanly.
+    stop_grace_period: 120s
       # https://blog.2ndquadrant.com/basics-of-tuning-checkpoints/
       # linux OOM overcommit https://www.postgresql.org/docs/current/kernel-resources.html#LINUX-MEMORY-OVERCOMMIT
     command:

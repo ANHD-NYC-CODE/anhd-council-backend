@@ -5,30 +5,32 @@ from datasets.utils.validation_filters import is_null
 from datasets import models as ds
 import logging
 import datetime
+import requests
 from django.dispatch import receiver
 
 logger = logging.getLogger('app')
 
 # Update process: Manual
-# Update strategy: Overwrite
+# Update strategy: Upsert
 #
-# Have ANHD Download file from NYCDB and ensure it includes the column for the year (ie. uc2024)
-# and the ucbbl column. All other columns can be omitted. Next  change MANUAL_YEAR below to most
-# recent year being uploaded in your dataset. We have set up to 
-# When updating, you may have to add a new ucbbl column/key to dictionary below for model for that new year 
-# and perform a migration
+# Download the rent-stab unit-count file from NYCDB and ensure it includes the
+# ucbbl column plus a uc{year} column for the year(s) being loaded (e.g. uc2024).
+# Other columns can be omitted. The "latest year" is now AUTO-DETECTED — no
+# constant to bump. Columns exist through uc2030; add more + a migration beyond that.
+#
+# - Latest year (latest_data_year): highest uc{year} column that has any data in
+#   the table. get_latest_count() reads that column. Cached per-process; the cache
+#   is reset after each import (seed_or_update_self).
+# - Earliest count (get_earliest_count): always uc2007 (the baseline). 0 if null.
+# - Percent lost (get_percent_lost): compares uc2007 -> latest year; returns 0 if
+#   the 2007 baseline is missing (avoids divide-by-zero).
+# - Pre-validation (pre_validation_filters): sets latestuctotals from the latest
+#   uc{year} column actually present in each incoming row.
+# - On save it annotates PropertyAnnotation.unitsrentstabilized = latest count.
 
-# - The Latest Year Count (get_latest_count) Always fetches uc{MANUAL_YEAR} (e.g., uc2023) and will Defaults to 0 if missing.
-# - The Earliest Year Count (get_earliest_count) Always pulls uc2007 (never a later year). Defaults to 0 if missing or NULL.
-# - Percent Lost Calculation (get_percent_lost). Compares only to 2007 as the baseline.
-#   It then Handles cases where earliest = 0 to prevent division by zero and Converts the difference into a percentage change.
-# - The Pre-Validation Filtering (pre_validation_filters). Uses only the manually set year (uc{MANUAL_YEAR}) for latestuctotals.
-# - Lastly it Annotates the Latest Year Count to the Property Annotation table on Save (annotate_property_on_save)
-#   Specifically "unitsrentstabilized" on the Property Annotation table should match latestuctotals
-    
 class RentStabilizationRecord(BaseDatasetModel, models.Model):
-    # data_2018 = "https://s3.amazonaws.com/justfix-data/rentstab_counts_for_pluto_19v1_bbls.csv"
-    MANUAL_YEAR = 2023  # This must be changed to the most recent year of data you're uploading for.
+    # Cache for the auto-detected latest year with data (reset on import).
+    _latest_data_year = None
 
     class Meta:
         indexes = [
@@ -148,6 +150,9 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
     uc2025 = models.IntegerField(db_index=True, blank=True, null=True)
     uc2026 = models.IntegerField(db_index=True, blank=True, null=True)
     uc2027 = models.IntegerField(db_index=True, blank=True, null=True)
+    uc2028 = models.IntegerField(db_index=True, blank=True, null=True)
+    uc2029 = models.IntegerField(db_index=True, blank=True, null=True)
+    uc2030 = models.IntegerField(db_index=True, blank=True, null=True)
     est2023 = models.BooleanField(blank=True, null=True)
     dhcr2023 = models.BooleanField(blank=True, null=True)
     abat2023 = models.TextField(blank=True, null=True)
@@ -178,10 +183,31 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
     # holds the latest uc value from the latest year w value
     latestuctotals = models.IntegerField(blank=True, null=True)
 
+    @classmethod
+    def _uc_years(cls):
+        # All uc{year} columns on the model, newest first.
+        return sorted(
+            (int(f.name[2:]) for f in cls._meta.get_fields()
+             if f.name.startswith('uc') and f.name[2:].isdigit()),
+            reverse=True,
+        )
+
+    @classmethod
+    def latest_data_year(cls):
+        # Highest uc{year} column that has any data across the table.
+        # Cached per-process; reset after each import (seed_or_update_self).
+        if cls._latest_data_year is None:
+            cls._latest_data_year = next(
+                (y for y in cls._uc_years()
+                 if cls.objects.filter(**{f"uc{y}__isnull": False}).exists()),
+                2007,
+            )
+        return cls._latest_data_year
+
     def get_latest_count(self):
-        key = f"uc{self.MANUAL_YEAR}"
+        key = f"uc{self.latest_data_year()}"
         return int(getattr(self, key, 0) or 0)  #  Ensure int conversion
-    
+
     def get_earliest_count(self):
         return int(getattr(self, "uc2007", 0) or 0)  #  Ensure int conversion
 
@@ -200,9 +226,50 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
             return 0  # Failsafe return
 
 
+    # JustFix publishes one file per data-year, e.g. ..._doffer_2024.csv.
+    DOFFER_URL_TEMPLATE = "https://s3.amazonaws.com/justfix-data/rentstab_counts_from_doffer_{year}.csv"
+
     @classmethod
-    def download(self, endpoint=None, file_name=None):
-        return self.download_file(self.download_endpoint, file_name=file_name)
+    def latest_source(cls):
+        """Probe the per-year doffer files newest-first and return
+        (url, last_modified_str) for the highest year that exists (HTTP 200)."""
+        current = datetime.date.today().year
+        for year in range(current + 1, 2017, -1):
+            url = cls.DOFFER_URL_TEMPLATE.format(year=year)
+            try:
+                resp = requests.head(url, timeout=20)
+                if resp.status_code == 200:
+                    return url, resp.headers.get('Last-Modified')
+            except requests.RequestException:
+                continue
+        return None, None
+
+    @classmethod
+    def fetch_last_updated(cls):
+        # Used by the cron's needs-update check. Returns the latest doffer file's
+        # Last-Modified so a newly-published year (or refreshed file) triggers an update.
+        _, last_modified = cls.latest_source()
+        if last_modified:
+            try:
+                return datetime.datetime.strptime(
+                    last_modified, "%a, %d %b %Y %H:%M:%S %Z"
+                ).replace(tzinfo=datetime.timezone.utc)
+            except ValueError:
+                pass
+        return None
+
+    @classmethod
+    def download(cls, endpoint=None, file_name=None):
+        url = endpoint or cls.latest_source()[0]
+        if not url:
+            raise Exception("No doffer rent-stab file found to download")
+        return cls.download_file(url, file_name=file_name)
+
+    @classmethod
+    def create_async_update_worker(cls, endpoint=None, file_name=None):
+        from core.tasks import async_download_and_update
+        async_download_and_update.delay(
+            cls.get_dataset().id, endpoint=endpoint, file_name=file_name)
 
     @classmethod
     def pre_validation_filters(cls, gen_rows):
@@ -212,18 +279,20 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
     
             row['ucbbl'] = str(row['ucbbl'])
             row['id'] = row['ucbbl']
-    
-            # Ensure `uc{MANUAL_YEAR}` is converted to an integer
-            key = f"uc{cls.MANUAL_YEAR}"
-    
-            if key in row:
-                try:
-                    row[key] = int(row[key]) if row[key] and row[key].strip() else 0
-                except ValueError:
-                    row[key] = 0  # If conversion fails, set to 0
-    
-            if row[key] > 0:
-                row['latestuctotals'] = row[key]
+
+            # Auto-detect the latest year column with a value in THIS row (newest
+            # first) and use it for latestuctotals — no hardcoded year. Read-only:
+            # don't mutate the year columns, so empty ones stay NULL on import.
+            for year in cls._uc_years():
+                raw = row.get(f"uc{year}")
+                if raw is not None and str(raw).strip():
+                    try:
+                        val = int(raw)
+                    except (ValueError, TypeError):
+                        continue
+                    if val > 0:
+                        row['latestuctotals'] = val
+                        break
 
             # Null yearbuilt if < 1600 (data entry errors, yearbuilt=0 means unknown)
             yb = row.get('yearbuilt')
@@ -248,8 +317,9 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
         return self.pre_validation_filters(from_csv_file_to_gen(file_path, update))
 
     @classmethod
-    def seed_or_update_self(self, **kwargs):
-        update = self.seed_with_upsert(**kwargs)
+    def seed_or_update_self(cls, **kwargs):
+        update = cls.seed_with_upsert(**kwargs)
+        cls._latest_data_year = None  # reset so a newly-loaded year is detected
         return update
 
     @classmethod

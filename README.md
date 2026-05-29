@@ -188,10 +188,10 @@ For non-automated datasets (PropertyShark, CoreData, etc.):
 | OCA Housing Court | AWS S3 bucket (`oca-2-dev`) | Automated (monthly) |
 | Properties (PLUTO) | NYC Planning / manual upload | Manual |
 | Buildings, PAD Records | NYC Planning (PAD) | Manual |
-| Rent Stabilization Records | Tax bills data | Manual |
+| Rent Stabilization Records | JustFix "doffer" S3 (NYCDB rentstab_v2) | Automated (monthly) |
 | CoreData Subsidy Records | ANHD CoreData | Manual |
 | 421a / J-51 Subsidies | ANHD CoreData | Manual |
-| Tax Liens | NYC Open Data | Manual |
+| Tax Liens | NYC Open Data (Socrata) | Automated (monthly) |
 | CONH Records | NYC Open Data (Socrata) | Automated |
 | AEP Buildings | NYC Open Data (Socrata) | Automated |
 | PSPreForeclosure, PSForeclosure | PropertyShark (manual download) | Manual (bi-weekly) |
@@ -235,6 +235,10 @@ aws s3 cp s3://oca-2-dev/public/oca_addresses_with_bbl.csv .
 ```
 
 > Verify the bucket name in your `.env` — it was changed to `oca-2-dev` in 2023.
+
+### Rent Stabilization Records (JustFix doffer, auto-discovered)
+
+Fully automated (monthly cron). `RentStabilizationRecord.latest_source()` probes JustFix's per-year files newest-first (`rentstab_counts_from_doffer_{year}.csv` on `justfix-data` S3 — the NYCDB `rentstab_v2` source) and downloads the highest year that exists. The latest data year is **auto-detected** from the `uc{year}` columns present — there's no `MANUAL_YEAR` to bump. Imports upsert, so prior years are preserved. Columns exist through `uc2030`; beyond that, add fields + a migration (no logic change needed).
 
 ## Property Annotations
 
@@ -303,8 +307,11 @@ All other datasets download the full CSV from Socrata.
 - **Properties** (PLUTO): manual upload when NYC Planning releases new data
 - **Buildings / PAD Records**: manual upload from PAD data
 - **CoreData Subsidies**: manual upload from ANHD CoreData
-- **Rent Stabilization Records**: manual upload from tax bills data
-- **Tax Liens**: manual upload, no date field — just current status (boolean on PropertyAnnotation)
+
+Automated but worth noting:
+
+- **Rent Stabilization Records**: automated monthly; auto-discovers the latest JustFix doffer file and auto-detects the latest year (manual CSV upload still works as an override)
+- **Tax Liens**: automated monthly from Socrata; **Final Sale rows only** (notice cycles are filtered out). Upsert keeps every year's history. Pre-2019 was a one-time backfill from NYC DOF archive PDFs
 
 ### Frontend behavior notes
 

@@ -14,6 +14,7 @@ from django.utils import timezone
 
 import os
 import uuid
+import traceback
 
 import logging
 
@@ -25,15 +26,19 @@ def is_transient_error(e):
     error_str = str(e).lower()
     return any(msg in error_str for msg in TRANSIENT_ERRORS)
 
-def handle_task_error(e, update=None):
+def handle_task_error(e, update=None, dataset=None):
     if is_transient_error(e):
         logger.warning('Transient connection error during task: %s', e)
     else:
+        # Capture the full traceback (we're inside the except) so the error
+        # email shows where it failed, not just the exception message.
+        tb = traceback.format_exc()
         logger.error('Error during task: %s', e)
         if update:
-            async_send_update_error_mail.delay(update.id, str(e))
+            async_send_update_error_mail.delay(update.id, str(e), tb)
         else:
-            async_send_general_task_error_mail.delay(str(e))
+            dataset_name = getattr(dataset, 'name', None)
+            async_send_general_task_error_mail.delay(str(e), tb, dataset_name)
 
 
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 5})
@@ -62,14 +67,14 @@ def async_cache_zipcode_property_summaries_full(self, token):
 
 
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=30, max_retries=3)
-def async_send_general_task_error_mail(self, error):
-    return send_general_task_error_mail(error)
+def async_send_general_task_error_mail(self, error, tb=None, dataset_name=None):
+    return send_general_task_error_mail(error, tb, dataset_name)
 
 
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=30, max_retries=3)
-def async_send_update_error_mail(self, update_id, error):
+def async_send_update_error_mail(self, update_id, error, tb=None):
     update = c.Update.objects.get(id=update_id)
-    return send_update_error_mail(update, error)
+    return send_update_error_mail(update, error, tb)
 
 
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=30, max_retries=3)
@@ -125,6 +130,7 @@ def async_check_acris_for_update_and_update(self):
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', acks_late=True, max_retries=1)
 def async_create_update(self, dataset_id, file_id=None):
     file = c.DataFile.objects.get(id=file_id) if file_id else None
+    dataset = None
     try:
         dataset = c.Dataset.objects.filter(id=dataset_id).first()
         logger.info(
@@ -136,7 +142,7 @@ def async_create_update(self, dataset_id, file_id=None):
                 "*ERROR* - Task Failure - No dataset found in async_download_start")
             raise Exception("No dataset.")
     except Exception as e:
-        handle_task_error(e)
+        handle_task_error(e, dataset=dataset)
         raise e
 
 
@@ -195,6 +201,7 @@ def async_seed_table(self, update_id):
 
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', acks_late=True, max_retries=1)
 def async_download_start(self, dataset_id):
+    dataset = None
     try:
         dataset = c.Dataset.objects.filter(id=dataset_id).first()
         logger.info(
@@ -206,12 +213,13 @@ def async_download_start(self, dataset_id):
                 "*ERROR* - Task Failure - No dataset found in async_download_start")
             raise Exception("No dataset.")
     except Exception as e:
-        handle_task_error(e)
+        handle_task_error(e, dataset=dataset)
         raise e
 
 
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', acks_late=True, max_retries=1)
 def async_download_and_update(self, dataset_id, endpoint=None, file_name=None):
+    dataset = None
     try:
         dataset = c.Dataset.objects.filter(id=dataset_id).first()
         logger.info(
@@ -227,7 +235,7 @@ def async_download_and_update(self, dataset_id, endpoint=None, file_name=None):
                 "*ERROR* - Task Failure - No dataset found in async_download_start")
             raise Exception("No dataset.")
     except Exception as e:
-        handle_task_error(e)
+        handle_task_error(e, dataset=dataset)
         raise e
 
 

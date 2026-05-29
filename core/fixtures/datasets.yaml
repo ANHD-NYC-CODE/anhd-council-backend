@@ -291,20 +291,19 @@
   fields:
     name: TaxBills Rent Stabilization Records
     model_name: RentStabilizationRecord
-    automated: false
-    update_instructions: '1) Download CSV from NYCDB ''rentstab_v2'' table (https://github.com/nycdb/nycdb).
-      Ensure it has ucbbl and uc{YEAR} columns.
+    automated: true
+    update_instructions: 'Automated: monthly via celerybeat. Auto-discovers the
+      latest JustFix "doffer" file (rentstab_counts_from_doffer_{year}.csv on
+      justfix-data S3, the NYCDB rentstab_v2 source) by probing years newest-first,
+      and auto-detects the latest year column — no MANUAL_YEAR to bump.
 
-      2) In datasets/models/RentStabilizationRecord.py, change MANUAL_YEAR to the
-      year being uploaded (currently 2023, 2024 data available).
+      Manual override: upload a CSV with ucbbl + uc{YEAR} columns via admin and
+      run an update. Imports upsert, so prior years are preserved.
 
-      3) Columns up to uc2027 already exist — no migration needed unless uploading
-      beyond 2027.
+      Columns exist through uc2030; add fields + a migration to go beyond.
 
-      4) Upload CSV via admin, create update for TaxBills Rent Stabilization Records.
-
-      5) After import: run ''annotate properties all'' and ''Reset cache'' tasks at
-      admin periodic tasks page.'
+      After import the daily "annotate properties all" task refreshes
+      unitsrentstabilized; the latest-year cache resets automatically on import.'
     download_endpoint: null
     api_last_updated: null
     records_start: null
@@ -388,22 +387,20 @@
     name: Tax Liens
     model_name: TaxLien
     automated: true
-    update_instructions: 'Note: No new tax lien sale since 2021.
+    update_instructions: 'Automated: weekly via celerybeat (Socrata API).
 
-      1) Go to https://data.cityofnewyork.us/City-Government/Tax-Lien-Sale-Lists/9rz4-mjek
+      Manual override: upload the CSV from
+      https://data.cityofnewyork.us/api/views/9rz4-mjek/rows.csv?accessType=DOWNLOAD
+      via admin and run an update. Year/month/cycle are parsed from the
+      CSV Month column; no manual columns required.
 
-      2) Filter by current year
-
-      3) Export data
-
-      4) Add a ''year'' column with the appropriate year value for each row
-
-      5) Upload file to app and create update'
-    download_endpoint: null
+      Imports use upsert on (bbl, year, month, cycle) — historical cycles
+      and prior years are preserved across imports.'
+    download_endpoint: https://data.cityofnewyork.us/api/views/9rz4-mjek/rows.csv?accessType=DOWNLOAD
     api_last_updated: null
     records_start: null
     records_end: null
-    update_schedule: when needed
+    update_schedule: weekly
     deprecated: false
 - model: core.dataset
   pk: 28
