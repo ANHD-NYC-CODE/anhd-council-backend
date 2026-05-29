@@ -1,5 +1,38 @@
 # API CHANGELOG
 
+### 2026-05-28 — RentStabilizationRecord: auto-detected latest year + fully automated import
+
+**Automation**
+- Replaced the hardcoded `MANUAL_YEAR` constant with auto-detection: `latest_data_year()` finds the highest `uc{year}` column that has any data (cached per-process, reset after each import). No constant to bump when a new year is loaded.
+- Dataset is now **fully automated** (was manual). `latest_source()` probes JustFix's per-year doffer files (`rentstab_counts_from_doffer_{year}.csv` on `justfix-data` S3 — the NYCDB `rentstab_v2` source) newest-first and downloads the latest that exists; `fetch_last_updated()` reads the file's Last-Modified so a newly-published year triggers an update.
+- Added `Check and Update RentStabilizationRecord` celerybeat task (crontab 21 / monthly, dataset 22). Verified end-to-end: auto-discovered and imported the 2024 file (42,425 `uc2024` rows), latest year auto-advanced 2023→2024, prior years preserved via upsert.
+- Validated existing 2020–2023 values match the doffer source exactly before automating.
+
+**Schema**
+- Migration `0130_rentstabilizationrecord_uc2028_and_more` adds `uc2028`–`uc2030` (runway through 2030). Adding more years is now a field-only migration since the latest year is auto-detected.
+
+**Imports**
+- `pre_validation_filters` now sets `latestuctotals` from the latest `uc{year}` column actually present in each row (read-only — empty year columns stay NULL instead of being coerced to 0).
+
+### 2026-05-27 — TaxLien: upsert pattern (no more wipe), automated monthly
+
+**Bug fixes**
+- Switched `seed_or_update_self` from `bulk_seed(overwrite=True)` (which truncated the entire table before every load) to `seed_with_upsert(ignore_conflict=True)`. The old wipe-and-reload meant any data not present in NYC's current export was destroyed each run — including manually backfilled years. Upsert preserves all prior years permanently.
+- Date parser now accepts both `MM/YYYY` (current Socrata format) and `MM/DD/YYYY HH:MM:SS AM` (older DOF xlsx exports) — needed for the one-time pre-2019 PDF backfill.
+- Kept the `'sale'` cycle filter (Final Sale only). The notice cycles (90/60/30/10 Day) are forward-looking eligibility — many properties resolve before the sale — and the portal only surfaces confirmed final sales. This matches the existing frontend, which already filters to `cycle.includes('Sale')`.
+
+**Schema**
+- Migration `0129_taxlien_unique_together` adds `unique_together = ('bbl', 'year', 'month', 'cycle')` so the upsert conflict target is well-defined. Migration also truncates the existing table once so the constraint applies cleanly; the next import reloads Final Sale rows from NYC's live feed.
+- Added indexes on `(bbl, -year)` and `(-year)` for community-board and BBL lookups.
+
+**Automation**
+- Added `Check and Update TaxLien` celerybeat task (crontab 21 / monthly on the 6th) — runs `async_check_api_for_update_and_update[27]`, only triggers a real upsert when NYC publishes a new sale. NYC publishes annually (clustered Feb–Jun), so monthly cadence catches new sales within ~30 days. Closes the gap where the dataset was marked `automated=True` but had no registered periodic task.
+- Fixture `update_instructions` updated to drop the obsolete "add a year column manually" step (year is now parsed from the Month column automatically).
+
+**Data scope**
+- NYC's Socrata feed retains all Final Sale years it has ever published (2019, 2021, 2025; 2020 had no sale). Production already holds these via the live feed — no Wayback backfill needed.
+- Only genuine gap is **2011–2018**, which NYC publishes solely as archive PDFs (never on Socrata). Planned as a one-time manual import; the upsert change is what keeps it from being wiped by subsequent automated runs.
+
 ### 2026-05-18 (later) — Deprecated SubsidyJ51 and Subsidy421a datasets
 
 **Data**
