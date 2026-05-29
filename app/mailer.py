@@ -5,6 +5,7 @@ from sendgrid.helpers.mail import Mail, Email
 from users.models import CustomUser
 import os
 import logging
+from datetime import datetime
 from users import models as us
 logger = logging.getLogger('app')
 
@@ -164,20 +165,35 @@ def send_new_user_access_request_email(access_request):
         send_mail(to, subject, content)
 
 
-def send_general_task_error_mail(error):
-    subject = "DAP Portal - * Error * During Council Portal Update"
-    content = "A task error occurred: \n\n{} \n\n Please visit the task manager to investigate.".format(
-        error)
+def send_general_task_error_mail(error, tb=None, dataset_name=None):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    subject = "DAP Portal - * Error * {}".format(
+        "Updating {}".format(dataset_name) if dataset_name else "During a Dataset Update Task")
+    content = (
+        "{}"
+        "A task error occurred at {}.\n\n"
+        "Error:\n{}\n\n"
+        "{}"
+        "Please visit the task manager (Flower) to investigate."
+    ).format(
+        ("Dataset: {}\n\n".format(dataset_name) if dataset_name else ""),
+        timestamp, error,
+        ("Traceback:\n{}\n\n".format(tb) if tb else ""))
 
     for admin in settings.ADMINS:
         to = admin[1]
         send_mail(to, subject, content)
 
 
-def send_update_error_mail(update, error):
-    subject = "DAP Portal - * Error * During Council Portal Update"
-    content = "Update {} for {} failed with error: \n\n{}".format(
-        update.id, update.dataset, error)
+def send_update_error_mail(update, error, tb=None):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    dataset_name = getattr(update.dataset, 'name', update.dataset)
+    subject = "DAP Portal - * Error * Updating {}".format(dataset_name)
+    content = (
+        "Update {} for {} failed at {}.\n\n"
+        "Error:\n{}\n\n"
+        "{}"
+    ).format(update.id, dataset_name, timestamp, error, ("Traceback:\n{}".format(tb) if tb else ""))
 
     for admin in settings.ADMINS:
         to = admin[1]
