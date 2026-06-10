@@ -8,12 +8,17 @@ services:
     environment:
       - TZ=America/New_York
     # Production WSGI server. Overrides the base compose's `manage.py runserver`
-    # (Django's dev server) which was the source of the prod restart loop and
-    # the "accessing the development server over HTTPS" errors. 3 sync workers
-    # is a conservative default for this droplet alongside celery workers; tune
-    # later if needed. --timeout 120s accommodates the large district endpoints
-    # without letting hung requests pile up indefinitely.
-    command: gunicorn app.wsgi:application --workers 3 --timeout 120 --bind 0.0.0.0:8000 --access-logfile - --error-logfile -
+    # (Django's dev server) which was the source of the original prod restart
+    # loop and the "accessing the development server over HTTPS" errors.
+    #
+    # Worker class: gthread (NOT sync). Django's runserver runs threaded by
+    # default, so handling N concurrent requests "just worked" — switching to
+    # sync workers cut concurrency to `--workers` (3 here), which queued the
+    # frontend's 6+ initial-load endpoints behind the workers, hit the timeout
+    # mid-response, and SIGKILL'd. gthread gives `workers * threads` concurrency
+    # (3 * 4 = 12) with no extra deps. 180s timeout accommodates the largest
+    # cached/uncached district endpoints without letting hung requests pile up.
+    command: gunicorn app.wsgi:application --worker-class gthread --workers 3 --threads 4 --timeout 180 --bind 0.0.0.0:8000 --access-logfile - --error-logfile -
     # TCP check on the gunicorn port — verifies a worker is listening. Avoids
     # an HTTP probe (which could hit auth-required endpoints or large payloads)
     # and avoids depending on curl being installed in the image.
