@@ -1385,8 +1385,9 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 
 - **Description:** Searchable address table built from Properties, Buildings, and PAD Records.
 - **Model:** `AddressRecord`
-- **Update instructions:** Create an update in admin with only the dataset selected (no file needed). Runs automatically after Properties, Buildings, and PAD Records are updated.
-- **Warning:** Requires ~6GB RAM. Takes 2-4 hours. Best done on weekend mornings. Don't run during regular updates after 6pm. Restart app/postgres first to free memory. Note: despite earlier docs saying "atomic," the rebuild is NOT wrapped in a transaction — if it fails midway, partial data may exist alongside old records.
+- **Update instructions:** Create an update in admin with only the dataset selected (no file needed). Runs after Properties, Buildings, and PAD Records are updated.
+- **Atomicity:** Rebuild is now wrapped in `transaction.atomic()` — if it fails mid-run, everything rolls back and the live table is untouched (no more half-old / half-new state).
+- **Performance:** The previous `post_save` signal that re-saved every row to set `created` (N+1 UPDATEs on a ~1.4M-row rebuild) was removed in June 2026 — `created` is now set in the row dict at insert time. Iterators on `Property` (~870K rows) and `PadRecord` (~1.2M rows) use `chunk_size=5000` to reduce round-trips. Together these cut the rebuild time and per-worker memory substantially vs the previously-documented "2–4 hours, ~6GB RAM, restart postgres first" guidance, which no longer applies.
 - **Note:** When extracting the PAD ZIP, you may need to convert `bobaadr.txt` to `.csv` format.
 
 **Fields (as of 04/2026):**

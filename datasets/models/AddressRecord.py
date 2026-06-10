@@ -13,7 +13,6 @@ import re
 import os
 import csv
 import datetime
-from django.dispatch import receiver
 
 logger = logging.getLogger('app')
 
@@ -127,8 +126,10 @@ class AddressRecord(BaseDatasetModel, models.Model):
     @classmethod
     def build_building_gen(self):
         # TODO: Switch this to use raw PAD csv
-        # Do not create address record for buildings without bbls
-        for building in ds.PadRecord.objects.filter(bbl__isnull=False).iterator():
+        # Do not create address record for buildings without bbls.
+        # chunk_size=5000 reduces round-trips vs the iterator default (2000)
+        # for this ~1.2M-row scan.
+        for building in ds.PadRecord.objects.filter(bbl__isnull=False).iterator(chunk_size=5000):
             try:
                 building.bbl
             except Exception as e:
@@ -247,7 +248,8 @@ class AddressRecord(BaseDatasetModel, models.Model):
     @classmethod
     def build_property_gen(self):
         logger.info("Generating Addresses from property objects...")
-        for property in ds.Property.objects.all().iterator():
+        # chunk_size=5000: same rationale as build_building_gen — ~870K Property rows.
+        for property in ds.Property.objects.all().iterator(chunk_size=5000):
             record = self.address_row_from_property(property)
             if record:
                 yield record
@@ -258,27 +260,40 @@ class AddressRecord(BaseDatasetModel, models.Model):
 
     @classmethod
     def build_table(self, overwrite=True, **kwargs):
+        # Rebuild the address table inside a single transaction so the live
+        # table never sees half-old/half-new state. If the rebuild fails part
+        # way through, everything rolls back — no manual cleanup needed.
+        #
+        # Strategy preserved from the previous version: insert/upsert all new
+        # rows with `created` set to today, then delete anything older. The
+        # old code had a separate post_save signal that re-saved every row to
+        # set `created` (N+1 UPDATEs — a major reason this rebuild took 2–4h
+        # on ~1.4M rows). That signal has been removed; `created` is now set
+        # in the row dict at insert time.
         logger.info('Building address table from scratch.')
         timestamp = datetime.datetime.now().date()
-        property_gen = self.build_property_gen()
 
-        logger.info('bulk inserting property addresses...')
-        batch_upsert_from_gen(
-            self, property_gen, settings.BATCH_SIZE, ignore_conflict=False, **kwargs)
+        with transaction.atomic():
+            logger.info('Bulk inserting property addresses...')
+            batch_upsert_from_gen(
+                self, self.build_property_gen(), settings.BATCH_SIZE,
+                ignore_conflict=False, **kwargs)
 
-        building_gen = self.build_building_gen()
+            logger.info('Bulk inserting building addresses...')
+            batch_upsert_from_gen(
+                self, self.build_building_gen(), settings.BATCH_SIZE,
+                ignore_conflict=True, **kwargs)
 
-        logger.info('bulk inserting building addresses...')
-        batch_upsert_from_gen(
-            self, building_gen, settings.BATCH_SIZE, ignore_conflict=True, **kwargs)
+            logger.info('Building search index...')
+            self.build_search()
 
-        logger.info('Building search index...')
-        self.build_search()
-        logger.info("Address Record seeding complete!")
+            logger.info('Deleting older records (created < %s or null)...', timestamp)
+            deleted, _ = ds.AddressRecord.objects.filter(
+                Q(created__isnull=True) | Q(created__lt=timestamp)
+            ).delete()
+            logger.info('Deleted %d old address records', deleted)
 
-        logger.info("Deleting older records...")
-        ds.AddressRecord.objects.filter(created=None).delete()
-        ds.AddressRecord.objects.filter(created__lt=timestamp).delete()
+        logger.info('Address Record seeding complete')
 
     @classmethod
     def build_search(self):
@@ -292,9 +307,9 @@ class AddressRecord(BaseDatasetModel, models.Model):
         return str(self.bbl)
 
 
-@receiver(models.signals.post_save, sender=AddressRecord)
-def timestamp(sender, instance, created, **kwargs):
-    if created == True:
-        timestamp = datetime.datetime.now().date()
-        instance.created = timestamp
-        instance.save()
+# NOTE: a post_save signal used to fire here that wrote `created = today` and
+# called `instance.save()` on every row. It was redundant — both
+# `address_row_from_property` and `address_row_from_building` already populate
+# `created` in the row dict before insert — and it caused enormous write
+# amplification on the 1.4M-row rebuild (each insert triggered another UPDATE,
+# blowing per-worker memory and stretching the rebuild to 2-4 hours). Removed.
