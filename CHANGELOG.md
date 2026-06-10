@@ -1,5 +1,23 @@
 # API CHANGELOG
 
+### 2026-06-10 (cache fixes) — Cache key bug + size cap + session isolation
+
+**Caching (`datasets/helpers/cache_helpers.py`)**
+- **Root cause of multi-hundred-MB Redis entries**: `construct_cache_key` was popping `format` from the params, so `?format=csv&page=21960` and `?format=json&page=21960` shared the same cache slot. CSV responses (full table dumps, unpaginated) poisoned the JSON cache with values up to **350 MB per key**. We measured **14 bloated keys totaling ~1.5 GB** on prod (e.g. `/dobpermitissuednow/?page=6435` = 350 MB, `/dobissuedpermits/?page=21960` = 173 MB). Fix: stop stripping `format`; keep it in the cache key.
+- **CSV responses no longer cached at all** (`has_cachable_format` now JSON-only). CSV exports are bulk dumps, rarely re-hit, and don't fit Redis's per-key memory model — recomputing from the DB on each request is cheaper than blowing 350 MB of cache.
+- **Cache size cap**: refuse to `cache.set` any compressed value > **5 MB**. Defense in depth so a future bug can't reintroduce the poisoning. Emits a `WARNING` log with the cache_key when a value is refused, so the offending endpoint can be found.
+- **Halved Redis latency on cache hits**: was doing `cache_key in cache` (EXISTS) followed by `cache.get` (GET) = 2 round-trips per hit. Collapsed to a single `cache.get` + `is None` check.
+
+**Session isolation (`app/settings/base.py`, `app/tasks.py`)**
+- The `reset_cache` task was calling `cache.clear()`, which `django_redis` implements as `FLUSHDB` — wiping the **entire Redis DB**, including user sessions (`SESSION_ENGINE = django.contrib.sessions.backends.cache`). Every dataset cache reset effectively logged every user out.
+- Sessions moved to a new cache alias `sessions` with `KEY_PREFIX="SESS"` (`SESSION_CACHE_ALIAS = "sessions"`), and `reset_cache` switched from `cache.clear()` to `cache.delete_pattern("*")` which `django_redis` scopes to the default cache's prefix (`DAP:*`). Sessions are now untouched by cache resets.
+
+**Gunicorn (`docker-compose.prod.yml`)**
+- Added `--max-requests 1000 --max-requests-jitter 100` so each gthread worker recycles after ~1,000 requests, releasing accumulated memory (decompressed cache values, ORM caches). In-flight requests on the recycled worker complete normally; new worker boots immediately.
+
+**Deploy-time one-time cleanup needed**
+- The 14 poisoned cache entries identified above need to be flushed from prod Redis as part of this deploy (their keys are now logically dead because the cache-key format-stripping is gone, but the bytes still occupy Redis memory). Run `docker exec redis redis-cli --scan --pattern "DAP:*?page=*" | xargs -L 100 docker exec redis redis-cli DEL` (or equivalent) after the deploy.
+
 ### 2026-06-10 (followup) — gunicorn: gthread worker class (restore concurrency)
 
 **Production stability (follow-up to the gunicorn switch)**
