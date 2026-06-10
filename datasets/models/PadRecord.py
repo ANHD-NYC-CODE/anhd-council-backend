@@ -1,4 +1,4 @@
-from django.db import models, transaction
+from django.db import connection, models, transaction
 from django.db.models import Q
 from core import models as c
 from datasets import models as ds
@@ -99,28 +99,41 @@ class PadRecord(BaseDatasetModel, models.Model):
                 ' ', '', "{}{}-{}{}".format(row['bin'], row['lhnd'], row['hhnd'], row['stname']))
             yield row
 
-    # trims down new update files to preserve memory
-    # uses original header values
     @classmethod
     def annotate_buildings(self):
-        logger.debug('Annotating Buildings with PAD addresses')
-        with transaction.atomic():
-            ds.Building.objects.update(pad_addresses='')
-            count = 0
-            for building in ds.Building.objects.all():
-                pad_records = self.objects.filter(bin=building.bin)
-                if len(pad_records):
-                    pad_addresses = ','.join(["{}-{} {}".format(record.lhnd, record.hhnd, record.stname)
-                                              for record in pad_records])
-
-                    building.pad_addresses = pad_addresses
-                    building.save()
-                    count = count + 1
-                    if count % (settings.BATCH_SIZE / 10) == 0:
-                        logger.debug(
-                            'Processed {} pad addresses'.format(count))
-                else:
-                    continue
+        # SQL-level aggregation. Previously this method iterated every Building
+        # (~1.1M rows) in a Python loop, fired one SELECT per row to fetch
+        # matching PadRecords, then `building.save()` per match — roughly 2.2M
+        # DB round-trips, ~20+ minutes in practice. The CTE + UPDATE below does
+        # the same work in two SQL statements that run in seconds. Same
+        # behavior: Buildings with no matching PAD entries end up with
+        # pad_addresses = '' (cleared by the first UPDATE and never reset).
+        logger.info('Annotating Buildings with PAD addresses (SQL aggregation)')
+        with transaction.atomic(), connection.cursor() as c:
+            c.execute("UPDATE datasets_building SET pad_addresses = ''")
+            cleared = c.rowcount
+            c.execute("""
+                WITH agg AS (
+                    SELECT
+                        bin AS building_bin,
+                        STRING_AGG(
+                            COALESCE(lhnd, '') || '-' || COALESCE(hhnd, '') || ' ' || COALESCE(stname, ''),
+                            ','
+                        ) AS addresses
+                    FROM datasets_padrecord
+                    WHERE bin IS NOT NULL
+                    GROUP BY bin
+                )
+                UPDATE datasets_building AS b
+                SET pad_addresses = agg.addresses
+                FROM agg
+                WHERE b.bin = agg.building_bin
+            """)
+            updated = c.rowcount
+        logger.info(
+            'annotate_buildings: cleared pad_addresses on %d rows, repopulated on %d',
+            cleared, updated,
+        )
 
     @classmethod
     def update_set_filter(self, csv_reader, headers):
