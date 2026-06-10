@@ -1,5 +1,16 @@
 # API CHANGELOG
 
+### 2026-06-10 (AddressRecord) — Atomic rebuild + drop the write-amplifying signal
+
+**`datasets/models/AddressRecord.py`**
+- **Removed the `post_save` signal that fired one extra UPDATE per row** to set `created = today`. `created` is already populated in the row dict by `address_row_from_property` and `address_row_from_building` before insert, so the signal was pure write amplification — the single biggest reason the rebuild took 2–4 hours and ~6 GB RAM on the ~1.4M-row table.
+- **Wrapped the rebuild in `transaction.atomic()`**. The old approach inserted new rows + deleted older rows in two separate non-atomic steps, so a mid-rebuild failure left the live table in a half-old / half-new state (the existing doc warning matched this). Rebuild is now all-or-nothing.
+- **Explicit `chunk_size=5000`** on the `Property.objects.all().iterator()` (~870K rows) and `PadRecord.objects.filter(bbl__isnull=False).iterator()` (~1.2M rows). Default is 2000 — bigger chunks halve per-batch round-trips for the long scans.
+- Combined the old "delete rows with `created IS NULL`" + "delete rows with `created < today`" into one `Q` filter inside the transaction.
+- Updated `DATASET_REFERENCE.md` accordingly — the previous "Requires ~6GB RAM. Takes 2-4 hours. Restart app/postgres first" + "NOT wrapped in a transaction" warnings no longer apply.
+
+**Out of scope (deferred)**: Full PAD/Building cron automation. NYC Planning's PAD is published as quarterly versioned ZIPs at filenames that change each release (no stable canonical URL), and the host is behind Akamai with aggressive bot blocking that returns 403 even with a browser-like User-Agent. NYC Open Data's `bc8t-ecyu` is metadata-only (no row data). The manual PAD upload workflow remains unchanged; automating it cleanly needs a different sourcing strategy (e.g. proxy through NYCDB) and is its own project.
+
 ### 2026-06-10 (cache fixes) — Cache key bug + size cap + session isolation
 
 **Caching (`datasets/helpers/cache_helpers.py`)**
