@@ -1304,9 +1304,11 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 ### Buildings
 
 - **Description:** Building-level data from the Property Address Directory (PAD).
-- **Source:** [NYC Open Data — PAD](https://data.cityofnewyork.us/City-Government/Property-Address-Directory/bc8t-ecyu)
+- **Source:** [NYC Open Data — PAD](https://data.cityofnewyork.us/City-Government/Property-Address-Directory/bc8t-ecyu) (Socrata "download attachment" endpoint: `https://data.cityofnewyork.us/download/bc8t-ecyu/application%2Fzip`)
 - **Model:** `Building`
-- **Update instructions:** Download PAD ZIP, extract `bobaadr.csv`, upload via admin. Update whenever PLUTO is updated.
+- **Automated:** Yes (monthly, crontab 21) — **first stage of the PAD chain.** The cron schedules Building; `Building.download()` fetches the PAD ZIP (~46 MB), extracts `bobaadr.txt`, saves it as `bobaadr.csv`, then `bulk_seed(overwrite=True)` truncate-and-reloads. On completion, `seed_or_update_self` schedules **PadRecord** (stage 2), which on completion schedules **AddressRecord** (stage 3).
+- **Manual upload** via admin still works the same way and triggers the same chain.
+- **Last-updated sentinel:** synthetic datetime mapped from the ZIP's `Content-Length` (HEAD response). NYC's PAD grows with each quarterly release, so size changes serve as the change signal.
 
 **Fields (as of 04/2026):**
 | Field | Frontend | Null % |
@@ -1344,9 +1346,10 @@ These trim records AFTER download but BEFORE import (legacy filters, some redund
 ### PAD Records
 
 - **Description:** Additional geographic data at the tax lot level from PAD.
-- **Source:** Same as Buildings (PAD)
+- **Source:** Same as Buildings (PAD ZIP, `bobaadr.txt`)
 - **Model:** `PadRecord`
-- **Update instructions:** Same file as Buildings (`bobaadr.csv`). Update whenever PLUTO is updated.
+- **Automated:** Yes — **stage 2 of the PAD chain.** Triggered by Building's completion (`Building.seed_or_update_self` calls `PadRecord.create_async_update_worker()`). `PadRecord.download()` independently fetches its own copy of the PAD ZIP (so manual reruns of PadRecord alone still work). On completion, `seed_or_update_self` runs `annotate_buildings()` then schedules **AddressRecord** (stage 3).
+- **Manual upload** via admin still works the same way and triggers the chain through to AddressRecord.
 
 **Fields (as of 04/2026):**
 | Field | Frontend | Null % |

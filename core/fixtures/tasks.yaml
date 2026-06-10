@@ -277,3 +277,18 @@
     args: "[16]"
     kwargs: "{}"
     date_changed: "2020-04-25"
+- model: django_celery_beat.periodictask
+  fields:
+    name: "Check and Update Buildings (PAD chain)"
+    description: >
+      Checks NYC Open Data PAD ZIP (bc8t-ecyu) for a newer release. On a new
+      release, runs the Building → PadRecord → AddressRecord chain in order:
+      Building's seed_or_update_self schedules PadRecord at completion;
+      PadRecord schedules AddressRecord at completion. NYC publishes PAD
+      quarterly so most monthly ticks are no-ops (truncate+reload completes
+      quickly when row counts match).
+    task: "core.tasks.async_check_api_for_update_and_update"
+    crontab: 21 # once a month on the 6th
+    args: "[3]"
+    kwargs: "{}"
+    date_changed: "2026-06-10"

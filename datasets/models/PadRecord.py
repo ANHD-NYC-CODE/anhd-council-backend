@@ -4,9 +4,10 @@ from core import models as c
 from datasets import models as ds
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from datasets.utils.validation_filters import is_null, exceeds_char_length
+from datasets.utils.pad_download import download_pad_bobaadr_csv, fetch_pad_last_updated
 from core.utils.transform import from_csv_file_to_gen, with_bbl
 from django.contrib.postgres.search import SearchVector, SearchVectorField
-from core.tasks import async_create_update
+from core.tasks import async_create_update, async_download_and_update
 from core.utils.address import clean_number_and_streets
 from django.conf import settings
 import re
@@ -14,17 +15,23 @@ import logging
 
 logger = logging.getLogger('app')
 
-# Update process: Manual
-# Update strategy: Upsert
+# Update process: Automated (monthly via celerybeat) + manual CSV upload via admin
+# Update strategy: Truncate + reload via bulk_seed(overwrite=True, ignore_conflict=True),
+# followed by annotate_buildings() which fills Building.pad_addresses.
+# Source: NYC Open Data Property Address Directory (bc8t-ecyu) — same file as
+# Building (bobaadr.txt extracted from the PAD ZIP). Each model independently
+# downloads + extracts; the cost is two 46 MB pulls per cron tick, which is
+# cheaper than the coordination cost of sharing one download.
 #
-# Download latest
-# https://data.cityofnewyork.us/City-Government/Property-Address-Directory/bc8t-ecyu
-# Extract ZIP and upload bobaadr.csv file through admin, then update using bobaadr AND settng dataset = PadRecord
-# ** RESOURCE INTENSIVE UPDATE ** - don't run during regular updates after 7pm
-# Make sure to run this update AFTER updating the Building table w/ the same file.
+# Schedule this AFTER Building on the same cron tick — annotate_buildings() reads
+# Building rows to attach PAD addresses, so Building should already be current.
 
 
 class PadRecord(BaseDatasetModel, models.Model):
+    # Socrata "download attachment" endpoint — same as Building. New PAD
+    # releases change the file behind this URL; the URL itself is stable.
+    download_endpoint = "https://data.cityofnewyork.us/download/bc8t-ecyu/application%2Fzip"
+
     key = models.TextField(primary_key=True, blank=False, null=False)
     bin = models.ForeignKey('Building', on_delete=models.SET_NULL, null=True,
                             db_column='bin', db_constraint=False)
@@ -128,6 +135,29 @@ class PadRecord(BaseDatasetModel, models.Model):
         logger.info("Seeding/Updating %s", self.__name__)
         self.bulk_seed(**kwargs, ignore_conflict=True, overwrite=True)
         self.annotate_buildings()  # add pad addresses to building model
+
+        # PAD chain finale: schedule the AddressRecord rebuild now that
+        # Property + Building + PAD are fresh. Goes through the same
+        # `core.models.Update` → `async_seed_table` celery path the admin
+        # uses; the rebuild runs in its own worker so this task can finish.
+        from datasets.models import AddressRecord
+        AddressRecord.create_async_update_worker()
+
+    @classmethod
+    def fetch_last_updated(cls):
+        return fetch_pad_last_updated(cls.download_endpoint)
+
+    @classmethod
+    def download(cls, endpoint=None, file_name=None):
+        return download_pad_bobaadr_csv(
+            dataset=cls.get_dataset(),
+            url=endpoint or cls.download_endpoint,
+        )
+
+    @classmethod
+    def create_async_update_worker(cls, endpoint=None, file_name=None):
+        async_download_and_update.delay(
+            cls.get_dataset().id, endpoint=endpoint, file_name=file_name)
 
     def __str__(self):
         return str(self.key)

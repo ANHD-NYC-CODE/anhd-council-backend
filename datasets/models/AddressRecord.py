@@ -259,6 +259,16 @@ class AddressRecord(BaseDatasetModel, models.Model):
         self.build_table(overwrite=True)
 
     @classmethod
+    def create_async_update_worker(cls, endpoint=None, file_name=None):
+        # AddressRecord has no source file — it's rebuilt from the live
+        # Property/Building/PadRecord tables. Creating an Update with no `file`
+        # triggers the existing `async_seed_table` celery task via the Update
+        # post_save signal (see core/models.py auto_seed_on_create), which
+        # eventually calls seed_or_update_self → build_table.
+        from core import models as c_models
+        c_models.Update.objects.create(dataset=cls.get_dataset())
+
+    @classmethod
     def build_table(self, overwrite=True, **kwargs):
         # Rebuild the address table inside a single transaction so the live
         # table never sees half-old/half-new state. If the rebuild fails part
