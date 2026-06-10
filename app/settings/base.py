@@ -133,7 +133,15 @@ DATABASES = {
         'HOST':  os.environ.get('DATABASE_HOST', 'localhost'),
         'USER': 'anhd',
         'PASSWORD':  os.environ.get('DATABASE_PASSWORD'),
-        'PORT':  os.environ.get('DATABASE_PORT', 5432)
+        'PORT':  os.environ.get('DATABASE_PORT', 5432),
+        # App and DB are on separate droplets in production; without an explicit
+        # connect_timeout, the OS default (~75-120s) lets brief network blips
+        # hang request workers rather than failing fast. 10s surfaces them as
+        # quick OperationalErrors so the request returns a 500 and gunicorn
+        # workers stay free for healthy traffic.
+        'OPTIONS': {
+            'connect_timeout': 10,
+        },
     }
 }
 

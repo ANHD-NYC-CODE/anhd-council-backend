@@ -1,5 +1,15 @@
 # API CHANGELOG
 
+### 2026-06-10 — Production: switch to gunicorn (stop the dev-server restart loop)
+
+**Production stability**
+- `app` container in `docker-compose.prod.yml` no longer inherits the base compose's `python manage.py runserver 0.0.0.0:8000` (Django's **development** server). Overridden with `gunicorn app.wsgi:application --workers 3 --timeout 120 --bind 0.0.0.0:8000 --access-logfile - --error-logfile -`. The dev server is single-threaded and not designed for HTTPS-proxied traffic, which was the source of the "accessing the development server over HTTPS" warnings and (very likely) the **1,337 restart count** observed on the prod app container. Gunicorn was already in `Pipfile.lock` (v21.2.0); the missing piece was just the compose `command:` override.
+- **Dockerfile**: explicitly install `gunicorn==23.0.0` (current stable) on top of the pipenv install, replacing the older pinned 21.2.0 from the lockfile.
+- **App service healthcheck**: added a minimal TCP healthcheck against `127.0.0.1:8000` so Docker only restarts when the worker is actually unreachable (rather than restarting on any process exit).
+
+**Database resilience**
+- Added `connect_timeout=10` to the default `DATABASES` `OPTIONS`. App and DB run on separate droplets in production; without a connect timeout, brief network blips would hang request workers for the OS default (~75-120s). Now they fail fast with a clean `OperationalError` so workers stay free for healthy traffic. Applies to all environments (10s is appropriate for local + prod alike).
+
 ### 2026-05-28 (later) — Resilient dataset downloads + richer error emails
 
 **Imports**

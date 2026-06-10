@@ -4,7 +4,8 @@ WORKDIR /app/
 COPY Pipfile Pipfile.lock /app/
 ENV PIP_ROOT_USER_ACTION=ignore
 RUN pip install pipenv==2023.10.24 setuptools && \
-    pipenv install --deploy --system
+    pipenv install --deploy --system && \
+    pip install --no-cache-dir gunicorn==23.0.0
 COPY . /app/
 EXPOSE 8000
 

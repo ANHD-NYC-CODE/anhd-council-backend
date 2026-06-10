@@ -7,6 +7,22 @@ services:
       - .env
     environment:
       - TZ=America/New_York
+    # Production WSGI server. Overrides the base compose's `manage.py runserver`
+    # (Django's dev server) which was the source of the prod restart loop and
+    # the "accessing the development server over HTTPS" errors. 3 sync workers
+    # is a conservative default for this droplet alongside celery workers; tune
+    # later if needed. --timeout 120s accommodates the large district endpoints
+    # without letting hung requests pile up indefinitely.
+    command: gunicorn app.wsgi:application --workers 3 --timeout 120 --bind 0.0.0.0:8000 --access-logfile - --error-logfile -
+    # TCP check on the gunicorn port — verifies a worker is listening. Avoids
+    # an HTTP probe (which could hit auth-required endpoints or large payloads)
+    # and avoids depending on curl being installed in the image.
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket, sys; s=socket.socket(); s.settimeout(5); s.connect(('127.0.0.1', 8000)); s.close()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
   # https://www.digitalocean.com/community/tutorials/how-to-secure-a-containerized-node-js-application-with-nginx-let-s-encrypt-and-docker-compose
   flower:
     image: mher/flower
