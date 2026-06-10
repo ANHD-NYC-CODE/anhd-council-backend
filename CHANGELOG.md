@@ -1,5 +1,11 @@
 # API CHANGELOG
 
+### 2026-06-10 (followup) — gunicorn: gthread worker class (restore concurrency)
+
+**Production stability (follow-up to the gunicorn switch)**
+- Switched gunicorn from the default **sync** worker (which only handles `--workers` concurrent requests = 3) to **gthread** with 4 threads per worker → `3 * 4 = 12` concurrent. This restores the concurrency Django's `runserver` had been providing implicitly (its `--threading` flag is on by default), which the initial gunicorn config silently dropped. Symptom was the portal loading screen hanging after deploy: the frontend fires 6+ endpoints on initial load; with 3 sync workers, requests queued behind the workers' 120s timeout and got SIGKILL'd before completing. gthread is built into gunicorn — no new dependency.
+- Bumped `--timeout` 120s → 180s for headroom on the largest cached district endpoints (`/councils/`, `/communities/`, `/stateassemblies/`, etc., each 2–4 MB).
+
 ### 2026-06-10 — Production: switch to gunicorn (stop the dev-server restart loop)
 
 **Production stability**
