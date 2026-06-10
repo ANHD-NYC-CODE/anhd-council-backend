@@ -18,7 +18,12 @@ services:
     # mid-response, and SIGKILL'd. gthread gives `workers * threads` concurrency
     # (3 * 4 = 12) with no extra deps. 180s timeout accommodates the largest
     # cached/uncached district endpoints without letting hung requests pile up.
-    command: gunicorn app.wsgi:application --worker-class gthread --workers 3 --threads 4 --timeout 180 --bind 0.0.0.0:8000 --access-logfile - --error-logfile -
+    # --max-requests/--max-requests-jitter: recycle each worker after handling
+    # roughly N requests so accumulated per-worker memory (decompressed cache
+    # values, ORM caches) is released. Jitter prevents all workers recycling
+    # at the same time. Worker is gracefully shut + new one booted; in-flight
+    # requests on the recycled worker complete normally.
+    command: gunicorn app.wsgi:application --worker-class gthread --workers 3 --threads 4 --timeout 180 --max-requests 1000 --max-requests-jitter 100 --bind 0.0.0.0:8000 --access-logfile - --error-logfile -
     # TCP check on the gunicorn port — verifies a worker is listening. Avoids
     # an HTTP probe (which could hit auth-required endpoints or large payloads)
     # and avoids depending on curl being installed in the image.

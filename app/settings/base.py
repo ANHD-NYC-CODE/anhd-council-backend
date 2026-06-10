@@ -154,7 +154,19 @@ CACHES = {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         },
         "KEY_PREFIX": "DAP"
-    }
+    },
+    # Sessions live under a separate alias so a dataset cache reset can't
+    # log every user out. Same Redis instance, different KEY_PREFIX, and
+    # reset_cache now uses delete_pattern("*") (scoped to DAP:*) instead of
+    # cache.clear() (which is FLUSHDB and wipes the whole Redis DB).
+    "sessions": {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': os.environ.get('REDIS_URL', 'redis://localhost:6378'),
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        },
+        "KEY_PREFIX": "SESS"
+    },
 }
 
 
@@ -182,7 +194,7 @@ REST_FRAMEWORK = {
 WSGI_APPLICATION = 'app.wsgi.application'
 CACHE_TTL = 60 * 60 * 24  # cache for 24 hours
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
-SESSION_CACHE_ALIAS = "default"
+SESSION_CACHE_ALIAS = "sessions"
 
 
 # Password validation

@@ -15,6 +15,12 @@ import logging
 
 logger = logging.getLogger('app')
 
+# Refuse to cache compressed response bodies bigger than this. Defense in depth
+# against a single huge response monopolizing Redis memory (we found a 350MB
+# entry at /dobpermitissuednow/?page=6435 from a CSV poisoning the JSON cache
+# before we separated the format from the cache key — see construct_cache_key).
+MAX_CACHE_VALUE_BYTES = 5 * 1024 * 1024  # 5 MB compressed
+
 
 def has_cachable_format(request):
     if settings.TESTING:
@@ -22,10 +28,10 @@ def has_cachable_format(request):
 
     params = request.query_params
 
-    formatted_request = 'format' in params.keys() and (
-        'json' in params['format'] or 'csv' in params['format'])
-
-    return formatted_request
+    # Only cache JSON. CSV responses are bulk exports (often the full table),
+    # rarely re-hit, and dwarf normal API payloads — caching them in Redis was
+    # the source of the multi-hundred-MB poisoned cache entries we cleaned up.
+    return 'format' in params.keys() and 'json' in params['format']
 
 
 def scrub_pagination(cached_value):
@@ -84,7 +90,11 @@ def is_authenticated(request):
 
 
 def construct_cache_key(request, params):
-    params.pop('format', None)
+    # NOTE: do NOT pop `format` here. Stripping it caused CSV responses
+    # (unpaginated full tables — easily 100+ MB) to share cache slots with
+    # paginated JSON responses (~100 KB), poisoning Redis with hundreds of MB
+    # per key. CSV is no longer cached at all (see has_cachable_format), but
+    # keep format in the key as defense in depth.
     params.pop('filename', None)
     cache_key = request.path + '?' + urllib.parse.urlencode(params)
     if is_authenticated(request):
@@ -104,30 +114,42 @@ def cache_request_path():
             if not is_authenticated(request) and 'q' in params and ('lispenden' in params['q'] or 'foreclosure' in params['q'] or 'ocahousingcourt' in params['q']):
                 return original_args[0].finalize_response(request, Response({'detail': 'Please login and request access to view results'}, status=status.HTTP_401_UNAUTHORIZED))
 
-            if cache_key in cache and has_cachable_format(request):
+            # Single Redis GET (was: EXISTS then GET → 2 round-trips per hit).
+            # `has_cachable_format` is cheap and gates the GET so we don't
+            # round-trip for uncacheable formats.
+            cached_value = cache.get(cache_key) if has_cachable_format(request) else None
+            if cached_value is not None:
                 logger.debug('Serving cache: {}'.format(cache_key))
-                cached_value = cache.get(cache_key)
                 cached_value = decompress_cache(cached_value)
                 cached_value = scrub_authenticated(cached_value, request)
                 return original_args[0].finalize_response(request, Response(cached_value))
             else:
                 response = function(*original_args, **original_kwargs)
 
-                # only cache good responses and json/csv formats
+                # only cache good JSON responses
                 if (response.status_code == 200) and has_cachable_format(request):
                     value_to_cache = response.data
                     value_to_cache = scrub_pagination(value_to_cache)
                     value_to_cache = compress_cache(value_to_cache)
-                    logger.debug('Caching: {}'.format(cache_key))
 
-                    cache.set(cache_key, value_to_cache,
-                              timeout=settings.CACHE_TTL)
-                    if '__authenticated' in cache_key:  # also cache the scrubbed response for unauthenticated requests
-                        cache_key = cache_key.replace('__authenticated', '')
-                        logger.debug(
-                            'Caching scrubbed varient: {}'.format(cache_key))
+                    if len(value_to_cache) > MAX_CACHE_VALUE_BYTES:
+                        # Don't bloat Redis with single huge responses; log so we
+                        # can identify endpoints that produce them.
+                        logger.warning(
+                            'Refusing to cache %s: compressed size %d bytes > %d limit',
+                            cache_key, len(value_to_cache), MAX_CACHE_VALUE_BYTES,
+                        )
+                    else:
+                        logger.debug('Caching: {}'.format(cache_key))
                         cache.set(cache_key, value_to_cache,
                                   timeout=settings.CACHE_TTL)
+                        if '__authenticated' in cache_key:  # also cache the scrubbed response for unauthenticated requests
+                            scrubbed_cache_key = cache_key.replace('__authenticated', '')
+                            logger.debug(
+                                'Caching scrubbed varient: {}'.format(scrubbed_cache_key))
+                            cache.set(scrubbed_cache_key, value_to_cache,
+                                      timeout=settings.CACHE_TTL)
+
                     logger.debug('Serving response: {}'.format(cache_key))
                     # TODO: remove pagination altogether
                     scrubbed_response = scrub_pagination(response.data)

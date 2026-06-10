@@ -114,7 +114,12 @@ def clean_temp_directory(self):
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=120, max_retries=2)
 def reset_cache(self, token):
     try:
-        cache.clear()
+        # Was cache.clear() — that runs FLUSHDB and wipes the WHOLE Redis DB,
+        # which on this stack includes user sessions (cache-backed). Switch to
+        # delete_pattern("*") which django_redis scopes to the default cache's
+        # KEY_PREFIX (DAP:*), so sessions (now on the "sessions" alias with
+        # KEY_PREFIX=SESS) survive a dataset cache reset.
+        cache.delete_pattern("*")
         create_async_cache_workers(token)
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
