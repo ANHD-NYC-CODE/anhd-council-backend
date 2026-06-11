@@ -7,8 +7,7 @@ into one place so both models stay thin.
 The URL — `https://data.cityofnewyork.us/download/bc8t-ecyu/application%2Fzip` —
 returns a 302 to a signed URL serving the current PAD ZIP (≈46 MB compressed,
 containing bobaadr.txt at ~312 MB uncompressed). The URL is stable across PAD
-releases; the file behind it changes, and its ETag (the Socrata file UUID)
-along with its Content-Length both change.
+releases; the file behind it changes (new ETag, new Content-Length).
 
 bobaadr.txt is already comma-separated with quoted values — the existing CSV
 import pipeline works on it once it's saved with a `.csv` extension. No format
@@ -18,6 +17,7 @@ conversion is needed.
 import datetime
 import logging
 import os
+import re
 import shutil
 import tempfile
 import zipfile
@@ -28,36 +28,57 @@ from django.core import files as dj_files
 logger = logging.getLogger('app')
 
 
+_SOCRATA_VIEW_ID_RE = re.compile(r'/(?:download|api/views)/([a-z0-9]{4}-[a-z0-9]{4})/?')
+
+
+def _extract_socrata_view_id(url):
+    """Pull `bc8t-ecyu`-style ID out of a /download/<id>/... URL."""
+    m = _SOCRATA_VIEW_ID_RE.search(url or '')
+    return m.group(1) if m else None
+
+
 def fetch_pad_last_updated(url):
-    """Synthetic 'last updated' derived from the ZIP's Content-Length.
+    """Use Socrata's `viewLastModified` — the real publish timestamp NYC bumps
+    when they push a new quarterly PAD release. This is the date the dataset
+    page shows users at
+    https://data.cityofnewyork.us/City-Government/Property-Address-Directory.
 
-    Why this works as a release sentinel:
-    - HEAD on the PAD download URL returns Content-Length but no Last-Modified.
-    - New PAD releases add buildings, so the ZIP grows; Content-Length increases
-      with each quarterly release.
-    - The base check (`check_api_for_update_and_update`) compares this against
-      the stored `api_last_updated` with `>`. Mapping size → seconds-since-2020
-      keeps the comparison monotonic with size.
+    Previously this used Content-Length as a synthetic-datetime sentinel
+    (mapped to seconds-since-2020). That worked but had two problems:
+      1. broke if the ZIP ever shrunk (the base class compares with `>`)
+      2. the api_last_updated value displayed in admin was nonsensical
+         (a derived 2021 datetime that didn't match anything users could
+         look up).
 
-    Returns None on HEAD failure (the cron will then skip this run and retry
-    on the next tick — same behavior as other automated datasets when the
-    upstream is unreachable).
+    viewLastModified is a real epoch timestamp from Socrata's view metadata.
+    Confirmed via `/api/views/<id>.json` — bc8t-ecyu is currently
+    1779824811 = 2026-05-26 (the actual NYC publish date for this release).
+
+    Returns None on fetch failure (cron will skip this tick and retry next time,
+    same behavior as the previous Content-Length implementation).
     """
+    view_id = _extract_socrata_view_id(url)
+    if not view_id:
+        logger.warning('PAD URL has no Socrata view id: %s', url)
+        return None
     try:
-        resp = requests.head(url, allow_redirects=True, timeout=20)
+        resp = requests.get(
+            'https://data.cityofnewyork.us/api/views/{}.json'.format(view_id),
+            timeout=20,
+        )
     except requests.RequestException as e:
-        logger.warning('PAD HEAD failed: %s', e)
+        logger.warning('PAD viewLastModified fetch failed: %s', e)
         return None
     if resp.status_code != 200:
-        logger.warning('PAD HEAD returned HTTP %s', resp.status_code)
+        logger.warning('PAD viewLastModified returned HTTP %s', resp.status_code)
         return None
     try:
-        size = int(resp.headers.get('content-length', '0'))
-    except ValueError:
+        ts = int(resp.json().get('viewLastModified', 0))
+    except (ValueError, TypeError, KeyError):
         return None
-    if not size:
+    if not ts:
         return None
-    return datetime.datetime(2020, 1, 1, tzinfo=datetime.timezone.utc) + datetime.timedelta(seconds=size)
+    return datetime.datetime.fromtimestamp(ts, tz=datetime.timezone.utc)
 
 
 def download_pad_bobaadr_csv(dataset, url, chunk_size=1024 * 1024):

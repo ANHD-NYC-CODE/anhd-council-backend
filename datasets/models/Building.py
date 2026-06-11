@@ -132,8 +132,8 @@ class Building(BaseDatasetModel, models.Model):
 
     @classmethod
     def fetch_last_updated(cls):
-        # ETag-derived sentinel: changes when NYC publishes a new PAD ZIP. See
-        # datasets/utils/pad_download.py for the rationale.
+        # Socrata `viewLastModified` — the real publish timestamp NYC bumps
+        # when they push a new PAD release. See datasets/utils/pad_download.py.
         return fetch_pad_last_updated(cls.download_endpoint)
 
     @classmethod
