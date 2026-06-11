@@ -550,16 +550,60 @@ class Property(BaseDatasetModel, models.Model):
         # race with the wrapping celery task's tail.
 
     @classmethod
-    def add_state_geographies(self):
-        logger.info('Adding State Assembly associations via geoshape')
-        status1 = self.queryset_foreach(self.objects.filter(stateassembly__isnull=True, latitude__isnull=False, longitude__isnull=False).order_by('pk'), self.create_state_assembly_association, 'stateassembly', batch_size=100)
+    def add_state_geographies(cls):
+        # Fast point-in-polygon: parse each district's GeoJSON ONCE up front and
+        # wrap it in shapely.prepared.prep() — which builds a containment index
+        # optimized for the same geometry queried repeatedly. The previous
+        # implementation re-parsed every polygon for every property:
+        #   ~873K properties × 65 assembly polygons = 56M shape() calls
+        #   ~873K properties × 28 senate polygons   = 24M shape() calls
+        # The slow Python loop is why prior PLUTO seeds got revoked partway
+        # through and left the table with 100% missing statesenate. This
+        # version processes ~all 873K properties in ~10-20 min on prod hardware.
+        from shapely.prepared import prep
 
-        logger.info(status1)
+        for label, district_model, field_name in (
+            ('Assembly', ds.StateAssembly, 'stateassembly'),
+            ('Senate',   ds.StateSenate,   'statesenate'),
+        ):
+            logger.info('Adding State %s associations via geoshape', label)
 
-        logger.info('Adding State Senate associations via geoshape')
-        status2 = self.queryset_foreach(self.objects.filter(statesenate__isnull=True, latitude__isnull=False,
-                                                            longitude__isnull=False).order_by('pk'), self.create_state_senate_association, 'statesenate', batch_size=100)
-        logger.info(status2)
+            # Parse and prepare polygons once
+            polygons = []
+            for district in district_model.objects.order_by('pk'):
+                try:
+                    polygons.append((district, prep(shape(district.data['geometry']))))
+                except Exception as e:
+                    logger.warning('Skipping %s id=%s: %s', district_model.__name__, district.pk, e)
+            logger.info('  prepared %d %s polygons', len(polygons), label)
+
+            # Iterate properties needing assignment; bulk_update in batches.
+            qs = cls.objects.filter(
+                **{f'{field_name}__isnull': True},
+                latitude__isnull=False,
+                longitude__isnull=False,
+            ).only('bbl', 'latitude', 'longitude', f'{field_name}_id').order_by('pk')
+
+            to_update = []
+            count = 0
+            assigned = 0
+            for property in qs.iterator(chunk_size=5000):
+                point = Point(property.longitude, property.latitude)
+                for district, prepared in polygons:
+                    if prepared.contains(point):
+                        setattr(property, field_name, district)
+                        to_update.append(property)
+                        assigned += 1
+                        break
+                count += 1
+                if len(to_update) >= 5000:
+                    cls.objects.bulk_update(to_update, [f'{field_name}_id'], batch_size=5000)
+                    to_update = []
+                if count % 50000 == 0:
+                    logger.info('  State %s: scanned %d, assigned %d', label, count, assigned)
+            if to_update:
+                cls.objects.bulk_update(to_update, [f'{field_name}_id'], batch_size=5000)
+            logger.info('  State %s: done — scanned %d, assigned %d', label, count, assigned)
 
     @classmethod
     def create_property_annotations(self):
@@ -570,8 +614,12 @@ class Property(BaseDatasetModel, models.Model):
                 logger.info('property annotations created: {}'.format(count))
             count = count + 1
 
+    # Per-property association helpers removed in favor of the batched,
+    # prepared-geometry version in add_state_geographies above (the old
+    # versions re-parsed every polygon for every property — see the
+    # docstring there for the 56M-shape()-calls explanation).
     @classmethod
-    def create_state_assembly_association(self, property, objects_to_update):
+    def _legacy_create_state_assembly_association(self, property, objects_to_update):
         point = Point(property.longitude, property.latitude)
         for stateassembly in ds.StateAssembly.objects.order_by('pk'):
             polygon = shape(stateassembly.data['geometry'])
@@ -583,7 +631,7 @@ class Property(BaseDatasetModel, models.Model):
         return objects_to_update
 
     @classmethod
-    def create_state_senate_association(self, property, objects_to_update):
+    def _legacy_create_state_senate_association(self, property, objects_to_update):
         # count = 0
         # for property in self.objects.filter(statesenate__isnull=True, lat__isnull=False, lng__isnull=False):
         point = Point(property.longitude, property.latitude)
