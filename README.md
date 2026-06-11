@@ -209,16 +209,27 @@ The `$limit=100000000` returns all rows (Socrata defaults to 1000).
 
 ### Updating Pluto / PAD (Property Data)
 
-Run in order, one at a time, waiting for each to complete:
+Fully automated via two weekly crons (Sunday 4 AM EST):
 
-1. `Property` — with Pluto (not MapPLUTO) data (automated)
-2. `Building` — with PAD dataset
-3. `PADRecord` — same PAD file as Building
-4. `AddressRecord` — no file needed, just create an update in admin
+- **`Check and Update Properties / Pluto (Weekly)`** (args `[2]`) — HEAD-checks the PLUTO Socrata view; if `viewLastModified` changed, runs `Property.seed_or_update_self` (COPY upsert of ~870K rows) and chains to **AddressRecord** at the end. ~2-3h end-to-end when triggered.
+- **`Check and Update Buildings (PAD chain)`** (args `[3]`) — HEAD-checks the PAD download endpoint; if `Content-Length` changed, runs Building bulk_seed → chains to PadRecord → chains to AddressRecord. ~1-2h end-to-end when triggered.
 
-Best to start around noon so they finish before nightly tasks (7pm). Space updates by a day if possible.
+Both crons are cheap when NYC hasn't published anything new (single HEAD request + early-exit), so weekly checks add no meaningful load — most ticks are no-ops.
 
-> **AddressRecord** rebuild requires ~6GB RAM (atomic transaction). Restart app and postgres containers first to free memory. Takes 2-4 hours. Duplicate key errors in logs are expected.
+**Manual trigger (skip the cron check, force a fresh seed):**
+
+```bash
+# PLUTO
+docker exec app python manage.py shell -c "from datasets.models import Property; Property.create_async_update_worker()"
+# PAD chain (Building → PadRecord → AddressRecord)
+docker exec app python manage.py shell -c "from datasets.models import Building; Building.create_async_update_worker()"
+# AddressRecord rebuild only (uses current Property/Building/PadRecord state)
+docker exec app python manage.py shell -c "from datasets.models import AddressRecord; AddressRecord.create_async_update_worker()"
+```
+
+The chain wiring lives on each model's `chain_next_model` class attribute (`Building → PadRecord`, `PadRecord → AddressRecord`, `Property → AddressRecord`); `Dataset.seed_dataset` fires the next step at the tail of the post-processing, so manual triggers via admin upload work the same way as cron triggers.
+
+> The AddressRecord rebuild is no longer wrapped in `transaction.atomic()` (memory stayed at ~1.3 GB on the most recent prod run vs the multi-GB blowup with the atomic wrapper). Still ~2 hours on prod due to Python iteration over Property + PadRecord rows, but no longer needs a container restart for memory. Duplicate key warnings in logs are expected (and now eliminated entirely by PR #146's cross-batch dedup — see CHANGELOG for the perf story).
 
 ### PropertyShark Data
 
