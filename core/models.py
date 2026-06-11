@@ -43,20 +43,31 @@ class Dataset(models.Model):
 
     @classmethod
     def annotate_properties_all(cls):
-        current_model_name = None  # Initialize variable to keep track of the current model name
-        try:
-            for model_name in settings.ANNOTATED_DATASETS:
-                current_model_name = model_name  # Update the current model name
-                if model_name == 'AcrisRealMaster':
-                    model_name = 'AcrisRealLegal'
-                dataset = cls.objects.get(model_name=model_name)
+        # Run every dataset's annotate_properties — but if any of them fail,
+        # keep going and collect the failures, then raise an aggregate at the
+        # end so the outer celery task sees FAILURE (and handle_task_error
+        # fires an email). Previously the try/except wrapped the ENTIRE loop,
+        # so a single failure aborted the remaining datasets AND silently
+        # swallowed the exception (task showed SUCCESS in TaskResult even
+        # though most annotations didn't run).
+        failures = []
+        for model_name in settings.ANNOTATED_DATASETS:
+            try:
+                effective = 'AcrisRealLegal' if model_name == 'AcrisRealMaster' else model_name
+                dataset = cls.objects.get(model_name=effective)
                 dataset.model().annotate_properties()
-        except Exception as e:
-            if current_model_name:
+            except Exception as e:
                 logger.error(
-                    f'Error during task for model_name "{current_model_name}": {e}')
-            else:
-                logger.error(f'Error during task: {e}')
+                    'annotate_properties failed for %s: %s', model_name, e,
+                    exc_info=True,
+                )
+                failures.append((model_name, e))
+
+        if failures:
+            names = ', '.join(name for name, _ in failures)
+            raise Exception(
+                'annotate_properties failed for {} dataset(s): {}'.format(len(failures), names)
+            )
 
     def model(self):
         return getattr(ds, self.model_name)

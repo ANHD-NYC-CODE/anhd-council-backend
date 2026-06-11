@@ -148,7 +148,15 @@ def async_create_update(self, dataset_id, file_id=None):
 
 @app.task(bind=True, base=FaultTolerantTask, queue='update', acks_late=True, max_retries=1)
 def async_annotate_properties_with_all_datasets(self):
-    c.Dataset.annotate_properties_all()
+    # Wrap so handle_task_error fires on failure — that path emails the
+    # admins via async_send_general_task_error_mail. Without this wrapper the
+    # task can fail silently (celery marks TaskResult as FAILURE but no email
+    # goes out, so nobody notices that nightly annotations stopped working).
+    try:
+        c.Dataset.annotate_properties_all()
+    except Exception as e:
+        handle_task_error(e)
+        raise e
 
 
 @app.task(bind=True, base=FaultTolerantTask, queue='update', acks_late=True, max_retries=1)
