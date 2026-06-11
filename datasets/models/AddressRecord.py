@@ -305,14 +305,35 @@ class AddressRecord(BaseDatasetModel, models.Model):
         logger.info('Building address table from scratch.')
         timestamp = datetime.datetime.now().date()
 
+        # Cross-batch dedup by (bbl, number, street) — the AddressRecord
+        # unique_together. The PK is `key` (number+street+borough+zipcode+bbl),
+        # so two rows with the same (bbl, number, street) but different borough
+        # or zipcode get different keys but collide on the unique constraint.
+        # `batch_upsert_rows` dedups *within* a batch but cross-batch collisions
+        # would fail the executemany and trigger single-row fallback — which on
+        # prod turned a 50-min rebuild into a 3-hour grind. This generator
+        # filter eliminates the collisions before they reach postgres while
+        # preserving original semantics: property phase yields first, so its
+        # rows "win" on collision (matching the historical ignore_conflict=True
+        # fallback behavior). ~70 MB memory cost for the seen-set on prod.
+        seen_unique = set()
+
+        def dedup_unique(gen):
+            for row in gen:
+                k = (row.get('bbl'), row.get('number'), row.get('street'))
+                if k in seen_unique:
+                    continue
+                seen_unique.add(k)
+                yield row
+
         logger.info('Bulk inserting property addresses...')
         batch_upsert_from_gen(
-            self, self.build_property_gen(), settings.BATCH_SIZE,
+            self, dedup_unique(self.build_property_gen()), settings.BATCH_SIZE,
             ignore_conflict=False, **kwargs)
 
         logger.info('Bulk inserting building addresses...')
         batch_upsert_from_gen(
-            self, self.build_building_gen(), settings.BATCH_SIZE,
+            self, dedup_unique(self.build_building_gen()), settings.BATCH_SIZE,
             ignore_conflict=True, **kwargs)
 
         logger.info('Building search index...')
