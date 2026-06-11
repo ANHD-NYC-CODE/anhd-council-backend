@@ -27,7 +27,6 @@ services:
     depends_on:
       - postgres
       - redis
-      - celerybeat
     volumes:
       - ./:/app
       - ./data:/app/data
@@ -52,7 +51,6 @@ services:
     depends_on:
       - postgres
       - redis
-      - celerybeat
     volumes:
       - ./:/app
       - ./data:/app/data
@@ -71,32 +69,15 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-  celerybeat:
-    restart: always
-    build: .
-    container_name: "celerybeat"
-    image: app_image
-    entrypoint: "celery -A app beat -l debug --scheduler django_celery_beat.schedulers:DatabaseScheduler --pidfile= --logfile=./celery/logs/beat.log"
-    networks:
-      - network1
-    depends_on:
-      - postgres
-      - redis
-    links:
-      - postgres
-      - redis
-    volumes:
-      - ./:/app
-      - ./celery:/app/celery
-    env_file:
-      - .env.dev
-    environment:
-      - TZ=America/New_York
-    # https://www.distributedpython.com/2018/10/13/flower-docker/
-    logging:
-      options:
-        max-size: "10m"
-        max-file: "3"
+  # celerybeat is intentionally NOT defined in dev. The scheduler was firing
+  # ~10 dataset imports per hour during local chain testing (DOB Violations,
+  # HPDComplaints, etc.) — competing for celery_update worker slots and
+  # making the AddressRecord rebuild crawl. To exercise a cron schedule
+  # in dev, start a one-off: `docker compose -f docker-compose.yml -f
+  # docker-compose.dev.yml run --rm --name celerybeat-oneoff celery -A app
+  # beat -l debug --scheduler django_celery_beat.schedulers:DatabaseScheduler`.
+  # In prod, celerybeat is defined in docker-compose.prod.yml and runs as
+  # normal.
   flower:
     ports:
       - "8888:8888"

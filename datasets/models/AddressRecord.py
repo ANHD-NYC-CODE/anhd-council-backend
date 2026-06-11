@@ -62,6 +62,10 @@ class AddressRecord(BaseDatasetModel, models.Model):
         building_street = str(building.stname).strip()
         building_zip = str(building.zipcode).strip()
         building_boro = str(building.boro).strip()
+        # Skip buildings whose boro isn't a recognized 1-5 code — same
+        # rationale as address_row_from_property's guard on property.borough.
+        if building_boro not in self._VALID_BOROUGH_CODES:
+            return None
         building_number = ds.Building.construct_house_number(building_low,
                                                              building_high)
         if building_number:
@@ -212,9 +216,20 @@ class AddressRecord(BaseDatasetModel, models.Model):
                     if address_row:
                         yield address_row
 
+    # Set used to filter out properties/buildings whose borough field isn't
+    # one of the five expected NYC borough codes. `abrv_to_borough` and
+    # `code_to_boro` raise KeyError on miss; ~11K obsolete PLUTO rows have
+    # NULL borough (orphans not touched by recent imports) and would otherwise
+    # crash the rebuild on the first hit. Skipping them is safe — without a
+    # borough they can't produce a meaningful address record anyway.
+    _VALID_BOROUGH_ABRVS = frozenset({'MN', 'BX', 'BK', 'QN', 'SI'})
+    _VALID_BOROUGH_CODES = frozenset({'1', '2', '3', '4', '5'})
+
     @classmethod
     def address_row_from_property(self, property):
         if not property.address:
+            return
+        if property.borough not in self._VALID_BOROUGH_ABRVS:
             return
 
         number_letter = re.search(r"(?=\d*)^.*?(?=\s\b)", property.address)
@@ -256,42 +271,58 @@ class AddressRecord(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        self.build_table(overwrite=True)
+        # Pass kwargs through (specifically `update=`) so batch_upsert_from_gen
+        # can write rows_created / rows_updated / total_rows to the Update
+        # record as each batch flushes. Django admin's UpdateAdmin shows those
+        # fields live during the rebuild — refresh the page to watch progress.
+        self.build_table(overwrite=True, **kwargs)
+
+    @classmethod
+    def create_async_update_worker(cls, endpoint=None, file_name=None):
+        # AddressRecord has no source file — it's rebuilt from the live
+        # Property/Building/PadRecord tables. Creating an Update with no `file`
+        # triggers the existing `async_seed_table` celery task via the Update
+        # post_save signal (see core/models.py auto_seed_on_create), which
+        # eventually calls seed_or_update_self → build_table.
+        from core import models as c_models
+        c_models.Update.objects.create(dataset=cls.get_dataset())
 
     @classmethod
     def build_table(self, overwrite=True, **kwargs):
-        # Rebuild the address table inside a single transaction so the live
-        # table never sees half-old/half-new state. If the rebuild fails part
-        # way through, everything rolls back — no manual cleanup needed.
+        # Strategy preserved from the original: insert/upsert all new rows with
+        # `created = today`, then delete anything older. The post_save signal
+        # that re-saved every row to set `created` (N+1 UPDATEs — the main
+        # reason this rebuild took 2–4h on ~1.4M rows) has been removed;
+        # `created` is now set in the row dict at insert time.
         #
-        # Strategy preserved from the previous version: insert/upsert all new
-        # rows with `created` set to today, then delete anything older. The
-        # old code had a separate post_save signal that re-saved every row to
-        # set `created` (N+1 UPDATEs — a major reason this rebuild took 2–4h
-        # on ~1.4M rows). That signal has been removed; `created` is now set
-        # in the row dict at insert time.
+        # Why this is NOT wrapped in transaction.atomic(): doing so forced
+        # postgres to hold all 1.4M inserted rows + ORM state in memory until
+        # the very end, OOM-killing the worker on memory-constrained envs.
+        # The rebuild has been non-atomic for years; mid-failure leaves rows
+        # with `created < today` that the final DELETE cleans up on re-run.
+        # The proper fix for full atomicity is a staging-table + RENAME swap
+        # (deferred to its own follow-up PR so this one stays scoped).
         logger.info('Building address table from scratch.')
         timestamp = datetime.datetime.now().date()
 
-        with transaction.atomic():
-            logger.info('Bulk inserting property addresses...')
-            batch_upsert_from_gen(
-                self, self.build_property_gen(), settings.BATCH_SIZE,
-                ignore_conflict=False, **kwargs)
+        logger.info('Bulk inserting property addresses...')
+        batch_upsert_from_gen(
+            self, self.build_property_gen(), settings.BATCH_SIZE,
+            ignore_conflict=False, **kwargs)
 
-            logger.info('Bulk inserting building addresses...')
-            batch_upsert_from_gen(
-                self, self.build_building_gen(), settings.BATCH_SIZE,
-                ignore_conflict=True, **kwargs)
+        logger.info('Bulk inserting building addresses...')
+        batch_upsert_from_gen(
+            self, self.build_building_gen(), settings.BATCH_SIZE,
+            ignore_conflict=True, **kwargs)
 
-            logger.info('Building search index...')
-            self.build_search()
+        logger.info('Building search index...')
+        self.build_search()
 
-            logger.info('Deleting older records (created < %s or null)...', timestamp)
-            deleted, _ = ds.AddressRecord.objects.filter(
-                Q(created__isnull=True) | Q(created__lt=timestamp)
-            ).delete()
-            logger.info('Deleted %d old address records', deleted)
+        logger.info('Deleting older records (created < %s or null)...', timestamp)
+        deleted, _ = ds.AddressRecord.objects.filter(
+            Q(created__isnull=True) | Q(created__lt=timestamp)
+        ).delete()
+        logger.info('Deleted %d old address records', deleted)
 
         logger.info('Address Record seeding complete')
 

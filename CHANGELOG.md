@@ -1,5 +1,43 @@
 # API CHANGELOG
 
+### 2026-06-10 (PAD chain) — Building + PadRecord + AddressRecord automated
+
+**The chain**
+- `Building` and `PadRecord` now automate via the Socrata "download attachment" endpoint: `https://data.cityofnewyork.us/download/bc8t-ecyu/application%2Fzip`. That URL is stable across PAD releases; the file behind it changes (new ETag, new Content-Length) and we use Content-Length as the change sentinel in `fetch_last_updated`.
+- `download()` on both models fetches the ZIP (~46 MB), streams `bobaadr.txt` out (~312 MB uncompressed), and saves it as `bobaadr.csv` — no format conversion needed (the file is already comma-separated with quoted values; only the extension changes).
+- Shared download/last-updated helpers live in `datasets/utils/pad_download.py` so both models stay thin.
+- **Chain wiring**: `Building.seed_or_update_self` schedules `PadRecord` on completion; `PadRecord.seed_or_update_self` schedules `AddressRecord` on completion. Both still work from manual admin uploads (chain triggers either way). Only Building needs a cron task — the chain handles the rest, guaranteeing order (PadRecord can't race Building because PadRecord's `annotate_buildings()` reads Building rows).
+- New periodic task: `Check and Update Buildings (PAD chain)` on crontab 21 (monthly, day 6). NYC publishes PAD quarterly so 3/4 monthly runs are no-ops (truncate+reload completes quickly when row counts match).
+
+**Pre-deploy test plan (because the chain truncate-and-reloads tables that other datasets depend on for BIN/BBL linkage)**
+1. **Back up the three tables locally** (~1.2 GB compressed, manageable):
+   ```bash
+   docker exec postgres pg_dump -U anhd -d anhd -Fc \
+     -t datasets_building -t datasets_padrecord -t datasets_addressrecord \
+     > pad_chain_backup_$(date +%Y%m%d_%H%M%S).dump
+   ```
+2. **Baseline row counts** for all four PAD-chain-touched tables (Property is read-only, included as a sanity check):
+   ```sql
+   SELECT
+     (SELECT COUNT(*) FROM datasets_property) AS property,
+     (SELECT COUNT(*) FROM datasets_building) AS building,
+     (SELECT COUNT(*) FROM datasets_padrecord) AS padrecord,
+     (SELECT COUNT(*) FROM datasets_addressrecord) AS addressrecord,
+     (SELECT COUNT(*) FROM datasets_building WHERE pad_addresses != '') AS bldg_pad_addr_populated,
+     (SELECT COUNT(*) FROM datasets_addressrecord WHERE address IS NOT NULL) AS addr_search_populated;
+   ```
+3. **Trigger the chain** by creating a Building Update in admin (no file → runs `Building.create_async_update_worker()` → full chain) OR running the celery task manually: `python manage.py shell -c "from datasets.models import Building; Building.create_async_update_worker()"`.
+4. **Re-run the same count query** after the chain finishes. Acceptable deltas:
+   - `building` / `padrecord` / `addressrecord`: small +/- (NYC may have added or removed records); huge swings indicate a load bug.
+   - `bldg_pad_addr_populated`: should be ≥ baseline (annotate_buildings ran).
+   - `addr_search_populated`: should be ~= baseline (search vector rebuilt).
+   - `property`: unchanged (chain is read-only against Property).
+5. **Spot-check a known property's address-search lookup** (e.g. via the admin or the API).
+6. Restore from the pg_dump if anything looks wrong — the chain is truncate+reload, so any bad data is reversible only from the dump.
+
+**Out of scope (still deferred)**
+The previous "PAD URL is unstable" guess was wrong — the Socrata attachment endpoint is stable. No further blockers to PAD chain automation.
+
 ### 2026-06-10 (AddressRecord) — Atomic rebuild + drop the write-amplifying signal
 
 **`datasets/models/AddressRecord.py`**

@@ -1,11 +1,13 @@
 from django.db import models
 from django.db.models import Q
+from django.core import files as dj_files
 from core import models as c
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from datasets.utils.validation_filters import is_null, exceeds_char_length
+from datasets.utils.pad_download import download_pad_bobaadr_csv, fetch_pad_last_updated
 from core.utils.transform import from_csv_file_to_gen, with_bbl
 from django.contrib.postgres.search import SearchVector, SearchVectorField
-from core.tasks import async_create_update
+from core.tasks import async_create_update, async_download_and_update
 from core.utils.address import clean_number_and_streets
 
 
@@ -14,15 +16,17 @@ from datasets import models as ds
 
 logger = logging.getLogger('app')
 
-# Update process: Manual
-# Update strategy: Upsert
+# Update process: Automated (monthly via celerybeat) + manual CSV upload via admin
+# Update strategy: Truncate + reload via bulk_seed(overwrite=True)
+# Source: NYC Open Data Property Address Directory (bc8t-ecyu)
 #
-# Download latest
-# https://data.cityofnewyork.us/City-Government/Property-Address-Directory/bc8t-ecyu
-# Extract ZIP and upload bobaadr.csv file through admin and set the dataset to "Building", then update
-# Note: might need to change the file from bobaadr.txt to bobaadr.csv
-# ** RESOURCE INTENSIVE UPDATE ** - don't run during regular updates after 7pm
-# Make sure to update the PADRecord dataset AFTER this one using the same file.
+# The Socrata "download attachment" URL is stable across PAD releases — the file
+# behind it changes (new ETag) but the URL doesn't. Download() pulls the ZIP,
+# extracts bobaadr.txt, and saves it as bobaadr.csv (the file is already
+# comma-separated with quoted values; only the extension needs swapping).
+#
+# Make sure to update the PADRecord dataset AFTER this one — it uses the same
+# source file. Both are scheduled by celerybeat (see core/fixtures/tasks.yaml).
 
 # NOTE on the BIN 1,000,000 error
 # Currently the BIN field is the primary key field.
@@ -36,6 +40,11 @@ logger = logging.getLogger('app')
 
 
 class Building(BaseDatasetModel, models.Model):
+    # Socrata "download attachment" endpoint — redirects to a signed URL serving
+    # the current PAD ZIP. New PAD releases change the file behind this URL
+    # (new ETag); the URL itself is stable.
+    download_endpoint = "https://data.cityofnewyork.us/download/bc8t-ecyu/application%2Fzip"
+
     bin = models.TextField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Property', on_delete=models.SET_NULL, null=True,
                             db_column='bbl', db_constraint=False)
@@ -110,10 +119,35 @@ class Building(BaseDatasetModel, models.Model):
     def transform_self(self, file_path, update=None):
         return self.pre_validation_filters(with_bbl(from_csv_file_to_gen(file_path, update), borough='boro'))
 
+    # PAD chain step 1 → 2. Declared as a class attribute so Dataset.seed_dataset
+    # fires the chain trigger *after* all post-processing completes (instead of
+    # from inside seed_or_update_self where it raced with the wrapping celery
+    # task's tail and produced KeyError(None)).
+    chain_next_model = 'PadRecord'
+
     @classmethod
     def seed_or_update_self(self, **kwargs):
         logger.info("Seeding/Updating %s", self.__name__)
         self.bulk_seed(**kwargs, overwrite=True)
+
+    @classmethod
+    def fetch_last_updated(cls):
+        # Socrata `viewLastModified` — the real publish timestamp NYC bumps
+        # when they push a new PAD release. See datasets/utils/pad_download.py.
+        return fetch_pad_last_updated(cls.download_endpoint)
+
+    @classmethod
+    def download(cls, endpoint=None, file_name=None):
+        # Downloads PAD ZIP, extracts bobaadr.txt, saves as bobaadr.csv DataFile.
+        return download_pad_bobaadr_csv(
+            dataset=cls.get_dataset(),
+            url=endpoint or cls.download_endpoint,
+        )
+
+    @classmethod
+    def create_async_update_worker(cls, endpoint=None, file_name=None):
+        async_download_and_update.delay(
+            cls.get_dataset().id, endpoint=endpoint, file_name=file_name)
 
     def __str__(self):
         return str(self.bin)

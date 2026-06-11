@@ -34,11 +34,12 @@
   fields:
     name: Buildings
     model_name: Building
-    automated: false
-    update_instructions: Visit https://data.cityofnewyork.us/City-Government/Property-Address-Directory/bc8t-ecyu
-      2) Download latest zipfile. 3) Extract zipfile and open bobaadr.csv. 4) Upload
-      bobaadr.csv to app. 5) Update
-    download_endpoint: null
+    automated: true
+    update_instructions: 'Automated monthly via celerybeat (Check and Update Buildings).
+      Downloads PAD ZIP from Socrata, extracts bobaadr.txt, saves as bobaadr.csv,
+      and truncate+reloads. Manual: upload bobaadr.csv via admin (same flow as before).
+      Schedule this BEFORE PAD Record on the same cron tick.'
+    download_endpoint: https://data.cityofnewyork.us/download/bc8t-ecyu/application%2Fzip
     api_last_updated: null
     records_start: null
     records_end: null
@@ -433,22 +434,13 @@
   fields:
     name: Address Record
     model_name: AddressRecord
-    automated: false
-    update_instructions: ' Download latest
-
-      # https://data.cityofnewyork.us/City-Government/Property-Address-Directory/bc8t-ecyu
-
-      # Extract ZIP and upload bobaadr.csv file through admin (associated w/ Building
-      model), then update Building, PadRecord, and finally this one when all others
-      finished.
-
-      # ** RESOURCE INTENSIVE UPDATE ** - don''t run during regular updates after
-      6pm
-
-      # ** Best done on a weekend morning. can take many hours.
-
-      # ** May need to run build_search method alone in console if runs out of memory
-      after seeding properties and buildings'
+    automated: true
+    update_instructions: 'Automated — chained from PAD Record. When PAD Record finishes
+      its import (after Building), it calls AddressRecord.create_async_update_worker()
+      which creates a no-file Update; the existing Update post_save signal then fires
+      async_seed_table → seed_or_update_self → build_table (now wrapped in
+      transaction.atomic, with the per-row post_save signal removed in PR #144).
+      Manual: create an Update in admin with only the dataset selected (no file).'
     download_endpoint: null
     api_last_updated: null
     records_start: null
@@ -529,9 +521,13 @@
   fields:
     name: PAD Record
     model_name: PadRecord
-    automated: false
-    update_instructions: Download latest https://data.cityofnewyork.us/City-Government/Property-Address-Directory/bc8t-ecyu
-    download_endpoint: null
+    automated: true
+    update_instructions: 'Automated monthly via celerybeat (Check and Update PAD Record),
+      scheduled to run AFTER Building on the same cron tick. Uses the same source
+      file (bobaadr.csv extracted from the PAD ZIP). On completion, kicks off the
+      AddressRecord rebuild chain. Manual: upload bobaadr.csv via admin (same flow
+      as before).'
+    download_endpoint: https://data.cityofnewyork.us/download/bc8t-ecyu/application%2Fzip
     api_last_updated: null
     records_start: null
     records_end: null
