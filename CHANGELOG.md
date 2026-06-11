@@ -1,5 +1,19 @@
 # API CHANGELOG
 
+### 2026-06-11 (PAD chain follow-ups + geo speedup)
+
+**Performance + reliability**
+- AddressRecord rebuild: cross-batch dedup (PR #146). The `(bbl, number, street)` unique constraint was triggering `executemany` failures and forcing the slow single-row upsert fallback on every rebuild — turning a ~50-min job into 3+ hours on prod. Both row generators now stream through a shared `seen_unique` set so cross-batch collisions are filtered before they reach postgres. Same final data (property-phase row wins on collision, matching the original `ignore_conflict=True` semantics). Prod measured: 169 min → 126 min for the same rebuild.
+- Property.copy_upsert preserves derived geo (PR #146). `field_names` included `stateassembly_id` + `statesenate_id` in the `ON CONFLICT SET` clause; PLUTO doesn't supply them, so every refresh wiped them on every touched row. With this fix, future PLUTO refreshes don't destroy the locally-derived state assignments.
+- `add_state_geographies` rewritten with prepared geometries (PR #147). The old loop re-parsed every district polygon for every property — 56M+ `shape()` calls. New version parses each polygon once + wraps in `shapely.prepared.prep()` for indexed containment queries. Prod backfill of ~873K properties: was 4-5 days, now **31 min**.
+- StateAssembly/StateSenate uploads auto-recompute (PR #148). On a successful upload, `seed_or_update_self` now nulls the corresponding `Property.stateassembly`/`statesenate` and dispatches `async_add_state_geo_links`. Redistricting refresh becomes fire-and-forget instead of a manual nulling exercise.
+- `annotate_properties` failures surface to operators (PR #149). `Dataset.annotate_properties_all` used to wrap the entire for-loop in try/except and never re-raise — first failing model aborted the rest AND the outer task returned SUCCESS. Now per-model try/except (other models keep going) + aggregate raise at the end + `handle_task_error` wired through the outer task so failures actually fire `async_send_general_task_error_mail`.
+
+**Operational**
+- Backfilled ~873K missing `Property.stateassembly` / `statesenate` (wiped state from prior failed PLUTO seeds that ran the old slow geo loop and got revoked). Completed in 31 min via PR #147's prepared-geom path.
+- Triggered a fresh PLUTO seed to catch up from 2026-02-20 to NYC's current 2026-05-28 release (the two June attempts before PR #147 both got revoked in the geo loop).
+- Cron cadence: PLUTO and the PAD chain switched from monthly (day 6) to **weekly (Sunday 4 AM EST)**. Same total work over time (~4-5 chain runs/year either way — only triggers when NYC actually publishes), but new NYC releases detected within ~7 days instead of up to 30. Both `CrontabSchedule` rows updated on prod; PLUTO periodic task renamed from "(Monthly)" to "(Weekly)" to match.
+
 ### 2026-06-10 (PAD chain) — Building + PadRecord + AddressRecord automated
 
 **The chain**
