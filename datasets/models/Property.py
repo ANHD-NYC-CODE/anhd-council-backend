@@ -529,6 +529,14 @@ class Property(BaseDatasetModel, models.Model):
             self.add_geometry()
         self.add_state_geographies()
 
+        # Chain to AddressRecord: PLUTO updates change Property.address, which
+        # AddressRecord depends on for its property-derived rows. Without this
+        # chain, new properties wouldn't appear in address search until the
+        # next PAD-chain run (which is on its own ~monthly cadence). Same
+        # mechanism Building/PadRecord use (no-file Update → async_seed_table).
+        from datasets.models import AddressRecord
+        AddressRecord.create_async_update_worker()
+
     @classmethod
     def add_state_geographies(self):
         logger.info('Adding State Assembly associations via geoshape')
