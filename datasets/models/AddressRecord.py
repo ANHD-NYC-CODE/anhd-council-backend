@@ -256,7 +256,11 @@ class AddressRecord(BaseDatasetModel, models.Model):
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
-        self.build_table(overwrite=True)
+        # Pass kwargs through (specifically `update=`) so batch_upsert_from_gen
+        # can write rows_created / rows_updated / total_rows to the Update
+        # record as each batch flushes. Django admin's UpdateAdmin shows those
+        # fields live during the rebuild — refresh the page to watch progress.
+        self.build_table(overwrite=True, **kwargs)
 
     @classmethod
     def create_async_update_worker(cls, endpoint=None, file_name=None):
