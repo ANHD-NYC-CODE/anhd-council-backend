@@ -270,38 +270,40 @@ class AddressRecord(BaseDatasetModel, models.Model):
 
     @classmethod
     def build_table(self, overwrite=True, **kwargs):
-        # Rebuild the address table inside a single transaction so the live
-        # table never sees half-old/half-new state. If the rebuild fails part
-        # way through, everything rolls back — no manual cleanup needed.
+        # Strategy preserved from the original: insert/upsert all new rows with
+        # `created = today`, then delete anything older. The post_save signal
+        # that re-saved every row to set `created` (N+1 UPDATEs — the main
+        # reason this rebuild took 2–4h on ~1.4M rows) has been removed;
+        # `created` is now set in the row dict at insert time.
         #
-        # Strategy preserved from the previous version: insert/upsert all new
-        # rows with `created` set to today, then delete anything older. The
-        # old code had a separate post_save signal that re-saved every row to
-        # set `created` (N+1 UPDATEs — a major reason this rebuild took 2–4h
-        # on ~1.4M rows). That signal has been removed; `created` is now set
-        # in the row dict at insert time.
+        # Why this is NOT wrapped in transaction.atomic(): doing so forced
+        # postgres to hold all 1.4M inserted rows + ORM state in memory until
+        # the very end, OOM-killing the worker on memory-constrained envs.
+        # The rebuild has been non-atomic for years; mid-failure leaves rows
+        # with `created < today` that the final DELETE cleans up on re-run.
+        # The proper fix for full atomicity is a staging-table + RENAME swap
+        # (deferred to its own follow-up PR so this one stays scoped).
         logger.info('Building address table from scratch.')
         timestamp = datetime.datetime.now().date()
 
-        with transaction.atomic():
-            logger.info('Bulk inserting property addresses...')
-            batch_upsert_from_gen(
-                self, self.build_property_gen(), settings.BATCH_SIZE,
-                ignore_conflict=False, **kwargs)
+        logger.info('Bulk inserting property addresses...')
+        batch_upsert_from_gen(
+            self, self.build_property_gen(), settings.BATCH_SIZE,
+            ignore_conflict=False, **kwargs)
 
-            logger.info('Bulk inserting building addresses...')
-            batch_upsert_from_gen(
-                self, self.build_building_gen(), settings.BATCH_SIZE,
-                ignore_conflict=True, **kwargs)
+        logger.info('Bulk inserting building addresses...')
+        batch_upsert_from_gen(
+            self, self.build_building_gen(), settings.BATCH_SIZE,
+            ignore_conflict=True, **kwargs)
 
-            logger.info('Building search index...')
-            self.build_search()
+        logger.info('Building search index...')
+        self.build_search()
 
-            logger.info('Deleting older records (created < %s or null)...', timestamp)
-            deleted, _ = ds.AddressRecord.objects.filter(
-                Q(created__isnull=True) | Q(created__lt=timestamp)
-            ).delete()
-            logger.info('Deleted %d old address records', deleted)
+        logger.info('Deleting older records (created < %s or null)...', timestamp)
+        deleted, _ = ds.AddressRecord.objects.filter(
+            Q(created__isnull=True) | Q(created__lt=timestamp)
+        ).delete()
+        logger.info('Deleted %d old address records', deleted)
 
         logger.info('Address Record seeding complete')
 
