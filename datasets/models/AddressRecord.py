@@ -62,6 +62,10 @@ class AddressRecord(BaseDatasetModel, models.Model):
         building_street = str(building.stname).strip()
         building_zip = str(building.zipcode).strip()
         building_boro = str(building.boro).strip()
+        # Skip buildings whose boro isn't a recognized 1-5 code — same
+        # rationale as address_row_from_property's guard on property.borough.
+        if building_boro not in self._VALID_BOROUGH_CODES:
+            return None
         building_number = ds.Building.construct_house_number(building_low,
                                                              building_high)
         if building_number:
@@ -212,9 +216,20 @@ class AddressRecord(BaseDatasetModel, models.Model):
                     if address_row:
                         yield address_row
 
+    # Set used to filter out properties/buildings whose borough field isn't
+    # one of the five expected NYC borough codes. `abrv_to_borough` and
+    # `code_to_boro` raise KeyError on miss; ~11K obsolete PLUTO rows have
+    # NULL borough (orphans not touched by recent imports) and would otherwise
+    # crash the rebuild on the first hit. Skipping them is safe — without a
+    # borough they can't produce a meaningful address record anyway.
+    _VALID_BOROUGH_ABRVS = frozenset({'MN', 'BX', 'BK', 'QN', 'SI'})
+    _VALID_BOROUGH_CODES = frozenset({'1', '2', '3', '4', '5'})
+
     @classmethod
     def address_row_from_property(self, property):
         if not property.address:
+            return
+        if property.borough not in self._VALID_BOROUGH_ABRVS:
             return
 
         number_letter = re.search(r"(?=\d*)^.*?(?=\s\b)", property.address)
