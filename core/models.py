@@ -118,14 +118,30 @@ class Dataset(models.Model):
             self.model().create_async_update_worker()
 
     def seed_dataset(self, **kwargs):
-        getattr(ds, self.model_name).seed_or_update_self(**kwargs)
+        model_cls = getattr(ds, self.model_name)
+        model_cls.seed_or_update_self(**kwargs)
         # Only update api_last_updated AFTER successful seeding
-        api_last_updated = getattr(ds, self.model_name).fetch_last_updated()
+        api_last_updated = model_cls.fetch_last_updated()
         if api_last_updated:
             self.api_last_updated = api_last_updated
             self.save()
             logger.info('Updated api_last_updated for {} to {}'.format(self.name, api_last_updated))
         self.delete_old_files()
+        # Chain trigger fires AFTER all of seed_dataset's post-processing
+        # (including the file cleanup above) — NOT from inside seed_or_update_self.
+        # Otherwise the chained task races with this task's tail and we saw
+        # KeyError(None) on AddressRecord. Each model can declare its successor
+        # via `chain_next_model = 'OtherModelName'`; when present, we fire that
+        # model's create_async_update_worker now. Combined with the longer
+        # countdown for AddressRecord in auto_seed_on_create, this gives the
+        # current task room to fully drain (return from this method, return
+        # from the celery wrapper, FaultTolerantTask.after_return) before the
+        # next task picks up.
+        chain_next = getattr(model_cls, 'chain_next_model', None)
+        if chain_next:
+            next_cls = getattr(ds, chain_next)
+            logger.info('Chain trigger: %s → %s', self.model_name, chain_next)
+            next_cls.create_async_update_worker()
 
     def split_seed_dataset(self, **kwargs):
         getattr(ds, self.model_name).split_seed_or_update_self(**kwargs)
@@ -271,8 +287,19 @@ def auto_seed_on_create(sender, instance, created, **kwargs):
                 worker = async_seed_file.apply_async(args=[instance.file.file.path, instance.id], kwargs={
                     'dataset_id': instance.dataset.id}, countdown=2)
             else:
+                # AddressRecord gets a longer countdown so any in-flight chain
+                # predecessor (PadRecord's seed_dataset post-processing or
+                # Property's PLUTO finalize) fully drains first. Belt-and-
+                # suspenders alongside moving the chain trigger to the tail
+                # of seed_dataset (instead of inside seed_or_update_self).
+                # The 2-second countdown was racing and producing KeyError(None).
+                countdown = (
+                    60
+                    if instance.dataset and instance.dataset.model_name == 'AddressRecord'
+                    else 2
+                )
                 worker = async_seed_table.apply_async(
-                    args=[instance.id], countdown=2)
+                    args=[instance.id], countdown=countdown)
 
             instance.task_id = worker.id
             logger.debug("Linking Worker {} to update {}".format(

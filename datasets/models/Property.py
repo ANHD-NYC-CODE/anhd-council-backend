@@ -184,6 +184,11 @@ class Property(BaseDatasetModel, models.Model):
     SHORT_SUMMARY_FIELDS = ('bbl', 'council', 'cd', 'zipcode', 'yearbuilt', 'unitsres', 'unitstotal',
                             'address', 'latitude', 'longitude', 'stateassembly', 'statesenate')
 
+    # PLUTO updates Property addresses; chain to AddressRecord so address search
+    # stays current without waiting for the next PAD-chain run. See
+    # core/models.py Dataset.seed_dataset for the trigger mechanics.
+    chain_next_model = 'AddressRecord'
+
     # DEPRECATED - now the version is pulled from the Dataset "Version" field - make sure to include this
     # when creating a Property Update from pluto
     current_version = '24v1.1'
@@ -528,14 +533,9 @@ class Property(BaseDatasetModel, models.Model):
             # TODO - update mock pluto datasets to v20+ (mock_pluto_17v1.zip) because newer PLUTO includes latitude and longitude
             self.add_geometry()
         self.add_state_geographies()
-
-        # Chain to AddressRecord: PLUTO updates change Property.address, which
-        # AddressRecord depends on for its property-derived rows. Without this
-        # chain, new properties wouldn't appear in address search until the
-        # next PAD-chain run (which is on its own ~monthly cadence). Same
-        # mechanism Building/PadRecord use (no-file Update → async_seed_table).
-        from datasets.models import AddressRecord
-        AddressRecord.create_async_update_worker()
+        # Chain trigger to AddressRecord lives on `chain_next_model` (above);
+        # Dataset.seed_dataset fires it AFTER post-processing so it doesn't
+        # race with the wrapping celery task's tail.
 
     @classmethod
     def add_state_geographies(self):

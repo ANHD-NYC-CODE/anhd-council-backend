@@ -119,18 +119,16 @@ class Building(BaseDatasetModel, models.Model):
     def transform_self(self, file_path, update=None):
         return self.pre_validation_filters(with_bbl(from_csv_file_to_gen(file_path, update), borough='boro'))
 
+    # PAD chain step 1 → 2. Declared as a class attribute so Dataset.seed_dataset
+    # fires the chain trigger *after* all post-processing completes (instead of
+    # from inside seed_or_update_self where it raced with the wrapping celery
+    # task's tail and produced KeyError(None)).
+    chain_next_model = 'PadRecord'
+
     @classmethod
     def seed_or_update_self(self, **kwargs):
         logger.info("Seeding/Updating %s", self.__name__)
         self.bulk_seed(**kwargs, overwrite=True)
-
-        # PAD chain step 1 → 2: schedule PadRecord now that Building rows are
-        # current. PadRecord's annotate_buildings() reads Building; running the
-        # two in parallel would race. Triggering after the bulk_seed completes
-        # guarantees order regardless of whether this Building update came from
-        # the cron or from a manual admin upload.
-        from datasets.models import PadRecord
-        PadRecord.create_async_update_worker()
 
     @classmethod
     def fetch_last_updated(cls):

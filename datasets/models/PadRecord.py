@@ -143,18 +143,15 @@ class PadRecord(BaseDatasetModel, models.Model):
     def transform_self(self, file_path, update=None):
         return self.pre_validation_filters(with_bbl(from_csv_file_to_gen(file_path, update), borough='boro'))
 
+    # PAD chain step 2 → 3. Same pattern as Building.chain_next_model.
+    # See core/models.py Dataset.seed_dataset for the trigger mechanics.
+    chain_next_model = 'AddressRecord'
+
     @classmethod
     def seed_or_update_self(self, **kwargs):
         logger.info("Seeding/Updating %s", self.__name__)
         self.bulk_seed(**kwargs, ignore_conflict=True, overwrite=True)
         self.annotate_buildings()  # add pad addresses to building model
-
-        # PAD chain finale: schedule the AddressRecord rebuild now that
-        # Property + Building + PAD are fresh. Goes through the same
-        # `core.models.Update` → `async_seed_table` celery path the admin
-        # uses; the rebuild runs in its own worker so this task can finish.
-        from datasets.models import AddressRecord
-        AddressRecord.create_async_update_worker()
 
     @classmethod
     def fetch_last_updated(cls):
