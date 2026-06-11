@@ -485,8 +485,20 @@ class Property(BaseDatasetModel, models.Model):
                 cursor.copy_expert(sql, f)
             logger.info('COPY completed: %d rows loaded into temp table', row_count)
 
-            # Upsert from temp into real table
-            set_clause = ', '.join(f'{col} = EXCLUDED.{col}' for col in field_names if col != 'bbl')
+            # Upsert from temp into real table.
+            # GEO_DERIVED_FIELDS are populated locally by add_state_geographies()
+            # via point-in-polygon — PLUTO doesn't supply them. Including them
+            # in the SET clause wiped stateassembly/statesenate on every touched
+            # row on every PLUTO refresh, and the slow geo loop sometimes got
+            # revoked before restoring them — leaving 100% of rows with NULL
+            # statesenate. Excluding them here makes refreshes non-destructive
+            # to derived data.
+            GEO_DERIVED_FIELDS = {'stateassembly_id', 'statesenate_id'}
+            set_clause = ', '.join(
+                f'{col} = EXCLUDED.{col}'
+                for col in field_names
+                if col != 'bbl' and col not in GEO_DERIVED_FIELDS
+            )
             cursor.execute(f"""
                 INSERT INTO {cls._meta.db_table} ({', '.join(field_names)})
                 SELECT {', '.join(field_names)} FROM temp_property
