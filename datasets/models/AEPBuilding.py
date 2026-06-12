@@ -74,16 +74,33 @@ class AEPBuilding(BaseDatasetModel, models.Model):
         self.seed_with_upsert(**kwargs)
 
     @classmethod
-    def annotate_properties(self):
-        for record in self.objects.all().iterator():
-            try:
-                annotation = record.bbl.propertyannotation
-                annotation.aepstatus = record.currentstatus
-                annotation.aepstartdate = record.aepstartdate
-                annotation.aepdischargedate = record.dischargedate
-                annotation.save()
-            except Exception as e:
-                print(e)
+    def annotate_properties(cls):
+        # SQL rewrite of an N+1 loop, same shape as HPDBuildingRecord. For
+        # BBLs with multiple AEP buildings, the old Python loop was last-
+        # write-wins in heap order (non-deterministic). We tighten to a
+        # defensible deterministic choice: the most recently enrolled
+        # building per BBL (ORDER BY aepstartdate DESC), tiebroken on id.
+        from django.db import connection
+        logger.info(
+            'annotate_properties: bulk UPDATE PropertyAnnotation.{aepstatus, aepstartdate, aepdischargedate}',
+        )
+        with connection.cursor() as c:
+            c.execute("""
+                UPDATE datasets_propertyannotation pa
+                SET aepstatus = per_bbl.currentstatus,
+                    aepstartdate = per_bbl.aepstartdate,
+                    aepdischargedate = per_bbl.dischargedate
+                FROM (
+                    SELECT DISTINCT ON (bbl)
+                        bbl, currentstatus, aepstartdate, dischargedate
+                    FROM datasets_aepbuilding
+                    WHERE bbl IS NOT NULL
+                    ORDER BY bbl, aepstartdate DESC NULLS LAST, id DESC
+                ) per_bbl
+                WHERE pa.bbl = per_bbl.bbl
+            """)
+            updated = c.rowcount
+        logger.info('annotate_properties: updated %d PropertyAnnotation rows', updated)
 
     def __str__(self):
         return str(self.buildingid)

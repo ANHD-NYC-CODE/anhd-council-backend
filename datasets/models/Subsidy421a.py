@@ -55,17 +55,25 @@ class Subsidy421a(BaseDatasetModel, models.Model):
         self.bulk_seed(**kwargs, overwrite=True)
 
     @classmethod
-    def annotate_properties(self):
-        for record in self.objects.all().iterator():
-            try:
-                annotation = record.bbl.propertyannotation
-                current_programs = annotation.subsidyprograms or ''
-                annotation.subsidy421a = True
-                annotation.subsidyprograms = ', '.join(
-                    filter(None, set([*current_programs.split(', '), '421-a Tax Incentive Program'])))
-                annotation.save()
-            except Exception as e:
-                print(e)
+    def annotate_properties(cls):
+        # Two responsibilities:
+        #   1. Set subsidy421a=TRUE on every BBL with a Subsidy421a record.
+        #   2. Trigger a rebuild of subsidyprograms (centralized in
+        #      CoreSubsidyRecord.rebuild_subsidyprograms — it unions
+        #      Core + Subsidy421a + SubsidyJ51 and produces the correctly
+        #      ordered active-first display string).
+        from django.db import connection
+        logger.info('annotate_properties: bulk UPDATE PropertyAnnotation.subsidy421a')
+        with connection.cursor() as c:
+            c.execute("""
+                UPDATE datasets_propertyannotation pa
+                SET subsidy421a = TRUE
+                FROM (SELECT DISTINCT bbl FROM datasets_subsidy421a WHERE bbl IS NOT NULL) s
+                WHERE pa.bbl = s.bbl
+            """)
+            flag_count = c.rowcount
+        logger.info('annotate_properties: subsidy421a=TRUE on %d, delegating subsidyprograms rebuild', flag_count)
+        ds.CoreSubsidyRecord.rebuild_subsidyprograms()
 
     def __str__(self):
         return str(self.id)

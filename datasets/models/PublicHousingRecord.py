@@ -49,14 +49,20 @@ class PublicHousingRecord(BaseDatasetModel, models.Model):
         self.bulk_seed(**kwargs, overwrite=True)
 
     @classmethod
-    def annotate_properties(self):
-        for record in self.objects.all().iterator():
-            try:
-                annotation = record.bbl.propertyannotation
-                annotation.nycha = True
-                annotation.save()
-            except Exception as e:
-                print(e)
+    def annotate_properties(cls):
+        # SQL rewrite of an N+1 loop. Was iterating every NYCHA record and
+        # save()-ing PropertyAnnotation per row to flip a single boolean.
+        from django.db import connection
+        logger.info('annotate_properties: bulk UPDATE PropertyAnnotation.nycha')
+        with connection.cursor() as c:
+            c.execute("""
+                UPDATE datasets_propertyannotation pa
+                SET nycha = TRUE
+                FROM (SELECT DISTINCT bbl FROM datasets_publichousingrecord WHERE bbl IS NOT NULL) ph
+                WHERE pa.bbl = ph.bbl
+            """)
+            updated = c.rowcount
+        logger.info('annotate_properties: nycha=TRUE on %d PropertyAnnotation rows', updated)
 
     def __str__(self):
         return str(self.id)

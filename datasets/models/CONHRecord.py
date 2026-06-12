@@ -81,14 +81,20 @@ class CONHRecord(BaseDatasetModel, models.Model):
         self.bulk_seed(**kwargs, overwrite=True)
 
     @classmethod
-    def annotate_properties(self):
-        for record in self.objects.all().iterator():
-            try:
-                annotation = record.bbl.propertyannotation
-                annotation.conhrecord = True
-                annotation.save()
-            except Exception as e:
-                print(e)
+    def annotate_properties(cls):
+        # SQL rewrite of an N+1 loop. Was iterating every CONH record and
+        # save()-ing PropertyAnnotation per row to flip a single boolean.
+        from django.db import connection
+        logger.info('annotate_properties: bulk UPDATE PropertyAnnotation.conhrecord')
+        with connection.cursor() as c:
+            c.execute("""
+                UPDATE datasets_propertyannotation pa
+                SET conhrecord = TRUE
+                FROM (SELECT DISTINCT bbl FROM datasets_conhrecord WHERE bbl IS NOT NULL) c
+                WHERE pa.bbl = c.bbl
+            """)
+            updated = c.rowcount
+        logger.info('annotate_properties: conhrecord=TRUE on %d PropertyAnnotation rows', updated)
 
     def __str__(self):
         return str(self.id)
