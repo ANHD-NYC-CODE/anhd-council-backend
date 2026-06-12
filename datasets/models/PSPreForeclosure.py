@@ -107,12 +107,15 @@ class PSPreForeclosure(BaseDatasetModel, models.Model):
                     ds.Foreclosure.__name__, preforeclosure_table._meta.db_table)
 
     @classmethod
-    def switch_effectivedate_to_dateadded(self):
-        # Implemented because in August 2020 PS stopped using the dateadded field and added an effectivedate field.
-        null_dates = self.objects.filter(dateadded__isnull=True)
-        for record in null_dates:
-            record.dateadded = record.effectivedate
-            record.save()
+    def switch_effectivedate_to_dateadded(cls):
+        # Implemented because in August 2020 PS stopped using the dateadded
+        # field and added an effectivedate field. Was N+1: loaded every
+        # null-dateadded row into Python and called .save() per row. Single
+        # SQL UPDATE — same semantic.
+        updated = cls.objects.filter(dateadded__isnull=True).update(
+            dateadded=models.F('effectivedate'),
+        )
+        logger.info('switch_effectivedate_to_dateadded: backfilled %d rows', updated)
 
     @classmethod
     def seed_or_update_self(self, **kwargs):

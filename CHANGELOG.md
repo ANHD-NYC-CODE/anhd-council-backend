@@ -1,5 +1,11 @@
 # API CHANGELOG
 
+### 2026-06-12c (PSForeclosure + PSPreForeclosure N+1 cleanups)
+
+**Performance**
+- `PSForeclosure.update_foreclosure_auction_dates` was doing one `Foreclosure.objects.get(index=..., bbl=...)` per row in the uploaded file — N round-trips for an N-row file. Rewrote to: build `{(indexno, bbl): auction}` in one pass over the file, fetch all candidate Foreclosure rows in one `index__in` query, match in Python, then `bulk_update`. Also skips no-op writes where the auction date hasn't changed. Same semantic.
+- `PSPreForeclosure.switch_effectivedate_to_dateadded` was iterating every null-dateadded row and calling `.save()` per row. Replaced with a single SQL UPDATE using `F('effectivedate')`. Same semantic.
+
 ### 2026-06-12b (per-dataset seed advisory lock)
 
 **Reliability**

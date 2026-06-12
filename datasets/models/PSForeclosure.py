@@ -71,19 +71,47 @@ class PSForeclosure(BaseDatasetModel, models.Model):
         return self.pre_validation_filters(from_xlsx_file_to_gen(file_path, 'Foreclosure Auctions Details', update, header_marker='Address'))
 
     @classmethod
-    def update_foreclosure_auction_dates(self, **kwargs):
-        updated_foreclosures = []
-        gen_rows = self.transform_self_from_file(kwargs['file_path'])
+    def update_foreclosure_auction_dates(cls, **kwargs):
+        # Was N+1: one Foreclosure.objects.get() per uploaded row to look up
+        # the (indexno, bbl) match. For files with thousands of rows that's
+        # thousands of round-trips. Now: build the {(indexno, bbl): auction}
+        # map in one pass, fetch all candidate Foreclosure rows in one query
+        # filtered by index__in, match in Python, bulk_update.
+        gen_rows = cls.transform_self_from_file(kwargs['file_path'])
+        auction_by_key = {}
         for row in gen_rows:
-            try:
-                foreclosure = ds.Foreclosure.objects.get(
-                    index=row['indexno'], bbl=row['bbl'])
-                foreclosure.auction = row['auction']
-                updated_foreclosures.append(foreclosure)
-            except Exception as e:
-                pass
+            indexno = row.get('indexno')
+            bbl = row.get('bbl')
+            if not indexno or not bbl:
+                continue
+            auction_by_key[(indexno, bbl)] = row.get('auction')
 
-        ds.Foreclosure.objects.bulk_update(updated_foreclosures, ['auction'])
+        if not auction_by_key:
+            logger.info('update_foreclosure_auction_dates: no usable rows in file')
+            return
+
+        indexnos = {k[0] for k in auction_by_key}
+        candidates = (
+            ds.Foreclosure.objects
+            .filter(index__in=indexnos)
+            .only('key', 'index', 'bbl_id', 'auction')
+        )
+        to_update = []
+        for f in candidates:
+            new_auction = auction_by_key.get((f.index, f.bbl_id))
+            if new_auction is None:
+                continue
+            if f.auction == new_auction:
+                continue  # no-op write — skip to keep bulk_update tight
+            f.auction = new_auction
+            to_update.append(f)
+
+        if to_update:
+            ds.Foreclosure.objects.bulk_update(to_update, ['auction'], batch_size=5000)
+        logger.info(
+            'update_foreclosure_auction_dates: %d rows in file, %d Foreclosure rows updated',
+            len(auction_by_key), len(to_update),
+        )
 
     @classmethod
     def seed_or_update_self(self, **kwargs):
