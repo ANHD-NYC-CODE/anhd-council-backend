@@ -96,14 +96,26 @@ class TaxLien(BaseDatasetModel, models.Model):
         return self.seed_with_upsert(ignore_conflict=True, **kwargs)
 
     @classmethod
-    def annotate_properties(self):
-        for record in self.objects.all().iterator():
-            try:
-                annotation = record.bbl.propertyannotation
-                annotation.taxlien = True
-                annotation.save()
-            except Exception as e:
-                print(e)
+    def annotate_properties(cls):
+        # SQL rewrite of an N+1 loop. Previously iterated EVERY TaxLien row
+        # (table accumulates historical sales across years/cycles) and called
+        # annotation.save() per row — pure waste, since the only thing it set
+        # was a boolean flag derived solely from BBL identity. Matches the
+        # original semantic exactly: any BBL appearing in datasets_taxlien
+        # gets taxlien=TRUE; BBLs absent from the table are left as-is (the
+        # Python loop never reset to FALSE either, so dropping a stale row
+        # would not retroactively clear the flag in either implementation).
+        from django.db import connection
+        logger.info('annotate_properties: bulk UPDATE PropertyAnnotation.taxlien')
+        with connection.cursor() as c:
+            c.execute("""
+                UPDATE datasets_propertyannotation pa
+                SET taxlien = TRUE
+                FROM (SELECT DISTINCT bbl FROM datasets_taxlien WHERE bbl IS NOT NULL) tl
+                WHERE pa.bbl = tl.bbl
+            """)
+            updated = c.rowcount
+        logger.info('annotate_properties: taxlien=TRUE on %d PropertyAnnotation rows', updated)
 
     def __str__(self):
         return str(self.id)

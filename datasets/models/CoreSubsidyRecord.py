@@ -126,20 +126,101 @@ class CoreSubsidyRecord(BaseDatasetModel, models.Model):
         self.bulk_seed(**kwargs, overwrite=True)
 
     @classmethod
-    def annotate_properties(self):
-        # Reset first — subsidyprograms is a text field of program names, not a count.
-        # The loop below only appends, so without a reset, expired/dropped programs accumulate forever.
-        ds.PropertyAnnotation.objects.exclude(subsidyprograms__isnull=True).exclude(subsidyprograms='').update(subsidyprograms='')
-        for record in self.objects.all().iterator():
-            try:
-                annotation = record.bbl.propertyannotation
-                current_programs = annotation.subsidyprograms or ''
-                annotation.subsidyprograms = ', '.join(
-                    filter(None, set([*current_programs.split(', '), record.programname])))
+    def annotate_properties(cls):
+        # Delegate to the centralized rebuild — Core is the authoritative
+        # source for the subsidyprograms field, but the rebuild also unions
+        # in Subsidy421a and SubsidyJ51 standalone records so a single call
+        # produces the correct value regardless of which source updated.
+        cls.rebuild_subsidyprograms()
 
-                annotation.save()
-            except Exception as e:
-                print(e)
+    @classmethod
+    def rebuild_subsidyprograms(cls):
+        # Centralized rebuild of PropertyAnnotation.subsidyprograms across
+        # all three source models (CoreSubsidyRecord, Subsidy421a, SubsidyJ51).
+        #
+        # Output format (per client decision 2026-06-12):
+        #   - Programs sorted ACTIVE FIRST, then EXPIRED, alphabetical within
+        #     each group.
+        #   - Expired programs get an inline tag: "Name (expired YYYY)".
+        #   - Active = enddate IS NULL OR enddate > CURRENT_DATE. Programs
+        #     from Subsidy421a / SubsidyJ51 (DOF standalone datasets — no
+        #     enddate in source) are treated as active and displayed
+        #     without an expiry tag.
+        #
+        # Idempotent. Touches every PropertyAnnotation: empties the field
+        # first, then UPDATEs from the unioned program list.
+        from django.db import connection
+        logger.info('rebuild_subsidyprograms: reset + UNION(Core, Subsidy421a, SubsidyJ51) + active-first ordering')
+        with connection.cursor() as c:
+            c.execute("""
+                UPDATE datasets_propertyannotation
+                SET subsidyprograms = ''
+                WHERE subsidyprograms IS NOT NULL AND subsidyprograms != ''
+            """)
+            reset_count = c.rowcount
+            c.execute("""
+                WITH all_programs AS (
+                    -- Core: real start/end dates per program
+                    SELECT bbl, programname, enddate
+                    FROM datasets_coresubsidyrecord
+                    WHERE bbl IS NOT NULL
+                      AND programname IS NOT NULL
+                      AND programname <> ''
+                    UNION ALL
+                    -- Subsidy421a: DOF standalone — no enddate in source, treat as active
+                    SELECT DISTINCT bbl, '421-a Tax Incentive Program' AS programname, NULL::date AS enddate
+                    FROM datasets_subsidy421a
+                    WHERE bbl IS NOT NULL
+                    UNION ALL
+                    -- SubsidyJ51: DOF standalone — no enddate in source, treat as active
+                    SELECT DISTINCT bbl, 'J-51 Tax Incentive' AS programname, NULL::date AS enddate
+                    FROM datasets_subsidyj51
+                    WHERE bbl IS NOT NULL
+                ),
+                per_bbl_program AS (
+                    -- Collapse duplicates of the same program across sources.
+                    -- A program is "active" if ANY source says it's active
+                    -- (no enddate, or enddate in the future). When all sources
+                    -- agree it's expired, MAX(enddate) is the expiry year.
+                    SELECT bbl,
+                           programname,
+                           BOOL_OR(enddate IS NULL OR enddate > CURRENT_DATE) AS is_active,
+                           MAX(enddate) AS latest_end
+                    FROM all_programs
+                    GROUP BY bbl, programname
+                ),
+                formatted AS (
+                    SELECT bbl,
+                           is_active,
+                           programname,
+                           CASE
+                               WHEN is_active OR latest_end IS NULL
+                                   THEN programname
+                               ELSE programname || ' (expired '
+                                    || EXTRACT(YEAR FROM latest_end)::int::text
+                                    || ')'
+                           END AS display_name
+                    FROM per_bbl_program
+                )
+                UPDATE datasets_propertyannotation pa
+                SET subsidyprograms = per_bbl.programs
+                FROM (
+                    SELECT bbl,
+                           STRING_AGG(
+                               display_name,
+                               ', '
+                               ORDER BY is_active DESC, programname
+                           ) AS programs
+                    FROM formatted
+                    GROUP BY bbl
+                ) per_bbl
+                WHERE pa.bbl = per_bbl.bbl
+            """)
+            updated = c.rowcount
+        logger.info(
+            'rebuild_subsidyprograms: reset %d, populated %d BBLs',
+            reset_count, updated,
+        )
 
     def __str__(self):
         return str(self.id)

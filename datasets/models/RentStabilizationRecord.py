@@ -323,18 +323,26 @@ class RentStabilizationRecord(BaseDatasetModel, models.Model):
         return update
 
     @classmethod
-    def annotate_properties(self):
-        count = 0
-        for annotation in ds.PropertyAnnotation.objects.filter(bbl__rentstabilizationrecord__isnull=False):
-            try:
-                annotation.unitsrentstabilized = annotation.bbl.get_rentstabilized_units()
-                annotation.save()
-                if count % 10000 == 0:
-                    logger.debug('{} annotation: {}'.format(
-                        self.__name__, count))
-                count = count + 1
-            except Exception as e:
-                continue
+    def annotate_properties(cls):
+        # SQL rewrite of an N+1 loop. Previously iterated every PropertyAnnotation
+        # whose BBL has a RentStabilizationRecord (~32K rows on local, ~50K on
+        # prod), called annotation.bbl.get_rentstabilized_units() per row, and
+        # saved per row. latest_data_year() is class-level (same column applies
+        # to every row), so we resolve the column name once in Python and do a
+        # single UPDATE ... FROM joining on ucbbl.
+        from django.db import connection
+        latest_year = cls.latest_data_year()
+        field_name = f'uc{latest_year}'
+        logger.info('annotate_properties: bulk UPDATE unitsrentstabilized from rs.%s', field_name)
+        with connection.cursor() as c:
+            c.execute(f"""
+                UPDATE datasets_propertyannotation pa
+                SET unitsrentstabilized = COALESCE(rs.{field_name}, 0)
+                FROM datasets_rentstabilizationrecord rs
+                WHERE pa.bbl = rs.ucbbl
+            """)
+            updated = c.rowcount
+        logger.info('annotate_properties: updated %d PropertyAnnotation rows', updated)
 
     def __str__(self):
         return str(self.id)

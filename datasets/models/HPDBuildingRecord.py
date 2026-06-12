@@ -73,18 +73,58 @@ class HPDBuildingRecord(BaseDatasetModel, models.Model):
         self.seed_with_upsert(ignore_conflict=True, **kwargs)
 
     @classmethod
-    def annotate_properties(self):
-        for record in self.objects.all().iterator():
-            try:
-
-                annotation = record.bbl.propertyannotation
-
-                annotation.legalclassa = record.legalclassa
-                annotation.legalclassb = record.legalclassb
-                annotation.managementprogram = record.managementprogram
-                annotation.save()
-            except Exception as e:
-                print(e)
+    def annotate_properties(cls):
+        # SQL rewrite of an N+1 loop, with corrected multi-building semantics.
+        #
+        # The pre-existing Python iterated every HPDBuildingRecord and last-
+        # write-wins-saved PropertyAnnotation. For tax lots with multiple
+        # registered buildings (~4,600 BBLs on prod, 0.5%), this displayed
+        # only ONE building's data per BBL — picked essentially at random
+        # by postgres heap-scan order.
+        #
+        # New behavior (confirmed with client 2026-06-12):
+        #   - legalclassa / legalclassb are PER-BUILDING UNIT COUNTS. Sum
+        #     across all buildings on the lot to get the correct total
+        #     dwelling-unit count for the BBL (Class A = apartments, Class
+        #     B = SRO/rooming-house units).
+        #   - managementprogram is text. Comma-join the DISTINCT programs
+        #     across all buildings on the lot, EXCLUDING 'PVT' (which means
+        #     "HPD does not manage this building" — i.e., absence of a
+        #     program, not a program itself). Empty-string and NULL values
+        #     are also excluded.
+        from django.db import connection
+        logger.info(
+            'annotate_properties: bulk UPDATE PropertyAnnotation.{legalclassa, legalclassb, managementprogram}',
+        )
+        with connection.cursor() as c:
+            c.execute("""
+                UPDATE datasets_propertyannotation pa
+                SET legalclassa = per_bbl.sum_a,
+                    legalclassb = per_bbl.sum_b,
+                    managementprogram = per_bbl.mgmt
+                FROM (
+                    SELECT bbl,
+                           SUM(legalclassa) AS sum_a,
+                           SUM(legalclassb) AS sum_b,
+                           NULLIF(
+                               STRING_AGG(
+                                   DISTINCT managementprogram, ', '
+                                   ORDER BY managementprogram
+                               ) FILTER (
+                                   WHERE managementprogram IS NOT NULL
+                                     AND managementprogram <> ''
+                                     AND managementprogram <> 'PVT'
+                               ),
+                               ''
+                           ) AS mgmt
+                    FROM datasets_hpdbuildingrecord
+                    WHERE bbl IS NOT NULL
+                    GROUP BY bbl
+                ) per_bbl
+                WHERE pa.bbl = per_bbl.bbl
+            """)
+            updated = c.rowcount
+        logger.info('annotate_properties: updated %d PropertyAnnotation rows', updated)
 
     def __str__(self):
         return str(self.buildingid)

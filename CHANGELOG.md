@@ -1,5 +1,39 @@
 # API CHANGELOG
 
+### 2026-06-12 (annotate_properties SQL rewrite + HPD multi-building correctness)
+
+**Performance — 9 N+1 annotate_properties methods rewritten as bulk SQL UPDATEs**
+
+The nightly `annotate properties all` task (4 AM EST) used to walk every record of nine datasets row-by-row, calling `annotation.save()` per row. All nine are now single SQL UPDATEs. Local timings measured against the legacy Python:
+
+- `RentStabilizationRecord` 1116s → 117s (**9.6×**)
+- `TaxLien` 150s → 8.6s (**17.5×**)
+- `PublicHousingRecord` 8.8s → 0.05s (**187×**)
+- `CONHRecord` 2.8s → 0.08s (**34×**)
+- `SubsidyJ51` 33s → 2.4s (**13.6×**)
+- `AEPBuilding` 11.3s → 1.0s (**11.4×**)
+- `CoreSubsidyRecord` 54s → 4.3s (**12.8×**)
+- `Subsidy421a` (no local data — same single-UPDATE pattern as J-51)
+- `HPDBuildingRecord` (~7 min on local — `GROUP BY` + `STRING_AGG(DISTINCT)` is the bottleneck; still vastly faster than the Python row-by-row save loop)
+
+Same surfaces benefit on per-dataset Update tasks (each model's `annotate_properties()` runs at the end of its own update cron).
+
+**Correctness — HPDBuildingRecord multi-building tax lots**
+
+For tax lots with multiple HPD building records (~4,600 BBLs, 0.5%), the old loop picked one building at random (postgres heap-scan order, non-deterministic across VACUUMs). Replaced with:
+- `legalclassa`, `legalclassb` (per-building unit counts) → **SUM across all buildings on the lot**. Previously under-counted units on multi-building lots. Example: 16 Richman Plaza Bronx (BBL 2028820229) went from `legalclassa=439` (one of four M-L buildings) to `legalclassa=1746` (sum of all four).
+- `managementprogram` → **comma-joined distinct programs across the lot, excluding `'PVT'`** (which means "HPD does not manage this building," not a program). Example: same BBL now shows `'M-L (STATE)'` instead of an arbitrary single building's value.
+
+**Correctness — subsidyprograms display ordering**
+
+Old logic used `set([...current, new])` per row — Python set hash-order made the display order non-deterministic across worker restarts. Replaced with a centralized `CoreSubsidyRecord.rebuild_subsidyprograms()` that unions `CoreSubsidyRecord` + `Subsidy421a` + `SubsidyJ51` and produces a deterministic active-first display:
+- **Active programs first, then expired**, alphabetical within each group.
+- Expired programs get an inline `(expired YYYY)` tag (year from `MAX(enddate)`).
+- A program is active if ANY source says so (`BOOL_OR(enddate IS NULL OR enddate > CURRENT_DATE)`); programs from Subsidy421a/SubsidyJ51 standalone DOF datasets (no enddate column in source) default to active.
+- `Subsidy421a.annotate_properties` and `SubsidyJ51.annotate_properties` simplified to flag-only — they set their boolean flag and delegate the `subsidyprograms` rebuild to the centralized method.
+
+Same field, frontend renders verbatim — no frontend changes required.
+
 ### 2026-06-11 (PAD chain follow-ups + geo speedup)
 
 **Performance + reliability**
