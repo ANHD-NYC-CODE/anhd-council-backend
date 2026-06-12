@@ -1,5 +1,10 @@
 # API CHANGELOG
 
+### 2026-06-12b (per-dataset seed advisory lock)
+
+**Reliability**
+- Per-dataset advisory lock on `async_seed_file` / `async_seed_table` prevents two concurrent seeds of the same dataset. On 2026-06-11 prod, two PLUTO uploads landed 12 min apart while the first was still running — both seeds updated `datasets_property` rows in different orders, postgres detected the deadlock and killed Update 33642 (the first finished fine; the second was redundant). Now the second seed of the same dataset gets a non-blocking `pg_try_advisory_lock` keyed on `dataset_id`, sees the first one is still running, and exits cleanly with a warning log instead of racing into a deadlock. Session-level lock (survives across seed_dataset's internal transactions) with explicit release in `finally`; auto-released on worker connection drop as a backstop. Lock-key collision check verified across two separate connections.
+
 ### 2026-06-12 (annotate_properties SQL rewrite + HPD multi-building correctness)
 
 **Performance — 9 N+1 annotate_properties methods rewritten as bulk SQL UPDATEs**

@@ -176,8 +176,55 @@ def async_seed_split_file(self, file_path, update_id, dataset_id=None):
         raise e
 
 
+def _seed_lock_key(dataset_id):
+    # Hash dataset_id+suffix to a stable bigint for pg_advisory_lock.
+    # 'seed' suffix in case we later want a separate annotation lock keyed
+    # on the same dataset_id without colliding.
+    from django.db import connection
+    with connection.cursor() as c:
+        c.execute("SELECT hashtext(%s)::bigint", [f'dataset_seed:{dataset_id}'])
+        return c.fetchone()[0]
+
+
+def _try_acquire_seed_lock(dataset_id, update_id, dataset_name):
+    """Non-blocking session-level advisory lock per dataset.
+
+    On 2026-06-11 prod deadlocked when two concurrent PLUTO uploads landed
+    within 12 min — both async_seed_file tasks tried to UPDATE
+    datasets_property rows in different orders, postgres detected the
+    deadlock and killed Update 33642. This lock prevents two concurrent
+    seeds of the same dataset: if another seed is in progress, the second
+    task exits cleanly with a clear log message.
+
+    Session-level (not transaction-level) so the lock survives across the
+    multiple transactions seed_dataset opens internally. Auto-released on
+    worker connection drop, plus explicit release in the task's finally.
+    """
+    from django.db import connection
+    key = _seed_lock_key(dataset_id)
+    with connection.cursor() as c:
+        c.execute("SELECT pg_try_advisory_lock(%s)", [key])
+        got_it = c.fetchone()[0]
+    if not got_it:
+        logger.warning(
+            "Skipping Update %s for dataset %s: another seed for this dataset is already in progress",
+            update_id, dataset_name,
+        )
+    return got_it
+
+
+def _release_seed_lock(dataset_id):
+    from django.db import connection
+    key = _seed_lock_key(dataset_id)
+    with connection.cursor() as c:
+        c.execute("SELECT pg_advisory_unlock(%s)", [key])
+
+
 @app.task(bind=True, base=FaultTolerantTask, queue='update', acks_late=True, max_retries=1)
 def async_seed_file(self, file_path, update_id, dataset_id=None):
+    update = None
+    got_lock = False
+    lock_key_dataset_id = None
     try:
         # manually set file and previous file in admin ui
         update = c.Update.objects.get(id=update_id)
@@ -185,6 +232,10 @@ def async_seed_file(self, file_path, update_id, dataset_id=None):
             settings.MEDIA_ROOT, os.path.basename(file_path))
         dataset = c.Dataset.objects.get(
             id=dataset_id) if dataset_id else update.file.dataset
+        got_lock = _try_acquire_seed_lock(dataset.id, update.id, dataset.name)
+        if not got_lock:
+            return  # another seed for this dataset is in flight; skip silently
+        lock_key_dataset_id = dataset.id
         logger.info(
             "Beginning async seeding (file) - {} - c.Update: {}".format(update.dataset.name, update.id))
         dataset.seed_dataset(file_path=file_path, update=update)
@@ -193,18 +244,31 @@ def async_seed_file(self, file_path, update_id, dataset_id=None):
     except Exception as e:
         handle_task_error(e, update=update)
         raise e
+    finally:
+        if got_lock and lock_key_dataset_id is not None:
+            _release_seed_lock(lock_key_dataset_id)
 
 
 @app.task(bind=True, base=FaultTolerantTask, queue='update', acks_late=True, max_retries=1)
 def async_seed_table(self, update_id):
+    update = None
+    got_lock = False
+    lock_key_dataset_id = None
     try:
         update = c.Update.objects.get(id=update_id)
+        got_lock = _try_acquire_seed_lock(update.dataset.id, update.id, update.dataset.name)
+        if not got_lock:
+            return  # another seed for this dataset is in flight; skip silently
+        lock_key_dataset_id = update.dataset.id
         logger.info(
             "Beginning async seeding (table) - {} - c.Update: {}".format(update.dataset.name, update.id))
         update.dataset.seed_dataset(update=update, logger=logger)
     except Exception as e:
         handle_task_error(e, update=update)
         raise e
+    finally:
+        if got_lock and lock_key_dataset_id is not None:
+            _release_seed_lock(lock_key_dataset_id)
 
 
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', acks_late=True, max_retries=1)
