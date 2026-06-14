@@ -226,33 +226,127 @@ class BaseDatasetModel():
                 self.bulk_seed(**kwargs)
 
     @classmethod
-    def annotate_all_properties_standard(self):
-        logger.debug('annotating properties for: {}'.format(self.__name__))
-        last30 = dates.get_last_30(string=False)
-        lastyear = dates.get_last_year(string=False)
-        last3years = dates.get_last3years(string=False)
+    def annotate_all_properties_standard(cls):
+        # SQL rewrite of an O(rows × correlated subqueries) UPDATE.
+        #
+        # The previous version generated an UPDATE on datasets_propertyannotation
+        # with THREE correlated subqueries per row (last30, lastyear, last3years
+        # counts against the source table). For ~870K PA rows × 3 windows =
+        # ~2.6 M subquery executions per dataset. On OCAHousingCourt (2.3 M
+        # source rows) this likely caused the 4 AM annotate cron to silently
+        # wedge on 2026-06-13 (worker heartbeat to broker timed out during the
+        # long-running UPDATE).
+        #
+        # New approach: aggregate the source table in one GROUP BY pass with
+        # FILTER clauses per window, then UPDATE all PA rows via LEFT JOIN
+        # (matched rows get the count, unmatched COALESCE to 0). One scan of
+        # source + one hash join, instead of millions of correlated subquery
+        # executions. Parity-verified on all 10 standard/month_offset callers.
+        cls._annotate_all_properties_grouped(
+            last30=dates.get_last_30(string=False),
+            lastyear=dates.get_last_year(string=False),
+            last3years=dates.get_last3years(string=False),
+        )
 
-        last30_subquery = Subquery(self.objects.filter(bbl=OuterRef('bbl'), **{self.QUERY_DATE_KEY + '__gte': last30}).values(
-            'bbl').annotate(count=Count('bbl')).values('count'))
-
-        lastyear_subquery = Subquery(self.objects.filter(bbl=OuterRef(
-            'bbl'), **{self.QUERY_DATE_KEY + '__gte': lastyear}).values('bbl').annotate(count=Count('bbl')).values('count'))
-
-        last3years_subquery = Subquery(self.objects
-                                       .filter(bbl=OuterRef('bbl'), **{self.QUERY_DATE_KEY + '__gte': last3years}).values('bbl')
-                                       .annotate(count=Count('bbl'))
-                                       .values('count')
-                                       )
-
+    @classmethod
+    def _annotate_all_properties_grouped(cls, last30, lastyear, last3years):
+        # Shared SQL implementation for annotate_all_properties_standard and
+        # annotate_all_properties_month_offset — they differ only in how the
+        # last30 threshold is computed; the SQL shape is identical.
+        from django.db import connection
         import time
+
+        from django.utils import timezone
+
+        name_l = cls.__name__.lower()
+        col_30 = f'{name_l}s_last30'
+        col_year = f'{name_l}s_lastyear'
+        col_3years = f'{name_l}s_last3years'
+        col_updated = f'{name_l}s_lastupdated'
+        src_table = cls._meta.db_table
+        # QUERY_DATE_KEY is a class attribute, not user input — safe to interpolate.
+        src_date_field = cls.QUERY_DATE_KEY
+
+        # Match the legacy Django ORM date-coercion semantic exactly. The
+        # source column is a `date`; the threshold values from
+        # `dates.get_last_30/_year/_3years/_month_since_api_update` are
+        # `datetime` (UTC, with a time-of-day). Django's ORM, when comparing
+        # a datetime against a Date column, converts the datetime to the
+        # active local timezone and truncates to the date. We do the same
+        # here so the raw SQL agrees with the legacy implementation on rows
+        # near the threshold boundary.
+        def _to_local_date(dt):
+            if dt is None:
+                return None
+            if hasattr(dt, 'date'):
+                if timezone.is_aware(dt):
+                    return timezone.localtime(dt).date()
+                return dt.date()
+            return dt
+
+        last30 = _to_local_date(last30)
+        lastyear = _to_local_date(lastyear)
+        last3years = _to_local_date(last3years)
+
+        logger.info(
+            'annotate_all_properties_grouped: %s — reset + aggregate-and-update (last30=%s, lastyear=%s, last3years=%s)',
+            cls.__name__, last30, lastyear, last3years,
+        )
+
         for attempt in range(3):
             try:
-                ds.PropertyAnnotation.objects.update(**{self.__name__.lower() + 's_last30': Coalesce(last30_subquery, 0), self.__name__.lower(
-                ) + 's_lastyear': Coalesce(lastyear_subquery, 0), self.__name__.lower() + 's_last3years': Coalesce(last3years_subquery, 0), self.__name__.lower() + 's_lastupdated': make_aware(datetime.now())})
-                break
+                with connection.cursor() as c:
+                    # Single UPDATE that touches every PA row exactly once.
+                    # Source aggregation is computed in a single GROUP BY
+                    # pass limited to the largest window (last3years) — the
+                    # date column is typically indexed, so postgres can skip
+                    # rows outside the 3-year window. The two smaller window
+                    # counts (last30, lastyear) ride along as FILTER
+                    # aggregates within the same scan. c3years has no FILTER
+                    # — the outer WHERE already constrains the scan, so
+                    # plain COUNT(*) is equivalent and slightly cheaper.
+                    #
+                    # The LEFT JOIN to PA in the FROM clause ensures every
+                    # PA row is selected (matched rows get a count, unmatched
+                    # rows get NULL → COALESCE to 0). Equivalent to the
+                    # legacy Coalesce(subquery, 0) semantic, but without the
+                    # per-row correlated subquery.
+                    c.execute(
+                        f"""
+                        UPDATE datasets_propertyannotation pa
+                        SET {col_30}      = COALESCE(s.c30, 0),
+                            {col_year}    = COALESCE(s.cyear, 0),
+                            {col_3years}  = COALESCE(s.c3years, 0),
+                            {col_updated} = NOW()
+                        FROM (
+                            SELECT pa2.bbl AS bbl, agg.c30, agg.cyear, agg.c3years
+                            FROM datasets_propertyannotation pa2
+                            LEFT JOIN (
+                                SELECT bbl,
+                                       COUNT(*) FILTER (WHERE {src_date_field} >= %s) AS c30,
+                                       COUNT(*) FILTER (WHERE {src_date_field} >= %s) AS cyear,
+                                       COUNT(*) AS c3years
+                                FROM {src_table}
+                                WHERE bbl IS NOT NULL AND {src_date_field} >= %s
+                                GROUP BY bbl
+                            ) agg ON agg.bbl = pa2.bbl
+                        ) s
+                        WHERE pa.bbl = s.bbl
+                        """,
+                        [last30, lastyear, last3years],
+                    )
+                    touched = c.rowcount
+                logger.info(
+                    'annotate_all_properties_grouped: %s — %d PA rows updated',
+                    cls.__name__, touched,
+                )
+                return
             except Exception as e:
                 if 'deadlock' in str(e).lower() and attempt < 2:
-                    logger.warning('Deadlock during annotation for %s, retrying (attempt %s)...', self.__name__, attempt + 1)
+                    logger.warning(
+                        'Deadlock during annotation for %s, retrying (attempt %s)...',
+                        cls.__name__, attempt + 1,
+                    )
                     time.sleep(5 * (attempt + 1))
                 else:
                     raise
@@ -280,27 +374,14 @@ class BaseDatasetModel():
             return
 
     @classmethod
-    def annotate_all_properties_month_offset(self):
-        logger.debug('annotating properties for: {}'.format(self.__name__))
-        last30 = dates.get_last_month_since_api_update(
-            self.get_dataset(), string=False)
-        lastyear = dates.get_last_year(string=False)
-        last3years = dates.get_last3years(string=False)
-
-        last30_subquery = Subquery(self.objects.filter(bbl=OuterRef('bbl'), **{self.QUERY_DATE_KEY + '__gte': last30}).values('bbl').annotate(
-            cnt=Count('bbl')).values('cnt'))
-
-        lastyear_subquery = Subquery(self.objects.filter(bbl=OuterRef(
-            'bbl'), **{self.QUERY_DATE_KEY + '__gte': lastyear}).values('bbl').annotate(cnt=Count('bbl')).values('cnt'))
-
-        last3years_subquery = Subquery(self.objects
-                                       .filter(bbl=OuterRef('bbl'), **{self.QUERY_DATE_KEY + '__gte': last3years}).values('bbl')
-                                       .annotate(cnt=Count('bbl'))
-                                       .values('cnt')
-                                       )
-
-        ds.PropertyAnnotation.objects.update(**{self.__name__.lower() + 's_last30': Coalesce(last30_subquery, 0)}, **{self.__name__.lower(
-        ) + 's_lastyear': Coalesce(lastyear_subquery, 0)}, **{self.__name__.lower() + 's_last3years': Coalesce(last3years_subquery, 0), self.__name__.lower() + 's_lastupdated': make_aware(datetime.now())})
+    def annotate_all_properties_month_offset(cls):
+        # Same SQL pattern as annotate_all_properties_standard, only the
+        # last30 threshold differs (api-relative instead of fixed 30 days).
+        cls._annotate_all_properties_grouped(
+            last30=dates.get_last_month_since_api_update(cls.get_dataset(), string=False),
+            lastyear=dates.get_last_year(string=False),
+            last3years=dates.get_last3years(string=False),
+        )
 
     @classmethod
     def annotate_property_month_offset(self, annotation):
