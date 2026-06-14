@@ -1,5 +1,10 @@
 # API CHANGELOG
 
+### 2026-06-13 (clearer error emails when NYC Open Data is down)
+
+**Operational**
+- When `BaseDatasetModel.download` raises `"Request error: 5XX"` from a scheduled cron, the alert email now leads with a clear "NYC Open Data API outage" banner and explanation so the admin (and any clients they forward to) can tell at a glance that the upstream Socrata API is down — not a DAP backend bug. The email still fires (per request, so the affected dataset is visible), but the subject changes from `* Error *` to `* NYC Open Data API outage *` and the body prepends a one-paragraph note that the next scheduled run will auto-retry. Triggered today after NYC returned 5xx on the 19:00–21:00 EDT data refresh window, generating a stack of generic alert emails. New `classify_external_api_outage()` helper in `core/tasks.py` is extensible to other upstream sources.
+
 ### 2026-06-12c (PSForeclosure + PSPreForeclosure N+1 cleanups)
 
 **Performance**

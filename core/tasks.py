@@ -26,19 +26,66 @@ def is_transient_error(e):
     error_str = str(e).lower()
     return any(msg in error_str for msg in TRANSIENT_ERRORS)
 
+
+# Recognizable external-API outage signatures. When matched, we still email
+# (so the client sees that an update didn't happen), but the email subject
+# and body are rephrased to make clear it's an upstream API outage, not a
+# DAP bug. BaseDatasetModel.download raises "Request error: {status_code}"
+# on non-200 responses; 5xx from Socrata is by far the most common case.
+def classify_external_api_outage(error_str):
+    """Return (label, explanation) if this exception matches a known
+    external-API outage signature, else None.
+
+    label    — short tag used in the email subject.
+    explanation — human-readable note prepended to the email body so the
+                  recipient (ANHD admin → may forward to clients) knows
+                  the DAP backend is fine and the next scheduled run will
+                  auto-retry.
+    """
+    s = (error_str or '').lower()
+    if 'request error: 5' in s:
+        # 5xx (500-599) from BaseDatasetModel.download — usually NYC Open Data
+        # (Socrata) returning Service Unavailable during their own outages.
+        return (
+            'NYC Open Data API outage',
+            (
+                'NYC Open Data (data.cityofnewyork.us) returned a 5xx error '
+                'during a scheduled data refresh. This means NYC\'s data '
+                'service is temporarily unavailable — it is NOT a problem '
+                'with the DAP Portal backend. The next scheduled run will '
+                'automatically retry. No action required unless this '
+                'continues for multiple days.'
+            ),
+        )
+    return None
+
 def handle_task_error(e, update=None, dataset=None):
     if is_transient_error(e):
         logger.warning('Transient connection error during task: %s', e)
+        return
+
+    # Capture the full traceback (we're inside the except) so the error
+    # email shows where it failed, not just the exception message.
+    tb = traceback.format_exc()
+    error_str = str(e)
+    outage = classify_external_api_outage(error_str)
+    if outage:
+        # Known upstream-API outage — still email so the client sees the
+        # affected dataset, but log+route as INFO and tag the email so
+        # readers can tell it's not a DAP bug.
+        logger.warning('External API outage during task: %s', e)
     else:
-        # Capture the full traceback (we're inside the except) so the error
-        # email shows where it failed, not just the exception message.
-        tb = traceback.format_exc()
         logger.error('Error during task: %s', e)
-        if update:
-            async_send_update_error_mail.delay(update.id, str(e), tb)
-        else:
-            dataset_name = getattr(dataset, 'name', None)
-            async_send_general_task_error_mail.delay(str(e), tb, dataset_name)
+
+    outage_label, outage_explanation = outage if outage else (None, None)
+    if update:
+        async_send_update_error_mail.delay(update.id, error_str, tb)
+    else:
+        dataset_name = getattr(dataset, 'name', None)
+        async_send_general_task_error_mail.delay(
+            error_str, tb, dataset_name,
+            outage_label=outage_label, outage_explanation=outage_explanation,
+        )
 
 
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 5})
@@ -67,8 +114,12 @@ def async_cache_zipcode_property_summaries_full(self, token):
 
 
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=30, max_retries=3)
-def async_send_general_task_error_mail(self, error, tb=None, dataset_name=None):
-    return send_general_task_error_mail(error, tb, dataset_name)
+def async_send_general_task_error_mail(self, error, tb=None, dataset_name=None,
+                                       outage_label=None, outage_explanation=None):
+    return send_general_task_error_mail(
+        error, tb, dataset_name,
+        outage_label=outage_label, outage_explanation=outage_explanation,
+    )
 
 
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=30, max_retries=3)

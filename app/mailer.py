@@ -165,17 +165,30 @@ def send_new_user_access_request_email(access_request):
         send_mail(to, subject, content)
 
 
-def send_general_task_error_mail(error, tb=None, dataset_name=None):
+def send_general_task_error_mail(error, tb=None, dataset_name=None,
+                                 outage_label=None, outage_explanation=None):
+    """outage_label / outage_explanation, when set, indicate this is a
+    recognized upstream-API outage (e.g. NYC Open Data 5xx). The email
+    subject is rephrased and a clear explanation is prepended to the body
+    so the recipient (ANHD admin; may forward to clients) immediately sees
+    it is not a DAP backend bug."""
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    subject = "DAP Portal - * Error * {}".format(
-        "Updating {}".format(dataset_name) if dataset_name else "During a Dataset Update Task")
+    if outage_label:
+        subject = "DAP Portal - * {} * {}".format(
+            outage_label,
+            "(while updating {})".format(dataset_name) if dataset_name else "(during a scheduled update)")
+    else:
+        subject = "DAP Portal - * Error * {}".format(
+            "Updating {}".format(dataset_name) if dataset_name else "During a Dataset Update Task")
     content = (
+        "{}"
         "{}"
         "A task error occurred at {}.\n\n"
         "Error:\n{}\n\n"
         "{}"
         "Please visit the task manager (Flower) to investigate."
     ).format(
+        ("--- {} ---\n{}\n\n".format(outage_label.upper(), outage_explanation) if outage_explanation else ""),
         ("Dataset: {}\n\n".format(dataset_name) if dataset_name else ""),
         timestamp, error,
         ("Traceback:\n{}\n\n".format(tb) if tb else ""))
