@@ -1,5 +1,14 @@
 # API CHANGELOG
 
+### 2026-06-14 (standard / month_offset annotate helpers: GROUP BY + LEFT JOIN rewrite)
+
+**Performance + reliability**
+- `annotate_all_properties_standard` (used by 8 datasets: Eviction, DOBComplaint, DOBFiledPermit, DOBIssuedPermit, DOBViolation, ECBViolation, HPDViolation, OCAHousingCourt) and `annotate_all_properties_month_offset` (used by HPDComplaint, HousingLitigation) rewritten from per-row correlated subqueries to a single GROUP BY + LEFT JOIN UPDATE.
+- The previous helper generated an UPDATE with THREE `Subquery + OuterRef` per row for last30/lastyear/last3years counts. At ~873K PA rows × 3 windows that's ~2.6M correlated subquery executions per dataset. On OCAHousingCourt (2.3M source rows on prod) the 2026-06-13 4 AM nightly task ran for at least 12 hours after AEPBuilding completed and never recorded a TaskResult — strongly suggesting the worker's broker heartbeat timed out during this run.
+- New shape: one sequential scan of the source table limited to the last3years window (which uses the date index), with FILTER aggregates computing all three window counts in the same pass. UPDATE joins back to all PA rows via LEFT JOIN; matched rows get the count, unmatched COALESCE to 0. Same Coalesce-to-0 semantic as legacy, but without the per-row subquery.
+- Critical date-coercion fix preserves exact parity: the source `QUERY_DATE_KEY` columns are postgres `date`, but `dates.get_*` returns UTC `datetime`. Legacy Django ORM silently converts datetime → local-TZ date for Date column comparisons; raw SQL was passing the timestamp directly and getting a different boundary. New helper now converts via `timezone.localtime(dt).date()` to match Django's semantics exactly.
+- Parity verified on all 10 callers (8 standard + 2 month_offset): 872,840 / 872,840 PA rows matched on every dataset. Local speedups 1.0×–1.8×; prod speedup should be substantially larger since the correlated subquery scales as O(PA × source) while the new path is O(source) + O(PA).
+
 ### 2026-06-13 (clearer error emails when NYC Open Data is down)
 
 **Operational**
