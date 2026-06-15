@@ -1,5 +1,14 @@
 # API CHANGELOG
 
+### 2026-06-15 (Foreclosure + AcrisRealLegal annotate: GROUP BY + LEFT JOIN rewrite)
+
+**Performance + reliability**
+- `Foreclosure.annotate_properties` and `AcrisRealLegal.annotate_properties` were the two annotation methods that hadn't been migrated to the GROUP BY + LEFT JOIN pattern yet — they still ran inline correlated subqueries against `datasets_propertyannotation`. On 2026-06-14 both deadlocked when concurrent runs hit the same PA columns (one from `annotate_properties_all`, one from a post-Update annotation triggered by a concurrent dataset refresh). The deadlock pattern was masked for years by the OCAHousingCourt silent-hang upstream of these in `ANNOTATED_DATASETS` — once that hang was fixed, the deadlock surfaced.
+- Both rewritten to a single UPDATE FROM (LEFT JOIN aggregation) shape, same as `_annotate_all_properties_grouped`. Date-coercion fix applied (UTC datetime → local-TZ date) so the SQL boundary matches the legacy Django ORM comparison semantic exactly.
+- `AcrisRealLegal` also persists `latestsaleprice` and `latestsaledate` — implemented via a `DISTINCT ON (l.bbl) ORDER BY l.bbl, m.docdate DESC` CTE alongside the count aggregation. Single UPDATE; no per-row correlated subquery.
+- Parity verified: Foreclosure full parity (872,840 / 872,840 PA rows matched legacy output exactly). AcrisRealLegal spot-checked against 10 randomly selected BBLs with real sales — all 10 matched on all 5 fields (the three window counts + latestsaleprice + latestsaledate). Local timing: 22M-row AcrisRealLegal × 17M-row AcrisRealMaster joined and updated 873K PA rows in ~5.8 min.
+- Eliminates the source of the 2026-06-14 deadlock for tomorrow's 4 AM run.
+
 ### 2026-06-14 (standard / month_offset annotate helpers: GROUP BY + LEFT JOIN rewrite)
 
 **Performance + reliability**
