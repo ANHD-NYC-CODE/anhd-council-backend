@@ -53,30 +53,66 @@ class Foreclosure(BaseDatasetModel, models.Model):
     source = models.TextField(blank=True, null=True)  # PDC or PropertyShark
 
     @classmethod
-    def annotate_properties(self):
-        count = 0
-        records = []
-        logger.debug('annotating properties for: {}'.format(self.__name__))
+    def annotate_properties(cls):
+        # SQL rewrite of an O(rows × correlated subqueries) UPDATE. Same shape
+        # as BaseDatasetModel._annotate_all_properties_grouped — single GROUP
+        # BY aggregation limited to the last3years window, then UPDATE all PA
+        # rows via LEFT JOIN. Replaces the legacy Subquery+Coalesce pattern
+        # that deadlocked under concurrent runs on 2026-06-14.
+        from django.db import connection
+        from django.utils import timezone
 
-        last30 = dates.get_last_month_since_api_update(
-            self.get_dataset(), string=False)
+        last30 = dates.get_last_month_since_api_update(cls.get_dataset(), string=False)
         lastyear = dates.get_last_year(string=False)
         last3years = dates.get_last3years(string=False)
 
-        last30_subquery = Subquery(self.objects.filter(bbl=OuterRef('bbl'), date_added__gte=last30).values(
-            'bbl').annotate(count=Count('bbl')).values('count'))
+        # date_added is a postgres `date`. Match Django ORM coercion: convert
+        # UTC datetime → local-TZ → date so the SQL boundary matches the
+        # legacy Coalesce(subquery_gte_datetime, 0) behavior exactly.
+        def _to_local_date(dt):
+            if dt is None:
+                return None
+            if hasattr(dt, 'date'):
+                if timezone.is_aware(dt):
+                    return timezone.localtime(dt).date()
+                return dt.date()
+            return dt
 
-        lastyear_subquery = Subquery(self.objects.filter(bbl=OuterRef(
-            'bbl'), date_added__gte=lastyear).values('bbl').annotate(count=Count('bbl')).values('count'))
+        last30 = _to_local_date(last30)
+        lastyear = _to_local_date(lastyear)
+        last3years = _to_local_date(last3years)
 
-        last3years_subquery = Subquery(self.objects
-                                       .filter(bbl=OuterRef('bbl'), date_added__gte=last3years).values('bbl')
-                                       .annotate(count=Count('bbl'))
-                                       .values('count')
-                                       )
-
-        ds.PropertyAnnotation.objects.update(foreclosures_last30=Coalesce(last30_subquery, 0), foreclosures_lastyear=Coalesce(
-            lastyear_subquery, 0), foreclosures_last3years=Coalesce(last3years_subquery, 0), foreclosures_lastupdated=make_aware(datetime.now()))
+        logger.info(
+            'Foreclosure.annotate_properties: last30=%s lastyear=%s last3years=%s',
+            last30, lastyear, last3years,
+        )
+        with connection.cursor() as c:
+            c.execute(
+                """
+                UPDATE datasets_propertyannotation pa
+                SET foreclosures_last30 = COALESCE(s.c30, 0),
+                    foreclosures_lastyear = COALESCE(s.cyear, 0),
+                    foreclosures_last3years = COALESCE(s.c3years, 0),
+                    foreclosures_lastupdated = NOW()
+                FROM (
+                    SELECT pa2.bbl AS bbl, agg.c30, agg.cyear, agg.c3years
+                    FROM datasets_propertyannotation pa2
+                    LEFT JOIN (
+                        SELECT bbl,
+                               COUNT(*) FILTER (WHERE date_added >= %s) AS c30,
+                               COUNT(*) FILTER (WHERE date_added >= %s) AS cyear,
+                               COUNT(*) AS c3years
+                        FROM datasets_foreclosure
+                        WHERE bbl IS NOT NULL AND date_added >= %s
+                        GROUP BY bbl
+                    ) agg ON agg.bbl = pa2.bbl
+                ) s
+                WHERE pa.bbl = s.bbl
+                """,
+                [last30, lastyear, last3years],
+            )
+            touched = c.rowcount
+        logger.info('Foreclosure.annotate_properties: %d PA rows updated', touched)
 
     def __str__(self):
         return str(self.key)

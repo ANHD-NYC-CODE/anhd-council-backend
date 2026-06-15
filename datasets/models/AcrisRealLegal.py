@@ -95,35 +95,97 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
             self.async_concurrent_seed(**kwargs)
 
     @classmethod
-    def annotate_properties(self):
-        count = 0
-        records = []
-        logger.debug('annotating properties for: {}'.format(self.__name__))
+    def annotate_properties(cls):
+        # SQL rewrite. The legacy version generated FIVE correlated subqueries
+        # per PA row (3 window counts + latest sale price + latest sale date),
+        # each joining AcrisRealLegal → AcrisRealMaster via documentid. At
+        # 873K PA rows × 5 subqueries each scanning the joined relation, this
+        # was a major source of the 2026-06-14 deadlock cascade.
+        #
+        # New approach: two CTEs computed in single passes:
+        #   - date_counts: GROUP BY l.bbl with FILTER aggregates for the 3
+        #     window counts. Bounded by the outer last3years filter so the
+        #     scan is small.
+        #   - latest_sale: DISTINCT ON (l.bbl) ORDER BY l.bbl, m.docdate DESC
+        #     to pick the row with the most recent docdate per BBL. No date
+        #     window (matches legacy: latest is "ever recorded", not just
+        #     within last3years).
+        # Then a single UPDATE on PA joining to both via LEFT JOIN.
+        from django.db import connection
+        from django.utils import timezone
 
-        last30 = dates.get_last_month_since_api_update(
-            self.get_dataset(), string=False)
+        last30 = dates.get_last_month_since_api_update(cls.get_dataset(), string=False)
         lastyear = dates.get_last_year(string=False)
         last3years = dates.get_last3years(string=False)
 
-        last30_subquery = Subquery(self.objects.filter(bbl=OuterRef('bbl'), documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES,
-                                                       documentid__docdate__gte=last30).values('bbl').annotate(count=Count('bbl')).values('count'))
+        def _to_local_date(dt):
+            if dt is None:
+                return None
+            if hasattr(dt, 'date'):
+                if timezone.is_aware(dt):
+                    return timezone.localtime(dt).date()
+                return dt.date()
+            return dt
 
-        lastyear_subquery = Subquery(self.objects.filter(bbl=OuterRef(
-            'bbl'), documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES, documentid__docdate__gte=lastyear).values('bbl').annotate(count=Count('bbl')).values('count'))
+        last30 = _to_local_date(last30)
+        lastyear = _to_local_date(lastyear)
+        last3years = _to_local_date(last3years)
 
-        last3years_subquery = Subquery(self.objects
-                                       .filter(bbl=OuterRef('bbl'), documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES, documentid__docdate__gte=last3years).values('bbl')
-                                       .annotate(count=Count('bbl'))
-                                       .values('count')
-                                       )
-        latestprice = Subquery(self.objects.filter(bbl=OuterRef('bbl'), documentid__docdate__isnull=False, documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES).order_by(
-            '-documentid__docdate').values('documentid__docamount')[:1])
-        latestsaledate = Subquery(self.objects.filter(bbl=OuterRef('bbl'), documentid__docdate__isnull=False,
-                                                      documentid__doctype__in=ds.AcrisRealMaster.SALE_DOC_TYPES).order_by(
-            '-documentid__docdate').values('documentid__docdate')[:1])
+        sale_doc_types = list(ds.AcrisRealMaster.SALE_DOC_TYPES)
 
-        ds.PropertyAnnotation.objects.update(acrisrealmasters_last30=Coalesce(last30_subquery, 0), acrisrealmasters_lastyear=Coalesce(lastyear_subquery, 0),
-                                             acrisrealmasters_last3years=Coalesce(last3years_subquery, 0), latestsaleprice=latestprice, latestsaledate=latestsaledate, acrisrealmasters_lastupdated=make_aware(datetime.now()))
+        logger.info(
+            'AcrisRealLegal.annotate_properties: last30=%s lastyear=%s last3years=%s sale_doc_types=%s',
+            last30, lastyear, last3years, sale_doc_types,
+        )
+        with connection.cursor() as c:
+            c.execute(
+                """
+                WITH date_counts AS (
+                    SELECT l.bbl,
+                           COUNT(*) FILTER (WHERE m.docdate >= %s) AS c30,
+                           COUNT(*) FILTER (WHERE m.docdate >= %s) AS cyear,
+                           COUNT(*) AS c3years
+                    FROM datasets_acrisreallegal l
+                    JOIN datasets_acrisrealmaster m ON m.documentid = l.documentid
+                    WHERE l.bbl IS NOT NULL
+                      AND m.doctype = ANY(%s)
+                      AND m.docdate >= %s
+                    GROUP BY l.bbl
+                ),
+                latest_sale AS (
+                    SELECT DISTINCT ON (l.bbl)
+                           l.bbl,
+                           m.docdate AS latestdate,
+                           m.docamount AS latestprice
+                    FROM datasets_acrisreallegal l
+                    JOIN datasets_acrisrealmaster m ON m.documentid = l.documentid
+                    WHERE l.bbl IS NOT NULL
+                      AND m.doctype = ANY(%s)
+                      AND m.docdate IS NOT NULL
+                    ORDER BY l.bbl, m.docdate DESC
+                )
+                UPDATE datasets_propertyannotation pa
+                SET acrisrealmasters_last30 = COALESCE(s.c30, 0),
+                    acrisrealmasters_lastyear = COALESCE(s.cyear, 0),
+                    acrisrealmasters_last3years = COALESCE(s.c3years, 0),
+                    latestsaleprice = s.latestprice,
+                    latestsaledate = s.latestdate,
+                    acrisrealmasters_lastupdated = NOW()
+                FROM (
+                    SELECT pa2.bbl AS bbl,
+                           dc.c30, dc.cyear, dc.c3years,
+                           ls.latestprice, ls.latestdate
+                    FROM datasets_propertyannotation pa2
+                    LEFT JOIN date_counts dc ON dc.bbl = pa2.bbl
+                    LEFT JOIN latest_sale  ls ON ls.bbl = pa2.bbl
+                ) s
+                WHERE pa.bbl = s.bbl
+                """,
+                [last30, lastyear, sale_doc_types, last3years, sale_doc_types],
+            )
+            touched = c.rowcount
+        logger.info('AcrisRealLegal.annotate_properties: %d PA rows updated', touched)
+
 
     def __str__(self):
         return self.key
