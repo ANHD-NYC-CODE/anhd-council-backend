@@ -1,5 +1,14 @@
 # API CHANGELOG
 
+### 2026-06-15d (gunicorn: raise --timeout 180 → 600 to align with nginx)
+
+**User-facing reliability**
+- Citywide custom searches with broad date windows (e.g. evictions in the last 4 years) consistently take 3-10 minutes cold against current prod SQL. At the prior `--timeout 180` setting, gthread SIGKILLed the worker mid-SQL before the response reached `cache.set()`, so the result was never cached. Every retry hit the same cold-then-killed cycle and the user saw the frontend "search timed out after two minutes" message indefinitely with no recovery path.
+- Raised gunicorn `--timeout` to 600s (matches nginx `proxy_read_timeout`). The cold SQL now has time to finish, populate the 24-hour cache, and make subsequent identical searches return in <1s.
+- Verified live behavior on prod: the 3-year eviction date window completed at ~2-2.5 min and DID cache (worked before, still works); the 4-year window pushed past 3 min and was previously stuck in a forever-cold loop, will now complete + cache after the deploy.
+- Trade-off: a runaway query can now hold a single gthread thread slot for up to 10 minutes (1 of 12 slots, 8.3% capacity). The `--max-requests 1000` jitter already recycles workers periodically so per-worker memory doesn't leak. If this becomes a saturation issue, the next move is to add upfront warnings + rate limiting on `/properties/?summary=...` rather than reverting the timeout.
+- Frontend "may run faster a second time" hint is now sometimes-actually-true for a wider range of queries; full UX revamp (loading bar with elapsed-time counter, cancel button wired to backend abort, inline expected-duration warnings) tracked as a separate card in Pending.
+
 ### 2026-06-15c (annotate: realign per-row post_save signals to bulk semantics)
 
 **Correctness**

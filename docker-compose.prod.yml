@@ -16,14 +16,23 @@ services:
     # sync workers cut concurrency to `--workers` (3 here), which queued the
     # frontend's 6+ initial-load endpoints behind the workers, hit the timeout
     # mid-response, and SIGKILL'd. gthread gives `workers * threads` concurrency
-    # (3 * 4 = 12) with no extra deps. 180s timeout accommodates the largest
-    # cached/uncached district endpoints without letting hung requests pile up.
+    # (3 * 4 = 12) with no extra deps.
+    #
+    # 600s timeout (raised from 180s on 2026-06-15) matches nginx
+    # proxy_read_timeout. Citywide custom searches with broad date windows
+    # consistently take 3-10 minutes cold; at 180s the gthread SIGKILL fired
+    # before the SQL completed, so the response never reached cache.set() and
+    # the result was never cached — every retry hit the same cold-then-killed
+    # cycle and the user saw the frontend "search timed out" message forever.
+    # Aligning gunicorn to nginx lets the SQL finish, populate the 24h cache,
+    # and make subsequent identical searches instant. Trade-off: one runaway
+    # query holds a thread slot for up to 10 min (1/12 of capacity).
     # --max-requests/--max-requests-jitter: recycle each worker after handling
     # roughly N requests so accumulated per-worker memory (decompressed cache
     # values, ORM caches) is released. Jitter prevents all workers recycling
     # at the same time. Worker is gracefully shut + new one booted; in-flight
     # requests on the recycled worker complete normally.
-    command: gunicorn app.wsgi:application --worker-class gthread --workers 3 --threads 4 --timeout 180 --max-requests 1000 --max-requests-jitter 100 --bind 0.0.0.0:8000 --access-logfile - --error-logfile -
+    command: gunicorn app.wsgi:application --worker-class gthread --workers 3 --threads 4 --timeout 600 --max-requests 1000 --max-requests-jitter 100 --bind 0.0.0.0:8000 --access-logfile - --error-logfile -
     # TCP check on the gunicorn port — verifies a worker is listening. Avoids
     # an HTTP probe (which could hit auth-required endpoints or large payloads)
     # and avoids depending on curl being installed in the image.
