@@ -1,5 +1,19 @@
 # API CHANGELOG
 
+### 2026-06-15c (annotate: realign per-row post_save signals to bulk semantics)
+
+**Correctness**
+- Five per-row `annotate_property_on_save` signals were writing values that differed from what the nightly bulk run would compute, leaving PropertyAnnotation in a drifted state between data ingest and the next 4 AM bulk run. Realigned all five to call the bulk-equivalent method scoped to the inserted row's BBL.
+- `HPDBuildingRecord` — was: `annotation.legalclassa = instance.legalclassa` (overwrites with ONE building's value). Now: calls `cls.annotate_properties(bbl=instance.bbl_id)` which SUMs across all HPDBuildingRecord rows for the lot + comma-joins distinct `managementprogram` excluding `PVT`. Verified: inserting a 4th M-L building for 16 Richman Plaza correctly bumped `legalclassa` from 1746 → 1788 (sum) instead of overwriting to 42.
+- `AEPBuilding` — was: overwrites with the inserted row's enrollment values. Now: `cls.annotate_properties(bbl=instance.bbl_id)` picks the most-recent enrollment via DISTINCT ON (aepstartdate DESC). Verified: inserting an Active 2026-06-01 enrollment on a previously-Discharged-2012 BBL correctly flipped to Active.
+- `Subsidy421a` / `SubsidyJ51` — was: appended to `subsidyprograms` using Python set-hash-order (non-deterministic, no expired-year tags). Now: sets the boolean flag directly + delegates `subsidyprograms` to `CoreSubsidyRecord.rebuild_subsidyprograms(bbl=instance.bbl_id)` — produces the centralized active-first / (expired YYYY) value.
+- `CoreSubsidyRecord` — was: appended program name with set-hash-order. Now: per-BBL rebuild call.
+- The four bulk methods (`HPDBuildingRecord.annotate_properties`, `AEPBuilding.annotate_properties`, `CoreSubsidyRecord.rebuild_subsidyprograms`) now accept an optional `bbl=<bbl_id>` parameter that scopes the work to a single BBL. Default behavior (no `bbl`) is identical to before — full-table bulk.
+
+**Why this matters**
+- The advanced custom search reads PropertyAnnotation directly and is NOT cached. Without realignment, a user running a search after a data refresh would see slightly-wrong intermediate values for multi-building / multi-program BBLs until the next 4 AM bulk run corrected them. Now per-row signals produce values matching what the bulk run would compute.
+- Cached surfaces (property page, dashboards) weren't affected by the drift since the cache refresh at 6 AM EDT picks up the post-4 AM bulk values anyway.
+
 ### 2026-06-15b (annotate: skip-unchanged-rows optimization)
 
 **Performance**

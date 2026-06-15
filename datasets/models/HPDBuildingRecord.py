@@ -73,8 +73,11 @@ class HPDBuildingRecord(BaseDatasetModel, models.Model):
         self.seed_with_upsert(ignore_conflict=True, **kwargs)
 
     @classmethod
-    def annotate_properties(cls):
+    def annotate_properties(cls, bbl=None):
         # SQL rewrite of an N+1 loop, with corrected multi-building semantics.
+        # Pass `bbl=<bbl_id>` to scope the work to a single BBL — used by the
+        # per-row post_save signal so intra-day inserts compute the same
+        # SUM/comma-join values as the nightly bulk run.
         #
         # The pre-existing Python iterated every HPDBuildingRecord and last-
         # write-wins-saved PropertyAnnotation. For tax lots with multiple
@@ -93,11 +96,15 @@ class HPDBuildingRecord(BaseDatasetModel, models.Model):
         #     program, not a program itself). Empty-string and NULL values
         #     are also excluded.
         from django.db import connection
-        logger.info(
-            'annotate_properties: bulk UPDATE PropertyAnnotation.{legalclassa, legalclassb, managementprogram}',
-        )
+        bbl_filter = " AND bbl = %s" if bbl else ""
+        pa_filter = " AND pa.bbl = %s" if bbl else ""
+        params = [bbl, bbl] if bbl else []
+        if bbl is None:
+            logger.info(
+                'annotate_properties: bulk UPDATE PropertyAnnotation.{legalclassa, legalclassb, managementprogram}',
+            )
         with connection.cursor() as c:
-            c.execute("""
+            c.execute(f"""
                 UPDATE datasets_propertyannotation pa
                 SET legalclassa = per_bbl.sum_a,
                     legalclassb = per_bbl.sum_b,
@@ -118,13 +125,14 @@ class HPDBuildingRecord(BaseDatasetModel, models.Model):
                                ''
                            ) AS mgmt
                     FROM datasets_hpdbuildingrecord
-                    WHERE bbl IS NOT NULL
+                    WHERE bbl IS NOT NULL{bbl_filter}
                     GROUP BY bbl
                 ) per_bbl
-                WHERE pa.bbl = per_bbl.bbl
-            """)
+                WHERE pa.bbl = per_bbl.bbl{pa_filter}
+            """, params)
             updated = c.rowcount
-        logger.info('annotate_properties: updated %d PropertyAnnotation rows', updated)
+        if bbl is None:
+            logger.info('annotate_properties: updated %d PropertyAnnotation rows', updated)
 
     def __str__(self):
         return str(self.buildingid)
@@ -132,15 +140,16 @@ class HPDBuildingRecord(BaseDatasetModel, models.Model):
 
 @receiver(models.signals.post_save, sender=HPDBuildingRecord)
 def annotate_property_on_save(sender, instance, created, **kwargs):
-    if created == True:
-        try:
-
-            annotation = instance.bbl.propertyannotation
-            annotation.legalclassa = instance.legalclassa
-            annotation.legalclassb = instance.legalclassb
-            annotation.managementprogram = instance.managementprogram
-
-            annotation.save()
-        except Exception as e:
-            print(e)
-            return
+    # Realigned 2026-06-15 to call the bulk-equivalent annotate scoped to
+    # this BBL. Previously this overwrote PA with THIS single building's
+    # legalclassa/legalclassb/managementprogram — wrong for multi-building
+    # lots (e.g. 16 Richman Plaza, which has 4 Mitchell-Lama buildings and
+    # would temporarily show 439 instead of 1,746 dwelling units between
+    # data ingest and the next 4 AM bulk run). Now re-aggregates SUM /
+    # comma-join across all HPDBuildingRecord rows for this BBL.
+    if not created or instance.bbl_id is None:
+        return
+    try:
+        sender.annotate_properties(bbl=instance.bbl_id)
+    except Exception as e:
+        logger.warning('annotate_property_on_save failed for bbl=%s: %s', instance.bbl_id, e)

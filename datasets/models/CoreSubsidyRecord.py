@@ -126,17 +126,19 @@ class CoreSubsidyRecord(BaseDatasetModel, models.Model):
         self.bulk_seed(**kwargs, overwrite=True)
 
     @classmethod
-    def annotate_properties(cls):
+    def annotate_properties(cls, bbl=None):
         # Delegate to the centralized rebuild — Core is the authoritative
         # source for the subsidyprograms field, but the rebuild also unions
         # in Subsidy421a and SubsidyJ51 standalone records so a single call
         # produces the correct value regardless of which source updated.
-        cls.rebuild_subsidyprograms()
+        cls.rebuild_subsidyprograms(bbl=bbl)
 
     @classmethod
-    def rebuild_subsidyprograms(cls):
+    def rebuild_subsidyprograms(cls, bbl=None):
         # Centralized rebuild of PropertyAnnotation.subsidyprograms across
         # all three source models (CoreSubsidyRecord, Subsidy421a, SubsidyJ51).
+        # Pass `bbl=<bbl_id>` to scope to a single BBL — used by per-row
+        # signals on the source models.
         #
         # Output format (per client decision 2026-06-12):
         #   - Programs sorted ACTIVE FIRST, then EXPIRED, alphabetical within
@@ -147,41 +149,49 @@ class CoreSubsidyRecord(BaseDatasetModel, models.Model):
         #     enddate in source) are treated as active and displayed
         #     without an expiry tag.
         #
-        # Idempotent. Touches every PropertyAnnotation: empties the field
-        # first, then UPDATEs from the unioned program list.
+        # Idempotent. In bulk mode (bbl=None) touches every PA row, emptying
+        # the field first then populating from the union. In per-BBL mode
+        # touches only the one row.
         from django.db import connection
-        logger.info('rebuild_subsidyprograms: reset + UNION(Core, Subsidy421a, SubsidyJ51) + active-first ordering')
+        bbl_filter = " AND bbl = %s" if bbl else ""
+        pa_filter = " AND pa.bbl = %s" if bbl else ""
+        # 5 placeholders inside the WITH (3 UNION clauses with bbl filter, then 1 outer pa filter, then 1 reset filter)
+        bbl_filter_params = [bbl, bbl, bbl] if bbl else []
+        if bbl is None:
+            logger.info('rebuild_subsidyprograms: reset + UNION(Core, Subsidy421a, SubsidyJ51) + active-first ordering')
         with connection.cursor() as c:
-            c.execute("""
-                UPDATE datasets_propertyannotation
+            # Reset: in bulk mode, blank all non-empty rows; in per-BBL mode,
+            # only blank this one row (so other BBLs keep their values).
+            c.execute(
+                f"""
+                UPDATE datasets_propertyannotation pa
                 SET subsidyprograms = ''
-                WHERE subsidyprograms IS NOT NULL AND subsidyprograms != ''
-            """)
+                WHERE (subsidyprograms IS NOT NULL AND subsidyprograms != ''){pa_filter}
+                """,
+                [bbl] if bbl else [],
+            )
             reset_count = c.rowcount
-            c.execute("""
+            c.execute(
+                f"""
                 WITH all_programs AS (
                     -- Core: real start/end dates per program
                     SELECT bbl, programname, enddate
                     FROM datasets_coresubsidyrecord
                     WHERE bbl IS NOT NULL
                       AND programname IS NOT NULL
-                      AND programname <> ''
+                      AND programname <> ''{bbl_filter}
                     UNION ALL
                     -- Subsidy421a: DOF standalone — no enddate in source, treat as active
                     SELECT DISTINCT bbl, '421-a Tax Incentive Program' AS programname, NULL::date AS enddate
                     FROM datasets_subsidy421a
-                    WHERE bbl IS NOT NULL
+                    WHERE bbl IS NOT NULL{bbl_filter}
                     UNION ALL
                     -- SubsidyJ51: DOF standalone — no enddate in source, treat as active
                     SELECT DISTINCT bbl, 'J-51 Tax Incentive' AS programname, NULL::date AS enddate
                     FROM datasets_subsidyj51
-                    WHERE bbl IS NOT NULL
+                    WHERE bbl IS NOT NULL{bbl_filter}
                 ),
                 per_bbl_program AS (
-                    -- Collapse duplicates of the same program across sources.
-                    -- A program is "active" if ANY source says it's active
-                    -- (no enddate, or enddate in the future). When all sources
-                    -- agree it's expired, MAX(enddate) is the expiry year.
                     SELECT bbl,
                            programname,
                            BOOL_OR(enddate IS NULL OR enddate > CURRENT_DATE) AS is_active,
@@ -214,13 +224,16 @@ class CoreSubsidyRecord(BaseDatasetModel, models.Model):
                     FROM formatted
                     GROUP BY bbl
                 ) per_bbl
-                WHERE pa.bbl = per_bbl.bbl
-            """)
+                WHERE pa.bbl = per_bbl.bbl{pa_filter}
+                """,
+                bbl_filter_params + ([bbl] if bbl else []),
+            )
             updated = c.rowcount
-        logger.info(
-            'rebuild_subsidyprograms: reset %d, populated %d BBLs',
-            reset_count, updated,
-        )
+        if bbl is None:
+            logger.info(
+                'rebuild_subsidyprograms: reset %d, populated %d BBLs',
+                reset_count, updated,
+            )
 
     def __str__(self):
         return str(self.id)
@@ -228,13 +241,12 @@ class CoreSubsidyRecord(BaseDatasetModel, models.Model):
 
 @receiver(models.signals.post_save, sender=CoreSubsidyRecord)
 def annotate_property_on_save(sender, instance, created, **kwargs):
-    if created == True:
-        try:
-            annotation = instance.bbl.propertyannotation
-            current_programs = annotation.subsidyprograms or ''
-            annotation.subsidyprograms = ', '.join(
-                filter(None, set([*current_programs.split(', '), instance.programname])))
-
-            annotation.save()
-        except Exception as e:
-            print(e)
+    # Realigned 2026-06-15 — delegates to the centralized per-BBL rebuild
+    # so intra-day inserts produce active-first / (expired YYYY) values
+    # matching the nightly bulk semantic.
+    if not created or instance.bbl_id is None:
+        return
+    try:
+        sender.rebuild_subsidyprograms(bbl=instance.bbl_id)
+    except Exception as e:
+        logger.warning('annotate_property_on_save failed for bbl=%s: %s', instance.bbl_id, e)

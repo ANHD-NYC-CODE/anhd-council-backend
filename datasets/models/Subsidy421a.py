@@ -81,13 +81,17 @@ class Subsidy421a(BaseDatasetModel, models.Model):
 
 @receiver(models.signals.post_save, sender=Subsidy421a)
 def annotate_property_on_save(sender, instance, created, **kwargs):
-    if created == True:
-        try:
-            annotation = instance.bbl.propertyannotation
-            annotation.subsidy421a = True
-            current_programs = annotation.subsidyprograms or ''
-            annotation.subsidyprograms = ', '.join(
-                filter(None, set([*current_programs.split(', '), '421a Tax Incentive Program'])))
-            annotation.save()
-        except Exception as e:
-            print(e)
+    # Realigned 2026-06-15. Previously this set subsidy421a=True and appended
+    # "421a Tax Incentive Program" to subsidyprograms using Python set-hash
+    # ordering — which drifts from the new bulk semantic (active-first /
+    # (expired YYYY) inline tags, alphabetical within each group). Now sets
+    # the boolean flag directly + delegates the subsidyprograms field to the
+    # centralized rebuild scoped to this BBL — producing the same value the
+    # nightly bulk would produce.
+    if not created or instance.bbl_id is None:
+        return
+    try:
+        ds.PropertyAnnotation.objects.filter(bbl_id=instance.bbl_id).update(subsidy421a=True)
+        ds.CoreSubsidyRecord.rebuild_subsidyprograms(bbl=instance.bbl_id)
+    except Exception as e:
+        logger.warning('annotate_property_on_save failed for bbl=%s: %s', instance.bbl_id, e)

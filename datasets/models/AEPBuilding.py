@@ -74,18 +74,25 @@ class AEPBuilding(BaseDatasetModel, models.Model):
         self.seed_with_upsert(**kwargs)
 
     @classmethod
-    def annotate_properties(cls):
+    def annotate_properties(cls, bbl=None):
         # SQL rewrite of an N+1 loop, same shape as HPDBuildingRecord. For
         # BBLs with multiple AEP buildings, the old Python loop was last-
         # write-wins in heap order (non-deterministic). We tighten to a
         # defensible deterministic choice: the most recently enrolled
         # building per BBL (ORDER BY aepstartdate DESC), tiebroken on id.
+        # Pass `bbl=<bbl_id>` to scope to a single BBL — used by the per-row
+        # signal so intra-day inserts compute the same DISTINCT-ON value
+        # as the nightly bulk.
         from django.db import connection
-        logger.info(
-            'annotate_properties: bulk UPDATE PropertyAnnotation.{aepstatus, aepstartdate, aepdischargedate}',
-        )
+        bbl_filter = " AND bbl = %s" if bbl else ""
+        pa_filter = " AND pa.bbl = %s" if bbl else ""
+        params = [bbl, bbl] if bbl else []
+        if bbl is None:
+            logger.info(
+                'annotate_properties: bulk UPDATE PropertyAnnotation.{aepstatus, aepstartdate, aepdischargedate}',
+            )
         with connection.cursor() as c:
-            c.execute("""
+            c.execute(f"""
                 UPDATE datasets_propertyannotation pa
                 SET aepstatus = per_bbl.currentstatus,
                     aepstartdate = per_bbl.aepstartdate,
@@ -94,13 +101,14 @@ class AEPBuilding(BaseDatasetModel, models.Model):
                     SELECT DISTINCT ON (bbl)
                         bbl, currentstatus, aepstartdate, dischargedate
                     FROM datasets_aepbuilding
-                    WHERE bbl IS NOT NULL
+                    WHERE bbl IS NOT NULL{bbl_filter}
                     ORDER BY bbl, aepstartdate DESC NULLS LAST, id DESC
                 ) per_bbl
-                WHERE pa.bbl = per_bbl.bbl
-            """)
+                WHERE pa.bbl = per_bbl.bbl{pa_filter}
+            """, params)
             updated = c.rowcount
-        logger.info('annotate_properties: updated %d PropertyAnnotation rows', updated)
+        if bbl is None:
+            logger.info('annotate_properties: updated %d PropertyAnnotation rows', updated)
 
     def __str__(self):
         return str(self.buildingid)
@@ -108,17 +116,14 @@ class AEPBuilding(BaseDatasetModel, models.Model):
 
 @receiver(models.signals.post_save, sender=AEPBuilding)
 def annotate_property_on_save(sender, instance, created, **kwargs):
-
-    if created == True:
-        try:
-
-            annotation = instance.bbl.propertyannotation
-            annotation.aepstatus = instance.currentstatus
-            annotation.aepstartdate = instance.aepstartdate
-            annotation.aepdischargedate = instance.dischargedate
-
-            annotation.save()
-
-        except Exception as e:
-            print(e)
-            return
+    # Realigned 2026-06-15 to call the bulk-equivalent annotate scoped to
+    # this BBL. Previously this overwrote PA with THIS row's enrollment
+    # values — wrong when a BBL has multiple AEP enrollments over time
+    # (latest insert wins instead of latest enrollment by aepstartdate).
+    # Now picks the most recent enrollment via DISTINCT ON for the BBL.
+    if not created or instance.bbl_id is None:
+        return
+    try:
+        sender.annotate_properties(bbl=instance.bbl_id)
+    except Exception as e:
+        logger.warning('annotate_property_on_save failed for bbl=%s: %s', instance.bbl_id, e)
