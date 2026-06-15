@@ -87,6 +87,12 @@ class Foreclosure(BaseDatasetModel, models.Model):
             last30, lastyear, last3years,
         )
         with connection.cursor() as c:
+            # Skip-unchanged-rows: only touch PA rows whose value could
+            # possibly differ. A row is skippable when (a) no source records
+            # in last3years (LEFT JOIN gives NULL) AND (b) all three current
+            # counts are already 0. Foreclosure is sparse (~57K source rows
+            # on local, ~similar on prod), so most BBLs get skipped — big
+            # write reduction. Semantically identical output.
             c.execute(
                 """
                 UPDATE datasets_propertyannotation pa
@@ -106,6 +112,10 @@ class Foreclosure(BaseDatasetModel, models.Model):
                         WHERE bbl IS NOT NULL AND date_added >= %s
                         GROUP BY bbl
                     ) agg ON agg.bbl = pa2.bbl
+                    WHERE agg.bbl IS NOT NULL
+                       OR pa2.foreclosures_last30 > 0
+                       OR pa2.foreclosures_lastyear > 0
+                       OR pa2.foreclosures_last3years > 0
                 ) s
                 WHERE pa.bbl = s.bbl
                 """,

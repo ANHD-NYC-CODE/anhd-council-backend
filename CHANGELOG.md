@@ -1,5 +1,15 @@
 # API CHANGELOG
 
+### 2026-06-15b (annotate: skip-unchanged-rows optimization)
+
+**Performance**
+- Annotate UPDATEs in `_annotate_all_properties_grouped` (helper used by 10 datasets) and `Foreclosure.annotate_properties` now skip PA rows that are guaranteed unchanged. A row is skippable when (a) the BBL has no source records in the `last3years` window AND (b) all three current window counts are already 0 — under both conditions the value cannot have changed (no records to count, no records to age out).
+- Implemented as a `WHERE` clause inside the existing UPDATE FROM JOIN — semantically identical output, dramatically fewer writes.
+- Measured impact on local: Eviction 873K → 22K writes (97.4% cut), Foreclosure 873K → 13K writes (98.5% cut). Wall-clock dropped to ~5s and ~3.5s respectively.
+- Parity verified: 10 should-be-processed BBLs + 10 should-be-skipped BBLs per dataset, all values exactly match counts computed via direct SQL.
+- AcrisRealLegal NOT included in this pass — its expensive `latest_sale` CTE scans all 22M source rows regardless of skip predicate, since most BBLs have at least one sale ever. The cleaner optimization there is "skip the latest_sale CTE entirely when `Dataset.api_last_updated` is unchanged" (separate followup; ACRIS publishes ~monthly, so latest_sale only needs recomputing ~once per month rather than daily).
+- Semantic shift to be aware of: `_lastupdated` columns no longer mean "the last time the annotation task ran" — they now mean "the last time the value actually changed." Most consumers read the counts, not the timestamp; if any consumer needs the "last run" semantic, we'd add a separate per-dataset `last_run_at` tracker.
+
 ### 2026-06-15 (Foreclosure + AcrisRealLegal annotate: GROUP BY + LEFT JOIN rewrite)
 
 **Performance + reliability**
