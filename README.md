@@ -264,14 +264,35 @@ The `PropertyAnnotation` table stores pre-computed counts of dataset records per
 **Which datasets are annotated:**
 Defined in `settings.ANNOTATED_DATASETS`. See `app/settings/base.py` for the full list — includes HPDViolation, HPDComplaint, DOBViolation, DOBComplaint, ECBViolation, Eviction, DOBFiledPermit, DOBIssuedPermit, HousingLitigation, AcrisRealMaster, OCAHousingCourt, Foreclosure, and others (CONHRecord, HPDBuildingRecord, AEPBuilding, etc.).
 
+**Annotation paths (2026-06-15 architecture):**
+
+There are two distinct annotate paths and you should understand which fires when:
+
+1. **Nightly bulk annotate** (authoritative). The `annotate properties all` celerybeat task fires daily at 4 AM EDT → calls `Dataset.annotate_properties_all()` → loops `ANNOTATED_DATASETS` calling each model's `annotate_properties()`. Uses the optimized GROUP BY + LEFT JOIN SQL shape (see `BaseDatasetModel._annotate_all_properties_grouped`). This is the source of truth — whatever it computes is what users see after the 6 AM cache rebuild.
+
+2. **Per-row `post_save` signals** (best-effort intra-day freshness). Each annotated source model has an `annotate_property_on_save` signal that updates the one BBL's PA values when a single source row is inserted (typically during a data refresh). These run inline with seeds.
+
+**Performance characteristics:**
+
+- The bulk annotate uses a single GROUP BY pass over the source table (limited to the `last3years` window so the date index is used), with FILTER aggregates for the three window counts, then a single UPDATE FROM (LEFT JOIN) on PropertyAnnotation.
+- **Skip-unchanged-rows optimization**: the UPDATE only touches PA rows where the value could possibly differ — i.e., the BBL has source records in `last3years` OR currently has a non-zero count. BBLs with no recent source records AND already-zero counts are skipped entirely. Cuts writes ~70–95% per dataset on average.
+- **Semantic shift**: `*_lastupdated` columns no longer mean "the last time the annotation task ran" — they now mean "the last time the value actually changed." Consumers needing the "last run" semantic should track it separately.
+- **Date-coercion gotcha**: source `QUERY_DATE_KEY` columns are postgres `date`, but `dates.get_*` returns UTC `datetime`. The bulk SQL converts the timestamp to local-TZ date via `timezone.localtime(dt).date()` before parameter binding — this matches Django ORM's silent conversion. Replicate this when writing custom annotation SQL.
+
+**Caching layer:**
+
+District dashboard endpoints (`/councils/{pk}/`, `/communities/{pk}/`, etc.) are pre-warmed at 6 AM EDT daily and cached for 24h via `@cache_request_path`. The Property Lookup page is also cached. The advanced custom search is NOT cached — it reads PA directly, so per-row signal updates are visible there intra-day.
+
 **Adding a new annotation:**
 1. Add fields to `PropertyAnnotation` model (e.g., `newdataset_last30`, `_lastyear`, `_last3years`, `_lastupdated`)
 2. Add the model name to `settings.ANNOTATED_DATASETS`
-3. Ensure the model has `QUERY_DATE_KEY` and an `annotate_properties()` method
+3. Ensure the model has `QUERY_DATE_KEY` and an `annotate_properties()` method (delegating to `annotate_all_properties_standard` or `_month_offset` from `BaseDatasetModel` if it's a standard date-window count)
 4. Create a migration and run it
 5. The serializer and API field builder pick up new annotations automatically from `ANNOTATED_DATASETS`
 
 **Note:** Annotations are aggregate counts. Sub-field filtering (e.g., only rent-impaired violations) is better handled via Custom Search query parameters, not annotations.
+
+**Manual trigger:** `docker exec app python manage.py shell -c "from core.tasks import async_annotate_properties_with_all_datasets; async_annotate_properties_with_all_datasets.delay()"` dispatches the same task the 4 AM cron runs. For a single dataset: `async_annotate_properties_with_dataset.delay(dataset_id)`.
 
 ## Data Notes
 
