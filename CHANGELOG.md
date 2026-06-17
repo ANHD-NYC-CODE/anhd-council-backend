@@ -4,9 +4,9 @@
 
 **Performance + storage**
 - All three ACRIS models (`AcrisRealMaster`, `AcrisRealLegal`, `AcrisRealParty`) now download incrementally via the Socrata `/resource/` endpoint with a SoQL `$where` filter, instead of pulling all-history every time via `/api/views/{id}/rows.csv?accessType=DOWNLOAD`. Upsert semantics mean historical rows already in the DB are preserved — only new/changed rows come through the wire.
-- Filter: 60-day lookback against `:updated_at` (Socrata system column for "row last touched in the dataset"). Master adds `modified_date` as belt + suspenders since it's available on that resource. Legal/Party only have `:updated_at` (no `modified_date` column at source).
+- Filter: 120-day lookback against `:updated_at` (Socrata system column for "row last touched in the dataset"). Master adds `modified_date` as belt + suspenders since it's available on that resource. Legal/Party only have `:updated_at` (no `modified_date` column at source).
 - Column aliasing happens in SoQL `$select` (e.g. `document_id AS documentid`) so the existing `clean_headers` normalizer produces keys matching model fields directly — no per-dataset rename map needed.
-- Why 60 days: ACRIS publishing has been observed sitting idle on Socrata for 5+ weeks at a time. A 60-day window tolerates a full publish gap with a cycle on either side, so we never miss data in normal operation. (Verified live: max `:updated_at` across all three datasets is currently 2026-05-11, ~5 weeks before this commit.)
+- Why 120 days: ACRIS publishing has been observed sitting idle on Socrata for 5+ weeks at a time (verified live — max `:updated_at` across all three datasets is currently 2026-05-11). 120 days gives generous tolerance for extended publish gaps while still keeping the filtered payload under 1% of the all-history download.
 
 **Audit / cleanup**
 - `AcrisRealMaster.update_filters` (with `is_older_than(docdate, 1)`) was **dead code** — the standard hook is `update_set_filter`, so the "1-year filter" everyone assumed existed had never actually run. Removed. The new SoQL filter is now the source-side equivalent that actually fires.

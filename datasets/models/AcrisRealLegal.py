@@ -27,7 +27,7 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
     # the rationale. Legal has no docdate/modified_date columns, so we filter
     # on the Socrata system :updated_at column only.
     base_download_endpoint = 'https://data.cityofnewyork.us/resource/8h5j-fqxa.csv'
-    SOCRATA_LOOKBACK_DAYS = 60
+    SOCRATA_LOOKBACK_DAYS = 120
     QUERY_DATE_KEY = 'documentid__docdate'  # date is on the acrisrealmaster record
 
     class Meta:

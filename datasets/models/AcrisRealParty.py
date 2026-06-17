@@ -26,7 +26,7 @@ class AcrisRealParty(BaseDatasetModel, models.Model):
     # docdate/modified_date columns (only good_through_date), so :updated_at
     # is the only available change-tracking column.
     base_download_endpoint = 'https://data.cityofnewyork.us/resource/636b-3b5g.csv'
-    SOCRATA_LOOKBACK_DAYS = 60
+    SOCRATA_LOOKBACK_DAYS = 120
 
     key = models.TextField(primary_key=True, blank=False, null=False)
     documentid = models.ForeignKey('AcrisRealMaster', db_column='documentid', db_constraint=False,

@@ -19,13 +19,14 @@ class AcrisRealMaster(BaseDatasetModel, models.Model):
     API_ID = 'bnx9-e6tj'
     # Socrata /resource/ endpoint (supports SoQL $where; the /api/views/ bulk
     # endpoint silently ignores filters). We build the download URL in
-    # download() below with a 60-day modified_date OR :updated_at filter so we
-    # only pull rows touched since the last pull window. 60 days handles ACRIS
-    # publish gaps (the dataset has been seen sitting idle on Socrata for 5+
-    # weeks at a time). Upsert semantics mean historical rows already in the
-    # DB are preserved.
+    # download() below with a SOCRATA_LOOKBACK_DAYS modified_date OR :updated_at
+    # filter so we only pull rows touched since the last pull window. 120 days
+    # gives generous tolerance for ACRIS publish gaps (the dataset has been
+    # seen sitting idle on Socrata for 5+ weeks at a time) — even at 120 days
+    # the filtered payload is well under 1% of the all-history download.
+    # Upsert semantics mean historical rows already in the DB are preserved.
     base_download_endpoint = 'https://data.cityofnewyork.us/resource/bnx9-e6tj.csv'
-    SOCRATA_LOOKBACK_DAYS = 60
+    SOCRATA_LOOKBACK_DAYS = 120
     QUERY_DATE_KEY = 'docdate'
     RECENT_DATE_PINNED = True
     QUERY_PROPERTY_KEY = 'acrisreallegal__documentid'
