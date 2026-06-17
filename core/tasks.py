@@ -212,6 +212,9 @@ def async_annotate_properties_with_all_datasets(self):
 
 @app.task(bind=True, base=FaultTolerantTask, queue='update', acks_late=True, max_retries=1)
 def async_seed_split_file(self, file_path, update_id, dataset_id=None):
+    update = None
+    got_lock = False
+    lock_file_path = None
     try:
         # manually set file and previous file in admin ui
         update = c.Update.objects.get(id=update_id)
@@ -219,12 +222,27 @@ def async_seed_split_file(self, file_path, update_id, dataset_id=None):
             settings.MEDIA_ROOT, os.path.basename(file_path))
         dataset = c.Dataset.objects.get(
             id=dataset_id) if dataset_id else update.file.dataset
+        # Lock per split file path. Different splits of the same Update use
+        # different paths so they still run in parallel; redelivered copies
+        # of the SAME split lock on the same path and exit cleanly with a
+        # warning instead of double-processing + emailing a FileNotFound
+        # error when the original worker deletes the file out from under
+        # them. (Pre-2026-06-17 the AcrisRealParty split tasks ran ~14h
+        # each, exceeding the 10h broker visibility_timeout — every long
+        # split was redelivered and generated a duplicate worker.)
+        got_lock = _try_acquire_split_seed_lock(file_path, update.id, dataset.name)
+        if not got_lock:
+            return
+        lock_file_path = file_path
         logger.info(
             "Beginning async seeding (split) - {} - c.Update: {}".format(update.dataset.name, update.id))
         dataset.split_seed_dataset(file_path=file_path, update=update)
     except Exception as e:
         handle_task_error(e, update=update)
         raise e
+    finally:
+        if got_lock and lock_file_path is not None:
+            _release_split_seed_lock(lock_file_path)
 
 
 def _seed_lock_key(dataset_id):
@@ -267,6 +285,44 @@ def _try_acquire_seed_lock(dataset_id, update_id, dataset_name):
 def _release_seed_lock(dataset_id):
     from django.db import connection
     key = _seed_lock_key(dataset_id)
+    with connection.cursor() as c:
+        c.execute("SELECT pg_advisory_unlock(%s)", [key])
+
+
+def _split_seed_lock_key(file_path):
+    # Per-split-file lock. Keyed on the basename so the same lock identity
+    # works whether the path was set as the absolute one passed by the
+    # task or the basename-normalized one we use inside the worker.
+    from django.db import connection
+    with connection.cursor() as c:
+        c.execute("SELECT hashtext(%s)::bigint", [f'split_seed:{os.path.basename(file_path)}'])
+        return c.fetchone()[0]
+
+
+def _try_acquire_split_seed_lock(file_path, update_id, dataset_name):
+    """Non-blocking session-level advisory lock per split file.
+
+    Used by async_seed_split_file to drop redelivered duplicate tasks.
+    The 4 splits of a single Update all use distinct paths so they still
+    run in parallel; only redelivered copies of the same split contend
+    for the same lock and skip silently.
+    """
+    from django.db import connection
+    key = _split_seed_lock_key(file_path)
+    with connection.cursor() as c:
+        c.execute("SELECT pg_try_advisory_lock(%s)", [key])
+        got_it = c.fetchone()[0]
+    if not got_it:
+        logger.warning(
+            "Skipping redelivered split seed for %s (Update %s): another worker is already processing %s",
+            dataset_name, update_id, os.path.basename(file_path),
+        )
+    return got_it
+
+
+def _release_split_seed_lock(file_path):
+    from django.db import connection
+    key = _split_seed_lock_key(file_path)
     with connection.cursor() as c:
         c.execute("SELECT pg_advisory_unlock(%s)", [key])
 

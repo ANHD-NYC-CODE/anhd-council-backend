@@ -159,8 +159,18 @@ class BaseDatasetModel():
         lines_per_csv = math.ceil(csv_length / MAX_CONCURRENT_JOBS)
         logger.debug("Splitting CSV into {}".format(MAX_CONCURRENT_JOBS))
 
+        # Include update.id in the split filename prefix so concurrent or
+        # redelivered runs of the same dataset can't collide on the same
+        # paths. Pre-2026-06-17 the prefix was just db_table (e.g.
+        # "datasets_acrisrealparty"), so two runs both wrote to
+        # `_0.csv` … `_3.csv` and stepped on each other when the broker
+        # redelivered long-running tasks after the visibility_timeout.
+        prefix = self._meta.db_table
+        if update is not None:
+            prefix = "{}_u{}".format(prefix, update.id)
+
         split_csvs = split_csv(
-            file_path, settings.MEDIA_ROOT, self._meta.db_table, lines_per_csv)
+            file_path, settings.MEDIA_ROOT, prefix, lines_per_csv)
         for csv_path in split_csvs:
             logger.debug('Creating job for split file {}'.format(csv_path))
             async_seed_split_file.delay(csv_path, update.id)
@@ -171,7 +181,19 @@ class BaseDatasetModel():
         upsert_single_rows(self, self.transform_self_from_file(
             kwargs['file_path'], update=update), update=update)
         if 'delete_file' in kwargs and kwargs['delete_file']:
-            os.remove(kwargs['file_path'])
+            # Guarded against FileNotFoundError. Pre-2026-06-17 a celery
+            # broker redelivery race could cause two workers to process the
+            # same split file in parallel — the "winner" deletes the file
+            # here, the "loser" crashes on os.remove and fires an error
+            # email. The advisory lock added in async_seed_split_file makes
+            # this race unlikely, but the guard is cheap belt-and-braces.
+            try:
+                os.remove(kwargs['file_path'])
+            except FileNotFoundError:
+                logger.info(
+                    "seed_with_single: file already removed (likely a concurrent worker): %s",
+                    kwargs['file_path'],
+                )
 
     @classmethod
     def seed_or_update_with_filter(self, **kwargs):

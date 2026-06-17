@@ -280,7 +280,14 @@ CELERY_ACKS_LATE = False
 CELERY_TASK_PUBLISH_RETRY = True
 CELERY_DISABLE_RATE_LIMITS = False
 CELERY_BROKER_TRANSPORT_OPTIONS = {
-    'visibility_timeout': 36000  # 10 hours
+    # AcrisRealParty split-seed tasks run ~14h each (4.5 GB CSV, 4 splits).
+    # At 36000s (10h) the broker was redelivering them mid-run, spawning
+    # duplicate workers that raced on shared split-file paths and emailed
+    # FileNotFoundError when the original "winner" deleted the file.
+    # The split-seed advisory lock (_try_acquire_split_seed_lock) makes
+    # duplicate-redelivery harmless (skip-with-warning), but raising the
+    # timeout to 86400 (24h) avoids most redeliveries in the first place.
+    'visibility_timeout': 86400  # 24 hours
 }
 
 # https://adamj.eu/tech/2019/09/19/working-around-memory-leaks-in-your-django-app/

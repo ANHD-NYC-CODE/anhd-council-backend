@@ -1,5 +1,25 @@
 # API CHANGELOG
 
+### 2026-06-17 (ACRIS split-seed: stop the FileNotFound email flood)
+
+**Root cause (Acris Real Property Party Update 33707 + many earlier)**
+- `AcrisRealParty`, `AcrisRealLegal`, and `AcrisRealMaster` all use `BaseDatasetModel.async_concurrent_seed`, which splits the downloaded CSV into 4 chunks named `{db_table}_0.csv` … `_3.csv` and queues a Celery task per chunk via `async_seed_split_file`. Each chunk task does an upsert and then `os.remove`s the split file at the end of `seed_with_single`.
+- AcrisRealParty's 4.5 GB CSV produces ~1.1 GB chunks that take ~13–14 hours each to upsert.
+- The Celery broker `visibility_timeout` was 36000s (10 hours) — shorter than chunk duration. After 10h with no ack the broker redelivered the message to a different worker. Both workers then processed the same chunk in parallel against the same file path. The "winner" finished upsert + `os.remove`. The "loser" finished later, called `os.remove` on the now-deleted file, raised `FileNotFoundError`, and called `handle_task_error` — which emails admins. 4 split files × 1+ redelivery each = 4–12 emails per Update.
+
+**Fixes (this commit)**
+- `BaseDatasetModel.seed_with_single`: guard `os.remove` against `FileNotFoundError`. Race-loser logs INFO and continues silently instead of raising.
+- `BaseDatasetModel.async_concurrent_seed`: include `update.id` in the split filename prefix (`{db_table}_u{update_id}_{N}.csv`). Two different Updates can no longer collide on the same paths.
+- `core/tasks.py::async_seed_split_file`: add per-split-file `pg_try_advisory_lock` (helpers `_try_acquire_split_seed_lock` / `_release_split_seed_lock` mirror the existing `_try_acquire_seed_lock` pattern used by `async_seed_file`). Redelivered duplicate of the same split contends for the same lock, fails to acquire, and exits cleanly with a WARNING log — no upsert, no email. The 4 distinct splits within a single Update lock on different paths so they still run in parallel.
+- `app/settings/base.py`: raise `CELERY_BROKER_TRANSPORT_OPTIONS['visibility_timeout']` from 36000 (10h) → 86400 (24h). The lock makes redelivery harmless, but this avoids redelivering most long ACRIS tasks in the first place.
+
+**Audit**
+- Only the three ACRIS models use `async_concurrent_seed`. All three share the bug; all three benefit from fixes #2 + #3.
+- Every other `os.remove` call site in `core/` and `datasets/` is already either `os.path.isfile`-guarded or wrapped in `try/except` (audited `core/models.py:243`, `core/utils/database.py:{149,173,214}`, `core/utils/csv_helpers.py:55`).
+
+**Out of scope but flagged for follow-up**
+- `AcrisRealLegal` and `AcrisRealParty` have NO date or doctype filter in `pre_validation_filters` — only `AcrisRealMaster` drops rows >1yr old. We're upserting every party (buyer/seller/attorney/etc) for every ACRIS document across all history, even for documents we've already filtered out of Master. A pre-split filter that drops rows whose `documentid` isn't in our Master table would likely shrink the Party CSV by >90% and bring chunk duration from hours to minutes — eliminating the visibility_timeout concern entirely. Tracked as a follow-up card.
+
 ### 2026-06-15d (gunicorn: raise --timeout 180 → 600 to align with nginx)
 
 **User-facing reliability**
