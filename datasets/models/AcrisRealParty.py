@@ -8,9 +8,11 @@ from datasets.utils.validation_filters import is_null
 # To single MasterLegal document by documentid
 from django.conf import settings
 
+import datetime
 import os
 import csv
 import logging
+from urllib.parse import urlencode
 from core.tasks import async_download_and_update
 
 
@@ -19,7 +21,12 @@ logger = logging.getLogger('app')
 
 class AcrisRealParty(BaseDatasetModel, models.Model):
     API_ID = '636b-3b5g'
-    download_endpoint = 'https://data.cityofnewyork.us/api/views/636b-3b5g/rows.csv?accessType=DOWNLOAD'
+    # Socrata /resource/ endpoint with SoQL :updated_at filter — see
+    # AcrisRealMaster + AcrisRealLegal for the rationale. Party has no
+    # docdate/modified_date columns (only good_through_date), so :updated_at
+    # is the only available change-tracking column.
+    base_download_endpoint = 'https://data.cityofnewyork.us/resource/636b-3b5g.csv'
+    SOCRATA_LOOKBACK_DAYS = 60
 
     key = models.TextField(primary_key=True, blank=False, null=False)
     documentid = models.ForeignKey('AcrisRealMaster', db_column='documentid', db_constraint=False,
@@ -41,8 +48,32 @@ class AcrisRealParty(BaseDatasetModel, models.Model):
             self.get_dataset().id, endpoint=endpoint, file_name=file_name)
 
     @classmethod
-    def download(self, endpoint=None, file_name=None):
-        return self.download_file(self.download_endpoint, file_name=file_name)
+    def download(cls, endpoint=None, file_name=None):
+        if endpoint is None:
+            endpoint = cls._build_socrata_url()
+        logger.info("Downloading AcrisRealParty (filtered): %s", endpoint)
+        return cls.download_file(endpoint, file_name=file_name)
+
+    @classmethod
+    def _build_socrata_url(cls):
+        cutoff = (datetime.date.today() - datetime.timedelta(days=cls.SOCRATA_LOOKBACK_DAYS)).isoformat()
+        # See AcrisRealMaster._build_socrata_url for the aliasing rationale.
+        select = ','.join([
+            'document_id AS documentid',
+            'record_type AS recordtype',
+            'party_type AS partytype',
+            'name AS name',
+            'address_1 AS address1',
+            'address_2 AS address2',
+            'country AS country',
+            'city AS city',
+            'state AS state',
+            'zip AS zip',
+            'good_through_date AS goodthroughdate',
+        ])
+        where = ":updated_at >= '{cutoff}'".format(cutoff=cutoff)
+        query = urlencode({'$select': select, '$where': where, '$limit': 100000000})
+        return '{}?{}'.format(cls.base_download_endpoint, query)
 
     @classmethod
     def pre_validation_filters(self, gen_rows):

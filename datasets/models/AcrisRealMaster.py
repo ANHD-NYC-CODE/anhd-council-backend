@@ -5,9 +5,11 @@ from datasets.utils.validation_filters import is_null
 from datasets.utils import advanced_filter as af
 from django.db.models import Q
 from django.conf import settings
+import datetime
 import os
 import csv
 import logging
+from urllib.parse import urlencode
 from core.tasks import async_download_and_update
 
 logger = logging.getLogger('app')
@@ -15,7 +17,15 @@ logger = logging.getLogger('app')
 
 class AcrisRealMaster(BaseDatasetModel, models.Model):
     API_ID = 'bnx9-e6tj'
-    download_endpoint = 'https://data.cityofnewyork.us/api/views/bnx9-e6tj/rows.csv?accessType=DOWNLOAD'
+    # Socrata /resource/ endpoint (supports SoQL $where; the /api/views/ bulk
+    # endpoint silently ignores filters). We build the download URL in
+    # download() below with a 60-day modified_date OR :updated_at filter so we
+    # only pull rows touched since the last pull window. 60 days handles ACRIS
+    # publish gaps (the dataset has been seen sitting idle on Socrata for 5+
+    # weeks at a time). Upsert semantics mean historical rows already in the
+    # DB are preserved.
+    base_download_endpoint = 'https://data.cityofnewyork.us/resource/bnx9-e6tj.csv'
+    SOCRATA_LOOKBACK_DAYS = 60
     QUERY_DATE_KEY = 'docdate'
     RECENT_DATE_PINNED = True
     QUERY_PROPERTY_KEY = 'acrisreallegal__documentid'
@@ -96,8 +106,40 @@ class AcrisRealMaster(BaseDatasetModel, models.Model):
         return sales_filter
 
     @classmethod
-    def download(self, endpoint=None, file_name=None):
-        return self.download_file(self.download_endpoint, file_name=file_name)
+    def download(cls, endpoint=None, file_name=None):
+        if endpoint is None:
+            endpoint = cls._build_socrata_url()
+        logger.info("Downloading AcrisRealMaster (filtered): %s", endpoint)
+        return cls.download_file(endpoint, file_name=file_name)
+
+    @classmethod
+    def _build_socrata_url(cls):
+        cutoff = (datetime.date.today() - datetime.timedelta(days=cls.SOCRATA_LOOKBACK_DAYS)).isoformat()
+        # $select aliases snake_case Socrata columns → consolidated model field
+        # names so the existing clean_headers normalizer in
+        # core.utils.transform produces keys that match the model fields.
+        select = ','.join([
+            'document_id AS documentid',
+            'record_type AS recordtype',
+            'crfn AS crfn',
+            'recorded_borough AS borough',
+            'doc_type AS doctype',
+            'document_date AS docdate',
+            'document_amt AS docamount',
+            'recorded_datetime AS recordedfiled',
+            'modified_date AS modifieddate',
+            'reel_yr AS reelyear',
+            'reel_nbr AS reelnbr',
+            'reel_pg AS reelpage',
+            'percent_trans AS pcttransferred',
+            'good_through_date AS goodthroughdate',
+        ])
+        # Belt + suspenders: modified_date is set by ACRIS; :updated_at is the
+        # Socrata system column for "row last touched in the dataset". OR'd
+        # together so we catch any record touched in either dimension.
+        where = "modified_date >= '{cutoff}' OR :updated_at >= '{cutoff}'".format(cutoff=cutoff)
+        query = urlencode({'$select': select, '$where': where, '$limit': 100000000})
+        return '{}?{}'.format(cls.base_download_endpoint, query)
 
     @classmethod
     def pre_validation_filters(self, gen_rows):
@@ -106,15 +148,6 @@ class AcrisRealMaster(BaseDatasetModel, models.Model):
                 continue
             yield row
         return gen_rows
-
-    # trims down new update files to preserve memory
-    # uses original header values
-    @classmethod
-    def update_filters(self, gen_rows):
-        for row in gen_rows:
-            if row['docdate'] and is_older_than(row['docdate'], 1):
-                continue
-            yield row
 
     @classmethod
     def transform_self(self, file_path, update=None):

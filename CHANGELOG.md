@@ -1,5 +1,25 @@
 # API CHANGELOG
 
+### 2026-06-17b (ACRIS: incremental Socrata SoQL filtering)
+
+**Performance + storage**
+- All three ACRIS models (`AcrisRealMaster`, `AcrisRealLegal`, `AcrisRealParty`) now download incrementally via the Socrata `/resource/` endpoint with a SoQL `$where` filter, instead of pulling all-history every time via `/api/views/{id}/rows.csv?accessType=DOWNLOAD`. Upsert semantics mean historical rows already in the DB are preserved — only new/changed rows come through the wire.
+- Filter: 60-day lookback against `:updated_at` (Socrata system column for "row last touched in the dataset"). Master adds `modified_date` as belt + suspenders since it's available on that resource. Legal/Party only have `:updated_at` (no `modified_date` column at source).
+- Column aliasing happens in SoQL `$select` (e.g. `document_id AS documentid`) so the existing `clean_headers` normalizer produces keys matching model fields directly — no per-dataset rename map needed.
+- Why 60 days: ACRIS publishing has been observed sitting idle on Socrata for 5+ weeks at a time. A 60-day window tolerates a full publish gap with a cycle on either side, so we never miss data in normal operation. (Verified live: max `:updated_at` across all three datasets is currently 2026-05-11, ~5 weeks before this commit.)
+
+**Audit / cleanup**
+- `AcrisRealMaster.update_filters` (with `is_older_than(docdate, 1)`) was **dead code** — the standard hook is `update_set_filter`, so the "1-year filter" everyone assumed existed had never actually run. Removed. The new SoQL filter is now the source-side equivalent that actually fires.
+- Existing `clean_temp_directory` periodic task (Sundays 5am, `app/tasks.py:64`) already keeps the 2 most recent CSVs per dataset and prunes older — confirmed on prod. With smaller filtered ACRIS downloads, disk pressure naturally drops.
+
+**Expected impact**
+- Master: ~1.5 GB → ~50-200 MB per pull (proportional to recent activity).
+- Party: ~4.5 GB → likely 50-500 MB per pull (most upserts collapse).
+- Splits inside `async_concurrent_seed` go from 14-hour chunks to under 1 hour, well below the 24-hour broker visibility_timeout. The race-fix + advisory-lock from 2026-06-17 (commit 2a3a558) remain as belt + suspenders.
+
+**Out of scope but flagged for follow-up**
+- Track `last_successfully_pulled_at` per Dataset and filter `$where=:updated_at > last_pulled_at` instead of a fixed lookback window. Guarantees zero miss even if ACRIS gaps for >60 days. Bigger change (schema + bookkeeping in the pull path) — separate card.
+
 ### 2026-06-17 (ACRIS split-seed: stop the FileNotFound email flood)
 
 **Root cause (Acris Real Property Party Update 33707 + many earlier)**

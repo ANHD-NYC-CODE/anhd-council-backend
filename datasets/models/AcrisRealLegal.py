@@ -9,10 +9,12 @@ from django.db.models import Count, OuterRef, Q, Subquery
 from django.db.models.functions import Coalesce
 from core.tasks import async_download_and_update
 
+import datetime as _dt
 import os
 import csv
 import logging
 from datetime import datetime, timezone
+from urllib.parse import urlencode
 from django.utils.timezone import make_aware
 
 from datasets.utils import dates
@@ -21,7 +23,11 @@ logger = logging.getLogger('app')
 
 class AcrisRealLegal(BaseDatasetModel, models.Model):
     API_ID = '8h5j-fqxa'
-    download_endpoint = 'https://data.cityofnewyork.us/api/views/8h5j-fqxa/rows.csv?accessType=DOWNLOAD'
+    # Socrata /resource/ endpoint with SoQL filter — see AcrisRealMaster for
+    # the rationale. Legal has no docdate/modified_date columns, so we filter
+    # on the Socrata system :updated_at column only.
+    base_download_endpoint = 'https://data.cityofnewyork.us/resource/8h5j-fqxa.csv'
+    SOCRATA_LOOKBACK_DAYS = 60
     QUERY_DATE_KEY = 'documentid__docdate'  # date is on the acrisrealmaster record
 
     class Meta:
@@ -58,8 +64,37 @@ class AcrisRealLegal(BaseDatasetModel, models.Model):
             self.get_dataset().id, endpoint=endpoint, file_name=file_name)
 
     @classmethod
-    def download(self, endpoint=None, file_name=None):
-        return self.download_file(self.download_endpoint, file_name=file_name)
+    def download(cls, endpoint=None, file_name=None):
+        if endpoint is None:
+            endpoint = cls._build_socrata_url()
+        logger.info("Downloading AcrisRealLegal (filtered): %s", endpoint)
+        return cls.download_file(endpoint, file_name=file_name)
+
+    @classmethod
+    def _build_socrata_url(cls):
+        cutoff = (_dt.date.today() - _dt.timedelta(days=cls.SOCRATA_LOOKBACK_DAYS)).isoformat()
+        # See AcrisRealMaster._build_socrata_url for the aliasing rationale.
+        select = ','.join([
+            'document_id AS documentid',
+            'record_type AS recordtype',
+            'borough AS borough',
+            'block AS block',
+            'lot AS lot',
+            'easement AS easement',
+            'partial_lot AS partiallot',
+            'air_rights AS airrights',
+            'subterranean_rights AS subterraneanrights',
+            'property_type AS propertytype',
+            'street_number AS streetnumber',
+            'street_name AS streetname',
+            'unit AS unit',
+            'good_through_date AS goodthroughdate',
+        ])
+        # No modified_date column on the Legal resource; :updated_at is all we
+        # have. Sufficient because Socrata bumps it on any row touch.
+        where = ":updated_at >= '{cutoff}'".format(cutoff=cutoff)
+        query = urlencode({'$select': select, '$where': where, '$limit': 100000000})
+        return '{}?{}'.format(cls.base_download_endpoint, query)
 
     @classmethod
     def pre_validation_filters(self, gen_rows):
