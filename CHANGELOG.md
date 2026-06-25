@@ -1,5 +1,17 @@
 # API CHANGELOG
 
+### 2026-06-25 (cache pre-warm: 5 boroughs + citywide)
+
+**User-facing perf**
+- The existing 7-AM `reset_cache` job pre-warms each council/community/state-assembly/state-senate/zipcode summary view, but borough-wide and citywide property lookups were never pre-warmed. First-time loads of `/properties/?borough=BK` (or any borough) hit cold SQL — ~5-10 min for Brooklyn (~300K row scan + serialization), longer for citywide.
+- Added `cache_borough_property_summaries_full` (loops MN/BK/BX/QN/SI) and `cache_citywide_property_summaries_full` (single call). Both follow the same shape as the existing per-district pre-warmers and are queued by `create_async_cache_workers` alongside them, so they run in the same 7-AM celery sweep.
+
+**Resource impact**
+- 6 extra requests per night, sequential through celery_default. Expected total runtime ~35-65 min.
+- 5s sleep between borough calls. 900s `requests.get` timeout per call (matches the gunicorn `--timeout 600` we deployed 2026-06-15d, with margin).
+- `max_retries=1, default_retry_delay=600s` on the two new tasks — if one fails it's almost certainly upstream load, so don't pile a fast retry on top.
+- Citywide response may exceed the 5 MB compressed `MAX_CACHE_VALUE_BYTES` cap, in which case `cache_helpers` logs + skips the write. Still cheap to attempt (one request), and pays off when it fits.
+
 ### 2026-06-17b (ACRIS: incremental Socrata SoQL filtering)
 
 **Performance + storage**

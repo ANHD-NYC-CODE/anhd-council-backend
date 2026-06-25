@@ -6,7 +6,15 @@ from core import models as c
 from users import models as u
 from django.conf import settings
 from app.mailer import send_update_error_mail, send_update_success_mail, send_general_task_error_mail
-from core.utils.cache import cache_council_property_summaries_full, cache_community_property_summaries_full, cache_stateassembly_property_summaries_full, cache_statesenate_property_summaries_full, cache_zipcode_property_summaries_full
+from core.utils.cache import (
+    cache_council_property_summaries_full,
+    cache_community_property_summaries_full,
+    cache_stateassembly_property_summaries_full,
+    cache_statesenate_property_summaries_full,
+    cache_zipcode_property_summaries_full,
+    cache_borough_property_summaries_full,
+    cache_citywide_property_summaries_full,
+)
 from datasets.utils.gmail_utils import get_property_shark_links
 from app.celery import FaultTolerantTask
 from datetime import timedelta
@@ -111,6 +119,20 @@ def async_cache_statesenate_property_summaries_full(self, token):
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 5})
 def async_cache_zipcode_property_summaries_full(self, token):
     return cache_zipcode_property_summaries_full(token)
+
+
+# Borough + citywide pre-warm — added 2026-06-25. Only 6 requests total
+# (5 boroughs + 1 citywide) but each can take 5-10 min. autoretry_for
+# omitted intentionally: if Brooklyn fails once it's almost certainly
+# upstream load, retrying immediately would hammer the API.
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', max_retries=1, default_retry_delay=600)
+def async_cache_borough_property_summaries_full(self, token):
+    return cache_borough_property_summaries_full(token)
+
+
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', max_retries=1, default_retry_delay=600)
+def async_cache_citywide_property_summaries_full(self, token):
+    return cache_citywide_property_summaries_full(token)
 
 
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=30, max_retries=3)
