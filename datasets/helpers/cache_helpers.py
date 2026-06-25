@@ -19,14 +19,18 @@ logger = logging.getLogger('app')
 # against a single huge response monopolizing Redis memory (we found a 350MB
 # entry at /dobpermitissuednow/?page=6435 from a CSV poisoning the JSON cache
 # before we separated the format from the cache key — see construct_cache_key).
-MAX_CACHE_VALUE_BYTES = 50 * 1024 * 1024  # 50 MB compressed
-# Raised from 5 MB → 50 MB on 2026-06-25 so the 6 AM borough pre-warm
-# entries (Manhattan ~6-10 MB, Bronx ~15-25 MB, Staten Island est. ~5-15
-# MB compressed) actually persist. Brooklyn (~50-80 MB) and Queens
-# (~55-90 MB) still likely exceed the cap; they'll continue to log
-# "Refusing to cache" warnings and fall back to per-request fetch.
-# Coordinated with redis.conf maxmemory bump 2gb → 4gb so the larger
-# entries don't immediately evict each other via allkeys-lru.
+MAX_CACHE_VALUE_BYTES = 100 * 1024 * 1024  # 100 MB compressed
+# Raised stepwise on 2026-06-25:
+#   5 MB → 50 MB (b commit) — covered MN/BX/SI boroughs.
+#   50 MB → 100 MB (c commit) — adds BK (~50-80 MB) and QN (~55-90 MB).
+# Cache budget at 100 MB cap is ~575-700 MB total (existing 450 MB
+# dashboard pre-warms + ~125-220 MB for 5 boroughs), well under the
+# 4 GB Redis maxmemory. Citywide (~150-200 MB compressed) still likely
+# exceeds the cap and will fall back to per-request fetch — accepted
+# because citywide is a power-user/bot URL, not a critical user flow.
+# Per-request decompress of a 100 MB entry produces ~1 GB JSON
+# transiently per worker; with 3 workers × 4 threads on prod, worst-
+# case concurrent decompress = ~3 GB, well within the 31 GB host RAM.
 
 
 def has_cachable_format(request):

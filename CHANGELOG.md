@@ -1,5 +1,19 @@
 # API CHANGELOG
 
+### 2026-06-25c (cache cap raise: MAX_CACHE_VALUE_BYTES 50 MB → 100 MB)
+
+**Why**
+- The 50 MB bump in 2026-06-25b covered Manhattan/Bronx/Staten Island boroughs but left Brooklyn (~50-80 MB compressed) and Queens (~55-90 MB) outside the cap — they were still falling back to per-request fetch and BK in particular was 5+ minutes cold per first user of the day.
+- Raising to 100 MB lets all 5 boroughs cache. Citywide (~150-200 MB) still doesn't fit and remains an explicit known-uncached URL.
+
+**Budget**
+- New cache footprint estimate: ~575-700 MB total (existing 450 MB dashboard pre-warms + ~125-220 MB for the 5 boroughs).
+- Out of 4 GB Redis maxmemory → ~15-18% utilization. Headroom is fine.
+
+**Per-request memory**
+- A 100 MB compressed cache hit decompresses to ~1 GB JSON transiently per worker. With 3 workers × 4 threads on prod (12 thread slots), worst-case concurrent decompress = ~3 GB. Host has 31 GB RAM — comfortable margin.
+- Cache hit latency for a 100 MB entry is ~5-10s (decompress + parse + serialize). Compared to BK's cold-query time of 5+ minutes, the cache hit is still a 30-60x speedup.
+
 ### 2026-06-25b (cache cap raise: MAX_CACHE_VALUE_BYTES 5 MB → 50 MB, Redis maxmemory 2 GB → 4 GB)
 
 **Why**
