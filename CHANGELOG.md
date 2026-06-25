@@ -1,5 +1,18 @@
 # API CHANGELOG
 
+### 2026-06-25b (cache cap raise: MAX_CACHE_VALUE_BYTES 5 MB → 50 MB, Redis maxmemory 2 GB → 4 GB)
+
+**Why**
+- Companion to the borough pre-warm in 2026-06-25 (see below): real per-borough cold-load measurements showed each borough's response is way larger than the existing 5 MB compressed cache ceiling — Manhattan ~6-10 MB gzipped, Bronx ~15-25 MB, Brooklyn ~50-80 MB, Queens ~55-90 MB, Staten Island est. ~5-15 MB. With the old cap, every borough pre-warm logged "Refusing to cache" and `cache.set` was skipped — the pre-warm was busywork.
+- Raising the per-entry cap to 50 MB lets Manhattan, Bronx, Staten Island (and probably citywide for some filters) actually persist. Brooklyn and Queens still exceed it and will continue to fall back to per-request fetch.
+
+**Coordinating Redis change**
+- `redis.conf`: `maxmemory 2gb` → `4gb`. Existing peak usage already hit 2.22 GB once (over the prior limit). With 4-5 borough-sized entries (350+ MB) + the existing ~450 MB of dashboard pre-warms, 4 GB gives breathing room before `allkeys-lru` starts evicting useful entries during the day. System has 31 GB RAM, well above the new cap.
+
+**Trade-off / risks**
+- Larger entries mean larger transient memory spikes when gunicorn decompresses a hit. 50 MB compressed decompresses to ~500 MB JSON. Multiple workers fetching the same big entry simultaneously could spike to 1.5-2 GB transient. Acceptable on the current host.
+- Borough entries will likely get LRU-evicted during high-traffic periods (they're accessed less often than individual districts). Pre-warm refreshes nightly at 7 AM so "first borough user of the day" gets the warm cache; later users may still pay the cold cost. If this hurts in practice, the next step is to widen LRU or use a separate cache prefix with LFU policy for the heavy entries.
+
 ### 2026-06-25 (cache pre-warm: 5 boroughs + citywide)
 
 **User-facing perf**

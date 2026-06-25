@@ -19,7 +19,14 @@ logger = logging.getLogger('app')
 # against a single huge response monopolizing Redis memory (we found a 350MB
 # entry at /dobpermitissuednow/?page=6435 from a CSV poisoning the JSON cache
 # before we separated the format from the cache key — see construct_cache_key).
-MAX_CACHE_VALUE_BYTES = 5 * 1024 * 1024  # 5 MB compressed
+MAX_CACHE_VALUE_BYTES = 50 * 1024 * 1024  # 50 MB compressed
+# Raised from 5 MB → 50 MB on 2026-06-25 so the 6 AM borough pre-warm
+# entries (Manhattan ~6-10 MB, Bronx ~15-25 MB, Staten Island est. ~5-15
+# MB compressed) actually persist. Brooklyn (~50-80 MB) and Queens
+# (~55-90 MB) still likely exceed the cap; they'll continue to log
+# "Refusing to cache" warnings and fall back to per-request fetch.
+# Coordinated with redis.conf maxmemory bump 2gb → 4gb so the larger
+# entries don't immediately evict each other via allkeys-lru.
 
 
 def has_cachable_format(request):
