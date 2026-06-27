@@ -1,5 +1,21 @@
 # API CHANGELOG
 
+### 2026-06-27b (heavy-geographic re-cache instead of invalidate on structural updates)
+
+**What changed**
+- Replaced the immediate `cache.delete_pattern(...)` invalidation in `async_seed_file`'s success path with a `delay(...)` of `async_cache_borough_property_summaries_full(force=True)` and `async_cache_citywide_property_summaries_full(force=True)`.
+- Renamed `_maybe_invalidate_heavy_cache` → `_maybe_recache_heavy_geographic` and `STRUCTURAL_DATASETS_INVALIDATING_BOROUGH_CACHE` → `STRUCTURAL_DATASETS_TRIGGERING_RECACHE`.
+- Added `force=False` parameter to the borough/citywide pre-warm functions so the structural-update re-cache path can bypass the Sunday-only gate.
+
+**Why**
+- The prior invalidate-on-seed behavior cleared the borough cache the moment PLUTO/RS/etc. finished updating. Next user paid the cold ~10 min borough load triggered by a *backend* event, not anything they did. Bad UX.
+- The re-cache pattern keeps users on the old cached entry (still valid — TTL hasn't expired, just slightly stale) until the background pre-warm completes ~15-30 min later. New cache entry OVERWRITES the old one. Users never see a cold load triggered by a backend update.
+- Trade-off: borough data is "slightly stale" for the duration of the re-cache window (15-30 min after structural seed completes). For borough-aggregate views this is invisible.
+
+**Failure modes**
+- If the re-cache task fails (BK/QN cold load times out, etc.), the old cache continues serving until 7-day TTL expires. Next Sunday's weekly pre-warm tries again. No user impact.
+- `_maybe_recache_heavy_geographic` may queue multiple re-cache tasks in quick succession (multiple structural seeds within minutes). They run sequentially on celery_default; redundant but idempotent (each just overwrites the cache).
+
 ### 2026-06-27 (borough/citywide pre-warm: weekly cadence + 7-day TTL + structural-update invalidation)
 
 **What changed**

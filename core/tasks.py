@@ -125,14 +125,16 @@ def async_cache_zipcode_property_summaries_full(self, token):
 # (5 boroughs + 1 citywide) but each can take 5-10 min. autoretry_for
 # omitted intentionally: if Brooklyn fails once it's almost certainly
 # upstream load, retrying immediately would hammer the API.
+# `force` defaults to False — the function self-gates to Sundays. The
+# structural-update re-cache hook sets force=True to bypass the gate.
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', max_retries=1, default_retry_delay=600)
-def async_cache_borough_property_summaries_full(self, token):
-    return cache_borough_property_summaries_full(token)
+def async_cache_borough_property_summaries_full(self, token, force=False):
+    return cache_borough_property_summaries_full(token, force=force)
 
 
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', max_retries=1, default_retry_delay=600)
-def async_cache_citywide_property_summaries_full(self, token):
-    return cache_citywide_property_summaries_full(token)
+def async_cache_citywide_property_summaries_full(self, token, force=False):
+    return cache_citywide_property_summaries_full(token, force=force)
 
 
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=30, max_retries=3)
@@ -370,7 +372,7 @@ def async_seed_file(self, file_path, update_id, dataset_id=None):
         dataset.seed_dataset(file_path=file_path, update=update)
         logger.info(
             "{} updated successfully".format(update.dataset.name))
-        _maybe_invalidate_heavy_cache(dataset.model_name)
+        _maybe_recache_heavy_geographic(dataset.model_name)
     except Exception as e:
         handle_task_error(e, update=update)
         raise e
@@ -385,9 +387,8 @@ def async_seed_file(self, file_path, update_id, dataset_id=None):
 # (7-day TTL) genuinely stale. Daily-cadence datasets like HPDComplaint /
 # DOBViolation only nudge counts and are deliberately NOT in this list —
 # the borough aggregates can stay up to a week stale on those without
-# meaningful user-facing impact, and invalidating on each one would defeat
-# the weekly pre-warm pattern entirely.
-STRUCTURAL_DATASETS_INVALIDATING_BOROUGH_CACHE = {
+# meaningful user-facing impact.
+STRUCTURAL_DATASETS_TRIGGERING_RECACHE = {
     'Property',
     'RentStabilizationRecord',
     'HPDRegistration',
@@ -397,14 +398,25 @@ STRUCTURAL_DATASETS_INVALIDATING_BOROUGH_CACHE = {
 }
 
 
-def _maybe_invalidate_heavy_cache(model_name):
-    if model_name not in STRUCTURAL_DATASETS_INVALIDATING_BOROUGH_CACHE:
+def _maybe_recache_heavy_geographic(model_name):
+    # On structural-dataset seed completion, queue a fresh borough +
+    # citywide pre-warm. The new entries OVERWRITE the existing ones once
+    # written, so users continue hitting the (slightly-stale-but-valid)
+    # old cached entries during the ~15-30 min re-cache run — they NEVER
+    # pay a cold load triggered by a backend update. This is the
+    # "re-cache, don't invalidate" pattern: the user experience is
+    # uninterrupted.
+    if model_name not in STRUCTURAL_DATASETS_TRIGGERING_RECACHE:
         return
     try:
-        from core.utils.cache import invalidate_heavy_geographic_cache
-        invalidate_heavy_geographic_cache(reason='{} update'.format(model_name))
+        token = settings.CACHE_REQUEST_KEY
+        async_cache_borough_property_summaries_full.delay(token, force=True)
+        async_cache_citywide_property_summaries_full.delay(token, force=True)
+        logger.info(
+            "Queued heavy geographic re-cache after %s update", model_name,
+        )
     except Exception as e:
-        logger.warning('invalidate_heavy_geographic_cache failed: %s', e)
+        logger.warning('Failed to queue heavy geographic re-cache: %s', e)
 
 
 @app.task(bind=True, base=FaultTolerantTask, queue='update', acks_late=True, max_retries=1)

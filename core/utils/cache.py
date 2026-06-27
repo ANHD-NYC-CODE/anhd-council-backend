@@ -174,9 +174,15 @@ def _is_weekly_pre_warm_day():
     return datetime.datetime.now().weekday() == 6
 
 
-def cache_borough_property_summaries_full(token, sleep=5):
-    if not _is_weekly_pre_warm_day():
-        logger.debug("Borough pre-warm: skipping (runs Sundays only)")
+def cache_borough_property_summaries_full(token, sleep=5, force=False):
+    # `force=True` bypasses the Sunday gate. Used by the structural-update
+    # re-cache path (Property/PLUTO etc. just changed; refresh now instead
+    # of waiting for next Sunday's natural pre-warm). The fresh entry
+    # OVERWRITES the existing cached entry — users continue hitting the
+    # stale-but-valid old entry until the new write completes, so they
+    # never pay a cold load triggered by a backend update.
+    if not force and not _is_weekly_pre_warm_day():
+        logger.debug("Borough pre-warm: skipping (runs Sundays only; force=False)")
         return
 
     headers = {"whoisit": token}
@@ -196,9 +202,9 @@ def cache_borough_property_summaries_full(token, sleep=5):
     logger.debug("Borough Pre-Caching complete!")
 
 
-def cache_citywide_property_summaries_full(token):
-    if not _is_weekly_pre_warm_day():
-        logger.debug("Citywide pre-warm: skipping (runs Sundays only)")
+def cache_citywide_property_summaries_full(token, force=False):
+    if not force and not _is_weekly_pre_warm_day():
+        logger.debug("Citywide pre-warm: skipping (runs Sundays only; force=False)")
         return
 
     headers = {"whoisit": token}
