@@ -370,12 +370,41 @@ def async_seed_file(self, file_path, update_id, dataset_id=None):
         dataset.seed_dataset(file_path=file_path, update=update)
         logger.info(
             "{} updated successfully".format(update.dataset.name))
+        _maybe_invalidate_heavy_cache(dataset.model_name)
     except Exception as e:
         handle_task_error(e, update=update)
         raise e
     finally:
         if got_lock and lock_key_dataset_id is not None:
             _release_seed_lock(lock_key_dataset_id)
+
+
+# Structural datasets — those whose updates change the property list itself
+# (new/removed BBLs, new address/unit/owner data, new RS year columns,
+# etc.) and therefore make the borough-wide / citywide cache entries
+# (7-day TTL) genuinely stale. Daily-cadence datasets like HPDComplaint /
+# DOBViolation only nudge counts and are deliberately NOT in this list —
+# the borough aggregates can stay up to a week stale on those without
+# meaningful user-facing impact, and invalidating on each one would defeat
+# the weekly pre-warm pattern entirely.
+STRUCTURAL_DATASETS_INVALIDATING_BOROUGH_CACHE = {
+    'Property',
+    'RentStabilizationRecord',
+    'HPDRegistration',
+    'TaxLot',
+    'Building',
+    'AddressRecord',
+}
+
+
+def _maybe_invalidate_heavy_cache(model_name):
+    if model_name not in STRUCTURAL_DATASETS_INVALIDATING_BOROUGH_CACHE:
+        return
+    try:
+        from core.utils.cache import invalidate_heavy_geographic_cache
+        invalidate_heavy_geographic_cache(reason='{} update'.format(model_name))
+    except Exception as e:
+        logger.warning('invalidate_heavy_geographic_cache failed: %s', e)
 
 
 @app.task(bind=True, base=FaultTolerantTask, queue='update', acks_late=True, max_retries=1)

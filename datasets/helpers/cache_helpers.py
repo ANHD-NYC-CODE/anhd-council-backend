@@ -20,6 +20,33 @@ logger = logging.getLogger('app')
 # entry at /dobpermitissuednow/?page=6435 from a CSV poisoning the JSON cache
 # before we separated the format from the cache key — see construct_cache_key).
 MAX_CACHE_VALUE_BYTES = 100 * 1024 * 1024  # 100 MB compressed
+
+# 7-day TTL applied to borough-wide and citywide /properties/ aggregates.
+# Those entries are heavy (5+ min cold for BK), but they change slowly at
+# the borough aggregate level — PLUTO refreshes quarterly, RS annually,
+# the daily-cadence datasets (HPD/DOB/eviction counts) only nudge a small
+# fraction of properties in any given day. 7-day TTL bridges the gap
+# between the weekly Sunday pre-warm runs; if a structural dataset
+# refreshes (PLUTO etc.), the seed-success hook invalidates these keys
+# explicitly so the next user request rebuilds with fresh data.
+HEAVY_GEOGRAPHIC_CACHE_TTL = 7 * 24 * 60 * 60  # 7 days
+
+
+def _is_heavy_geographic_url(request):
+    """True for the borough-wide / citywide /properties/ summary URLs that
+    the pre-warm targets. Used to apply HEAVY_GEOGRAPHIC_CACHE_TTL rather
+    than the default CACHE_TTL."""
+    if request.path != '/properties/':
+        return False
+    params = request.query_params
+    # All the pre-warm URLs use summary=true + summary-type=short-annotated
+    # + annotation__start=full. Any other URL hitting /properties/ is
+    # filtered/paginated and stays on the default TTL.
+    return (
+        params.get('summary') == 'true'
+        and params.get('summary-type') == 'short-annotated'
+        and params.get('annotation__start') == 'full'
+    )
 # Raised stepwise on 2026-06-25:
 #   5 MB → 50 MB (b commit) — covered MN/BX/SI boroughs.
 #   50 MB → 100 MB (c commit) — adds BK (~50-80 MB) and QN (~55-90 MB).
@@ -151,15 +178,25 @@ def cache_request_path():
                             cache_key, len(value_to_cache), MAX_CACHE_VALUE_BYTES,
                         )
                     else:
-                        logger.debug('Caching: {}'.format(cache_key))
-                        cache.set(cache_key, value_to_cache,
-                                  timeout=settings.CACHE_TTL)
+                        # Heavy borough-wide / citywide /properties/ aggregates
+                        # change very slowly (PLUTO is quarterly, RS annual,
+                        # daily updates only nudge counts) and they're
+                        # expensive to recompute (BK 5+ min cold), so give
+                        # them a longer TTL than the default 24h. The weekly
+                        # Sunday pre-warm refreshes them; structural-dataset
+                        # update hooks invalidate explicitly when needed.
+                        if _is_heavy_geographic_url(request):
+                            ttl = HEAVY_GEOGRAPHIC_CACHE_TTL
+                        else:
+                            ttl = settings.CACHE_TTL
+                        logger.debug('Caching: {} (ttl=%ss)'.format(cache_key), ttl)
+                        cache.set(cache_key, value_to_cache, timeout=ttl)
                         if '__authenticated' in cache_key:  # also cache the scrubbed response for unauthenticated requests
                             scrubbed_cache_key = cache_key.replace('__authenticated', '')
                             logger.debug(
                                 'Caching scrubbed varient: {}'.format(scrubbed_cache_key))
                             cache.set(scrubbed_cache_key, value_to_cache,
-                                      timeout=settings.CACHE_TTL)
+                                      timeout=ttl)
 
                     logger.debug('Serving response: {}'.format(cache_key))
                     # TODO: remove pagination altogether

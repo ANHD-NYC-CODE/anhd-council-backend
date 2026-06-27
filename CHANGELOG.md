@@ -1,5 +1,22 @@
 # API CHANGELOG
 
+### 2026-06-27 (borough/citywide pre-warm: weekly cadence + 7-day TTL + structural-update invalidation)
+
+**What changed**
+- Moved the borough + citywide pre-warm from daily to **Sunday-only** (self-gated via `datetime.weekday() == 6`; no fixture/cron change needed). The daily `reset_cache` job still queues them every morning, but they no-op 6 of 7 days.
+- New `HEAVY_GEOGRAPHIC_CACHE_TTL = 7 * 24 * 60 * 60` (7 days) applied to the borough/citywide `/properties/?summary=true&summary-type=short-annotated&annotation__start=full` cache entries. Other entries keep the existing 24-hour `CACHE_TTL`.
+- Added `invalidate_heavy_geographic_cache()` and hooked it into `async_seed_file`'s success path. Fires on successful seed of `Property`, `RentStabilizationRecord`, `HPDRegistration`, `TaxLot`, `Building`, `AddressRecord` — the datasets that change the property list itself.
+
+**Why**
+- After the 2026-06-25 deploy, MN/BX/SI cached cleanly under the 100 MB cap. BK/QN never cached — almost certainly the upstream gunicorn-600s SIGKILL fires before the 5+ minute cold response completes (the silent failure: no "Refusing to cache" warning, no exception, just no `cache.set()` call).
+- Daily pre-warm was overkill for borough aggregates: PLUTO is quarterly, RS is annual, and the daily-cadence count nudges don't move the borough total enough to care. Weekly gives BK/QN a full week of cron tries to actually complete, and the 7-day TTL means last Sunday's entry stays valid through the week even if this Sunday's run fails.
+- Structural data updates (PLUTO/RS/HPDRegistration/etc.) DO meaningfully change borough aggregates, so the seed-success hook invalidates explicitly. Daily-cadence updates (HPD complaints, DOB violations, evictions) are deliberately NOT in the list — they only nudge counts by fractions of a percent at borough scale.
+
+**Risks / things to watch**
+- If BK/QN STILL don't complete within Sunday's cron window (gunicorn timeout still 600s), we're no worse off than today — last week's cache lives 7 days so no user impact during the failure.
+- `invalidate_heavy_geographic_cache` uses `cache.delete_pattern` which is O(N) Redis keys scanned. Current key count is ~16K, scan is sub-second. Safe.
+- Sunday off-peak should give BK/QN more compute headroom than mid-week, but if Sunday is also slow we may need to raise gunicorn timeout (separate change). For now: ship and observe.
+
 ### 2026-06-25c (cache cap raise: MAX_CACHE_VALUE_BYTES 50 MB → 100 MB)
 
 **Why**

@@ -159,12 +159,26 @@ def cache_zipcode_property_summaries_full(token, sleep=1, start=0):
     logger.debug("Authenticated ZipCode month Pre-Caching complete!")
 
 
-# Borough pre-warm: just the 5 borough codes, no DB lookup needed.
-# Each request can be slow (Brooklyn has the largest property set ~300K
-# rows). Use longer sleep between calls and a longer request timeout so we
-# don't pile workers if one of them takes ~10 min. Total runtime expected
-# ~5-25 min depending on prod load.
+# Borough + citywide pre-warm — heavy, slow-changing, weekly-only.
+# Self-gated to Sunday: the daily reset_cache job queues these every
+# morning (no fixture change needed), but they no-op 6 of 7 days. Sunday
+# off-peak is the lowest-traffic window so a 5-15 min cron is safest.
+# Cache TTL for these URLs is 7 days (see HEAVY_GEOGRAPHIC_CACHE_TTL in
+# datasets/helpers/cache_helpers.py) so the prior Sunday's entry stays
+# valid through the entire week — first user of any day gets the cache,
+# even mid-pre-warm. Structural dataset updates (PLUTO etc.) trigger an
+# explicit invalidate hook so a mid-week PLUTO refresh shows fresh data.
+
+def _is_weekly_pre_warm_day():
+    # weekday() returns 0=Monday … 6=Sunday
+    return datetime.datetime.now().weekday() == 6
+
+
 def cache_borough_property_summaries_full(token, sleep=5):
+    if not _is_weekly_pre_warm_day():
+        logger.debug("Borough pre-warm: skipping (runs Sundays only)")
+        return
+
     headers = {"whoisit": token}
     root_url = 'http://localhost:8000' if settings.DEBUG else 'https://api.displacementalert.org'
 
@@ -182,11 +196,11 @@ def cache_borough_property_summaries_full(token, sleep=5):
     logger.debug("Borough Pre-Caching complete!")
 
 
-# Citywide pre-warm: a single (large) request. Response may exceed the
-# 5 MB compressed MAX_CACHE_VALUE_BYTES cap; cache.py will log + skip the
-# write in that case, but the connection still warms upstream-side query
-# plans. Cheap to attempt — one request — and pays off when it fits.
 def cache_citywide_property_summaries_full(token):
+    if not _is_weekly_pre_warm_day():
+        logger.debug("Citywide pre-warm: skipping (runs Sundays only)")
+        return
+
     headers = {"whoisit": token}
     root_url = 'http://localhost:8000' if settings.DEBUG else 'https://api.displacementalert.org'
     path = ('/properties/?format=json&summary=true&summary-type=short-annotated'
@@ -198,3 +212,21 @@ def cache_citywide_property_summaries_full(token):
         logger.warning("Citywide pre-warm failed: %s", e)
 
     logger.debug("Citywide Pre-Caching complete!")
+
+
+# Invalidate borough + citywide cache entries. Called from the seed-success
+# path for structural datasets (PLUTO/Property, RentStabilizationRecord,
+# HPDRegistration, TaxLot) so the heavy 7-day TTL entries don't show stale
+# property lists until next Sunday's pre-warm.
+def invalidate_heavy_geographic_cache(reason='structural update'):
+    from django.core.cache import cache
+    # Pattern: any /properties/ URL containing borough= OR the
+    # citywide short-annotated pattern. delete_pattern is scoped to the
+    # default KEY_PREFIX (DAP:*) so user sessions on SESS:* are untouched.
+    borough_count = cache.delete_pattern('*/properties/*borough=*')
+    # Citywide unfiltered pattern (no borough param, summary-type short-annotated, annotation__start full)
+    citywide_count = cache.delete_pattern('*/properties/?*summary-type=short-annotated*annotation__start=full*')
+    logger.info(
+        "Invalidated heavy geographic caches after %s: %s borough keys, %s citywide-ish keys",
+        reason, borough_count, citywide_count,
+    )
