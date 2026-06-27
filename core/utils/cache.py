@@ -220,13 +220,15 @@ def cache_citywide_property_summaries_full(token):
 # property lists until next Sunday's pre-warm.
 def invalidate_heavy_geographic_cache(reason='structural update'):
     from django.core.cache import cache
-    # Pattern: any /properties/ URL containing borough= OR the
-    # citywide short-annotated pattern. delete_pattern is scoped to the
-    # default KEY_PREFIX (DAP:*) so user sessions on SESS:* are untouched.
-    borough_count = cache.delete_pattern('*/properties/*borough=*')
-    # Citywide unfiltered pattern (no borough param, summary-type short-annotated, annotation__start full)
-    citywide_count = cache.delete_pattern('*/properties/?*summary-type=short-annotated*annotation__start=full*')
+    # Patterns are ANCHORED to keys starting with '/properties/' (no
+    # leading wildcard) so we don't accidentally clobber
+    # /councils/X/properties/, /communities/X/properties/, etc. — those
+    # are not "heavy geographic" entries; they're per-district caches
+    # with the default 24h TTL and their own daily pre-warm.
+    # delete_pattern is scoped to the default KEY_PREFIX (DAP:*) so user
+    # sessions on SESS:* are untouched.
+    citywide_borough_count = cache.delete_pattern('/properties/?*summary-type=short-annotated*annotation__start=full*')
     logger.info(
-        "Invalidated heavy geographic caches after %s: %s borough keys, %s citywide-ish keys",
-        reason, borough_count, citywide_count,
+        "Invalidated heavy geographic caches after %s: %s borough/citywide keys",
+        reason, citywide_borough_count,
     )
