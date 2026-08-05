@@ -1,6 +1,11 @@
 from app.settings.base import *
 DEBUG = True
 
+REST_FRAMEWORK = {
+    **REST_FRAMEWORK,
+    'DEFAULT_THROTTLE_CLASSES': [],
+}
+
 
 ADMINS = (
     # ('Dev', 'anhd.tech@gmail.com'),

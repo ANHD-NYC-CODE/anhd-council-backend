@@ -1,6 +1,14 @@
 from app.settings.base import *
 
 DEBUG = False
+
+REST_FRAMEWORK = {
+    **REST_FRAMEWORK,
+    'DEFAULT_THROTTLE_CLASSES': [
+        'core.throttling.AnonRateThrottle',
+        'core.throttling.UserRateThrottle',
+    ],
+}
 EMAIL_HOST = 'smtp.sendgrid.net'
 EMAIL_HOST_USER = os.environ.get("EMAIL_USER", '')
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_PASSWORD", '')

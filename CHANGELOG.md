@@ -1,5 +1,19 @@
 # API CHANGELOG
 
+### 2026-08-05 (production API rate limiting)
+
+**What changed**
+- Added DRF throttling in production only: 60 requests/minute for anonymous users, 300/minute for authenticated users.
+- Nightly cache pre-warm bypasses throttling via the existing `whoisit` header (`CACHE_REQUEST_KEY`).
+- Development and test environments explicitly disable throttling (`DEFAULT_THROTTLE_CLASSES = []`).
+
+**Why**
+- Public housing data endpoints had no request volume limits. A single large query or automated scraping could slow or crash the server for all users.
+
+**Failure modes**
+- Legitimate power users hitting 60/min as anonymous will get HTTP 429. Log in for 300/min.
+- Reversible by removing `DEFAULT_THROTTLE_CLASSES` from production settings.
+
 ### 2026-06-27b (heavy-geographic re-cache instead of invalidate on structural updates)
 
 **What changed**
