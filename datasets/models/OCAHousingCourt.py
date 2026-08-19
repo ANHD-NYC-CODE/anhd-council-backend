@@ -24,6 +24,23 @@ from datasets import models as ds
 import logging
 logger = logging.getLogger('app')
 
+# Upstream oca_addresses_with_bbl.csv column renames (HDC refactor, 2026).
+BASE_COLUMN_ALIASES = {
+    'borough_code': 'boroughcode',
+    'place_name': 'placename',
+}
+
+# Joined CSV column order must match the model for PostgreSQL COPY.
+JOINED_OUTPUT_HEADER = [
+    'indexnumberid', 'street1', 'street2', 'city', 'state', 'postalcode', 'status',
+    'housenumber', 'streetname', 'sname', 'hnum', 'lat', 'lng', 'lon',
+    'boroughcode', 'placename', 'boro', 'cd', 'ct', 'council', 'grc', 'grc2',
+    'msg', 'msg2', 'unitsres', 'bin', 'bbl',
+    'court', 'fileddate', 'propertytype', 'classification', 'specialtydesignationtypes',
+    'disposeddate', 'disposedreason', 'firstpaper', 'primaryclaimtotal', 'dateofjurydemand',
+    'bct2020', 'bctcb2020', 'ct2010', 'cb2010',
+]
+
 
 class OCAHousingCourt(BaseDatasetModel, models.Model):
     QUERY_DATE_KEY = 'fileddate'
@@ -131,22 +148,36 @@ class OCAHousingCourt(BaseDatasetModel, models.Model):
                     inplace=True)
 
             oca_base = csv.reader(oca_base_file, delimiter=',', quotechar='"')
-            print('test')
             oca_joined = csv.writer(oca_joined_file, delimiter=',',
                             quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
             base_header = oca_base.__next__()
-            index_header = oca_index_file.readline().replace('\n', '').split(',')[1:]
+            index_header = list(oca_index_frame.columns[1:])
             oca_index_file.close()
 
-            # Write headers and joined csv
-            oca_joined.writerow(base_header + index_header)
+            try:
+                bbl_idx = base_header.index('bbl')
+            except ValueError:
+                raise ValueError(
+                    'oca_addresses_with_bbl.csv missing required bbl column; '
+                    'headers: {}'.format(base_header)
+                )
+
+            oca_joined.writerow(JOINED_OUTPUT_HEADER)
 
             for base_row in oca_base:
-                indexnumberid = base_row[0]
+                if len(base_row) <= bbl_idx:
+                    logger.warning(
+                        'Skipping short oca_addresses row (expected >= %s cols, got %s): %s',
+                        bbl_idx + 1, len(base_row), base_row[:1]
+                    )
+                    continue
 
-                # Skip if no bbl
-                if base_row[15] == '':
+                indexnumberid = base_row[0]
+                bbl = base_row[bbl_idx].strip()
+
+                # Skip if no bbl (upstream nulls bbl when unitsres <= 10)
+                if bbl == '':
                     continue
 
                 try:
@@ -155,17 +186,25 @@ class OCAHousingCourt(BaseDatasetModel, models.Model):
                     logger.error("indexnumber id {} not found".format(indexnumberid))
                     continue
 
-                # Remove spaces from classification (3) and status (5)
-                oca_index_row[3] = oca_index_row[3].replace(' ', '-')
-                oca_index_row[5] = oca_index_row[5].replace(' ', '-')
+                index_values = dict(zip(index_header, oca_index_row))
+                for key in ('classification', 'status'):
+                    if key in index_values and isinstance(index_values[key], str):
+                        index_values[key] = index_values[key].replace(' ', '-')
 
-                for index, item in enumerate(oca_index_row):
-                    if type(item) == numpy.float64 or type(item) == float:
-                        oca_index_row[index] = str(item) if str(item) != 'nan' else ''
+                row_data = {}
+                for header, value in zip(base_header, base_row):
+                    key = BASE_COLUMN_ALIASES.get(header, header)
+                    row_data[key] = value
+
+                for key, value in index_values.items():
+                    if isinstance(value, numpy.float64) or isinstance(value, float):
+                        row_data[key] = '' if str(value) == 'nan' else str(value)
                     else:
-                        oca_index_row[index] = str(item)
+                        row_data[key] = '' if value is None else str(value)
 
-                oca_joined.writerow(base_row + oca_index_row)
+                oca_joined.writerow([
+                    row_data.get(col, '') for col in JOINED_OUTPUT_HEADER
+                ])
         except Exception as e:
             logger.error(
                 "* ERROR * AWS OCA join failed {}".format(e))
