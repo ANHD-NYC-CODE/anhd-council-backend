@@ -1,294 +1,382 @@
-- model: django_celery_beat.periodictask
-  fields:
-    name: "Sanity check"
-    description: "Runs every minute to sanity check beat/django integration"
-    task: "app.tasks.sanity_check"
-    crontab: 1
-    args: "[]"
-    kwargs: "{}"
-    date_changed: "2019-04-25"
-- model: django_celery_beat.periodictask
-  fields:
-    name: "Check and Update HPDViolation"
-    description: "Checks api for HPD Violation update and updates."
-    task: "core.tasks.async_check_api_for_update_and_update"
-    crontab: 10 # every 7pm
-    args: "[21]"
-    kwargs: "{}"
-    date_changed: "2019-04-25"
-- model: django_celery_beat.periodictask
-  fields:
-    name: "Check and Update DOBViolation"
-    description: "Checks api for DOBViolation update and updates."
-    task: "core.tasks.async_check_api_for_update_and_update"
-    crontab: 10 # every 7pm
-    args: "[12]"
-    kwargs: "{}"
-    date_changed: "2019-04-25"
-- model: django_celery_beat.periodictask
-  fields:
-    name: "Check and Update ECBViolation"
-    description: "Checks api for ECBViolation update and updates."
-    task: "core.tasks.async_check_api_for_update_and_update"
-    crontab: 10 # every 7pm
-    args: "[13]"
-    kwargs: "{}"
-    date_changed: "2019-04-25"
-- model: django_celery_beat.periodictask
-  fields:
-    name: "Check and Update HPDComplaints & Problems"
-    description: "Checks api for HPDComplaint & Problems update and updates."
-    task: "core.tasks.async_check_api_for_update_and_update"
-    crontab: 11 # every 8pm
-    args: "[17]"
-    kwargs: "{}"
-    date_changed: "2022-04-25"
-- model: django_celery_beat.periodictask
-  fields:
-    name: "Check and Update HPDRegistration"
-    description: "Checks api for HPDRegistration update and updates."
-    task: "core.tasks.async_check_api_for_update_and_update"
-    crontab: 11 # every 8pm
-    args: "[20]"
-    kwargs: "{}"
-    date_changed: "2019-04-25"
-- model: django_celery_beat.periodictask
-  fields:
-    name: "Check and Update HPDContact"
-    description: "Checks api for HPDContact update and updates."
-    task: "core.tasks.async_check_api_for_update_and_update"
-    crontab: 11 # every 8pm
-    args: "[19]"
-    kwargs: "{}"
-    date_changed: "2019-04-25"
-- model: django_celery_beat.periodictask
-  fields:
-    name: "Check and Update Eviction"
-    description: "Checks api for Eviction update and updates."
-    task: "core.tasks.async_check_api_for_update_and_update"
-    crontab: 11 # every 8pm
-    args: "[14]"
-    kwargs: "{}"
-    date_changed: "2019-04-25"
-- model: django_celery_beat.periodictask
-  fields:
-    name: "Check and Update TaxLien"
-    description: "Checks api for TaxLien update and upserts new cycles."
-    task: "core.tasks.async_check_api_for_update_and_update"
-    crontab: 21 # once a month on the 6th
-    args: "[27]"
-    kwargs: "{}"
-    date_changed: "2026-05-27"
-- model: django_celery_beat.periodictask
-  fields:
-    name: "Check and Update RentStabilizationRecord"
-    description: "Checks JustFix doffer S3 for a newer rent-stab file and upserts it."
-    task: "core.tasks.async_check_api_for_update_and_update"
-    crontab: 21 # once a month on the 6th
-    args: "[22]"
-    kwargs: "{}"
-    date_changed: "2026-05-28"
-- model: django_celery_beat.periodictask
-  fields:
-    name: "Check and Update Properties/Pluto"
-    description: "Checks api for Properties/PLUTO update and updates."
-    task: "core.tasks.async_check_api_for_update_and_update"
-    crontab: 21 # once a month on the 6th
-    args: "[2]"
-    kwargs: "{}"
-- model: django_celery_beat.periodictask
-  fields:
-    name: "Check and Update HousingLitigations"
-    description: "Checks api for HousingLitigations update and updates."
-    task: "core.tasks.async_check_api_for_update_and_update"
-    crontab: 12 # every 9pm
-    args: "[15]"
-    kwargs: "{}"
-    date_changed: "2019-04-25"
-- model: django_celery_beat.periodictask
-  fields:
-    name: "Check and Update DOBLegacyFiledPermit"
-    description: "Checks api for DOBLegacyFiledPermit update and updates."
-    task: "core.tasks.async_check_api_for_update_and_update"
-    crontab: 12 # every 9pm
-    args: "[9]"
-    kwargs: "{}"
-    date_changed: "2019-04-25"
-- model: django_celery_beat.periodictask
-  fields:
-    name: "Check and Update DOBNowFiledPermit"
-    description: "Checks api for DOBNowFiledPermit update and updates."
-    task: "core.tasks.async_check_api_for_update_and_update"
-    crontab: 12 # every 9pm
-    args: "[34]"
-    kwargs: "{}"
-    date_changed: "2019-04-25"
-- model: django_celery_beat.periodictask
-  fields:
-    name: "Check and Update DOBLegacyIssuedPermit"
-    description: "Checks api for DOBLegacyIssuedPermit update and updates."
-    task: "core.tasks.async_check_api_for_update_and_update"
-    crontab: 13 # every 10pm
-    args: "[10]"
-    kwargs: "{}"
-    date_changed: "2019-04-25"
-- model: django_celery_beat.periodictask
-  fields:
-    name: "Check and Update DOBNowIssuedPermit"
-    description: "Checks api for DOBNowIssuedPermit update and updates."
-    task: "core.tasks.async_check_api_for_update_and_update"
-    crontab: 13 # every 10pm
-    args: "[11]"
-    kwargs: "{}"
-    date_changed: "2019-04-25"
-- model: django_celery_beat.periodictask
-  fields:
-    name: "Check and Update Properties / Pluto (Monthly)"
-    description: "Check and Update Properties / Pluto automatically"
-    task: "core.tasks.async_check_api_for_update_and_update"
-    crontab: 21 # once a month on the 6th
-    args: "[2]"
-    kwargs: "{}"
-    date_changed: "2023-06-25"
-- model: django_celery_beat.periodictask
-  fields:
-    name: "Check and Update DOBFiledPermit"
-    description: "Checks api for DOBFiledPermit update and updates."
-    task: "core.tasks.async_check_api_for_update_and_update"
-    crontab: 14 # every 11pm
-    args: "[35]"
-    kwargs: "{}"
-    date_changed: "2019-04-25"
-- model: django_celery_beat.periodictask
-  fields:
-    name: "Check and Update DOBIssuedPermit"
-    description: "Checks api for DOBIssuedPermit update and updates."
-    task: "core.tasks.async_check_api_for_update_and_update"
-    crontab: 14 # every 10pm
-    args: "[26]"
-    kwargs: "{}"
-    date_changed: "2019-04-25"
-- model: django_celery_beat.periodictask
-  fields:
-    name: "Check and Update DOBComplaint"
-    description: "Checks api for DOBComplaint update and updates."
-    task: "core.tasks.async_check_api_for_update_and_update"
-    crontab: 13 # every 10pm
-    args: "[8]"
-    kwargs: "{}"
-    date_changed: "2019-04-25"
-- model: django_celery_beat.periodictask
-  fields:
-    name: "Check and Update CONHRecord"
-    description: "Checks api for CONHRecord update and updates."
-    task: "core.tasks.async_check_api_for_update_and_update"
-    crontab: 13 # every 10pm
-    args: "[33]"
-    kwargs: "{}"
-    date_changed: "2019-04-25"
-- model: django_celery_beat.periodictask
-  fields:
-    name: "Check and Update Acris"
-    description: "Checks api for Acris for updates and update one at a time each day."
-    task: "core.tasks.async_check_acris_for_update_and_update"
-    crontab: 5 # every 3am
-    args: "[]"
-    kwargs: "{}"
-    date_changed: "2019-04-25"
-- model: django_celery_beat.periodictask
-  fields:
-    name: "Clean temp directory"
-    description: "Maintainence task."
-    task: "app.tasks.clean_temp_directory"
-    crontab: 28 # 5am sunday
-    args: "[]"
-    kwargs: "{}"
-    date_changed: "2019-04-25"
-- model: django_celery_beat.periodictask
-  fields:
-    name: "Reset cache at 7am"
-    description: "Maintainence task."
-    task: "app.tasks.reset_cache"
-    crontab: 9 # every 7 am
-    args: "[]" # add token to args in admin
-    kwargs: "{}"
-    date_changed: "2019-04-25"
-- model: django_celery_beat.periodictask
-  fields:
-    name: "2nd cache pass"
-    description: "Maintainence task."
-    task: "app.tasks.recache"
-    crontab: 4 # every 2 am
-    args: "[]" # add token to args in admin
-    kwargs: "{}"
-    date_changed: "2019-04-25"
-- model: django_celery_beat.periodictask
-  fields:
-    name: "Vacuum DB Sunday"
-    description: "Maintainence task. 5am every sunday morning"
-    task: "app.tasks.clean_database"
-    crontab: 28 # 5 am sunday
-    args: "[]"
-    kwargs: "{}"
-    date_changed: "2019-04-25"
-- model: django_celery_beat.periodictask
-  fields:
-    name: "Ensure update task results"
-    description: "Maintainence task. 12pm every day"
-    task: "app.tasks.async_ensure_update_task_results"
-    crontab: 26
-    args: "[]"
-    kwargs: "{}"
-    date_changed: "2019-04-25"
+# Celery beat periodic tasks — exported 2026-08-19.
+# Regenerate: python manage.py dump_celery_beat_fixtures
+# Production schedules are authoritative; commit after admin changes.
 
 - model: django_celery_beat.periodictask
   fields:
-    name: "Recount Property Annotations"
-    description: "Maintainence task. midnight every day"
-    task: "app.tasks.async_annotate_properties_with_all_datasets"
-    crontab: 7 # do 5am because if the annotations run before ACRIS finishes, you'll get incomplete data on custom search
-    args: "[]"
-    kwargs: "{}"
-    date_changed: "2019-04-25"
+    name: annotate properties all
+    description: recounts all property annotations daily
+    task: core.tasks.async_annotate_properties_with_all_datasets
+    crontab: 1
+    args: []
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-08-19
+
 - model: django_celery_beat.periodictask
   fields:
-    name: "Check Gmail for PropertyShark daily"
-    description: "Data task, 9pm"
-    task: "core.tasks.get_gmail_property_shark_links"
+    name: cache 2nd pass
+    description: runs after `reset_cache` to ensure cache integrity
+    task: app.tasks.recache
+    crontab: 2
+    args: "[\"89017d2e-a04e-458e-adee-7e81c25b8ebf\"]"
+    kwargs: {}
+    enabled: false
+    date_changed: 2026-08-19
+
+- model: django_celery_beat.periodictask
+  fields:
+    name: celery.backend_cleanup
+    task: celery.backend_cleanup
+    crontab: 1
+    args: []
+    kwargs: {}
+    enabled: false
+    date_changed: 2026-08-19
+
+- model: django_celery_beat.periodictask
+  fields:
+    name: Check and Update Acris
+    description: Checks api for Acris for updates and update one at a time each day.
+    task: core.tasks.async_check_acris_for_update_and_update
+    crontab: 3
+    args: []
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-08-19
+
+- model: django_celery_beat.periodictask
+  fields:
+    name: Check and Update AEPBuilding
+    description: Checks api for AEPBuilding update and updates.
+    task: core.tasks.async_check_api_for_update_and_update
+    crontab: 4
+    args: [43]
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-08-19
+
+- model: django_celery_beat.periodictask
+  fields:
+    name: Check and Update Buildings (PAD chain)
+    description: Checks NYC Open Data PAD ZIP (bc8t-ecyu) for a newer release. On a new release, runs the Building → PadRecord → AddressRecord chain in order (each model's seed_or_update_self schedules the next on completion). NYC publishes PAD quarterly so 3/4 monthly ticks are no-ops.
+    task: core.tasks.async_check_api_for_update_and_update
+    crontab: 5
+    args: [3]
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-08-19
+
+- model: django_celery_beat.periodictask
+  fields:
+    name: Check and Update CONHRecord
+    description: Checks api for CONHRecord update and updates.
+    task: core.tasks.async_check_api_for_update_and_update
+    crontab: 6
+    args: [33]
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-08-19
+
+- model: django_celery_beat.periodictask
+  fields:
+    name: Check and Update DOBComplaint
+    description: Checks api for DOBComplaint update and updates.
+    task: core.tasks.async_check_api_for_update_and_update
+    crontab: 7
+    args: [8]
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-08-19
+
+- model: django_celery_beat.periodictask
+  fields:
+    name: Check and Update DOBFiledPermit
+    description: Checks api for DOBFiledPermit update and updates. Merges from the DOB NOW and DOB legacy table.
+    task: core.tasks.async_check_api_for_update_and_update
+    crontab: 8
+    args: [35]
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-08-19
+
+- model: django_celery_beat.periodictask
+  fields:
+    name: Check and Update DOBIssuedPermit
+    description: Checks api for DOBIssuedPermit update and updates.
+    task: core.tasks.async_check_api_for_update_and_update
+    crontab: 9
+    args: [26]
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-08-19
+
+- model: django_celery_beat.periodictask
+  fields:
+    name: Check and Update DOBLegacyFiledPermit
+    description: Checks api for DOBLegacyFiledPermit update and updates.
+    task: core.tasks.async_check_api_for_update_and_update
+    crontab: 10
+    args: [9]
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-08-19
+
+- model: django_celery_beat.periodictask
+  fields:
+    name: Check and Update DOBLegacyIssuedPermit
+    description: Checks api for DOBLegacyIssuedPermit update and updates.
+    task: core.tasks.async_check_api_for_update_and_update
+    crontab: 6
+    args: [10]
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-08-19
+
+- model: django_celery_beat.periodictask
+  fields:
+    name: Check and Update DOBNowFiledPermit
+    description: Checks api for DOBNowFiledPermit update and updates.
+    task: core.tasks.async_check_api_for_update_and_update
+    crontab: 11
+    args: [34]
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-08-19
+
+- model: django_celery_beat.periodictask
+  fields:
+    name: Check and Update DOBNowIssuedPermit
+    description: Checks api for DOBNowIssuedPermit update and updates.
+    task: core.tasks.async_check_api_for_update_and_update
     crontab: 12
-    args: "[]"
-    kwargs: "{}"
-    date_changed: "2019-08-16"
+    args: [11]
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-08-19
+
 - model: django_celery_beat.periodictask
   fields:
-    name: "Check and Update AEPBuilding"
-    description: "Checks api for AEPBuilding update and updates."
-    task: "core.tasks.async_check_api_for_update_and_update"
-    crontab: 13 # every 10pm
-    args: "[43]"
-    kwargs: "{}"
-    date_changed: "2020-04-25"
+    name: Check and Update DOBViolation
+    description: Checks api for DOBViolation update and updates.
+    task: core.tasks.async_check_api_for_update_and_update
+    crontab: 13
+    args: [12]
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-08-19
+
 - model: django_celery_beat.periodictask
   fields:
-    name: "Check and Update HPDBuildingRecord"
-    description: "Checks api for HPDBuildingRecord update and updates."
-    task: "core.tasks.async_check_api_for_update_and_update"
-    crontab: 12 # every 9pm
-    args: "[16]"
-    kwargs: "{}"
-    date_changed: "2020-04-25"
+    name: Check and Update ECBViolation
+    description: Checks api for ECBViolation update and updates.
+    task: core.tasks.async_check_api_for_update_and_update
+    crontab: 14
+    args: [13]
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-08-19
+
 - model: django_celery_beat.periodictask
   fields:
-    name: "Check and Update Buildings (PAD chain)"
-    description: >
-      Checks NYC Open Data PAD ZIP (bc8t-ecyu) for a newer release. On a new
-      release, runs the Building → PadRecord → AddressRecord chain in order:
-      Building's seed_or_update_self schedules PadRecord at completion;
-      PadRecord schedules AddressRecord at completion. NYC publishes PAD
-      quarterly so most monthly ticks are no-ops (truncate+reload completes
-      quickly when row counts match).
-    task: "core.tasks.async_check_api_for_update_and_update"
-    crontab: 21 # once a month on the 6th
-    args: "[3]"
-    kwargs: "{}"
-    date_changed: "2026-06-10"
+    name: Check and Update Eviction
+    description: Checks api for Eviction update and updates.
+    task: core.tasks.async_check_api_for_update_and_update
+    crontab: 15
+    args: [14]
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-08-19
+
+- model: django_celery_beat.periodictask
+  fields:
+    name: Check and Update Housing Court
+    description: OCA Housing Court Data updates at around noon every Tuesday. So we update that night.
+    task: core.tasks.async_check_api_for_update_and_update
+    crontab: 16
+    args: [44]
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-08-19
+
+- model: django_celery_beat.periodictask
+  fields:
+    name: Check and Update HousingLitigations
+    description: Checks api for HousingLitigations update and updates.
+    task: core.tasks.async_check_api_for_update_and_update
+    crontab: 10
+    args: [15]
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-08-19
+
+- model: django_celery_beat.periodictask
+  fields:
+    name: Check and Update HPDBuildingRecord
+    description: Checks api for HPDBuildingRecord update and updates.
+    task: core.tasks.async_check_api_for_update_and_update
+    crontab: 17
+    args: [16]
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-08-19
+
+- model: django_celery_beat.periodictask
+  fields:
+    name: Check and Update HPDComplaint
+    description: Checks api for HPDComplaint update and updates.
+    task: core.tasks.async_check_api_for_update_and_update
+    crontab: 17
+    args: [17]
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-08-19
+
+- model: django_celery_beat.periodictask
+  fields:
+    name: Check and Update HPDContact
+    description: Checks api for HPDContact update and updates.
+    task: core.tasks.async_check_api_for_update_and_update
+    crontab: 17
+    args: [19]
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-08-19
+
+- model: django_celery_beat.periodictask
+  fields:
+    name: Check and Update HPDRegistration
+    description: Checks api for HPDRegistration update and updates.
+    task: core.tasks.async_check_api_for_update_and_update
+    crontab: 18
+    args: [20]
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-08-19
+
+- model: django_celery_beat.periodictask
+  fields:
+    name: Check and Update HPDViolation
+    description: Checks api for HPD Violation update and updates.
+    task: core.tasks.async_check_api_for_update_and_update
+    crontab: 19
+    args: [21]
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-08-19
+
+- model: django_celery_beat.periodictask
+  fields:
+    name: Check and Update Properties / Pluto (Weekly)
+    description: Check and Update Properties / Pluto on the 6th day of every month.
+    task: core.tasks.async_check_api_for_update_and_update
+    crontab: 5
+    args: [2]
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-08-19
+
+- model: django_celery_beat.periodictask
+  fields:
+    name: Check and Update RentStabilizationRecord
+    task: core.tasks.async_check_api_for_update_and_update
+    crontab: 20
+    args: [22]
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-08-19
+
+- model: django_celery_beat.periodictask
+  fields:
+    name: Check custom search notifications daily
+    task: app.tasks.async_check_notifications_custom_search_daily
+    crontab: 21
+    args: []
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-08-19
+
+- model: django_celery_beat.periodictask
+  fields:
+    name: Check custom search notifications monthly
+    task: app.tasks.async_check_notifications_custom_search_monthly
+    crontab: 22
+    args: []
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-08-19
+
+- model: django_celery_beat.periodictask
+  fields:
+    name: Check custom search notifications weekly
+    task: app.tasks.async_check_notifications_custom_search_weekly
+    crontab: 23
+    args: []
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-08-19
+
+- model: django_celery_beat.periodictask
+  fields:
+    name: clean temp dir
+    description: maintainence task to clean temp dir, expired tokens, attach stray task results
+    task: app.tasks.clean_temp_directory
+    crontab: 24
+    args: []
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-08-19
+
+- model: django_celery_beat.periodictask
+  fields:
+    name: database cleanup reindex vacuum
+    description: vacuum analyze and reindex postgres
+    task: app.tasks.clean_database
+    crontab: 24
+    args: []
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-08-19
+
+- model: django_celery_beat.periodictask
+  fields:
+    name: ensure_task_updates
+    description: ensures updates have task result statuses linked
+    task: app.tasks.async_ensure_update_task_results
+    crontab: 25
+    args: []
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-08-19
+
+- model: django_celery_beat.periodictask
+  fields:
+    name: PropertyShark Gmail Update
+    description: Checks gmail for unstarred property shark emails, visits the link inside them, downloads the files, uploads them to app.
+    task: core.tasks.get_gmail_property_shark_links
+    crontab: 10
+    args: []
+    kwargs: {}
+    enabled: false
+    date_changed: 2026-08-19
+
+- model: django_celery_beat.periodictask
+  fields:
+    name: Reset cache and recache
+    description: Maintainence task at 6AM
+    task: app.tasks.reset_cache
+    crontab: 20
+    args: "[\"89017d2e-a04e-458e-adee-7e81c25b8ebf\"]"
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-08-19
+
+- model: django_celery_beat.periodictask
+  fields:
+    name: Verify yesterdays updates
+    task: core.tasks.async_check_on_updates
+    crontab: 21
+    args: []
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-08-19

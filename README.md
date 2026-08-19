@@ -68,6 +68,15 @@ Django + Celery + PostgreSQL backend for the [Displacement Alert Project (DAP)](
    python manage.py loaddata /app/core/fixtures/tasks.yaml
    ```
    > **Note:** The app auto-generates a password email despite the wizard — check your email.
+   >
+   > **Celery beat fixtures:** `crontabs.yaml` and `tasks.yaml` are exported from production
+   > (authoritative schedules live in the DB / admin). After changing periodic tasks on prod,
+   > regenerate and commit:
+   > ```bash
+   > docker exec app python manage.py dump_celery_beat_fixtures
+   > ```
+   > Do not run `loaddata` for these on an existing DB — it will hit unique-name conflicts.
+   > Use admin or a data migration (`get_or_create` by task name) instead.
 
 4. Admin panel: `http://localhost:8000/admin/`
 5. Flower (task monitor): `http://localhost:8888/`
@@ -108,6 +117,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 | View celery logs | `docker compose -f docker-compose.yml -f docker-compose.dev.yml logs -f celery_update` |
 | Connect to DB | `docker exec -it postgres psql -U anhd -d anhd` |
 | Run tests | `docker exec -it app python manage.py test` |
+| Export celery beat fixtures | `docker exec app python manage.py dump_celery_beat_fixtures` |
 
 > **Tip:** Use `docker compose` (space) not `docker-compose` (hyphen) with Docker Desktop / Compose v2.
 
@@ -185,7 +195,7 @@ For non-automated datasets (PropertyShark, CoreData, etc.):
 | DOB NOW Filed Permits, Issued Permits | NYC Open Data (Socrata) | Automated |
 | DOB Legacy Filed Permits, Issued Permits | NYC Open Data (Socrata) | Automated |
 | ACRIS Real Property (Masters, Legals, Parties) | NYC Open Data (Socrata) | Automated (monthly) |
-| OCA Housing Court | AWS S3 bucket (`oca-2-dev`) | Automated (monthly) |
+| OCA Housing Court | AWS S3 bucket (`oca-2-dev`) | Automated (Tuesdays 6 PM ET) |
 | Properties (PLUTO) | NYC Planning / manual upload | Manual |
 | Buildings, PAD Records | NYC Planning (PAD) | Manual |
 | Rent Stabilization Records | JustFix "doffer" S3 (NYCDB rentstab_v2) | Automated (monthly) |

@@ -641,10 +641,10 @@
     model_name: OCAHousingCourt
     automated: true
     update_instructions: 'Automated via AWS S3 (bucket: oca-2-dev). Requires OCA_AWS_SECRET_KEY_ID
-      and OCA_AWS_SECRET_ACCESS_KEY in .env.'
+      and OCA_AWS_SECRET_ACCESS_KEY in .env. Celery beat: Tuesdays 6 PM ET.'
     download_endpoint: Nothing yet.
     api_last_updated: null
     records_start: 2016-01-01
     records_end: 2026-03-27
-    update_schedule: monthly
+    update_schedule: weekly (Tuesdays 6 PM ET)
     deprecated: false
