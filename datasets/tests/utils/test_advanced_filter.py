@@ -81,3 +81,22 @@ class PropertyFilterTests(BaseTest, TestCase):
                        Q(('filter_1_ecbviolations__count__gte', '10'))), ('filter_1_hpdviolations__count__gte', '10'))
 
         self.assertEqual(result2, expected2)
+
+
+class FeToBeUrlTests(TestCase):
+    def test_citywide_url_uses_properties_endpoint(self):
+        url = '/city/NYC?housingtype=rs&q=*condition_0=AND%20filter_0=hpdviolations__count__gte=1'
+        backend_url = af.fe_to_be_url(url)
+        self.assertTrue(backend_url.startswith('/properties/?'))
+        self.assertNotIn('/city/', backend_url)
+
+    def test_borough_url_uses_properties_with_borough_param(self):
+        url = '/borough/1?housingtype=all'
+        backend_url = af.fe_to_be_url(url)
+        self.assertTrue(backend_url.startswith('/properties/?'))
+        self.assertIn('borough=1', backend_url)
+
+    def test_council_url_uses_geography_nested_endpoint(self):
+        url = '/council/10?housingtype=all'
+        backend_url = af.fe_to_be_url(url)
+        self.assertTrue(backend_url.startswith('/councils/10/properties/?'))

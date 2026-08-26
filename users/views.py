@@ -269,6 +269,11 @@ class UserCustomSearchCollection(mixins.ListModelMixin,
         try:
             result_hash_length = get_query_result_hash_and_length(custom_search_query)
             result_hash = result_hash_length['hash']
+            if not result_hash:
+                return Response(
+                    'The query submitted is not valid or returned no results.',
+                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                )
         except Exception as e:
             return Response('The query submitted is not valid', status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
@@ -317,8 +322,13 @@ class UserCustomSearchMember(mixins.DestroyModelMixin,
             try:
                 result_hash_length = get_query_result_hash_and_length(custom_search_query)
                 result_hash = result_hash_length['hash']
+                if not result_hash:
+                    return Response(
+                        'The query submitted is not valid or returned no results.',
+                        status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    )
             except Exception as e:
-                Response('The query submitted is not valid', status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+                return Response('The query submitted is not valid', status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
             if u.CustomSearch.objects.filter(query_string_hash_digest=query_hash_digest).exists():
                 custom_search = u.CustomSearch.objects.get(query_string_hash_digest=query_hash_digest)

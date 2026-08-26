@@ -318,7 +318,7 @@ def fe_to_be_url(frontend_url):
     backend_url = ''
     if geography_type == 'city':
         backend_url = f'/properties/?format=json&{query}&summary=true&summary-type=custom-search'
-    if geography_type == 'borough':
+    elif geography_type == 'borough':
         backend_url = f'/properties/?format=json&{query}&summary=true&summary-type=custom-search&borough={geography_id}'
     else:
         backend_url = f'/{geography_type}/{geography_id}/properties/?format=json&{query}&summary=true&summary-type=custom-search'
