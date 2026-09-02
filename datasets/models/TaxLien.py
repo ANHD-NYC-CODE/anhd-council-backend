@@ -12,7 +12,7 @@ from core.tasks import async_download_and_update
 logger = logging.getLogger('app')
 
 
-# Update process: Automated (weekly via celerybeat) + manual CSV upload via admin
+# Update process: Automated (monthly via celerybeat, 6th of month) + manual CSV upload via admin
 # Update strategy: Upsert on (bbl, year, month, cycle) — preserves all historical
 # notice cycles and prior years. Source: NYC DOF Tax Lien Sale Lists.
 # https://data.cityofnewyork.us/City-Government/Tax-Lien-Sale-Lists/9rz4-mjek

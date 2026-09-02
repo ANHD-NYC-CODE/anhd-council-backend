@@ -388,7 +388,7 @@
     name: Tax Liens
     model_name: TaxLien
     automated: true
-    update_instructions: 'Automated: weekly via celerybeat (Socrata API).
+    update_instructions: 'Automated: monthly via celerybeat on the 6th (Socrata API).
 
       Manual override: upload the CSV from
       https://data.cityofnewyork.us/api/views/9rz4-mjek/rows.csv?accessType=DOWNLOAD
@@ -401,7 +401,7 @@
     api_last_updated: null
     records_start: null
     records_end: null
-    update_schedule: weekly
+    update_schedule: monthly
     deprecated: false
 - model: core.dataset
   pk: 28
