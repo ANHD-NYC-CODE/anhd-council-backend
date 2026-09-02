@@ -199,7 +199,6 @@ def cache_request_path():
                                       timeout=ttl)
 
                     logger.debug('Serving response: {}'.format(cache_key))
-                    # TODO: remove pagination altogether
                     scrubbed_response = scrub_pagination(response.data)
                     scrubbed_response = scrub_authenticated(
                         scrubbed_response, request)

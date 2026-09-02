@@ -4,7 +4,6 @@ from rest_framework.settings import api_settings
 from rest_framework_csv import renderers as rf_csv
 from datasets.helpers.cache_helpers import cache_request_path
 from datasets.helpers.api_helpers import ApplicationViewSet
-from rest_framework.pagination import PageNumberPagination
 
 from datasets import serializers as serial
 from datasets import models as ds

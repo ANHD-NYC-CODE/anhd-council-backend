@@ -1,7 +1,6 @@
 from django.core.cache import cache
 from django.conf import settings
 from rest_framework.response import Response
-from rest_framework.pagination import PageNumberPagination
 from django.db.models.functions import Coalesce
 
 from datasets import filter_helpers
@@ -16,17 +15,6 @@ from datetime import datetime, timezone
 from datasets.utils import dates
 import re
 logger = logging.getLogger('app')
-
-
-class StandardResultsSetPagination(PageNumberPagination):
-    page_size = 100
-
-    # def get_paginated_response(self, data):
-    #     return Response(OrderedDict([
-    #         ('next', self.get_next_link()),
-    #         ('previous', self.get_previous_link()),
-    #         ('results', data)
-    #     ]))
 
 
 def annotated_fields_to_dict(start=None, end=None, dataset=None, dataset_class=None):
@@ -267,6 +255,8 @@ def add_headers(headers, **kwargs):
 class ApplicationViewSet():
     from datasets import serializers as serial
 
+    pagination_class = None
+
     def dispatch(self, *args, **kwargs):
         # if filename and csv in params
         if self.request.GET:
@@ -292,44 +282,24 @@ class ApplicationViewSet():
         else:
             return super().dispatch(*args, **kwargs)
 
-    def list(self, request, *args, **kwargs):
+    def _use_csv_serializers_if_needed(self, request):
         from datasets import serializers as serial
 
-        self.pagination_class = StandardResultsSetPagination
-        # no pagination for csv
-        if ('format' in request.query_params and request.query_params['format'] == 'csv'):
-            self.pagination_class = None
+        if request.query_params.get('format') != 'csv':
+            return
+        if self.serializer_class.__name__ == 'AcrisRealMasterSerializer':
+            self.serializer_class = serial.AcrisRealMasterCsvSerializer
+        if self.serializer_class.__name__ == 'HPDRegistrationSerializer':
+            self.serializer_class = serial.HPDRegistrationCsvSerializer
+        if self.serializer_class.__name__ == 'HPDComplaintSerializer':
+            self.serializer_class = serial.HPDComplaintCsvSerializer
 
-            if self.serializer_class.__name__ == 'AcrisRealMasterSerializer':
-                self.serializer_class = serial.AcrisRealMasterCsvSerializer
-            if self.serializer_class.__name__ == 'HPDRegistrationSerializer':
-                self.serializer_class = serial.HPDRegistrationCsvSerializer
-            if self.serializer_class.__name__ == 'HPDComplaintSerializer':
-                self.serializer_class = serial.HPDComplaintCsvSerializer
-
-        # no pagination for JSON unless 'page' is included in params
-        if ('page' not in request.query_params and 'format' in request.query_params and request.query_params['format'] == 'json'):
-            self.pagination_class = None
-
+    def list(self, request, *args, **kwargs):
+        self._use_csv_serializers_if_needed(request)
         return super().list(request, *args, **kwargs)
 
     def retrieve(self, request, *args, **kwargs):
-        from datasets import serializers as serial
-
-        # no pagination for csv
-        if ('format' in request.query_params and request.query_params['format'] == 'csv'):
-            self.pagination_class = None
-            if self.serializer_class.__name__ == 'AcrisRealMasterSerializer':
-                self.serializer_class = serial.AcrisRealMasterCsvSerializer
-            if self.serializer_class.__name__ == 'HPDRegistrationSerializer':
-                self.serializer_class = serial.HPDRegistrationCsvSerializer
-            if self.serializer_class.__name__ == 'HPDComplaintSerializer':
-                self.serializer_class = serial.HPDComplaintCsvSerializer
-
-        # no pagination for JSON unless 'page' is included in params
-        if ('page' not in request.query_params and 'format' in request.query_params and request.query_params['format'] == 'json'):
-            self.pagination_class = None
-
+        self._use_csv_serializers_if_needed(request)
         return super().retrieve(request, *args, **kwargs)
 
 
