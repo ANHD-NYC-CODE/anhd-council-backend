@@ -1,4 +1,4 @@
-# Celery beat crontab schedules — exported 2026-08-19.
+# Celery beat crontab schedules — exported 2026-09-02.
 # Regenerate: python manage.py dump_celery_beat_fixtures
 
 - model: django_celery_beat.crontabschedule
@@ -166,13 +166,22 @@
 - model: django_celery_beat.crontabschedule
   pk: 21
   fields:
+    # 0:00 on day 6 of each month
+    minute: 0
+    hour: 0
+    day_of_month: 6
+    timezone: America/New_York
+
+- model: django_celery_beat.crontabschedule
+  pk: 22
+  fields:
     # 8:00 daily
     minute: 0
     hour: 8
     timezone: America/New_York
 
 - model: django_celery_beat.crontabschedule
-  pk: 22
+  pk: 23
   fields:
     # 8:00 on day 7 of each month
     minute: 0
@@ -181,7 +190,7 @@
     timezone: America/New_York
 
 - model: django_celery_beat.crontabschedule
-  pk: 23
+  pk: 24
   fields:
     # 8:00 every Wednesday
     minute: 0
@@ -190,7 +199,7 @@
     timezone: America/New_York
 
 - model: django_celery_beat.crontabschedule
-  pk: 24
+  pk: 25
   fields:
     # 5:00 every Sunday
     minute: 0
@@ -199,7 +208,7 @@
     timezone: America/New_York
 
 - model: django_celery_beat.crontabschedule
-  pk: 25
+  pk: 26
   fields:
     # 12:00 daily
     minute: 0

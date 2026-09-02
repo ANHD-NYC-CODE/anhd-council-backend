@@ -1,4 +1,4 @@
-# Celery beat periodic tasks — exported 2026-08-19.
+# Celery beat periodic tasks — exported 2026-09-02.
 # Regenerate: python manage.py dump_celery_beat_fixtures
 # Production schedules are authoritative; commit after admin changes.
 
@@ -11,7 +11,7 @@
     args: []
     kwargs: {}
     enabled: true
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
 
 - model: django_celery_beat.periodictask
   fields:
@@ -22,7 +22,7 @@
     args: "[\"89017d2e-a04e-458e-adee-7e81c25b8ebf\"]"
     kwargs: {}
     enabled: false
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
 
 - model: django_celery_beat.periodictask
   fields:
@@ -32,7 +32,7 @@
     args: []
     kwargs: {}
     enabled: false
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
 
 - model: django_celery_beat.periodictask
   fields:
@@ -43,7 +43,7 @@
     args: []
     kwargs: {}
     enabled: true
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
 
 - model: django_celery_beat.periodictask
   fields:
@@ -54,7 +54,7 @@
     args: [43]
     kwargs: {}
     enabled: true
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
 
 - model: django_celery_beat.periodictask
   fields:
@@ -65,7 +65,7 @@
     args: [3]
     kwargs: {}
     enabled: true
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
 
 - model: django_celery_beat.periodictask
   fields:
@@ -76,7 +76,7 @@
     args: [33]
     kwargs: {}
     enabled: true
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
 
 - model: django_celery_beat.periodictask
   fields:
@@ -87,7 +87,7 @@
     args: [8]
     kwargs: {}
     enabled: true
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
 
 - model: django_celery_beat.periodictask
   fields:
@@ -98,7 +98,7 @@
     args: [35]
     kwargs: {}
     enabled: true
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
 
 - model: django_celery_beat.periodictask
   fields:
@@ -109,7 +109,7 @@
     args: [26]
     kwargs: {}
     enabled: true
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
 
 - model: django_celery_beat.periodictask
   fields:
@@ -120,7 +120,7 @@
     args: [9]
     kwargs: {}
     enabled: true
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
 
 - model: django_celery_beat.periodictask
   fields:
@@ -131,7 +131,7 @@
     args: [10]
     kwargs: {}
     enabled: true
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
 
 - model: django_celery_beat.periodictask
   fields:
@@ -142,7 +142,7 @@
     args: [34]
     kwargs: {}
     enabled: true
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
 
 - model: django_celery_beat.periodictask
   fields:
@@ -153,7 +153,7 @@
     args: [11]
     kwargs: {}
     enabled: true
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
 
 - model: django_celery_beat.periodictask
   fields:
@@ -164,7 +164,7 @@
     args: [12]
     kwargs: {}
     enabled: true
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
 
 - model: django_celery_beat.periodictask
   fields:
@@ -175,7 +175,7 @@
     args: [13]
     kwargs: {}
     enabled: true
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
 
 - model: django_celery_beat.periodictask
   fields:
@@ -186,7 +186,7 @@
     args: [14]
     kwargs: {}
     enabled: true
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
 
 - model: django_celery_beat.periodictask
   fields:
@@ -197,7 +197,7 @@
     args: [44]
     kwargs: {}
     enabled: true
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
 
 - model: django_celery_beat.periodictask
   fields:
@@ -208,7 +208,7 @@
     args: [15]
     kwargs: {}
     enabled: true
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
 
 - model: django_celery_beat.periodictask
   fields:
@@ -219,7 +219,7 @@
     args: [16]
     kwargs: {}
     enabled: true
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
 
 - model: django_celery_beat.periodictask
   fields:
@@ -230,7 +230,7 @@
     args: [17]
     kwargs: {}
     enabled: true
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
 
 - model: django_celery_beat.periodictask
   fields:
@@ -241,7 +241,7 @@
     args: [19]
     kwargs: {}
     enabled: true
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
 
 - model: django_celery_beat.periodictask
   fields:
@@ -252,7 +252,7 @@
     args: [20]
     kwargs: {}
     enabled: true
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
 
 - model: django_celery_beat.periodictask
   fields:
@@ -263,7 +263,7 @@
     args: [21]
     kwargs: {}
     enabled: true
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
 
 - model: django_celery_beat.periodictask
   fields:
@@ -274,7 +274,7 @@
     args: [2]
     kwargs: {}
     enabled: true
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
 
 - model: django_celery_beat.periodictask
   fields:
@@ -284,70 +284,81 @@
     args: [22]
     kwargs: {}
     enabled: true
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
+
+- model: django_celery_beat.periodictask
+  fields:
+    name: Check and Update TaxLien
+    description: Checks api for TaxLien update and upserts new cycles.
+    task: core.tasks.async_check_api_for_update_and_update
+    crontab: 21
+    args: [27]
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-09-02
 
 - model: django_celery_beat.periodictask
   fields:
     name: Check custom search notifications daily
     task: app.tasks.async_check_notifications_custom_search_daily
-    crontab: 21
+    crontab: 22
     args: []
     kwargs: {}
     enabled: true
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
 
 - model: django_celery_beat.periodictask
   fields:
     name: Check custom search notifications monthly
     task: app.tasks.async_check_notifications_custom_search_monthly
-    crontab: 22
+    crontab: 23
     args: []
     kwargs: {}
     enabled: true
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
 
 - model: django_celery_beat.periodictask
   fields:
     name: Check custom search notifications weekly
     task: app.tasks.async_check_notifications_custom_search_weekly
-    crontab: 23
+    crontab: 24
     args: []
     kwargs: {}
     enabled: true
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
 
 - model: django_celery_beat.periodictask
   fields:
     name: clean temp dir
     description: maintainence task to clean temp dir, expired tokens, attach stray task results
     task: app.tasks.clean_temp_directory
-    crontab: 24
+    crontab: 25
     args: []
     kwargs: {}
     enabled: true
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
 
 - model: django_celery_beat.periodictask
   fields:
     name: database cleanup reindex vacuum
     description: vacuum analyze and reindex postgres
     task: app.tasks.clean_database
-    crontab: 24
+    crontab: 25
     args: []
     kwargs: {}
     enabled: true
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
 
 - model: django_celery_beat.periodictask
   fields:
     name: ensure_task_updates
     description: ensures updates have task result statuses linked
     task: app.tasks.async_ensure_update_task_results
-    crontab: 25
+    crontab: 26
     args: []
     kwargs: {}
     enabled: true
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
 
 - model: django_celery_beat.periodictask
   fields:
@@ -358,7 +369,7 @@
     args: []
     kwargs: {}
     enabled: false
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
 
 - model: django_celery_beat.periodictask
   fields:
@@ -369,14 +380,14 @@
     args: "[\"89017d2e-a04e-458e-adee-7e81c25b8ebf\"]"
     kwargs: {}
     enabled: true
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
 
 - model: django_celery_beat.periodictask
   fields:
     name: Verify yesterdays updates
     task: core.tasks.async_check_on_updates
-    crontab: 21
+    crontab: 22
     args: []
     kwargs: {}
     enabled: true
-    date_changed: 2026-08-19
+    date_changed: 2026-09-02
