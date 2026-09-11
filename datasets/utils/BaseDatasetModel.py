@@ -57,6 +57,26 @@ class BaseDatasetModel():
         return requests.get(endpoint, stream=True, headers=headers)
 
     @classmethod
+    def _socrata_request_headers(cls):
+        headers = {}
+        token = os.environ.get('SOCRATA_APP_TOKEN', '')
+        if token:
+            headers['X-App-Token'] = token
+        return headers
+
+    @classmethod
+    def _download_retry_wait_seconds(cls, response, attempt):
+        retry_after = response.headers.get('Retry-After')
+        if retry_after:
+            try:
+                return max(int(retry_after), 1)
+            except (TypeError, ValueError):
+                pass
+        if response.status_code == 429:
+            return min(60 * attempt, 600)
+        return 10 * attempt
+
+    @classmethod
     def download_file(self, endpoint, file_name=None, ps_requests=False):
         dataset = self.get_dataset()
 
@@ -64,10 +84,11 @@ class BaseDatasetModel():
             endpoint = 'http://' + endpoint
 
         # Large Socrata / PropertyShark downloads occasionally drop mid-stream
-        # (ChunkedEncodingError / IncompleteRead) or stall. Retry the whole
-        # download a few times with a backoff sleep, using a fresh temp file each
+        # (ChunkedEncodingError / IncompleteRead), hit rate limits (429), or stall.
+        # Retry the whole download with backoff, using a fresh temp file each
         # attempt so partial data is never carried over.
-        MAX_ATTEMPTS = 3
+        MAX_ATTEMPTS = 6
+        RETRYABLE_STATUS_CODES = (429, 502, 503)
         TRANSIENT_ERRORS = (
             requests.exceptions.ChunkedEncodingError,
             requests.exceptions.ConnectionError,
@@ -82,10 +103,32 @@ class BaseDatasetModel():
                 if ps_requests:
                     file_request = self.get_ps_requests(endpoint)
                 else:
-                    file_request = requests.get(endpoint, stream=True, timeout=120)
+                    file_request = requests.get(
+                        endpoint,
+                        stream=True,
+                        timeout=120,
+                        headers=self._socrata_request_headers(),
+                    )
 
                 # Was the request OK?
                 if file_request.status_code != requests.codes.ok:
+                    if (
+                        file_request.status_code in RETRYABLE_STATUS_CODES
+                        and attempt < MAX_ATTEMPTS
+                    ):
+                        wait = self._download_retry_wait_seconds(file_request, attempt)
+                        logger.warning(
+                            "Download rate-limited/unavailable for {} (HTTP {}, attempt {}/{}): {} — retrying in {}s".format(
+                                dataset.name,
+                                file_request.status_code,
+                                attempt,
+                                MAX_ATTEMPTS,
+                                endpoint,
+                                wait,
+                            ))
+                        lf.close()
+                        time.sleep(wait)
+                        continue
                     logger.error(
                         "* ERROR * Download request failed: {}".format(endpoint))
                     raise Exception("Request error: {}".format(
