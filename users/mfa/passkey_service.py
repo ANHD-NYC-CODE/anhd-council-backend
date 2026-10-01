@@ -8,7 +8,7 @@ from webauthn import (
     verify_authentication_response,
     verify_registration_response,
 )
-from webauthn.helpers import bytes_to_base64url, base64url_to_bytes
+from webauthn.helpers import bytes_to_base64url, base64url_to_bytes, options_to_json_dict
 from webauthn.helpers.structs import (
     AuthenticatorSelectionCriteria,
     PublicKeyCredentialDescriptor,
@@ -94,7 +94,7 @@ def begin_registration(user, scope_key):
         ),
     )
     mfa_challenge.store_webauthn_challenge(scope_key, options.challenge)
-    return json.loads(options.model_dump_json())
+    return options_to_json_dict(options)
 
 
 def complete_registration(user, scope_key, credential_json, name='Passkey', *, origin=None, request=None):
@@ -143,7 +143,7 @@ def begin_authentication(user, challenge_id):
     )
     scope_key = f'auth:{challenge_id}'
     mfa_challenge.store_webauthn_challenge(scope_key, options.challenge)
-    return json.loads(options.model_dump_json())
+    return options_to_json_dict(options)
 
 
 def complete_authentication(user, challenge_id, credential_json, *, origin=None, request=None):
