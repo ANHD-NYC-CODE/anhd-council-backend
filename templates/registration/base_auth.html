@@ -19,6 +19,12 @@
       --dap-tab-blue: #d8e3f1;
       --dap-white: #ffffff;
       --dap-bg: #d8e3f1;
+      --auth-page-bg: #0a2126;
+      --auth-page-bg-deep: #050f12;
+      --auth-on-dark-muted: #9aa8ad;
+      --auth-on-dark-link: #a2cffc;
+      --auth-on-dark-link-hover: #c5e0ff;
+      --dap-muted-surface: #eef2f6;
       --dap-card-bg: #ffffff;
       --font-heading: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       --font-body: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -32,7 +38,7 @@
       font-size: 14px;
       line-height: 20px;
       color: var(--dap-body);
-      background: var(--dap-bg);
+      background: var(--auth-page-bg-deep);
     }
 
     .auth-page {
@@ -42,7 +48,12 @@
       align-items: center;
       justify-content: center;
       padding: 24px 16px 32px;
-      background: linear-gradient(180deg, #a2cffc 0%, var(--dap-bg) 220px, var(--dap-bg) 100%);
+      background: linear-gradient(
+        180deg,
+        var(--auth-page-bg-deep) 0%,
+        var(--auth-page-bg) 40%,
+        var(--auth-page-bg) 100%
+      );
     }
 
     .auth-page__topbar {
@@ -53,7 +64,7 @@
     }
 
     .auth-page__topbar a {
-      color: var(--dap-link);
+      color: var(--auth-on-dark-link);
       font-weight: 600;
       text-decoration: none;
       font-size: 13px;
@@ -61,7 +72,7 @@
 
     .auth-page__topbar a:hover {
       text-decoration: underline;
-      color: var(--dap-link-hover);
+      color: var(--auth-on-dark-link-hover);
     }
 
     .auth-card {
@@ -276,8 +287,16 @@
       margin-top: 24px;
       text-align: center;
       font-size: 12px;
-      color: var(--dap-gray);
+      color: var(--auth-on-dark-muted);
       max-width: 520px;
+    }
+
+    .auth-footer a {
+      color: var(--auth-on-dark-link);
+    }
+
+    .auth-footer a:hover {
+      color: var(--auth-on-dark-link-hover);
     }
 
     .errorlist {
@@ -322,7 +341,7 @@
       word-break: break-all;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       font-size: 13px;
-      background: var(--dap-bg);
+      background: var(--dap-muted-surface);
       padding: 10px 12px;
       border: 1px solid #e1e1e1;
       border-radius: 4px;
