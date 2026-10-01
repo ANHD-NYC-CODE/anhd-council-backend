@@ -1,4 +1,5 @@
-# Ignore everything in this directory
+# Ignore collected static output; keep committed brand assets.
 *
-# Except this file
 !.gitignore
+!images/
+!images/**

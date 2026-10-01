@@ -1,24 +1,30 @@
 {% extends "registration/base_auth.html" %}
 
-{% block title %}Verify sign in{% endblock %}
+{% block title %}Verify sign in · DAP Portal{% endblock %}
+{% block auth_subtitle %}Two-factor verification{% endblock %}
 
 {% block content %}
-  <h1>Second step required</h1>
-  <p>Signed in as <strong>{{ user.username }}</strong>. Complete verification to open Django admin.</p>
+  <h1>Verify it’s you</h1>
+  <p class="lead-text">Signed in as <strong>{{ user.username }}</strong>. Complete verification to open the admin panel.</p>
 
   {% if 'totp' in methods %}
     <form method="post">
       {% csrf_token %}
       <input type="hidden" name="next" value="{{ next }}">
-      <label for="code">Authenticator code</label>
-      <input type="text" name="code" id="code" inputmode="numeric" autocomplete="one-time-code" required>
+      <div class="form-group">
+        <label for="code">Authenticator code</label>
+        <input type="text" name="code" id="code" inputmode="numeric" autocomplete="one-time-code" required>
+      </div>
       <button type="submit" class="btn-primary">Verify</button>
     </form>
   {% endif %}
 
+  {% if 'totp' in methods and 'passkey' in methods %}
+    <p class="mfa-divider">or</p>
+  {% endif %}
+
   {% if 'passkey' in methods %}
-    <p style="margin-top: 20px;">Or use a passkey:</p>
-    <button type="button" class="btn-primary" id="passkey-btn">Sign in with passkey</button>
+    <button type="button" class="btn-secondary" id="passkey-btn">Sign in with passkey</button>
     <p id="passkey-error" class="errorlist" style="display:none;"></p>
   {% endif %}
 

@@ -1,11 +1,13 @@
 {% extends "registration/base_auth.html" %}
 
-{% block title %}DAP Admin sign in{% endblock %}
+{% block title %}Admin sign in · DAP Portal{% endblock %}
+{% block auth_subtitle %}Admin sign in{% endblock %}
 
 {% block content %}
-  <h1>Admin sign in</h1>
+  <h1>Sign in</h1>
+  <p class="lead-text">Use your staff account to access the DAP admin panel.</p>
   {% if mfa_grace_message %}
-    <p>{{ mfa_grace_message }}</p>
+    <div class="notice">{{ mfa_grace_message }}</div>
   {% endif %}
   {% if form.errors %}
     <ul class="errorlist">
@@ -17,14 +19,27 @@
   <form method="post" action="{% url 'admin:login' %}">
     {% csrf_token %}
     <input type="hidden" name="next" value="{{ next }}">
-    <label for="id_username">Username or email</label>
-    {{ form.username }}
-    <label for="id_password">Password</label>
-    <div class="password-field">
-      {{ form.password }}
-      <button type="button" class="password-field__toggle" onclick="togglePassword()">Show</button>
+    <div class="form-group">
+      <label for="id_username">Username or email</label>
+      {{ form.username }}
+      {% if form.username.errors %}
+        <ul class="errorlist">{% for error in form.username.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+      {% endif %}
     </div>
-    <button type="submit" class="btn-primary">Sign in</button>
+    <div class="form-group">
+      <label for="id_password">Password</label>
+      <div class="password-field">
+        {{ form.password }}
+        <button type="button" class="password-field__toggle" onclick="togglePassword()">Show</button>
+      </div>
+      {% if form.password.errors %}
+        <ul class="errorlist">{% for error in form.password.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+      {% endif %}
+    </div>
+    <div class="auth-actions">
+      <a class="auth-links" href="https://api.displacementalert.org/password_reset/">Reset password</a>
+      <button type="submit" class="btn-primary">Submit</button>
+    </div>
   </form>
 {% endblock %}
 

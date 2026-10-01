@@ -1,28 +1,35 @@
 {% extends "registration/base_auth.html" %}
 
-{% block title %}Set up two-factor authentication{% endblock %}
+{% block title %}Set up two-factor authentication · DAP Portal{% endblock %}
+{% block auth_subtitle %}Secure your admin account{% endblock %}
 
 {% block content %}
   <h1>Set up two-factor authentication</h1>
-  <p>Admin access for <strong>{{ user.username }}</strong> requires an authenticator app or passkey{% if deadline %} after {{ deadline|date:"F j, Y" }}{% endif %}.</p>
+  <p class="lead-text">
+    Admin access for <strong>{{ user.username }}</strong> requires an authenticator app or passkey
+    {% if deadline %} after {{ deadline|date:"F j, Y" }}{% endif %}.
+  </p>
 
   {% if totp_secret %}
     <h2>Authenticator app</h2>
-    <p>Add this secret to your app, or scan the provisioning URL:</p>
-    <p><code style="word-break: break-all;">{{ totp_secret }}</code></p>
+    <p>Add this secret to your app, or open the link on your phone:</p>
+    <div class="secret-block">{{ totp_secret }}</div>
     {% if otpauth_url %}
-      <p><a href="{{ otpauth_url }}">Open in authenticator app</a></p>
+      <p class="auth-links"><a href="{{ otpauth_url }}">Add in authenticator app</a></p>
     {% endif %}
     <form method="post">
       {% csrf_token %}
-      <label for="code">Verification code</label>
-      <input type="text" name="code" id="code" inputmode="numeric" autocomplete="one-time-code" required>
+      <div class="form-group">
+        <label for="code">Verification code</label>
+        <input type="text" name="code" id="code" inputmode="numeric" autocomplete="one-time-code" required>
+      </div>
       <button type="submit" class="btn-primary">Enable and sign in</button>
     </form>
   {% endif %}
 
-  <h2 style="margin-top: 24px;">Passkey</h2>
-  <button type="button" class="btn-primary" id="passkey-register-btn">Register passkey</button>
+  <h2>Passkey</h2>
+  <p>Register a passkey on this device (Touch ID, Windows Hello, or security key).</p>
+  <button type="button" class="btn-secondary" id="passkey-register-btn">Register passkey</button>
   <p id="passkey-error" class="errorlist" style="display:none;"></p>
 
   <p class="auth-links"><a href="{% url 'admin:login' %}">Back to sign in</a></p>
