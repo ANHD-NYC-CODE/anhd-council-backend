@@ -22,15 +22,51 @@ from users.models import CustomUser, PasskeyCredential
 
 def _webauthn_config():
     cfg = getattr(settings, 'WEBAUTHN', {})
+    allowed = cfg.get('ALLOWED_ORIGINS') or [cfg.get('ORIGIN', 'http://localhost:3000')]
     return {
         'rp_id': cfg.get('RP_ID', 'localhost'),
         'rp_name': cfg.get('RP_NAME', 'Displacement Alert Project'),
         'origin': cfg.get('ORIGIN', 'http://localhost:3000'),
+        'allowed_origins': allowed,
     }
 
 
-def _expected_origin(origin=None):
-    return origin or _webauthn_config()['origin']
+def allowed_webauthn_origins():
+    return _webauthn_config()['allowed_origins']
+
+
+def _normalize_origin(origin):
+    return origin.rstrip('/')
+
+
+def resolve_webauthn_origin(origin=None, request=None):
+    """Pick and validate the browser origin for a passkey ceremony."""
+    cfg = _webauthn_config()
+    allowed = {_normalize_origin(o) for o in cfg['allowed_origins']}
+
+    candidates = []
+    if origin:
+        candidates.append(origin)
+    if request is not None:
+        header_origin = request.META.get('HTTP_ORIGIN')
+        if header_origin:
+            candidates.append(header_origin)
+        candidates.append(f'{request.scheme}://{request.get_host()}')
+
+    for candidate in candidates:
+        if not candidate:
+            continue
+        normalized = _normalize_origin(candidate)
+        if normalized in allowed:
+            return normalized
+
+    raise ValueError('WebAuthn origin is not allowed for this environment.')
+
+
+def _expected_origin(origin=None, request=None):
+    if origin is not None or request is not None:
+        return resolve_webauthn_origin(origin=origin, request=request)
+    return _normalize_origin(_webauthn_config()['origin'])
 
 
 def _user_entity(user):
@@ -63,9 +99,9 @@ def begin_registration(user, scope_key):
     return json.loads(options.model_dump_json())
 
 
-def complete_registration(user, scope_key, credential_json, name='Passkey', *, origin=None):
+def complete_registration(user, scope_key, credential_json, name='Passkey', *, origin=None, request=None):
     cfg = _webauthn_config()
-    expected_origin = _expected_origin(origin)
+    expected_origin = _expected_origin(origin=origin, request=request)
     expected_challenge = mfa_challenge.pop_webauthn_challenge(scope_key)
     if expected_challenge is None:
         raise ValueError('Registration challenge expired or missing')
@@ -112,9 +148,9 @@ def begin_authentication(user, challenge_id):
     return json.loads(options.model_dump_json())
 
 
-def complete_authentication(user, challenge_id, credential_json, *, origin=None):
+def complete_authentication(user, challenge_id, credential_json, *, origin=None, request=None):
     cfg = _webauthn_config()
-    expected_origin = _expected_origin(origin)
+    expected_origin = _expected_origin(origin=origin, request=request)
     scope_key = f'auth:{challenge_id}'
     expected_challenge = mfa_challenge.pop_webauthn_challenge(scope_key)
     if expected_challenge is None:

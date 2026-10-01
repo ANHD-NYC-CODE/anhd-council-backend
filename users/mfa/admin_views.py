@@ -21,7 +21,6 @@ from users.mfa.admin_session import (
     clear_admin_mfa_session,
     finish_admin_login,
     pending_admin_mfa_user,
-    webauthn_origin,
 )
 
 
@@ -164,7 +163,7 @@ class AdminMfaPasskeyAuthCompleteView(View):
                 user,
                 challenge_id,
                 credential,
-                origin=webauthn_origin(request),
+                request=request,
             )
         except ValueError as exc:
             return JsonResponse({'detail': str(exc)}, status=401)
@@ -208,7 +207,7 @@ class AdminMfaPasskeyRegisterCompleteView(View):
                 scope_key,
                 credential,
                 name=name,
-                origin=webauthn_origin(request),
+                request=request,
             )
         except ValueError as exc:
             return JsonResponse({'detail': str(exc)}, status=400)

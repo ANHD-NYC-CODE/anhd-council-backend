@@ -173,10 +173,26 @@ CACHES = {
 }
 
 
+def _webauthn_allowed_origins():
+    primary = os.environ.get('WEBAUTHN_ORIGIN', 'http://localhost:3000')
+    origins = [primary]
+    extra = os.environ.get('WEBAUTHN_ALLOWED_ORIGINS', '')
+    if extra:
+        origins.extend(part.strip() for part in extra.split(',') if part.strip())
+    elif os.environ.get('WEBAUTHN_RP_ID') == 'displacementalert.org':
+        origins.extend([
+            'https://portal.displacementalert.org',
+            'https://staging.portal.displacementalert.org',
+            'https://api.displacementalert.org',
+        ])
+    return list(dict.fromkeys(origins))
+
+
 WEBAUTHN = {
     'RP_NAME': 'Displacement Alert Project',
     'RP_ID': os.environ.get('WEBAUTHN_RP_ID', 'localhost'),
     'ORIGIN': os.environ.get('WEBAUTHN_ORIGIN', 'http://localhost:3000'),
+    'ALLOWED_ORIGINS': _webauthn_allowed_origins(),
 }
 MFA_CHALLENGE_TTL_SECONDS = 300
 # Staff must register TOTP and/or passkey at/after this instant (America/New_York).

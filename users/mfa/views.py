@@ -187,7 +187,9 @@ class MFAPasskeyRegisterCompleteView(APIView):
 
         scope_key = _webauthn_scope_key(request, user.pk)
         try:
-            passkey_service.complete_registration(user, scope_key, credential, name=name)
+            passkey_service.complete_registration(
+                user, scope_key, credential, name=name, request=request,
+            )
         except ValueError as exc:
             return Response({'detail': str(exc)}, status=400)
 
@@ -243,7 +245,9 @@ class MFAPasskeyAuthenticateCompleteView(APIView):
             return Response({'detail': 'Invalid challenge.'}, status=400)
 
         try:
-            passkey_service.complete_authentication(user, challenge_id, credential)
+            passkey_service.complete_authentication(
+                user, challenge_id, credential, request=request,
+            )
         except ValueError as exc:
             return Response({'detail': str(exc)}, status=401)
 

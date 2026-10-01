@@ -8,10 +8,6 @@ ADMIN_MFA_ENROLLMENT_TOKEN = 'admin_mfa_enrollment_token'
 ADMIN_MFA_VERIFIED = 'admin_mfa_verified'
 
 
-def webauthn_origin(request):
-    return f'{request.scheme}://{request.get_host()}'
-
-
 def clear_admin_mfa_session(request):
     for key in (
         ADMIN_MFA_USER_ID,
