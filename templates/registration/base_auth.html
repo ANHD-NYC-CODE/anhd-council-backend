@@ -18,7 +18,8 @@
       --dap-link-hover: #1465b7;
       --dap-tab-blue: #d8e3f1;
       --dap-white: #ffffff;
-      --dap-bg: #f8f9fa;
+      --dap-bg: #d8e3f1;
+      --dap-card-bg: #ffffff;
       --font-heading: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       --font-body: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
@@ -41,6 +42,7 @@
       align-items: center;
       justify-content: center;
       padding: 24px 16px 32px;
+      background: linear-gradient(180deg, #a2cffc 0%, var(--dap-bg) 220px, var(--dap-bg) 100%);
     }
 
     .auth-page__topbar {
@@ -65,8 +67,8 @@
     .auth-card {
       width: 100%;
       max-width: 520px;
-      background: var(--dap-white);
-      border: 1px solid #e1e1e1;
+      background: var(--dap-card-bg);
+      border: 1px solid #c0c7c4;
       border-radius: 4px;
       padding: 28px 24px 32px;
       box-shadow: 0 0.125rem 0.25rem rgba(10, 33, 38, 0.075);
@@ -355,7 +357,7 @@
       <div class="auth-card__brand">
         <img
           class="auth-card__logo"
-          src="{% static 'images/portallogo-2020.png' %}"
+          src="{% static 'branding/portallogo-2020.png' %}"
           width="280"
           height="auto"
           alt="Displacement Alert Project Portal"
