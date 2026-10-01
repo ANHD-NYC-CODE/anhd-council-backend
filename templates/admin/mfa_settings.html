@@ -1,0 +1,191 @@
+{% extends "registration/base_auth.html" %}
+
+{% block title %}Two-factor authentication · DAP Admin{% endblock %}
+{% block auth_subtitle %}Admin account security{% endblock %}
+
+{% block content %}
+  <h1>Two-factor authentication</h1>
+  <p class="lead-text">Signed in as <strong>{{ user.username }}</strong>.</p>
+
+  {% if mfa_setup_recommended and deadline %}
+    <div class="notice">
+      Staff must enable two-factor authentication by {{ deadline|date:"F j, Y" }} ({{ deadline.tzname }}).
+    </div>
+  {% endif %}
+
+  <h2>Authenticator app</h2>
+  {% if totp_enabled %}
+    <p>Your authenticator app is <strong>enabled</strong>.</p>
+  {% elif totp_secret %}
+    <p>Add this secret to your app, or open the link on your phone:</p>
+    <div class="secret-block">{{ totp_secret }}</div>
+    {% if otpauth_url %}
+      <p class="auth-links"><a href="{{ otpauth_url }}">Add in authenticator app</a></p>
+    {% endif %}
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="code">Verification code</label>
+        <input type="text" name="code" id="code" inputmode="numeric" autocomplete="one-time-code" required>
+      </div>
+      <button type="submit" class="btn-primary">Enable authenticator</button>
+    </form>
+  {% else %}
+    <p>Authenticator app is enabled or unavailable.</p>
+  {% endif %}
+
+  <h2>Passkeys</h2>
+  {% if passkeys %}
+    <ul class="passkey-list">
+      {% for pk in passkeys %}
+        <li class="passkey-list__item" data-passkey-id="{{ pk.pk }}">
+          <span class="passkey-list__name">{{ pk.name }}</span>
+          <span class="passkey-list__meta">{{ pk.created_at|date:"M j, Y" }}</span>
+          <button type="button" class="btn-link passkey-rename-btn">Rename</button>
+          <button type="button" class="btn-link passkey-delete-btn">Remove</button>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No passkeys registered yet.</p>
+  {% endif %}
+
+  <p>Register a passkey on this device (Touch ID, Windows Hello, or security key).</p>
+  <div class="form-group">
+    <label for="passkey-name">Passkey name</label>
+    <input type="text" id="passkey-name" value="Admin passkey" maxlength="255">
+  </div>
+  <button type="button" class="btn-secondary" id="passkey-register-btn">Register passkey</button>
+  <p id="passkey-error" class="errorlist" style="display:none;"></p>
+
+  <p class="auth-links mt-4">
+    <a href="{% url 'admin:index' %}">← Back to admin</a>
+  </p>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function base64UrlToBuffer(base64url) {
+    const padding = '='.repeat((4 - (base64url.length % 4)) % 4);
+    const base64 = (base64url + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const raw = window.atob(base64);
+    const buffer = new ArrayBuffer(raw.length);
+    const view = new Uint8Array(buffer);
+    for (let i = 0; i < raw.length; i++) view[i] = raw.charCodeAt(i);
+    return buffer;
+  }
+
+  function bufferToBase64Url(buffer) {
+    const bytes = new Uint8Array(buffer);
+    let str = '';
+    bytes.forEach(b => { str += String.fromCharCode(b); });
+    return window.btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+
+  function parseCreationOptions(options) {
+    const pk = { ...options };
+    pk.challenge = base64UrlToBuffer(pk.challenge);
+    pk.user = { ...pk.user, id: base64UrlToBuffer(pk.user.id) };
+    if (pk.excludeCredentials) {
+      pk.excludeCredentials = pk.excludeCredentials.map(c => ({
+        ...c,
+        id: base64UrlToBuffer(c.id),
+      }));
+    }
+    return pk;
+  }
+
+  const csrfToken = '{{ csrf_token }}';
+
+  document.getElementById('passkey-register-btn').addEventListener('click', async () => {
+    const errEl = document.getElementById('passkey-error');
+    errEl.style.display = 'none';
+    const name = document.getElementById('passkey-name').value || 'Admin passkey';
+    try {
+      const beginResp = await fetch('{% url "admin_mfa_settings_passkey_register_begin" %}', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrfToken },
+      });
+      const beginData = await beginResp.json();
+      if (!beginResp.ok) throw new Error(beginData.detail || 'Could not start passkey registration');
+
+      const credential = await navigator.credentials.create({
+        publicKey: parseCreationOptions(beginData.publicKey),
+      });
+
+      const payload = {
+        name,
+        credential: {
+          id: credential.id,
+          rawId: bufferToBase64Url(credential.rawId),
+          type: credential.type,
+          response: {
+            clientDataJSON: bufferToBase64Url(credential.response.clientDataJSON),
+            attestationObject: bufferToBase64Url(credential.response.attestationObject),
+          },
+        },
+      };
+
+      const completeResp = await fetch('{% url "admin_mfa_settings_passkey_register_complete" %}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
+        },
+        body: JSON.stringify(payload),
+      });
+      const completeData = await completeResp.json();
+      if (!completeResp.ok) throw new Error(completeData.detail || 'Passkey registration failed');
+      window.location = completeData.redirect || '{% url "admin_mfa_settings" %}';
+    } catch (e) {
+      errEl.textContent = e.message || 'Passkey registration failed.';
+      errEl.style.display = 'block';
+    }
+  });
+
+  document.querySelectorAll('.passkey-rename-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const row = btn.closest('.passkey-list__item');
+      const id = row.dataset.passkeyId;
+      const name = window.prompt('Passkey name', row.querySelector('.passkey-list__name').textContent);
+      if (!name || !name.trim()) return;
+      const resp = await fetch('{% url "admin_mfa_settings_passkey_rename" pk=0 %}'.replace('/0/', `/${id}/`), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+        body: JSON.stringify({ name: name.trim() }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) {
+        alert(data.detail || 'Could not rename passkey.');
+        return;
+      }
+      row.querySelector('.passkey-list__name').textContent = data.name;
+    });
+  });
+
+  document.querySelectorAll('.passkey-delete-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!window.confirm('Remove this passkey?')) return;
+      const row = btn.closest('.passkey-list__item');
+      const id = row.dataset.passkeyId;
+      const resp = await fetch('{% url "admin_mfa_settings_passkey_delete" pk=0 %}'.replace('/0/', `/${id}/`), {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrfToken },
+      });
+      const data = await resp.json();
+      if (!resp.ok) {
+        alert(data.detail || 'Could not remove passkey.');
+        return;
+      }
+      row.remove();
+    });
+  });
+</script>
+<style>
+  .passkey-list { list-style: none; padding: 0; margin: 0 0 16px; }
+  .passkey-list__item { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 8px 0; border-bottom: 1px solid #e1e1e1; }
+  .passkey-list__meta { color: var(--dap-gray); font-size: 12px; }
+  .btn-link { background: none; border: none; color: var(--dap-link); cursor: pointer; font-weight: 600; padding: 0; }
+  .btn-link:hover { text-decoration: underline; }
+</style>
+{% endblock %}

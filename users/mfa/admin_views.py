@@ -2,14 +2,16 @@ import json
 
 from django.contrib import messages
 from django.contrib.admin.forms import AdminAuthenticationForm
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.views import LoginView
 from django.http import JsonResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse
 from django.views import View
 from django.views.decorators.csrf import csrf_protect
 from django.utils.decorators import method_decorator
 
+from users.models import PasskeyCredential
 from users.mfa import challenge as mfa_challenge
 from users.mfa import passkey_service
 from users.mfa import policy
@@ -214,3 +216,119 @@ class AdminMfaPasskeyRegisterCompleteView(View):
         messages.success(request, 'Passkey registered. You are signed in.')
         response = finish_admin_login(request, user)
         return JsonResponse({'redirect': response.url})
+
+
+def _settings_scope_key(user):
+    return f'user:{user.pk}'
+
+
+@method_decorator(staff_member_required, name='dispatch')
+@method_decorator(csrf_protect, name='dispatch')
+class AdminMfaSettingsView(View):
+    template_name = 'admin/mfa_settings.html'
+
+    def get(self, request):
+        user = request.user
+        totp_pending = None
+        otpauth_url = None
+        if not policy.user_has_confirmed_totp(user):
+            device = totp_service.get_or_create_pending_totp(user)
+            if device:
+                totp_pending = device.secret
+                otpauth_url = totp_service.provisioning_uri(device)
+        passkeys = PasskeyCredential.objects.filter(user=user).order_by('-created_at')
+        context = {
+            'user': user,
+            'totp_enabled': policy.user_has_confirmed_totp(user),
+            'totp_secret': totp_pending,
+            'otpauth_url': otpauth_url,
+            'passkeys': passkeys,
+            'deadline': policy.mfa_staff_grace_deadline(),
+            'enforcement_active': policy.mfa_enforcement_active(),
+            'mfa_setup_recommended': policy.staff_in_mfa_grace_period(user),
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request):
+        user = request.user
+        code = request.POST.get('code', '').strip()
+        if not code:
+            messages.error(request, 'Enter a verification code.')
+            return redirect('admin_mfa_settings')
+        if policy.user_has_confirmed_totp(user):
+            messages.info(request, 'Authenticator app is already enabled.')
+            return redirect('admin_mfa_settings')
+        if not totp_service.confirm_totp_device(user, code):
+            messages.error(request, 'Invalid verification code. Try again.')
+            return redirect('admin_mfa_settings')
+        messages.success(request, 'Authenticator app enabled.')
+        return redirect('admin_mfa_settings')
+
+
+@method_decorator(staff_member_required, name='dispatch')
+@method_decorator(csrf_protect, name='dispatch')
+class AdminMfaSettingsPasskeyRegisterBeginView(View):
+    def post(self, request):
+        user = request.user
+        scope_key = _settings_scope_key(user)
+        try:
+            options = passkey_service.begin_registration(user, scope_key)
+        except Exception as exc:
+            return JsonResponse({'detail': str(exc)}, status=400)
+        return JsonResponse({'publicKey': options})
+
+
+@method_decorator(staff_member_required, name='dispatch')
+@method_decorator(csrf_protect, name='dispatch')
+class AdminMfaSettingsPasskeyRegisterCompleteView(View):
+    def post(self, request):
+        user = request.user
+        try:
+            payload = json.loads(request.body)
+            credential = payload.get('credential')
+            name = payload.get('name') or 'Admin passkey'
+        except json.JSONDecodeError:
+            return JsonResponse({'detail': 'Invalid payload.'}, status=400)
+        scope_key = _settings_scope_key(user)
+        try:
+            passkey_service.complete_registration(
+                user,
+                scope_key,
+                credential,
+                name=name,
+                request=request,
+            )
+        except ValueError as exc:
+            return JsonResponse({'detail': str(exc)}, status=400)
+        messages.success(request, 'Passkey registered.')
+        return JsonResponse({'redirect': reverse('admin_mfa_settings')})
+
+
+@method_decorator(staff_member_required, name='dispatch')
+@method_decorator(csrf_protect, name='dispatch')
+class AdminMfaSettingsPasskeyRenameView(View):
+    def post(self, request, pk):
+        passkey = get_object_or_404(PasskeyCredential, pk=pk, user=request.user)
+        try:
+            payload = json.loads(request.body)
+            name = payload.get('name')
+        except json.JSONDecodeError:
+            return JsonResponse({'detail': 'Invalid payload.'}, status=400)
+        if not name or not str(name).strip():
+            return JsonResponse({'detail': 'name is required.'}, status=400)
+        passkey.name = str(name).strip()[:255]
+        passkey.save(update_fields=['name'])
+        return JsonResponse({'id': passkey.pk, 'name': passkey.name})
+
+
+@method_decorator(staff_member_required, name='dispatch')
+@method_decorator(csrf_protect, name='dispatch')
+class AdminMfaSettingsPasskeyDeleteView(View):
+    def post(self, request, pk):
+        passkey = get_object_or_404(PasskeyCredential, pk=pk, user=request.user)
+        allowed, detail = policy.passkey_revoke_allowed(request.user, passkey)
+        if not allowed:
+            return JsonResponse({'detail': detail}, status=403)
+        passkey.delete()
+        messages.success(request, 'Passkey removed.')
+        return JsonResponse({'ok': True})

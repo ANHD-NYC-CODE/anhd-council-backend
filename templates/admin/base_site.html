@@ -1,12 +1,20 @@
-{% extends "admin/base_site.html" %} {% block branding %}
-<h1 id="site-name">Displacement Alert Project Admin</h1>
-{% endblock %} {% block extrastyle %}
+{% extends "admin/base.html" %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | DAP Admin{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><a href="{% url 'admin:index' %}">Displacement Alert Project Admin</a></h1>
+{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
 <style>
   #header {
     background-color: #1b1e21;
   }
 
-  #branding h1 {
+  #branding h1,
+  #branding h1 a {
     color: white;
   }
 
@@ -31,7 +39,6 @@
   button,
   input[type="submit"],
   .button,
-  input[type="submit"],
   input[type="button"],
   .submit-row input,
   a.button {
@@ -40,12 +47,18 @@
 
   button:hover,
   input[type="submit"]:hover,
-  .button,
-  input[type="submit"]:hover,
+  .button:hover,
   input[type="button"]:hover,
   .submit-row input:hover,
   a.button:hover {
     background-color: turquoise;
   }
 </style>
+{% endblock %}
+
+{% block userlinks %}
+  {% if user.is_staff %}
+    <a href="{% url 'admin_mfa_settings' %}">Two-factor authentication</a> /
+  {% endif %}
+  {{ block.super }}
 {% endblock %}

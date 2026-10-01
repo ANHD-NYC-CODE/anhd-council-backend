@@ -31,6 +31,11 @@ from users.mfa.admin_views import (
     AdminMfaPasskeyAuthCompleteView,
     AdminMfaPasskeyRegisterBeginView,
     AdminMfaPasskeyRegisterCompleteView,
+    AdminMfaSettingsPasskeyDeleteView,
+    AdminMfaSettingsPasskeyRegisterBeginView,
+    AdminMfaSettingsPasskeyRegisterCompleteView,
+    AdminMfaSettingsPasskeyRenameView,
+    AdminMfaSettingsView,
     AdminMfaVerifyView,
 )
 
@@ -57,6 +62,27 @@ urlpatterns = [
         'admin/mfa/passkey/register/complete/',
         AdminMfaPasskeyRegisterCompleteView.as_view(),
         name='admin_mfa_passkey_register_complete',
+    ),
+    path('admin/mfa/settings/', AdminMfaSettingsView.as_view(), name='admin_mfa_settings'),
+    path(
+        'admin/mfa/settings/passkey/register/begin/',
+        AdminMfaSettingsPasskeyRegisterBeginView.as_view(),
+        name='admin_mfa_settings_passkey_register_begin',
+    ),
+    path(
+        'admin/mfa/settings/passkey/register/complete/',
+        AdminMfaSettingsPasskeyRegisterCompleteView.as_view(),
+        name='admin_mfa_settings_passkey_register_complete',
+    ),
+    path(
+        'admin/mfa/settings/passkeys/<int:pk>/rename/',
+        AdminMfaSettingsPasskeyRenameView.as_view(),
+        name='admin_mfa_settings_passkey_rename',
+    ),
+    path(
+        'admin/mfa/settings/passkeys/<int:pk>/delete/',
+        AdminMfaSettingsPasskeyDeleteView.as_view(),
+        name='admin_mfa_settings_passkey_delete',
     ),
     path('admin/', admin.site.urls),
     # path('docs/', ...) — disabled: coreapi incompatible with Python 3.12 (missing pkg_resources)
