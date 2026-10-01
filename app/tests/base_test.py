@@ -7,6 +7,7 @@ from django.conf import settings
 from rest_framework.test import APITestCase, URLPatternsTestCase
 from django.urls import include, path
 from rest_framework_simplejwt import views as jwt_views
+from users.mfa.views import MFATokenObtainPairView
 from django_celery_results.models import TaskResult
 import os
 import zipfile
@@ -21,10 +22,13 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         path('', include('users.urls')),
         path('', include('datasets.urls')),
         path('', include('core.urls')),
-        path('api/token/', jwt_views.TokenObtainPairView.as_view(),
+        path('api/token/', MFATokenObtainPairView.as_view(),
              name='token_obtain_pair'),
         path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(),
              name='token_refresh'),
+        path('api/auth/mfa/totp/verify/', __import__('users.mfa.views', fromlist=['MFATotpVerifyView']).MFATotpVerifyView.as_view()),
+        path('api/auth/mfa/totp/setup/begin/', __import__('users.mfa.views', fromlist=['MFATotpSetupBeginView']).MFATotpSetupBeginView.as_view()),
+        path('api/auth/mfa/totp/setup/confirm/', __import__('users.mfa.views', fromlist=['MFATotpSetupConfirmView']).MFATotpSetupConfirmView.as_view()),
     ]
 
     def clean_tests(self):

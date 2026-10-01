@@ -26,6 +26,9 @@ class CustomUser(AbstractUser):
                                         on_delete=models.SET_NULL, null=True, blank=True)
     objects = CustomUserManager()
 
+    def is_mfa_required_role(self):
+        return self.is_staff or self.is_superuser
+
     def get_password_reset_url(self):
         base64_encoded_id = http.urlsafe_base64_encode(encoding.force_bytes(self.id))
         token = password_reset_token.make_token(self)
@@ -190,6 +193,42 @@ class UserCustomSearch(models.Model):
 
     class Meta:
         unique_together = ('user', 'name',)
+
+
+class UserTotpDevice(models.Model):
+    user = models.OneToOneField(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name='totp_device',
+    )
+    secret = models.CharField(max_length=64, blank=True)
+    confirmed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        state = 'confirmed' if self.confirmed else 'pending'
+        return f'TOTP ({state}) for {self.user.username}'
+
+
+class PasskeyCredential(models.Model):
+    user = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name='passkeys',
+    )
+    credential_id = models.CharField(max_length=512, unique=True)
+    public_key = models.TextField()
+    sign_count = models.PositiveBigIntegerField(default=0)
+    name = models.CharField(max_length=255, default='Passkey')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['user']),
+        ]
+
+    def __str__(self):
+        return f'{self.name} for {self.user.username}'
 
 
 @receiver(models.signals.post_save, sender=AccessRequest)

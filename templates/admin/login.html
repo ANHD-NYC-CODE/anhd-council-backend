@@ -1,0 +1,46 @@
+{% extends "registration/base_auth.html" %}
+
+{% block title %}DAP Admin sign in{% endblock %}
+
+{% block content %}
+  <h1>Admin sign in</h1>
+  {% if mfa_grace_message %}
+    <p>{{ mfa_grace_message }}</p>
+  {% endif %}
+  {% if form.errors %}
+    <ul class="errorlist">
+      {% for error in form.non_field_errors %}
+        <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+  <form method="post" action="{% url 'admin:login' %}">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">
+    <label for="id_username">Username or email</label>
+    {{ form.username }}
+    <label for="id_password">Password</label>
+    <div class="password-field">
+      {{ form.password }}
+      <button type="button" class="password-field__toggle" onclick="togglePassword()">Show</button>
+    </div>
+    <button type="submit" class="btn-primary">Sign in</button>
+  </form>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function togglePassword() {
+    const input = document.getElementById('id_password');
+    const btn = document.querySelector('.password-field__toggle');
+    if (!input) return;
+    if (input.type === 'password') {
+      input.type = 'text';
+      btn.textContent = 'Hide';
+    } else {
+      input.type = 'password';
+      btn.textContent = 'Show';
+    }
+  }
+</script>
+{% endblock %}

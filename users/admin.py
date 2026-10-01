@@ -96,6 +96,14 @@ remove_user_to_trusted.short_description = 'Removes user to trusted'
 
 
 class CustomUserAdmin(auth_admin.UserAdmin):
+    def get_queryset(self, request):
+        return (
+            super()
+            .get_queryset(request)
+            .prefetch_related('groups')
+            .select_related('accessrequest')
+        )
+
     def get_urls(self):
         urls = super(CustomUserAdmin, self).get_urls()
         password_url = [
@@ -139,11 +147,29 @@ class CustomUserAdmin(auth_admin.UserAdmin):
     group.short_description = 'Groups'
 
     def email_status(self, obj):
-        from app.mailer import is_email_suppressed
-        if is_email_suppressed(obj.email):
+        # List view: never call SendGrid per row (was 3 HTTP requests × each user on the page).
+        # Suppression is cached when users log in (users/current/) or on the change form below.
+        from django.core.cache import cache
+
+        suppressed = cache.get(f'email_suppressed_{obj.id}')
+        if suppressed is True:
             return mark_safe('<span style="color: red; font-weight: bold;">BOUNCING</span>')
-        return mark_safe('<span style="color: green;">OK</span>')
+        if suppressed is False:
+            return mark_safe('<span style="color: green;">OK</span>')
+        return mark_safe('<span style="color: #888;">—</span>')
     email_status.short_description = 'Email Status'
+
+    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        if object_id:
+            from django.core.cache import cache
+            from app.mailer import is_email_suppressed
+
+            user = self.get_object(request, object_id)
+            if user:
+                cache_key = f'email_suppressed_{user.id}'
+                if cache.get(cache_key) is None:
+                    cache.set(cache_key, is_email_suppressed(user.email), 86400)
+        return super().changeform_view(request, object_id, form_url, extra_context)
 
     def request_status(self, obj):
         try:

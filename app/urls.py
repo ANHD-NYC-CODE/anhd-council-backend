@@ -23,11 +23,44 @@ from django.contrib.auth import views as auth_views
 from rest_framework_simplejwt import views as jwt_views
 
 from datasets import views as datasets
+from users.mfa.views import MFATokenObtainPairView
+from users.mfa.admin_views import (
+    AdminMfaEnrollView,
+    AdminMfaLoginView,
+    AdminMfaPasskeyAuthBeginView,
+    AdminMfaPasskeyAuthCompleteView,
+    AdminMfaPasskeyRegisterBeginView,
+    AdminMfaPasskeyRegisterCompleteView,
+    AdminMfaVerifyView,
+)
 
 urlpatterns = [
+    path('admin/login/', AdminMfaLoginView.as_view()),
+    path('admin/mfa/verify/', AdminMfaVerifyView.as_view(), name='admin_mfa_verify'),
+    path('admin/mfa/enroll/', AdminMfaEnrollView.as_view(), name='admin_mfa_enroll'),
+    path(
+        'admin/mfa/passkey/authenticate/begin/',
+        AdminMfaPasskeyAuthBeginView.as_view(),
+        name='admin_mfa_passkey_auth_begin',
+    ),
+    path(
+        'admin/mfa/passkey/authenticate/complete/',
+        AdminMfaPasskeyAuthCompleteView.as_view(),
+        name='admin_mfa_passkey_auth_complete',
+    ),
+    path(
+        'admin/mfa/passkey/register/begin/',
+        AdminMfaPasskeyRegisterBeginView.as_view(),
+        name='admin_mfa_passkey_register_begin',
+    ),
+    path(
+        'admin/mfa/passkey/register/complete/',
+        AdminMfaPasskeyRegisterCompleteView.as_view(),
+        name='admin_mfa_passkey_register_complete',
+    ),
     path('admin/', admin.site.urls),
     # path('docs/', ...) — disabled: coreapi incompatible with Python 3.12 (missing pkg_resources)
-    path('api/token/', jwt_views.TokenObtainPairView.as_view(),
+    path('api/token/', MFATokenObtainPairView.as_view(),
          name='token_obtain_pair'),
     path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(),
          name='token_refresh'),

@@ -16,6 +16,7 @@ from kombu import Exchange, Queue
 from datetime import timedelta
 import sys
 import datetime
+from zoneinfo import ZoneInfo
 
 TESTING = sys.argv[1:2] == ['test']
 
@@ -82,6 +83,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'users.mfa.middleware.AdminMfaMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
@@ -170,6 +172,22 @@ CACHES = {
     },
 }
 
+
+WEBAUTHN = {
+    'RP_NAME': 'Displacement Alert Project',
+    'RP_ID': os.environ.get('WEBAUTHN_RP_ID', 'localhost'),
+    'ORIGIN': os.environ.get('WEBAUTHN_ORIGIN', 'http://localhost:3000'),
+}
+MFA_CHALLENGE_TTL_SECONDS = 300
+# Staff must register TOTP and/or passkey at/after this instant (America/New_York).
+# Until then, staff may sign in with password only; MFA still applies once enrolled.
+_mfa_enforcement_env = os.environ.get('MFA_STAFF_ENFORCEMENT_START')
+if _mfa_enforcement_env:
+    MFA_STAFF_ENFORCEMENT_START = datetime.datetime.fromisoformat(_mfa_enforcement_env)
+else:
+    MFA_STAFF_ENFORCEMENT_START = datetime.datetime(
+        2026, 10, 8, 0, 0, 0, tzinfo=ZoneInfo('America/New_York'),
+    )
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=12),

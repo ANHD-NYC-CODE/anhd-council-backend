@@ -1,0 +1,111 @@
+{% extends "registration/base_auth.html" %}
+
+{% block title %}Set up two-factor authentication{% endblock %}
+
+{% block content %}
+  <h1>Set up two-factor authentication</h1>
+  <p>Admin access for <strong>{{ user.username }}</strong> requires an authenticator app or passkey{% if deadline %} after {{ deadline|date:"F j, Y" }}{% endif %}.</p>
+
+  {% if totp_secret %}
+    <h2>Authenticator app</h2>
+    <p>Add this secret to your app, or scan the provisioning URL:</p>
+    <p><code style="word-break: break-all;">{{ totp_secret }}</code></p>
+    {% if otpauth_url %}
+      <p><a href="{{ otpauth_url }}">Open in authenticator app</a></p>
+    {% endif %}
+    <form method="post">
+      {% csrf_token %}
+      <label for="code">Verification code</label>
+      <input type="text" name="code" id="code" inputmode="numeric" autocomplete="one-time-code" required>
+      <button type="submit" class="btn-primary">Enable and sign in</button>
+    </form>
+  {% endif %}
+
+  <h2 style="margin-top: 24px;">Passkey</h2>
+  <button type="button" class="btn-primary" id="passkey-register-btn">Register passkey</button>
+  <p id="passkey-error" class="errorlist" style="display:none;"></p>
+
+  <p class="auth-links"><a href="{% url 'admin:login' %}">Back to sign in</a></p>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function base64UrlToBuffer(base64url) {
+    const padding = '='.repeat((4 - (base64url.length % 4)) % 4);
+    const base64 = (base64url + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const raw = window.atob(base64);
+    const buffer = new ArrayBuffer(raw.length);
+    const view = new Uint8Array(buffer);
+    for (let i = 0; i < raw.length; i++) view[i] = raw.charCodeAt(i);
+    return buffer;
+  }
+
+  function bufferToBase64Url(buffer) {
+    const bytes = new Uint8Array(buffer);
+    let str = '';
+    bytes.forEach(b => { str += String.fromCharCode(b); });
+    return window.btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+
+  function parseCreationOptions(options) {
+    const pk = { ...options };
+    pk.challenge = base64UrlToBuffer(pk.challenge);
+    pk.user = {
+      ...pk.user,
+      id: base64UrlToBuffer(pk.user.id),
+    };
+    if (pk.excludeCredentials) {
+      pk.excludeCredentials = pk.excludeCredentials.map(c => ({
+        ...c,
+        id: base64UrlToBuffer(c.id),
+      }));
+    }
+    return pk;
+  }
+
+  document.getElementById('passkey-register-btn').addEventListener('click', async () => {
+    const errEl = document.getElementById('passkey-error');
+    errEl.style.display = 'none';
+    try {
+      const beginResp = await fetch('{% url "admin_mfa_passkey_register_begin" %}', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+      });
+      const beginData = await beginResp.json();
+      if (!beginResp.ok) throw new Error(beginData.detail || 'Could not start passkey registration');
+
+      const credential = await navigator.credentials.create({
+        publicKey: parseCreationOptions(beginData.publicKey),
+      });
+
+      const payload = {
+        name: 'Admin passkey',
+        credential: {
+          id: credential.id,
+          rawId: bufferToBase64Url(credential.rawId),
+          type: credential.type,
+          response: {
+            clientDataJSON: bufferToBase64Url(credential.response.clientDataJSON),
+            attestationObject: bufferToBase64Url(credential.response.attestationObject),
+          },
+        },
+      };
+
+      const completeResp = await fetch('{% url "admin_mfa_passkey_register_complete" %}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': '{{ csrf_token }}',
+        },
+        body: JSON.stringify(payload),
+      });
+      const completeData = await completeResp.json();
+      if (!completeResp.ok) throw new Error(completeData.detail || 'Passkey registration failed');
+      window.location = completeData.redirect || '{% url "admin:index" %}';
+    } catch (e) {
+      errEl.textContent = e.message || 'Passkey registration failed.';
+      errEl.style.display = 'block';
+    }
+  });
+</script>
+{% endblock %}

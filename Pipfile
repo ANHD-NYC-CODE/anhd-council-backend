@@ -111,6 +111,9 @@ wcwidth = "0.2.13"
 xlrd = "2.0.1"
 zipp = "3.18.1"
 zope = {interface = "6.2"}
+pyotp = "*"
+webauthn = "*"
+asn1crypto = "*"
 
 [requires]
 python_version = "3.12"

@@ -2,6 +2,7 @@ from django.urls import path, include
 from rest_framework.urlpatterns import format_suffix_patterns
 from rest_framework import routers
 from users import views as v
+from users.mfa import views as mfa_views
 
 router = routers.DefaultRouter()
 router.register(r'user-requests', v.UserRequestViewSet)
@@ -17,6 +18,16 @@ custom_routes = format_suffix_patterns([
 
 urlpatterns = [
     *custom_routes,
+    path('api/auth/mfa/totp/verify/', mfa_views.MFATotpVerifyView.as_view()),
+    path('api/auth/mfa/totp/setup/begin/', mfa_views.MFATotpSetupBeginView.as_view()),
+    path('api/auth/mfa/totp/setup/confirm/', mfa_views.MFATotpSetupConfirmView.as_view()),
+    path('api/auth/mfa/passkey/register/begin/', mfa_views.MFAPasskeyRegisterBeginView.as_view()),
+    path('api/auth/mfa/passkey/register/complete/', mfa_views.MFAPasskeyRegisterCompleteView.as_view()),
+    path('api/auth/mfa/passkey/authenticate/begin/', mfa_views.MFAPasskeyAuthenticateBeginView.as_view()),
+    path('api/auth/mfa/passkey/authenticate/complete/', mfa_views.MFAPasskeyAuthenticateCompleteView.as_view()),
+    path('api/auth/mfa/passkeys/', mfa_views.MFAPasskeyListView.as_view()),
+    path('api/auth/mfa/passkeys/<int:pk>/', mfa_views.MFAPasskeyDetailView.as_view()),
+    path('api/auth/mfa/status/', mfa_views.MFAStatusView.as_view()),
     path('', include(router.urls)),
 
     path('users/register/', v.UserRegisterView.as_view(), name='signup'),
