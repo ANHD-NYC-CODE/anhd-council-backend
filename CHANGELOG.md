@@ -1,5 +1,25 @@
 # API CHANGELOG
 
+### 2026-10-01 (staff MFA — TOTP, passkeys, Django admin)
+
+**What changed**
+- Staff/superuser accounts (`is_mfa_required_role`) can use **TOTP** (authenticator app) and/or **WebAuthn passkeys** at API login (`POST /api/token/`) and Django admin login.
+- New API routes under `/api/auth/mfa/` (verify, TOTP setup, passkey register/authenticate, passkey list/rename/revoke, status).
+- Django admin: MFA verify/enroll during login, **Two-factor authentication** settings at `/admin/mfa/settings/` (manage TOTP and passkeys while signed in).
+- **Grace period** until `MFA_STAFF_ENFORCEMENT_START` (default **2026-10-08** America/New_York): staff may still sign in with password only; responses include `mfa_setup_recommended` when applicable.
+- After enforcement: staff without MFA get `403` + `mfa_enrollment_required` on API login, or admin enroll flow.
+- Production `.env`: `WEBAUTHN_RP_ID`, `WEBAUTHN_ORIGIN`; optional `WEBAUTHN_ALLOWED_ORIGINS`, `MFA_STAFF_ENFORCEMENT_START`.
+- Auth/admin HTML styled like DAP Portal; logo via `assets/branding/` + `collectstatic` in `build.prod.sh`.
+- Passkeys compatible with **webauthn 2.8** (`user_name` / `user_id`, `options_to_json_dict`).
+- Admin user list: email status uses cache only (no per-row SendGrid on changelist).
+
+**Who is affected**
+- **Required:** Django `is_staff` / `is_superuser` only (after grace period, or at login if MFA already enabled).
+- **Optional:** Regular portal users are never forced to enroll; they may use the same API if they opt in via the portal Security panel.
+
+**Ops**
+- Deploy runs `migrate` and `collectstatic --noinput` (non-interactive `docker exec`).
+
 ### 2026-08-05 (production API rate limiting)
 
 **What changed**

@@ -408,6 +408,31 @@ Emails are skipped when `DEBUG=True`. To test email content, check the celery lo
 **`docker-compose` command not found:**
 Use `docker compose` (with a space) — Compose v2 dropped the hyphenated command.
 
+## Staff two-factor authentication (MFA)
+
+Staff and superuser accounts support **authenticator app (TOTP)** and **passkeys** (Touch ID, Windows Hello, security keys). Regular portal users are **not** required to use MFA; they only see a second step at login if they voluntarily enrolled.
+
+| Surface | Purpose |
+|---|---|
+| `POST /api/token/` | Password, then `mfa_required` or tokens (same user record as admin) |
+| `/api/auth/mfa/*` | TOTP verify/setup, passkey ceremonies, passkey CRUD, status |
+| `/admin/login/` | Staff Django admin login with MFA steps |
+| `/admin/mfa/settings/` | Manage TOTP and passkeys while signed into admin (link in admin user tools) |
+
+**Enforcement:** From `MFA_STAFF_ENFORCEMENT_START` (default **2026-10-08** Eastern), staff must register at least one second factor before signing in. Until then, password-only staff login still works; API/admin may show setup reminders.
+
+**Production env (see `.env.example`):**
+
+```bash
+WEBAUTHN_RP_ID=displacementalert.org
+WEBAUTHN_ORIGIN=https://portal.displacementalert.org
+# optional: MFA_STAFF_ENFORCEMENT_START=2026-10-08T00:00:00-04:00
+```
+
+When `WEBAUTHN_RP_ID=displacementalert.org`, allowed origins include production portal, staging portal, and the API host so one passkey works across those sites.
+
+**Local dev:** set `WEBAUTHN_RP_ID=localhost` and `WEBAUTHN_ORIGIN=http://localhost:3000` (or your dev portal URL). Passkeys require HTTPS in most browsers except localhost.
+
 ## Potential Improvements
 
 - **User email change**: Users currently cannot change their email address in the app. An admin must update it in the Django admin panel. A self-service "change email" feature would improve UX, especially for users whose notification emails are bouncing.
