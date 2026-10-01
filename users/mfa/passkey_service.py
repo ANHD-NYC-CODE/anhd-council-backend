@@ -69,13 +69,9 @@ def _expected_origin(origin=None, request=None):
     return _normalize_origin(_webauthn_config()['origin'])
 
 
-def _user_entity(user):
-    cfg = _webauthn_config()
-    return {
-        'id': str(user.pk),
-        'name': user.email or user.username,
-        'display_name': user.get_full_name() or user.username,
-    }
+def _webauthn_user_id(user):
+    """Stable user handle for WebAuthn (max 64 bytes)."""
+    return str(user.pk).encode('utf-8')
 
 
 def begin_registration(user, scope_key):
@@ -88,7 +84,9 @@ def begin_registration(user, scope_key):
     options = generate_registration_options(
         rp_id=cfg['rp_id'],
         rp_name=cfg['rp_name'],
-        user=_user_entity(user),
+        user_name=user.email or user.username,
+        user_id=_webauthn_user_id(user),
+        user_display_name=user.get_full_name() or user.username,
         exclude_credentials=exclude,
         authenticator_selection=AuthenticatorSelectionCriteria(
             resident_key=ResidentKeyRequirement.PREFERRED,
