@@ -1,5 +1,15 @@
 # API CHANGELOG
 
+### 2026-10-01 (custom search — cancel in-flight query on client disconnect)
+
+**What changed**
+- Portal **Cancel search** (AbortController) closes the browser connection; backend middleware watches the gunicorn client socket on `summary-type=custom-search` `/properties/` JSON requests and calls **`connection.cancel()`** on Postgres when the client goes away.
+- Cancelled queries return **499** (nginx “client closed request”) with `{detail: Search cancelled.}` when DRF handles the error; frees gunicorn workers faster than waiting for a 600s timeout.
+
+**Limits**
+- Requires gunicorn’s client socket in `request.META` (production). Local runserver may not expose it — cancel is then client-only.
+- If the query already finished and the server is serializing/caching, disconnect still stops the response but DB work for that phase may already be done.
+
 ### 2026-10-01 (staff MFA — TOTP, passkeys, Django admin)
 
 **What changed**

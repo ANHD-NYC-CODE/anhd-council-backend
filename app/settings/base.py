@@ -80,6 +80,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'core.middleware.RejectPaginationQueryParamMiddleware',
+    'core.middleware.CancelCustomSearchOnDisconnectMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -227,7 +228,7 @@ REST_FRAMEWORK = {
         'anon': '360/minute',
         'user': '600/minute',
     },
-    # 'EXCEPTION_HANDLER': custom_exception_handler
+    'EXCEPTION_HANDLER': 'core.api_exceptions.dap_exception_handler',
 }
 
 
