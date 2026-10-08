@@ -11,7 +11,9 @@ logger = logging.getLogger('app')
 
 class HPDRegistration(BaseDatasetModel, models.Model):
     API_ID = 'tesw-yqqr'
-    download_endpoint = "https://data.cityofnewyork.us/api/views/tesw-yqqr/rows.csv?accessType=DOWNLOAD"
+    download_endpoint = (
+        "https://data.cityofnewyork.us/resource/tesw-yqqr.csv?$limit=100000000"
+    )
 
     registrationid = models.IntegerField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,

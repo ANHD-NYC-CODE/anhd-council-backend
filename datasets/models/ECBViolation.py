@@ -16,7 +16,9 @@ class ECBViolation(BaseDatasetModel, models.Model):
             models.Index(fields=['-issuedate']),
         ]
     API_ID = '6bgk-3dad'
-    download_endpoint = "https://data.cityofnewyork.us/api/views/6bgk-3dad/rows.csv?accessType=DOWNLOAD"
+    download_endpoint = (
+        "https://data.cityofnewyork.us/resource/6bgk-3dad.csv?$limit=100000000"
+    )
     QUERY_DATE_KEY = 'issuedate'
 
     ecbviolationnumber = models.TextField(

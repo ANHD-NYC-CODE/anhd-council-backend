@@ -65,6 +65,18 @@ def classify_external_api_outage(error_str):
                 'continues for multiple days.'
             ),
         )
+    if 'request error: 410' in s:
+        return (
+            'NYC Open Data export URL retired',
+            (
+                'NYC Open Data returned HTTP 410 (Gone) for the legacy CSV '
+                'export URL. Socrata is retiring '
+                '/api/views/.../rows.csv?accessType=DOWNLOAD in favor of '
+                '/resource/{id}.csv. Deploy the latest backend (which '
+                'switches downloads automatically) or re-run the update after '
+                'deploy.'
+            ),
+        )
     return None
 
 def handle_task_error(e, update=None, dataset=None):

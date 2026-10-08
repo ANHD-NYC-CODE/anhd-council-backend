@@ -391,13 +391,13 @@
     update_instructions: 'Automated: monthly via celerybeat on the 6th (Socrata API).
 
       Manual override: upload the CSV from
-      https://data.cityofnewyork.us/api/views/9rz4-mjek/rows.csv?accessType=DOWNLOAD
+      https://data.cityofnewyork.us/resource/9rz4-mjek.csv?$limit=100000000
       via admin and run an update. Year/month/cycle are parsed from the
       CSV Month column; no manual columns required.
 
       Imports use upsert on (bbl, year, month, cycle) — historical cycles
       and prior years are preserved across imports.'
-    download_endpoint: https://data.cityofnewyork.us/api/views/9rz4-mjek/rows.csv?accessType=DOWNLOAD
+    download_endpoint: https://data.cityofnewyork.us/resource/9rz4-mjek.csv?$limit=100000000
     api_last_updated: null
     records_start: null
     records_end: null

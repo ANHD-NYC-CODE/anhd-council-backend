@@ -15,8 +15,10 @@ logger = logging.getLogger('app')
 
 class DOBPermitIssuedLegacy(BaseDatasetModel, models.Model):
     API_ID = 'ipu4-2q9a'
-    download_endpoint = "https://data.cityofnewyork.us/api/views/ipu4-2q9a/rows.csv?accessType=DOWNLOAD"
     base_download_endpoint = "https://data.cityofnewyork.us/resource/ipu4-2q9a.csv"
+    download_endpoint = (
+        "https://data.cityofnewyork.us/resource/ipu4-2q9a.csv?$limit=100000000"
+    )
 
     class Meta:
         constraints = [

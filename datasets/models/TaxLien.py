@@ -25,8 +25,10 @@ class TaxLien(BaseDatasetModel, models.Model):
             models.Index(fields=['-year']),
         ]
 
-    download_endpoint = "https://data.cityofnewyork.us/api/views/9rz4-mjek/rows.csv?accessType=DOWNLOAD"
     API_ID = '9rz4-mjek'
+    download_endpoint = (
+        "https://data.cityofnewyork.us/resource/9rz4-mjek.csv?$limit=100000000"
+    )
 
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)

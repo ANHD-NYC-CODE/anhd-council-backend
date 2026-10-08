@@ -196,8 +196,10 @@ class Property(BaseDatasetModel, models.Model):
     current = CurrentPropertyManager()
     obsolete = ObsoletePropertyManager()
 
-    download_endpoint = "https://data.cityofnewyork.us/api/views/64uk-42ks/rows.csv?accessType=DOWNLOAD"
     API_ID = '64uk-42ks'
+    download_endpoint = (
+        "https://data.cityofnewyork.us/resource/64uk-42ks.csv?$limit=100000000"
+    )
 
     # https://www1.nyc.gov/assets/planning/download/pdf/data-maps/open-data/pluto_datadictionary.pdf?r=18v1
     bbl = models.CharField(

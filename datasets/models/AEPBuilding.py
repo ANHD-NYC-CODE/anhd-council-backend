@@ -10,7 +10,7 @@ logger = logging.getLogger('app')
 
 
 class AEPBuilding(BaseDatasetModel, models.Model):
-    download_endpoint = "https://data.cityofnewyork.us/api/views/hcir-3275/rows.csv?accessType=DOWNLOAD"
+    download_endpoint = "https://data.cityofnewyork.us/resource/hcir-3275.csv?$limit=100000000"
 
     id = models.TextField(primary_key=True)  # buildingid-bbl-bin
     buildingid = models.TextField(default='', blank=True, null=True)
@@ -51,8 +51,21 @@ class AEPBuilding(BaseDatasetModel, models.Model):
         return self.download_file(self.download_endpoint, file_name=file_name)
 
     @classmethod
+    def _map_socrata_resource_columns(cls, row):
+        aliases = {
+            'boro': 'borough',
+            'phn': 'number',
+            'streetaddress': 'street',
+        }
+        for src, dst in aliases.items():
+            if src in row and not row.get(dst):
+                row[dst] = row[src]
+        return row
+
+    @classmethod
     def pre_validation_filters(self, gen_rows):
         for row in gen_rows:
+            row = self._map_socrata_resource_columns(row)
             row['id'] = "{}-{}-{}".format(row['buildingid'],
                                           row['bbl'], row['bin'])
 

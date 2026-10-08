@@ -19,7 +19,6 @@ class DOBViolation(BaseDatasetModel, models.Model):
         ]
     API_ID = '3h2n-5cm9'
     base_download_endpoint = "https://data.cityofnewyork.us/resource/3h2n-5cm9.csv"
-    download_endpoint = "https://data.cityofnewyork.us/api/views/3h2n-5cm9/rows.csv?accessType=DOWNLOAD"
     QUERY_DATE_KEY = 'issuedate'
     EARLIEST_RECORD = '1901-01-01'
 

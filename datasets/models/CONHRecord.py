@@ -15,12 +15,11 @@ logger = logging.getLogger('app')
 # Update process: Manual
 # Update strategy: Overwrite
 # Add version (year)
-# Download: https://data.cityofnewyork.us/api/views/bzxi-2tsw/rows.csv?accessType=DOWNLOAD
-
-
 class CONHRecord(BaseDatasetModel, models.Model):
     API_ID = 'bzxi-2tsw'
-    download_endpoint = "https://data.cityofnewyork.us/api/views/bzxi-2tsw/rows.csv?accessType=DOWNLOAD"
+    download_endpoint = (
+        "https://data.cityofnewyork.us/resource/bzxi-2tsw.csv?$limit=100000000"
+    )
 
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
                             on_delete=models.SET_NULL, null=True, blank=False)
@@ -64,13 +63,20 @@ class CONHRecord(BaseDatasetModel, models.Model):
             self.get_dataset().id, endpoint=endpoint, file_name=file_name)
 
     @classmethod
-    def create_async_update_worker(self, endpoint=None, file_name=None):
-        async_download_and_update.delay(
-            self.get_dataset().id, endpoint=endpoint, file_name=file_name)
+    def _map_socrata_resource_columns(cls, row):
+        """Resource API names differ; clean_headers strips underscores only."""
+        aliases = {
+            'zipcode': 'postcode',
+        }
+        for src, dst in aliases.items():
+            if src in row and not row.get(dst):
+                row[dst] = row[src]
+        return row
 
     @classmethod
     def pre_validation_filters(self, gen_rows):
-        return gen_rows
+        for row in gen_rows:
+            yield self._map_socrata_resource_columns(row)
 
     @classmethod
     def transform_self(self, file_path, update=None):

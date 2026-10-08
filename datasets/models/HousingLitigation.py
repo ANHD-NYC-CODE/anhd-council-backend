@@ -22,7 +22,9 @@ class HousingLitigation(BaseDatasetModel, models.Model):
     API_ID = '59kj-x8nc'
     QUERY_DATE_KEY = 'caseopendate'
     RECENT_DATE_PINNED = True
-    download_endpoint = "https://data.cityofnewyork.us/api/views/59kj-x8nc/rows.csv?accessType=DOWNLOAD"
+    download_endpoint = (
+        "https://data.cityofnewyork.us/resource/59kj-x8nc.csv?$limit=100000000"
+    )
 
     litigationid = models.IntegerField(
         primary_key=True, blank=False, null=False)
@@ -67,8 +69,19 @@ class HousingLitigation(BaseDatasetModel, models.Model):
         return self.download_file(self.download_endpoint, file_name=file_name)
 
     @classmethod
+    def _map_socrata_resource_columns(cls, row):
+        aliases = {
+            'casejudgement': 'openjudgement',
+        }
+        for src, dst in aliases.items():
+            if src in row and not row.get(dst):
+                row[dst] = row[src]
+        return row
+
+    @classmethod
     def pre_validation_filters(self, gen_rows):
         for row in gen_rows:
+            row = self._map_socrata_resource_columns(row)
             if is_null(row['litigationid']):
                 continue
             yield row

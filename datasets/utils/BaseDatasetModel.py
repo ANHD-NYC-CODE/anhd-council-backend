@@ -65,6 +65,30 @@ class BaseDatasetModel():
         return headers
 
     @classmethod
+    def socrata_resource_csv_export(cls, api_id):
+        """Full-table CSV via /resource/ (replaces deprecated views export)."""
+        return 'https://data.cityofnewyork.us/resource/{}.csv?$limit=100000000'.format(
+            api_id
+        )
+
+    @classmethod
+    def _socrata_resource_export_url(cls, endpoint):
+        """Map deprecated Socrata views CSV export to the /resource/ API."""
+        if not endpoint:
+            return None
+        base = endpoint.split('?')[0]
+        match = re.match(
+            r'https?://data\.cityofnewyork\.us/api/views/([a-z0-9-]+)/rows\.csv',
+            base,
+            re.IGNORECASE,
+        )
+        if not match:
+            return None
+        return 'https://data.cityofnewyork.us/resource/{}.csv?$limit=100000000'.format(
+            match.group(1)
+        )
+
+    @classmethod
     def _download_retry_wait_seconds(cls, response, attempt):
         retry_after = response.headers.get('Retry-After')
         if retry_after:
@@ -113,6 +137,20 @@ class BaseDatasetModel():
                 # Was the request OK?
                 if file_request.status_code != requests.codes.ok:
                     if (
+                        file_request.status_code == 410
+                        and attempt < MAX_ATTEMPTS
+                    ):
+                        alt = self._socrata_resource_export_url(endpoint)
+                        if alt and alt != endpoint:
+                            logger.warning(
+                                "Socrata views export returned 410 for %s — retrying resource API: %s",
+                                dataset.name,
+                                alt,
+                            )
+                            lf.close()
+                            endpoint = alt
+                            continue
+                    if (
                         file_request.status_code in RETRYABLE_STATUS_CODES
                         and attempt < MAX_ATTEMPTS
                     ):
@@ -155,6 +193,7 @@ class BaseDatasetModel():
 
                 data_file = c_models.DataFile(dataset=dataset)
                 data_file.file.save(resolved_name, files.File(lf))
+                lf.close()
                 logger.info("Download completed for: {} and saved to: {}".format(
                     dataset.name, data_file.file.path))
                 return data_file

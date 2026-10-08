@@ -1,5 +1,12 @@
 # API CHANGELOG
 
+### 2026-10-08 (Socrata CSV export — HTTP 410)
+
+**What changed**
+- NYC Open Data is retiring `GET /api/views/{id}/rows.csv?accessType=DOWNLOAD` (HTTP **410 Gone**; full sunset Dec 2026).
+- All remaining full-table NYC Open Data pulls now use `/resource/{id}.csv?$limit=100000000`: **Property (PLUTO)**, **Tax Lien**, **HPD Building / Registration / Contact**, **CONH**, **Housing Litigation**, **ECB Violations**, plus **Evictions** and **AEP Buildings** (with column aliases where resource field names differ).
+- `BaseDatasetModel.socrata_resource_csv_export()` centralizes that URL; `download_file` still retries on **410** for any stray legacy views URLs.
+
 ### 2026-10-01 (custom search — cancel in-flight query on client disconnect)
 
 **What changed**

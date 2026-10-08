@@ -26,7 +26,8 @@ class Eviction(BaseDatasetModel, models.Model):
         unique_together = ('evictionaddress', 'evictionapartmentnumber',
                            'executeddate', 'marshallastname')
 
-    download_endpoint = "https://data.cityofnewyork.us/api/views/6z8x-wfk4/rows.csv?accessType=DOWNLOAD"
+    # Socrata is retiring /api/views/.../rows.csv?accessType=DOWNLOAD (HTTP 410).
+    download_endpoint = "https://data.cityofnewyork.us/resource/6z8x-wfk4.csv?$limit=100000000"
     API_ID = '6z8x-wfk4'
     QUERY_DATE_KEY = 'executeddate'
 
@@ -74,8 +75,23 @@ class Eviction(BaseDatasetModel, models.Model):
         return self.download_file(self.download_endpoint, file_name=file_name)
 
     @classmethod
+    def _map_socrata_resource_columns(cls, row):
+        """Resource API column names differ from legacy views CSV export."""
+        aliases = {
+            'evictionaptnum': 'evictionapartmentnumber',
+            'residentialcommercialind': 'residentialcommercial',
+            'evictionpossession': 'evictionlegalpossession',
+            'marshalfirstname': 'marshal1stname',
+        }
+        for src, dst in aliases.items():
+            if src in row and not row.get(dst):
+                row[dst] = row[src]
+        return row
+
+    @classmethod
     def pre_validation_filters(self, gen_rows):
         for row in gen_rows:
+            row = self._map_socrata_resource_columns(row)
             if is_null(row['courtindexnumber']):
                 continue
             yield row

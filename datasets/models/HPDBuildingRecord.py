@@ -10,7 +10,10 @@ logger = logging.getLogger('app')
 
 
 class HPDBuildingRecord(BaseDatasetModel, models.Model):
-    download_endpoint = "https://data.cityofnewyork.us/api/views/kj4p-ruqc/rows.csv?accessType=DOWNLOAD"
+    API_ID = 'kj4p-ruqc'
+    download_endpoint = (
+        "https://data.cityofnewyork.us/resource/kj4p-ruqc.csv?$limit=100000000"
+    )
 
     buildingid = models.IntegerField(primary_key=True, blank=False, null=False)
     bbl = models.ForeignKey('Property', db_column='bbl', db_constraint=False,
