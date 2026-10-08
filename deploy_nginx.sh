@@ -1,1 +1,1 @@
-docker exec -it nginx_server nginx -s reload
+docker exec nginx_server nginx -s reload
