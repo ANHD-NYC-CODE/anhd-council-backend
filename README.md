@@ -143,7 +143,7 @@ Connect with: host `localhost`, port `5432`, database `anhd`, user `anhd`. Stop 
 sh deploy.sh
 ```
 
-This SSHs into `138.197.79.10`, pulls `master`, and runs `build.prod.sh`.
+This SSHs as `root@138.197.79.10`, pulls `master`, and runs `build.prod.sh`.
 
 > **Do not deploy while tasks are running.** Check status at `tasks.displacementalert.org`. Deployment restarts workers and clears the Redis cache.
 
@@ -152,9 +152,9 @@ If a task was interrupted mid-import, you may need to clear the "API LAST CHECKE
 ### Production Restart (no code changes)
 
 ```bash
-ssh anhd@138.197.79.10
+ssh root@138.197.79.10
 cd /var/www/anhd-council-backend
-sudo docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 ```
 
 > Your IP must be whitelisted in DigitalOcean's firewall settings.

@@ -7,8 +7,8 @@
 
 set -e
 PART="${1:-rest}"
-HOST="anhd@138.197.79.10"
-REMOTE='cd /var/www/anhd-council-backend && sudo docker exec app python manage.py shell -c'
+HOST="root@138.197.79.10"
+REMOTE='cd /var/www/anhd-council-backend && docker exec app python manage.py shell -c'
 
 case "$PART" in
   smoke)
