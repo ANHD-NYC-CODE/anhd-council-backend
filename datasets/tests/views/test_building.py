@@ -44,6 +44,20 @@ class BuildingViewTests(BaseTest, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
+    def test_building_evictions(self):
+        building = self.building_factory(bin="1")
+        property = building.bbl
+        self.eviction_factory(id="ev1", property=property, bin=building)
+        self.eviction_factory(id="ev2", property=property, bin=building)
+        other_building = self.building_factory(bin="2", property=property)
+        self.eviction_factory(id="ev3", property=property, bin=other_building)
+
+        response = self.client.get('/buildings/1/evictions/')
+        content = response.data
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(content), 2)
+
     def test_building_hpdcomplaints(self):
         building = self.building_factory(bin="1")
         self.hpdcomplaint_factory(building=building)

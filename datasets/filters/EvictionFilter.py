@@ -18,6 +18,7 @@ class EvictionFilter(django_filters.rest_framework.FilterSet):
         model = ds.Eviction
         fields = {
             'bbl': ['isnull', 'exact'],
+            'bin': ['isnull', 'exact'],
             'borough': ['exact'],
             'evictionaddress': ['exact', 'icontains'],
             'cleaned_address': ['exact', 'icontains', 'isnull'],

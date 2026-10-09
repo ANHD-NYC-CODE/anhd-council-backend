@@ -125,9 +125,11 @@ class Eviction(BaseDatasetModel, models.Model):
             yield row.upper().strip()
 
     @classmethod
-    def save_eviction(self, eviction=None, bbl=None, cleaned_address=None, geosearch_address=None):
+    def save_eviction(self, eviction=None, bbl=None, bin=None, cleaned_address=None, geosearch_address=None):
         if bbl:
             eviction.bbl = bbl
+        if bin:
+            eviction.bin = bin
         if cleaned_address:
             eviction.cleaned_address = cleaned_address
         if geosearch_address:
@@ -150,8 +152,10 @@ class Eviction(BaseDatasetModel, models.Model):
             print("************************************")
 
     @classmethod
-    def link_eviction_to_pluto_by_address(self):
-        evictions = self.objects.filter(bbl__isnull=True)
+    def link_eviction_to_pluto_by_address(self, limit=None):
+        evictions = self.objects.filter(bbl__isnull=True).order_by('courtindexnumber')
+        if limit is not None:
+            evictions = evictions[:limit]
         for eviction in evictions:
             # matches STREET or STREET EAST / WEST etc
             match = match_address_within_string(eviction.evictionaddress)
@@ -164,14 +168,22 @@ class Eviction(BaseDatasetModel, models.Model):
                 address_match = ds.AddressRecord.objects.filter(
                     address=cleaned_address + ' {}'.format(eviction.borough))
                 if len(address_match) == 1:
-                    self.save_eviction(eviction=eviction,
-                                       bbl=address_match[0].bbl)
+                    rec = address_match[0]
+                    self.save_eviction(
+                        eviction=eviction,
+                        bbl=rec.bbl,
+                        bin=rec.bin,
+                    )
 
                 elif len(address_match) > 1:
                     # not a super generic query like 123 STREET or 45 AVENUE
                     if not re.match(r"(\d+ (\bSTREET\b|\bAVENUE))", cleaned_address):
+                        rec = address_match[0]
                         self.save_eviction(
-                            eviction=eviction, bbl=address_match[0].bbl)
+                            eviction=eviction,
+                            bbl=rec.bbl,
+                            bin=rec.bin,
+                        )
                     else:
                         try:
                             self.get_geosearch_address(cleaned_address, eviction)
@@ -216,13 +228,21 @@ class Eviction(BaseDatasetModel, models.Model):
         # next compare the house and street numbers
         if match and self.validate_geosearch_match(match, cleaned_address_with_borough):
             # geosearch v2: bbl lives in addendum.pad.bbl
-            match_bbl = (match.get('addendum') or {}).get('pad', {}).get('bbl') \
-                or match.get('pad_bbl') or match.get('bbl')
+            pad = (match.get('addendum') or {}).get('pad') or {}
+            match_bbl = pad.get('bbl') or match.get('pad_bbl') or match.get('bbl')
+            match_bin = pad.get('bin')
+            building = None
+            if match_bin:
+                building = ds.Building.objects.filter(bin=str(match_bin).strip()).first()
             try:
                 bbl = ds.Property.objects.get(bbl=match_bbl)
 
-                self.save_eviction(eviction=eviction, bbl=bbl,
-                                   geosearch_address=match['label'])
+                self.save_eviction(
+                    eviction=eviction,
+                    bbl=bbl,
+                    bin=building,
+                    geosearch_address=match['label'],
+                )
             except Exception as e:
                 self.save_eviction(eviction=eviction,
                                    geosearch_address=match['label'])
@@ -370,7 +390,8 @@ class Eviction(BaseDatasetModel, models.Model):
             if dataset gets too big, switch to seed_with_upsert (upsert, slow, low memory)
         """
         logger.info("Seeding/Updating %s", self.__name__)
-        update = self.seed_with_upsert(ignore_conflict=True, **kwargs)
+        # Full upsert: NYC bin/bbl columns refresh on each import for existing rows.
+        update = self.seed_with_upsert(**kwargs)
         self.link_eviction_to_pluto_by_address()
 
         return update

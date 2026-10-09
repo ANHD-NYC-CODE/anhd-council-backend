@@ -27,6 +27,7 @@ class EvictionTest(BaseTest, TestCase):
 
         property1 = self.property_factory(bbl="1")
         property2 = self.property_factory(bbl="1000240036")
+        self.building_factory(bin='1000820', property=property2)
         property3 = self.property_factory(bbl="3")
 
         self.address_factory(property=property1, number="123",
@@ -45,3 +46,35 @@ class EvictionTest(BaseTest, TestCase):
 
         for eviction in ds.Eviction.objects.all():
             self.assertEqual(bool(eviction.bbl), True)
+
+        broad = ds.Eviction.objects.get(courtindexnumber='N055677/19')
+        self.assertEqual(broad.bbl_id, '1000240036')
+        self.assertEqual(broad.bin_id, '1000820')
+
+    def test_link_eviction_uses_address_record_bin(self):
+        property = self.property_factory(bbl='1000240036')
+        building = self.building_factory(bin='1000820', property=property)
+        self.address_factory(
+            property=property,
+            building=building,
+            number='50',
+            street='BROAD STREET',
+            borough='MANHATTAN',
+        )
+        ds.AddressRecord.build_search()
+
+        ds.Eviction.objects.create(
+            courtindexnumber='link-test-1',
+            uniqueid='link-test-unique',
+            evictionapartmentnumber='1',
+            marshallastname='TEST',
+            evictionaddress='50 BROAD STREET, MANHATTAN',
+            borough='MANHATTAN',
+            evictionzip='10004',
+        )
+
+        ds.Eviction.link_eviction_to_pluto_by_address()
+
+        row = ds.Eviction.objects.get(courtindexnumber='link-test-1')
+        self.assertEqual(row.bbl_id, '1000240036')
+        self.assertEqual(row.bin_id, '1000820')

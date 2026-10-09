@@ -359,6 +359,13 @@ buildings_router.register(
 )
 
 buildings_router.register(
+    'evictions',
+    v.eviction_views.EvictionViewSet,
+    basename='building-evictions',
+    parents_query_lookups=['bin']
+)
+
+buildings_router.register(
     'housinglitigations',
     v.housinglitigation_views.HousingLitigationViewSet,
     basename='building-housinglitigations-bin',

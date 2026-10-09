@@ -1,5 +1,12 @@
 # API CHANGELOG
 
+### 2026-10-09 (Marshal evictions by building)
+
+**What changed**
+- **API:** `GET /buildings/{bin}/evictions/` (nested route, same pattern as HPD violations/complaints).
+- **Import:** Eviction re-seeds use full upsert so NYC `bin`/`bbl` columns refresh on scheduled updates; address linking sets BIN from `AddressRecord` and Geosearch PAD when BBL was missing.
+- **Ops:** `python manage.py backfill_eviction_bins --csv <export>` applies NYC bin/bbl to existing rows without a full re-seed (no `--geosearch` for bulk historical runs).
+
 ### 2026-10-09 (test suite, Tax Lien import, HPD Building upsert)
 
 **What changed**
