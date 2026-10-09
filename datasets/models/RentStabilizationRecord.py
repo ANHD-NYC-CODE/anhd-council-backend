@@ -353,8 +353,8 @@ def annotate_property_on_save(sender, instance, **kwargs):
     try:
         annotation = instance.ucbbl.propertyannotation
         old_value = annotation.unitsrentstabilized
-        annotation.unitsrentstabilized = instance.get_rentstabilized_units()
-        annotation.save()
+        annotation.unitsrentstabilized = instance.ucbbl.get_rentstabilized_units()
+        annotation.save(update_fields=['unitsrentstabilized'])  # don't clobber other annotation fields
         logger.info(f"Updated annotation for {instance.id} from {old_value} to {annotation.unitsrentstabilized}")
     except Exception as e:
         logger.error(f"Annotation failed for {instance.id}: {e}")

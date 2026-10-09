@@ -30,8 +30,9 @@ class DatasetTests(BaseTest, TestCase):
         self.assertEqual(dataset.records_start.strftime("%m%d%Y"), "10092018")
         self.assertEqual(dataset.records_end.strftime("%m%d%Y"), "10152018")
 
-    @unittest.skip("FIXME: broken fixture — see 2026-06-15 test sweep")
     def test_annotate_properties_all(self):
+        # Month-offset datasets (HPDComplaint, HousingLitigation) window from api_last_updated; keep it relative to now.
+        c_models.Dataset.objects.update(api_last_updated=datetime.datetime.now(datetime.timezone.utc))
         property1 = self.property_factory(bbl=1)
         for model_name in settings.ANNOTATED_DATASETS:
             if model_name == 'AcrisRealMaster':
@@ -78,7 +79,11 @@ class DatasetTests(BaseTest, TestCase):
         propertyannotation = ds.PropertyAnnotation.objects.get(
             bbl=property1.bbl)
 
+        # Not fed by settings.ANNOTATED_DATASETS: J51/421a are deprecated, subsidyprograms comes from CoreSubsidyRecord.
+        not_annotated = {'subsidyj51', 'subsidy421a', 'subsidyprograms'}
         for field in propertyannotation._meta.get_fields():
+            if field.name in not_annotated:
+                continue
             value = getattr(propertyannotation, field.name)
 
             # tests that a value is present on all fields, since this test is setup to give each field a value
@@ -149,14 +154,9 @@ class DatasetTests(BaseTest, TestCase):
         self.assertEqual(propertyannotation.taxlien, True)
         self.assertEqual(propertyannotation.conhrecord, True)
         self.assertEqual(propertyannotation.nycha, True)
-        self.assertEqual(propertyannotation.subsidyj51, True)
-        self.assertEqual(propertyannotation.subsidy421a, True)
-        self.assertEqual(
-            "421a Tax Incentive Program" in propertyannotation.subsidyprograms, True)
-        self.assertEqual(
-            "J-51 Tax Incentive" in propertyannotation.subsidyprograms, True)
-        self.assertEqual(
-            "421-a Tax Incentive Program" in propertyannotation.subsidyprograms, True)
+        self.assertEqual(propertyannotation.ocahousingcourts_last30, 1)
+        self.assertEqual(propertyannotation.ocahousingcourts_lastyear, 2)
+        self.assertEqual(propertyannotation.ocahousingcourts_last3years, 3)
 
         self.assertEqual(propertyannotation.legalclassa, 10)
         self.assertEqual(propertyannotation.legalclassb, 10)

@@ -101,6 +101,44 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 
 > **Warning:** `docker volume prune` and `docker system prune` can delete the database volume if containers are stopped. Always verify which volumes are in use before pruning.
 
+### Postgres data on an external drive (optional)
+
+Dev Postgres stores data in a **bind mount**, not a Docker named volume. Set in `.env.dev` (quotes required if the path has spaces):
+
+```bash
+POSTGRES_DATA_DIR="/Volumes/Ext Storage/Docker/postgres"
+```
+
+If unset, data goes to `./postgres-data` in the repo root. Dev scripts pass `--env-file .env.dev` so Compose picks up this variable.
+
+**Move an existing ~88GB database off Docker Desktop** (old named volume `pg_vol1`):
+
+```bash
+docker compose --env-file .env.dev -f docker-compose.yml -f docker-compose.dev.yml stop postgres
+mkdir -p "/Volumes/Ext Storage/Docker/postgres"
+# Volume name may differ; list with: docker volume ls | grep pg_vol
+docker run --rm \
+  -v anhd-council-backend_pg_vol1:/from \
+  -v "/Volumes/Ext Storage/Docker/postgres:/to" \
+  alpine sh -c 'cp -a /from/. /to/'
+# Add POSTGRES_DATA_DIR to .env.dev, then:
+docker compose --env-file .env.dev -f docker-compose.yml -f docker-compose.dev.yml up -d postgres
+```
+
+After confirming Postgres starts and the DB size looks right, remove the old volume to free internal disk: `docker volume rm anhd-council-backend_pg_vol1`.
+
+**Dataset CSV downloads** (`MEDIA_ROOT`, mounted at `/app/data`) can use the same external drive:
+
+```bash
+DATA_DIR="/Volumes/Ext Storage/Docker/data"
+```
+
+Recreate `app` / celery workers after changing `DATA_DIR` so the bind mount updates. Socrata smoke tests write here:
+
+```bash
+docker exec -w /app app python scripts/test_socrata_resource_updates.py --no-seed --keep-files
+```
+
 ## Common Commands
 
 | Action | Command |

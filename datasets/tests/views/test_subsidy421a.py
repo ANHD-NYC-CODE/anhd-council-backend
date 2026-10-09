@@ -14,7 +14,6 @@ class Subsidy421aTests(BaseTest, TestCase):
     def tearDown(self):
         self.clean_tests()
 
-    @unittest.skip("FIXME: broken fixture — see 2026-06-15 test sweep")
     def test_list(self):
         self.subsidy421a_factory()
         self.subsidy421a_factory()
@@ -25,7 +24,6 @@ class Subsidy421aTests(BaseTest, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
-    @unittest.skip("FIXME: broken fixture — see 2026-06-15 test sweep")
     def test_retrieve(self):
         subsidy421a = self.subsidy421a_factory()
 

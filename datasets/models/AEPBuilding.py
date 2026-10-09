@@ -99,7 +99,7 @@ class AEPBuilding(BaseDatasetModel, models.Model):
         from django.db import connection
         bbl_filter = " AND bbl = %s" if bbl else ""
         pa_filter = " AND pa.bbl = %s" if bbl else ""
-        params = [bbl, bbl] if bbl else []
+        params = [str(bbl), str(bbl)] if bbl else []  # bbl column is varchar
         if bbl is None:
             logger.info(
                 'annotate_properties: bulk UPDATE PropertyAnnotation.{aepstatus, aepstartdate, aepdischargedate}',

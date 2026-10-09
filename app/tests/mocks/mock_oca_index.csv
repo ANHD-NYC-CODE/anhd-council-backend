@@ -1,0 +1,4 @@
+indexnumberid,court,fileddate,propertytype,classification,specialtydesignationtypes,status,disposeddate,disposedreason,firstpaper,primaryclaimtotal,dateofjurydemand
+LT-000001-24/NY,New York County Civil Court,2024-03-01,Residential,Non Payment,,Active Case,,,Petition,,
+LT-000002-24/NY,New York County Civil Court,2024-03-02,Residential,Holdover,,Disposed,2024-06-01,Settled,Petition,1500.00,
+LT-000004-24/KI,Kings County Civil Court,2024-04-15,Residential,Holdover,,Disposed,2024-07-01,Judgment,Petition,2500.50,

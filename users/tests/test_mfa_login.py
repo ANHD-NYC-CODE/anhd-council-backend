@@ -7,6 +7,7 @@ from zoneinfo import ZoneInfo
 
 from app.tests.base_test import BaseTest
 from users.models import PasskeyCredential, UserTotpDevice
+from users.mfa.tokens import issue_jwt_pair_for_user
 
 ENFORCEMENT_PAST = datetime.datetime(2020, 1, 1, tzinfo=ZoneInfo('America/New_York'))
 ENFORCEMENT_FUTURE = datetime.datetime(2099, 1, 1, tzinfo=ZoneInfo('America/New_York'))
@@ -109,8 +110,10 @@ class MFALoginTests(BaseTest, TestCase):
         self.assertTrue(response.data.get('mfa_setup_recommended'))
         self.assertIn('mfa_enforcement_starts_at', response.data)
 
-    def _auth_as(self, username, password):
-        access = self.get_access_token(username=username, password=password)
+    def _auth_as(self, user):
+        # Users with passkeys must finish MFA at login (WebAuthn can't run here),
+        # so issue the post-MFA JWT directly.
+        access = issue_jwt_pair_for_user(user)['access']
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {access}')
 
     def test_list_rename_and_revoke_passkeys(self):
@@ -121,7 +124,7 @@ class MFALoginTests(BaseTest, TestCase):
         PasskeyCredential.objects.create(
             user=user, credential_id='cred-2', public_key='pk2', name='Phone',
         )
-        self._auth_as('pkuser', 'test1234!')
+        self._auth_as(user)
 
         listed = self.client.get('/api/auth/mfa/passkeys/')
         self.assertEqual(listed.status_code, 200)
@@ -143,24 +146,12 @@ class MFALoginTests(BaseTest, TestCase):
 
     @override_settings(MFA_STAFF_ENFORCEMENT_START=ENFORCEMENT_PAST)
     def test_staff_cannot_revoke_last_passkey_without_totp(self):
+        # Staff with a single passkey and no TOTP: revoking it would leave no second factor.
         user = self.user_factory(username='staffpk', password='test1234!', is_staff=True)
-        UserTotpDevice.objects.create(user=user, secret=pyotp.random_base32(), confirmed=True)
         pk = PasskeyCredential.objects.create(
             user=user, credential_id='staff-cred-1', public_key='pk', name='Only key',
         )
-
-        login = self.client.post(
-            '/api/token/',
-            {'username': 'staffpk', 'password': 'test1234!'},
-            format='json',
-        )
-        secret = UserTotpDevice.objects.get(user=user).secret
-        tokens = self.client.post(
-            '/api/auth/mfa/totp/verify/',
-            {'challenge_id': login.data['challenge_id'], 'code': pyotp.TOTP(secret).now()},
-            format='json',
-        )
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {tokens.data["access"]}')
+        self._auth_as(user)
 
         blocked = self.client.delete(f'/api/auth/mfa/passkeys/{pk.pk}/')
         self.assertEqual(blocked.status_code, 403)

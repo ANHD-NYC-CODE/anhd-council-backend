@@ -93,10 +93,9 @@ class PropertyTests(BaseTest, TestCase):
     def tearDown(self):
         self.clean_tests()
 
-    @unittest.skip("FIXME: broken fixture — see 2026-06-15 test sweep")
     def test_seed_properties(self):
         update = self.update_factory(model_name="Property",
-                                     file_name="mock_pluto_17v1.zip")
+                                     file_name="mock_pluto.csv")
 
         ds.Property.seed_or_update_self(
             file_path=update.file.file.path, update=update)
@@ -105,15 +104,14 @@ class PropertyTests(BaseTest, TestCase):
         self.assertEqual(ds.PropertyAnnotation.objects.count(), 2)
         self.assertEqual(update.rows_created, 2)
 
-    @unittest.skip("FIXME: broken fixture — see 2026-06-15 test sweep")
     def test_seed_properties_update(self):
         update = self.update_factory(model_name="Property",
-                                     file_name="mock_pluto_17v1.zip")
+                                     file_name="mock_pluto.csv")
         ds.Property.seed_or_update_self(
             file_path=update.file.file.path, update=update)
 
         new_update = self.update_factory(dataset=update.dataset, model_name="Property",
-                                         file_name="mock_pluto_18v1.zip")
+                                         file_name="mock_pluto_update.csv")
         ds.Property.seed_or_update_self(
             file_path=new_update.file.file.path, update=new_update)
 
@@ -125,7 +123,6 @@ class BuildingTests(BaseTest, TestCase):
     def tearDown(self):
         self.clean_tests()
 
-    @unittest.skip("FIXME: broken fixture — see 2026-06-15 test sweep")
     def test_seed_building(self):
         update = self.update_factory(model_name="Building",
                                      file_name="mock_propertymap_bobaadr.csv")
@@ -158,7 +155,6 @@ class PadRecordTests(BaseTest, TestCase):
     def tearDown(self):
         self.clean_tests()
 
-    @unittest.skip("FIXME: broken fixture — see 2026-06-15 test sweep")
     def test_seed_padrecord(self):
         update = self.update_factory(model_name="PadRecord",
                                      file_name="mock_propertymap_bobaadr.csv")
@@ -171,7 +167,7 @@ class PadRecordTests(BaseTest, TestCase):
         self.assertEqual(update.total_rows, 11)
         # Annotates building
         self.assertEqual(ds.Building.objects.get(
-            bin='1086331').pad_addresses, '111A-111D Bobsroad,111-111 Andesroad')
+            bin='1086331').pad_addresses, '111-111 Andesroad,111A-111D Bobsroad')
         self.assertEqual(ds.Building.objects.get(
             bin='1086412').pad_addresses, '104-105 Helloroad')
 
@@ -218,81 +214,51 @@ class TaxLotTests(BaseTest, TestCase):
         self.assertEqual(ds.TaxLot.objects.count(), 6)
 
 
-# class HPDComplaint(BaseTest, TestCase):
-#     def tearDown(self):
-#         self.clean_tests()
+class HPDComplaintTests(BaseTest, TestCase):
+    # Complaints and problems are one dataset (ygpa-z7cr) since 8/2023: one row per problem, pk=problemid.
+    # Fixture: live /resource/ rows for complaints 14961580 (3 problems) and 14961589 (4 problems).
+    def tearDown(self):
+        self.clean_tests()
 
-#     @freeze_time("2014-08-03")
-#     def test_seed_complaints(self):
-#         self.property_factory('1018730024')
-#         update = self.update_factory(model_name="HPDComplaint",
-#                                      file_name="mock_hpd_complaints.csv")
+    @freeze_time("2026-10-01")
+    def test_seed_record(self):
+        property1 = self.property_factory(bbl='2025310005')
+        building = self.building_factory(bin='2114107', property=property1)
+        self.hpdbuildingrecord_factory(buildingid='820815', property=property1, building=building)
+        update = self.update_factory(model_name="HPDComplaint",
+                                     file_name="mock_hpd_complaints.csv")
 
-#         ds.HPDComplaint.seed_or_update_self(
-#             file_path=update.file.file.path, update=update)
-#         self.assertEqual(ds.HPDComplaint.objects.count(), 9)
-#         self.assertEqual(update.rows_created, 9)
+        ds.HPDComplaint.seed_or_update_self(
+            file_path=update.file.file.path, update=update)
 
-#     def test_seed_complaints_adds_bin(self):
-#         update = self.update_factory(model_name="HPDComplaint",
-#                                      file_name="mock_hpd_complaints.csv")
-#         building = self.building_factory(bin=1)
-#         hpdbuilding = self.hpdbuildingrecord_factory(
-#             buildingid="3418", building=building)
-#         ds.HPDComplaint.seed_or_update_self(
-#             file_path=update.file.file.path, update=update)
-#         self.assertEqual(ds.HPDComplaint.objects.count(), 9)
-#         self.assertEqual(update.rows_created, 9)
-#         self.assertEqual(ds.HPDComplaint.objects.filter(bin=1).count(), 1)
+        self.assertEqual(ds.HPDComplaint.objects.count(), 7)
+        self.assertEqual(update.rows_created, 7)
+        self.assertEqual(ds.HPDComplaint.objects.filter(complaintid=14961589).count(), 4)
+        problem = ds.HPDComplaint.objects.get(problemid=29110365)
+        self.assertEqual(problem.complaintid, 14961580)
+        self.assertEqual(problem.bbl_id, '2025310005')
+        self.assertEqual(problem.majorcategory, 'UNSANITARY CONDITION')
+        self.assertEqual(problem.problemstatus, 'CLOSE')
+        # add_bins_from_buildingid links bin through HPDBuildingRecord
+        self.assertEqual(problem.bin_id, '2114107')
 
-#     def test_seed_complaints_with_update(self):
-#         update = self.update_factory(model_name="HPDComplaint",
-#                                      file_name="mock_hpd_complaints.csv")
+    @freeze_time("2026-10-01")
+    def test_seed_record_after_update(self):
+        update = self.update_factory(model_name="HPDComplaint",
+                                     file_name="mock_hpd_complaints.csv")
+        ds.HPDComplaint.seed_or_update_self(
+            file_path=update.file.file.path, update=update)
 
-#         ds.HPDComplaint.seed_or_update_self(
-#             file_path=update.file.file.path, update=update)
+        new_update = self.update_factory(dataset=update.dataset, model_name="HPDComplaint",
+                                         file_name="mock_hpd_complaints_diff.csv",
+                                         previous_file_name="mock_hpd_complaints.csv")
+        ds.HPDComplaint.seed_or_update_self(
+            file_path=new_update.file.file.path, update=new_update)
 
-#         update_diff = self.update_factory(dataset=update.dataset, model_name="HPDComplaint",
-#                                           file_name="mock_hpd_complaints_diff.csv", previous_file_name="mock_hpd_complaints.csv")
-
-#         ds.HPDComplaint.seed_or_update_self(
-#             file_path=update_diff.file.file.path, update=update_diff)
-
-#         self.assertEqual(ds.HPDComplaint.objects.get(
-#             complaintid=6961276).status, "CLOSE")
-
-
-# class HPDProblem(BaseTest, TestCase):
-#     def tearDown(self):
-#         self.clean_tests()
-
-#     def test_seed_problems(self):
-#         update = self.update_factory(model_name="HPDComplaint",
-#                                      file_name="mock_hpd_problems.csv")
-
-#         ds.HPDProblem.seed_or_update_self(
-#             file_path=update.file.file.path, update=update)
-#         record = ds.HPDProblem.objects.all()[0]
-#         self.assertEqual(ds.HPDProblem.objects.count(), 9)
-#         self.assertEqual(update.rows_created, 9)
-
-#     def test_seed_problems_with_update(self):
-#         update = self.update_factory(model_name="HPDProblem",
-#                                      file_name="mock_hpd_problems.csv")
-
-#         ds.HPDProblem.seed_or_update_self(
-#             file_path=update.file.file.path, update=update)
-
-#         update_diff = self.update_factory(dataset=update.dataset, model_name="HPDProblem",
-#                                           file_name="mock_hpd_problems_diff.csv", previous_file_name="mock_hpd_problems.csv")
-
-#         ds.HPDProblem.seed_or_update_self(
-#             file_path=update_diff.file.file.path, update=update_diff)
-
-#         self.assertEqual(ds.HPDProblem.objects.filter(
-#             complaintid=6961276)[0].unittypeid, 91)
-#         self.assertEqual(
-#             len(ds.HPDProblem.objects.filter(complaintid=6961276)), 3)
+        self.assertEqual(ds.HPDComplaint.objects.count(), 8)
+        self.assertEqual(new_update.rows_created, 1)
+        self.assertEqual(ds.HPDComplaint.objects.get(problemid=29110365).problemstatus, 'OPEN')
+        self.assertEqual(ds.HPDComplaint.objects.get(problemid=29110368).majorcategory, 'HEAT/HOT WATER')
 
 
 class DOBViolationTests(BaseTest, TestCase):
@@ -518,7 +484,6 @@ class HPDBuildingRecordTests(BaseTest, TestCase):
 
         annotation = ds.PropertyAnnotation.objects.get(bbl=property.bbl)
 
-    @unittest.skip("FIXME: broken fixture — see 2026-06-15 test sweep")
     def test_seed_record_after_update(self):
         update = self.update_factory(model_name="HPDBuildingRecord",
                                      file_name="mock_hpd_building_records.csv")
@@ -541,7 +506,6 @@ class TaxLienTests(BaseTest, TestCase):
     def tearDown(self):
         self.clean_tests()
 
-    @unittest.skip("FIXME: broken fixture — see 2026-06-15 test sweep")
     def test_seed_record(self):
 
         update = self.update_factory(model_name="TaxLien",
@@ -552,7 +516,6 @@ class TaxLienTests(BaseTest, TestCase):
         self.assertEqual(update.total_rows, 9)
         self.assertEqual(update.rows_created, 9)
 
-    @unittest.skip("FIXME: broken fixture — see 2026-06-15 test sweep")
     def test_seed_record_after_overwrite(self):
         self.property_factory('1001351101')
         update = self.update_factory(model_name="TaxLien",
@@ -733,7 +696,6 @@ class DOBPermitIssuedTests(BaseTest, TestCase):
         self.assertEqual(ds.DOBIssuedPermit.objects.filter(
             type='dobpermitissuedlegacy').first().permit_status, "ISSUED")
 
-    @unittest.skip("FIXME: broken fixture — see 2026-06-15 test sweep")
     def test_seed_joined_table_with_update(self):
         update = self.update_factory(model_name="DOBIssuedPermit")
 
@@ -762,9 +724,9 @@ class DOBPermitIssuedTests(BaseTest, TestCase):
 
         self.assertEqual(ds.DOBIssuedPermit.objects.count(), 22)
         self.assertEqual(ds.DOBIssuedPermit.objects.get(
-            key="a1").jobdescription, "B1")
+            key="a").jobdescription, "B1")
         self.assertEqual(ds.DOBIssuedPermit.objects.get(
-            key="b1").jobdescription, "bye")
+            key="b").jobdescription, "bye")
         self.assertEqual(update2.total_rows, 22)
 
 

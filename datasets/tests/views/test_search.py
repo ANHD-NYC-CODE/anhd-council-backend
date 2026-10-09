@@ -31,7 +31,7 @@ class SearchTests(BaseTest, TestCase):
         ds.AddressRecord.build_search()
 
         response = self.client.get('/search/buildings/?fts=50 MAIN STREET', format="json")
-        content = response.data['results']
+        content = response.data  # search is unpaginated
 
         self.assertEqual(response.status_code, 200)
 
@@ -55,7 +55,7 @@ class SearchTests(BaseTest, TestCase):
         ds.AddressRecord.build_search()
 
         response = self.client.get('/search/buildings/?fts=50 MA', format="json")
-        content = response.data['results']
+        content = response.data  # search is unpaginated
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 1)
@@ -75,7 +75,7 @@ class SearchTests(BaseTest, TestCase):
         ds.AddressRecord.build_search()
 
         response = self.client.get('/search/buildings/?fts=5 MA', format="json")
-        content = response.data['results']
+        content = response.data  # search is unpaginated
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)

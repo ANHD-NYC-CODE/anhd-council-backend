@@ -13,7 +13,6 @@ class DOBPermitIssuedTests(BaseTest, TestCase):
     def tearDown(self):
         self.clean_tests()
 
-    @unittest.skip("FIXME: broken fixture — see 2026-06-15 test sweep")
     @freeze_time("2018-01-1")
     def test_seed_joined_table(self):
         property = self.property_factory(bbl='1')
@@ -38,5 +37,5 @@ class DOBPermitIssuedTests(BaseTest, TestCase):
         self.assertEqual(update.total_rows, 18)
         self.assertEqual(update.rows_created, 18)
         self.assertEqual(update.rows_updated, 0)
-        self.assertEqual(ds.DOBFiledPermit.objects.all()
-                         [0].datefiled.year, 2018)
+        self.assertEqual(ds.DOBFiledPermit.objects.filter(datefiled__isnull=False).order_by(
+            '-datefiled').first().datefiled.year, 2018)

@@ -22,12 +22,11 @@ class ForeclosureAuctionViewTests(BaseTest, TestCase):
 
         self.assertEqual(response.status_code, 401)
 
-    @unittest.skip("FIXME: broken fixture — see 2026-06-15 test sweep")
     def test_list(self):
         self.foreclosure_auction_factory()
         self.foreclosure_auction_factory()
 
-        token = self.get_access_token()
+        token = self.get_access_token(trusted=True)
 
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
         response = self.client.get('/foreclosure-auctions/', format="json")
@@ -36,10 +35,9 @@ class ForeclosureAuctionViewTests(BaseTest, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
-    @unittest.skip("FIXME: broken fixture — see 2026-06-15 test sweep")
     def test_retrieve(self):
         self.foreclosure_auction_factory(key="1")
-        token = self.get_access_token()
+        token = self.get_access_token(trusted=True)
 
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
         response = self.client.get('/foreclosure-auctions/1/')

@@ -153,25 +153,31 @@ class Eviction(BaseDatasetModel, models.Model):
     def link_eviction_to_pluto_by_address(self):
         evictions = self.objects.filter(bbl__isnull=True)
         for eviction in evictions:
-        # matches STREET or STREET EAST / WEST etc
+            # matches STREET or STREET EAST / WEST etc
             match = match_address_within_string(eviction.evictionaddress)
 
-        if match:
-            cleaned_address = match.group(0)
-            # TODO: remove house letter from cleaned address
-            self.save_eviction(eviction=eviction,
-                               cleaned_address=cleaned_address)
-            address_match = ds.AddressRecord.objects.filter(
-                address=cleaned_address + ' {}'.format(eviction.borough))
-            if len(address_match) == 1:
+            if match:
+                cleaned_address = match.group(0)
+                # TODO: remove house letter from cleaned address
                 self.save_eviction(eviction=eviction,
-                                   bbl=address_match[0].bbl)
+                                   cleaned_address=cleaned_address)
+                address_match = ds.AddressRecord.objects.filter(
+                    address=cleaned_address + ' {}'.format(eviction.borough))
+                if len(address_match) == 1:
+                    self.save_eviction(eviction=eviction,
+                                       bbl=address_match[0].bbl)
 
-            elif len(address_match) > 1:
-                # not a super generic query like 123 STREET or 45 AVENUE
-                if not re.match(r"(\d+ (\bSTREET\b|\bAVENUE))", cleaned_address):
-                    self.save_eviction(
-                        eviction=eviction, bbl=address_match[0].bbl)
+                elif len(address_match) > 1:
+                    # not a super generic query like 123 STREET or 45 AVENUE
+                    if not re.match(r"(\d+ (\bSTREET\b|\bAVENUE))", cleaned_address):
+                        self.save_eviction(
+                            eviction=eviction, bbl=address_match[0].bbl)
+                    else:
+                        try:
+                            self.get_geosearch_address(cleaned_address, eviction)
+                        except IndexError:
+                            logger.debug(
+                                "error getting geosearch address for eviction: %s", eviction.evictionaddress)
                 else:
                     try:
                         self.get_geosearch_address(cleaned_address, eviction)
@@ -179,14 +185,8 @@ class Eviction(BaseDatasetModel, models.Model):
                         logger.debug(
                             "error getting geosearch address for eviction: %s", eviction.evictionaddress)
             else:
-                try:
-                    self.get_geosearch_address(cleaned_address, eviction)
-                except IndexError:
-                    logger.debug(
-                        "error getting geosearch address for eviction: %s", eviction.evictionaddress)
-        else:
-            logger.debug(
-                "no eviction match - no regex matches: %s", eviction.evictionaddress)
+                logger.debug(
+                    "no eviction match - no regex matches: %s", eviction.evictionaddress)
 
 
     @classmethod
@@ -215,8 +215,11 @@ class Eviction(BaseDatasetModel, models.Model):
 
         # next compare the house and street numbers
         if match and self.validate_geosearch_match(match, cleaned_address_with_borough):
+            # geosearch v2: bbl lives in addendum.pad.bbl
+            match_bbl = (match.get('addendum') or {}).get('pad', {}).get('bbl') \
+                or match.get('pad_bbl') or match.get('bbl')
             try:
-                bbl = ds.Property.objects.get(bbl=match['bbl'])
+                bbl = ds.Property.objects.get(bbl=match_bbl)
 
                 self.save_eviction(eviction=eviction, bbl=bbl,
                                    geosearch_address=match['label'])
@@ -224,7 +227,7 @@ class Eviction(BaseDatasetModel, models.Model):
                 self.save_eviction(eviction=eviction,
                                    geosearch_address=match['label'])
                 logger.warning(
-                    'unable to match response bbl {} to a db record'.format(match['bbl']))
+                    'unable to match response bbl {} to a db record'.format(match_bbl))
                 return None
         elif eviction.borough != "QUEENS" and "-" in get_house_number(cleaned_address):
             # try entirely new geosearch with the range of hyphenated numbers
@@ -282,7 +285,9 @@ class Eviction(BaseDatasetModel, models.Model):
             geosearch_house_street = remove_building_terms(
                 geosearch_match['label'].split(', ')[0].upper())
 
-            geosearch_borough = geosearch_match['label'].split(', ')[1].upper()
+            # Manhattan labels read "..., New York, NY, USA"; prefer the borough property
+            geosearch_borough = (geosearch_match.get('borough') or
+                                 geosearch_match['label'].split(', ')[1]).upper()
 
             geosearch_street_with_borough = ', '.join([clean_number_and_streets(
                 geosearch_house_street, True, clean_typos=True), geosearch_borough]).upper()

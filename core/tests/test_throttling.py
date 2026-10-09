@@ -1,29 +1,28 @@
-from copy import deepcopy
+from unittest import mock
 
-from django.conf import settings
+from django.core.cache import cache
 from django.test import override_settings
+from rest_framework.throttling import SimpleRateThrottle
+from rest_framework.views import APIView
 
 from app.tests.base_test import BaseTest
+from core.throttling import AnonRateThrottle, UserRateThrottle
 
 
-def _throttle_settings(anon='3/minute', user='5/minute'):
-    rest_framework = deepcopy(settings.REST_FRAMEWORK)
-    rest_framework['DEFAULT_THROTTLE_CLASSES'] = [
-        'core.throttling.AnonRateThrottle',
-        'core.throttling.UserRateThrottle',
-    ]
-    rest_framework['DEFAULT_THROTTLE_RATES'] = {
-        'anon': anon,
-        'user': user,
-    }
-    return rest_framework
-
-
-@override_settings(
-    REST_FRAMEWORK=_throttle_settings(),
-    CACHE_REQUEST_KEY='test-cache-key',
-)
+# DRF binds throttle_classes / THROTTLE_RATES as class attributes at import time,
+# so override_settings(REST_FRAMEWORK=...) never reaches them; patch the attributes instead.
+@override_settings(CACHE_REQUEST_KEY='test-cache-key')
 class ThrottlingTests(BaseTest):
+
+    def setUp(self):
+        cache.clear()  # throttle history lives in the default cache
+        for target, attr, value in (
+            (APIView, 'throttle_classes', [AnonRateThrottle, UserRateThrottle]),
+            (SimpleRateThrottle, 'THROTTLE_RATES', {'anon': '3/minute', 'user': '5/minute'}),
+        ):
+            patcher = mock.patch.object(target, attr, value)
+            patcher.start()
+            self.addCleanup(patcher.stop)
 
     def tearDown(self):
         self.clean_tests()

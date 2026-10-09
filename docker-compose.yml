@@ -17,7 +17,7 @@ services:
       - nginx_network
     volumes:
       - ./:/app
-      - ./data:/app/data
+      - ${DATA_DIR:-./data}:/app/data
       - static_volume:/app/static
       - ./logs:/app/logs
     env_file:

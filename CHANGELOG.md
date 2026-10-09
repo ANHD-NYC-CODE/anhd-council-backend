@@ -1,5 +1,13 @@
 # API CHANGELOG
 
+### 2026-10-09 (test suite, Tax Lien import, HPD Building upsert)
+
+**What changed**
+- Restored the full Django test suite (321 tests, no skipped FIXME fixtures); PLUTO tests use `mock_pluto.csv` / `mock_pluto_update.csv` instead of legacy PLUTO zip mocks; HPD complaint/problem uses merged `mock_hpd_complaints*.csv` (legacy problem-only mocks removed).
+- **Tax Lien:** parse ISO `month` values from Socrata `/resource/` CSV so Final Sale rows import again.
+- **HPD Building Records:** full upsert on re-seed (updates changed rows; does not auto-delete buildings missing from the latest NYC export).
+- Socrata transform smoke script covers 20 resource-backed models (5000-row cap, `--no-seed` for local runs).
+
 ### 2026-10-08 (Socrata CSV export — HTTP 410)
 
 **What changed**

@@ -214,10 +214,9 @@ def from_csv_file_to_gen(file_path_or_generator, update=None, cleaner=None):
         raise ValueError("from_csv_file_to_gen accepts Strings or Generators")
 
     if update and c:
-        if update.total_rows:
-            update.total_rows = count_csv_rows(file_path_or_generator)
-        else:
-            update.total_rows = count_csv_rows(file_path_or_generator)
+        update.total_rows = count_csv_rows(file_path_or_generator)
+        # tells batch_upsert_rows not to add batch lengths on top of this count
+        update._total_rows_from_file = True
         update.save()
 
     with f:

@@ -70,7 +70,6 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
-    @unittest.skip("FIXME: broken fixture — see 2026-06-15 test sweep")
     def test_property_hpdcomplaints(self):
         property = self.property_factory(bbl="1")
         self.hpdcomplaint_factory(property=property)
@@ -129,7 +128,6 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
-    @unittest.skip("FIXME: broken fixture — see 2026-06-15 test sweep")
     def test_property_evictions(self):
         property = self.property_factory(bbl="1")
         self.eviction_factory(id="1", property=property)
@@ -290,7 +288,6 @@ class PropertyViewTests(BaseTest, TestCase):
 
         self.assertEqual(response.status_code, 401)
 
-    @unittest.skip("FIXME: broken fixture — see 2026-06-15 test sweep")
     def test_property_lispendens(self):
         property = self.property_factory(bbl="1")
         self.lispenden_factory(
@@ -298,7 +295,7 @@ class PropertyViewTests(BaseTest, TestCase):
         self.lispenden_factory(
             property=property, type=ds.LisPenden.LISPENDEN_TYPES['foreclosure'])
 
-        token = self.get_access_token()
+        token = self.get_access_token(trusted=True)
 
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
         response = self.client.get('/properties/1/lispendens/', format="json")
@@ -307,7 +304,6 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
-    @unittest.skip("FIXME: broken fixture — see 2026-06-15 test sweep")
     def test_property_housing_summary(self):
         property = self.property_factory(bbl="1", address="123 fake st", yearbuilt="1900",
                                          unitstotal="12", unitsres="11")
@@ -326,7 +322,7 @@ class PropertyViewTests(BaseTest, TestCase):
 
         self.coredata_factory(property=property, programname='HELLO')
         self.rentstabilizationrecord_factory(
-            property=property, uc2008=50, uc2016=10)
+            property=property, uc2007=50, uc2016=10)  # uc2007 is the percent-lost baseline
 
         response = self.client.get('/properties/?summary=true', format="json")
         content = response.data
@@ -347,7 +343,6 @@ class PropertyViewTests(BaseTest, TestCase):
 
     # summary-annotated serializer
     @freeze_time("2019-01-01")
-    @unittest.skip("FIXME: broken fixture — see 2026-06-15 test sweep")
     def test_results_with_annotate_datasets_1(self):
         self.create_annotated_datasets(datetime.datetime.now())
         # kitchen sink
@@ -421,7 +416,6 @@ class PropertyViewTests(BaseTest, TestCase):
 
     # summary-annotated serializer
     @freeze_time("2019-01-01")
-    @unittest.skip("FIXME: broken fixture — see 2026-06-15 test sweep")
     def test_results_with_annotate_datasets_2(self):
         self.create_annotated_datasets(datetime.datetime.now())
 
@@ -474,7 +468,6 @@ class PropertyViewTests(BaseTest, TestCase):
 
     # summary-annotated serializer
     @freeze_time("2019-01-01")
-    @unittest.skip("FIXME: broken fixture — see 2026-06-15 test sweep")
     def test_results_with_annotate_datasets_3(self):
         self.create_annotated_datasets(datetime.datetime.now())
 
@@ -529,7 +522,6 @@ class PropertyViewTests(BaseTest, TestCase):
 
     # summary-annotated serializer
     @freeze_time("2019-01-01")
-    @unittest.skip("FIXME: broken fixture — see 2026-06-15 test sweep")
     def test_results_with_annotate_datasets_4(self):
         self.create_annotated_datasets(datetime.datetime.now())
 
@@ -629,7 +621,6 @@ class PropertyViewTests(BaseTest, TestCase):
         self.assertEqual('lispendens__01/01/2018-{}'.format(now_date)
                          not in post_cache_content[0], True)
 
-    @unittest.skip("FIXME: broken fixture — see 2026-06-15 test sweep")
     @freeze_time("2019-01-01")
     def test_results_with_annotate_datasets_6(self):
         self.create_annotated_datasets(datetime.datetime.now())
@@ -642,7 +633,7 @@ class PropertyViewTests(BaseTest, TestCase):
             self.foreclosure_factory(
                 property=property1, date_added="2018-01-01")
 
-        token = self.get_access_token()
+        token = self.get_access_token(trusted=True)
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
 
         pre_cache_query = '/properties/?summary=true&summary-type=short-annotated&annotation__start=2018-01-01'
@@ -675,7 +666,6 @@ class PropertyViewTests(BaseTest, TestCase):
     # summary-annotated serializer
     # with 'recent' annotation start
     @freeze_time("2019-01-05")
-    @unittest.skip("FIXME: broken fixture — see 2026-06-15 test sweep")
     def test_results_with_annotate_datasets_7(self):
         self.dataset_factory(name='HPDViolation',
                              api_last_updated=datetime.datetime.today())
@@ -700,6 +690,8 @@ class PropertyViewTests(BaseTest, TestCase):
         self.dataset_factory(name='AcrisRealLegal',
                              api_last_updated=datetime.datetime.today())
         self.dataset_factory(name='Foreclosure',
+                             api_last_updated=datetime.datetime.today())
+        self.dataset_factory(name='OCAHousingCourt',
                              api_last_updated=datetime.datetime.today())
 
         # advanced query params
@@ -778,7 +770,6 @@ class PropertyViewTests(BaseTest, TestCase):
     # summary-annotated serializer
     # with 'lastyear' annotation start
     @freeze_time("2019-01-05")
-    @unittest.skip("FIXME: broken fixture — see 2026-06-15 test sweep")
     def test_results_with_annotate_datasets_8(self):
         self.create_annotated_datasets(datetime.datetime.now())
 
@@ -813,7 +804,6 @@ class PropertyViewTests(BaseTest, TestCase):
     # summary-annotated serializer
     # with 'last3years' annotation start
     @freeze_time("2019-01-05")
-    @unittest.skip("FIXME: broken fixture — see 2026-06-15 test sweep")
     def test_results_with_annotate_datasets_9(self):
         self.create_annotated_datasets(datetime.datetime.now())
 
@@ -849,7 +839,6 @@ class PropertyViewTests(BaseTest, TestCase):
     # summary-annotated serializer
     # annotation_start=full - sending all 3 annotation fields
     @freeze_time("2019-01-01")
-    @unittest.skip("FIXME: broken fixture — see 2026-06-15 test sweep")
     def test_results_with_annotate_datasets_10(self):
         self.create_annotated_datasets(datetime.datetime.now())
 
@@ -908,7 +897,6 @@ class PropertyViewTests(BaseTest, TestCase):
             content[0]['hpdcomplaints_last3years__01/01/2016-12/31/2018'], 15)
 
     # with cache & authorized
-    @unittest.skip("FIXME: broken fixture — see 2026-06-15 test sweep")
     @freeze_time("2019-01-01")
     def test_results_with_annotate_datasets_11(self):
         self.create_annotated_datasets(datetime.datetime.now())
@@ -936,7 +924,7 @@ class PropertyViewTests(BaseTest, TestCase):
             'foreclosures_lastyear__01/01/2018-12/31/2018' not in pre_auth_content[0], True)
 
         # uncached, authorized
-        token = self.get_access_token()
+        token = self.get_access_token(trusted=True)
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
 
         pre_cache_query = '/properties/?summary=true&summary-type=short-annotated&annotation__start=full'
@@ -984,7 +972,6 @@ class PropertyViewTests(BaseTest, TestCase):
 
     # custom-search serializer
     @freeze_time("2019-01-01")
-    @unittest.skip("FIXME: broken fixture — see 2026-06-15 test sweep")
     def test_results_with_annotate_datasets_12(self):
         self.create_annotated_datasets(datetime.datetime.now())
 

@@ -36,6 +36,7 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         # get_redis_connection("default").flushall()
         # c_models.DataFile.objects.all().delete()
         cache.clear()
+        d_models.RentStabilizationRecord._latest_data_year = None
         self.clean_mock_files()
 
     def clean_mock_files(self):
@@ -51,12 +52,16 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         for file in files:
             os.remove(os.path.join(path, file))
 
-    def get_access_token(self, username=None, password=None):
+    def get_access_token(self, username=None, password=None, trusted=False):
         if not username or not password:
             username = "test"
             password = "test1234!"
             user = self.user_factory(
                 email="test@test.com",  username=username, password=password)
+            if trusted:
+                # protected datasets (lispenden/foreclosure/ocahousingcourt) require the 'trusted' group
+                from django.contrib.auth.models import Group
+                user.groups.add(Group.objects.get_or_create(name='trusted')[0])
 
         response = self.client.post(
             '/api/token/', {'username': username, 'password': password}, format="json")
@@ -322,6 +327,31 @@ class BaseTest(APITestCase, URLPatternsTestCase):
         return factory
 
     # HPD Complaints and Problems have been merged to one api endpoint/dataset as of 8/2023
+    # One HPDComplaint row per problem (pk=problemid); complaintid repeats across problems.
+    def hpdcomplaint_factory(self, problemid=None, complaintid=None, property=None, building=None, hpdbuilding=None, **kwargs):
+        if not problemid:
+            problemid = random.randint(1, 100000000)
+        if not complaintid:
+            complaintid = random.randint(1, 100000000)
+        if not property:
+            property = self.property_factory(
+                bbl=random.randint(1000000000, 5999999999))
+        if not building:
+            building = self.building_factory(bin=random.randint(1, 1000000), property=property, boro=property.borough,
+                                             block=property.block, lot=property.lot)
+        if not hpdbuilding:
+            hpdbuilding = self.hpdbuildingrecord_factory(buildingid=random.randint(
+                1, 100000), property=property, building=building)
+
+        return d_models.HPDComplaint.objects.create(
+            problemid=problemid,
+            complaintid=complaintid,
+            bbl=property,
+            bin=building,
+            buildingid=hpdbuilding,
+            **kwargs
+        )
+
     # def hpdcomplaint_factory(self, complaintid=None, property=None, building=None, hpdbuilding=None, **kwargs):
     #     name = 'HPDComplaint'
     #     if not complaintid:
@@ -682,6 +712,8 @@ class BaseTest(APITestCase, URLPatternsTestCase):
                 latestuctotals = kwargs[key]
             year_cursor -= 1
 
+        # latest_data_year() is cached per-process; reset so it reflects this test's rows
+        d_models.RentStabilizationRecord._latest_data_year = None
         factory = d_models.RentStabilizationRecord.objects.create(
             id=property.bbl,
             ucbbl=property,
@@ -705,10 +737,23 @@ class BaseTest(APITestCase, URLPatternsTestCase):
             courtindexnumber=id,
             bbl=property,
             uniqueid=uniqueid,
-            evictionaptnum=str(random.randint(1, 1000000)),
+            evictionapartmentnumber=str(random.randint(1, 1000000)),
             **kwargs
         )
         return factory
+
+    def ocahousingcourt_factory(self, indexnumberid=None, property=None, **kwargs):
+        if not indexnumberid:
+            indexnumberid = 'LT-{}'.format(random.randint(1, 100000000))
+        if not property:
+            property = self.property_factory(
+                bbl=random.randint(1000000000, 5999999999))
+
+        return d_models.OCAHousingCourt.objects.create(
+            indexnumberid=indexnumberid,
+            bbl=property,
+            **kwargs
+        )
 
     def housinglitigation_factory(self, litigationid=None, property=None, building=None, **kwargs):
         name = 'HousingLitigation'

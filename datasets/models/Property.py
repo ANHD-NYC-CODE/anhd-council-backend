@@ -544,7 +544,7 @@ class Property(BaseDatasetModel, models.Model):
         logger.info('adding property annotations')
         self.create_property_annotations()
         if settings.TESTING:
-            # TODO - update mock pluto datasets to v20+ (mock_pluto_17v1.zip) because newer PLUTO includes latitude and longitude
+            # Test fixtures (mock_pluto.csv) are /resource/64uk-42ks rows with latitude/longitude
             self.add_geometry()
         self.add_state_geographies()
         # Chain trigger to AddressRecord lives on `chain_next_model` (above);

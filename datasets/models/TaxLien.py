@@ -6,6 +6,7 @@ from django.utils import timezone
 from datasets.utils.BaseDatasetModel import BaseDatasetModel
 from core.utils.transform import from_csv_file_to_gen, with_bbl
 from datasets.utils.validation_filters import is_null
+from dateutil.parser import parse as parse_date
 import logging
 import datetime
 from core.tasks import async_download_and_update
@@ -50,6 +51,30 @@ class TaxLien(BaseDatasetModel, models.Model):
     slim_query_fields = ["id", 'bbl', 'year']
 
     @classmethod
+    def _apply_month_year_from_month_column(cls, row):
+        """Normalize month/year from the source month column."""
+        month_raw = row['month'].strip()
+        parts = month_raw.split('/')
+        if len(parts) >= 3:
+            row['month'] = parts[0]
+            row['year'] = parts[2].split(' ')[0]
+            return True
+        if len(parts) == 2:
+            row['month'] = parts[0]
+            row['year'] = parts[1]
+            return True
+        # Socrata /resource/ CSV uses ISO datetimes, e.g. 2019-10-01T00:00:00.000
+        if '-' in month_raw:
+            try:
+                dt = parse_date(month_raw)
+                row['month'] = str(dt.month)
+                row['year'] = str(dt.year)
+                return True
+            except (ValueError, TypeError, OverflowError):
+                return False
+        return False
+
+    @classmethod
     def pre_validation_filters(self, gen_rows):
         for row in gen_rows:
             if is_null(row.get('cycle')) or is_null(row.get('month')) or is_null(row.get('bbl')):
@@ -64,17 +89,8 @@ class TaxLien(BaseDatasetModel, models.Model):
             if not is_null(row.get('waterdebtonly')):
                 row['waterdebtonly'] = row['waterdebtonly'] == 'YES'
 
-            # Month column has two known formats:
-            #   Socrata current: "MM/YYYY"
-            #   Older DOF xlsx (2021 era): "MM/DD/YYYY HH:MM:SS AM"
-            parts = row['month'].strip().split('/')
-            if len(parts) >= 3:
-                row['month'] = parts[0]
-                row['year'] = parts[2].split(' ')[0]
-            elif len(parts) == 2:
-                row['month'] = parts[0]
-                row['year'] = parts[1]
-            else:
+            # Month column formats: MM/YYYY, legacy DOF xlsx, or ISO (resource API).
+            if not self._apply_month_year_from_month_column(row):
                 continue
 
             yield row

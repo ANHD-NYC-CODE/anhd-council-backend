@@ -153,6 +153,7 @@ class CoreSubsidyRecord(BaseDatasetModel, models.Model):
         # the field first then populating from the union. In per-BBL mode
         # touches only the one row.
         from django.db import connection
+        bbl = str(bbl) if bbl else None  # bbl column is varchar
         bbl_filter = " AND bbl = %s" if bbl else ""
         pa_filter = " AND pa.bbl = %s" if bbl else ""
         # 5 placeholders inside the WITH (3 UNION clauses with bbl filter, then 1 outer pa filter, then 1 reset filter)

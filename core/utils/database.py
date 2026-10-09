@@ -350,7 +350,8 @@ def batch_upsert_rows(model, rows, batch_size=750000, update=None, ignore_confli
                 rows_created = model.objects.count() - starting_count
                 update.rows_created = update.rows_created + rows_created
                 update.rows_updated = update.rows_updated + (rows_length - rows_created)
-                update.total_rows = (update.total_rows or 0) + rows_length
+                if not getattr(update, '_total_rows_from_file', False):
+                    update.total_rows = (update.total_rows or 0) + rows_length
                 update.save()
 
         except Exception as e:

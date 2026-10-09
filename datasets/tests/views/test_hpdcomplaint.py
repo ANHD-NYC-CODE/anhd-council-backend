@@ -14,7 +14,6 @@ class HPDComplaintViewTests(BaseTest, TestCase):
     def tearDown(self):
         self.clean_tests()
 
-    @unittest.skip("FIXME: broken fixture — see 2026-06-15 test sweep")
     def test_list(self):
         self.hpdcomplaint_factory(complaintid="1")
         self.hpdcomplaint_factory(complaintid="2")
@@ -38,15 +37,16 @@ class HPDComplaintViewTests(BaseTest, TestCase):
     #     self.assertEqual(len(content[0]['hpdproblems']), 2)
     #     self.assertEqual(len(content[1]['hpdproblems']), 0)
 
-    @unittest.skip("FIXME: broken fixture — see 2026-06-15 test sweep")
     def test_retrieve(self):
-        self.hpdcomplaint_factory(complaintid="1")
+        # Detail route is keyed by problemid (pk) since the 2023 complaint/problem merge.
+        self.hpdcomplaint_factory(problemid=1, complaintid=10)
 
         response = self.client.get('/hpdcomplaints/1/')
         content = response.data
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(content["complaintid"], 1)
+        self.assertEqual(content["problemid"], 1)
+        self.assertEqual(content["complaintid"], 10)
 
     def mock_hpdcomplaint_hpdproblems(self):
         complaint = self.hpdcomplaint_factory(complaintid="1")

@@ -119,6 +119,7 @@ class PadRecord(BaseDatasetModel, models.Model):
                         STRING_AGG(
                             COALESCE(lhnd, '') || '-' || COALESCE(hhnd, '') || ' ' || COALESCE(stname, ''),
                             ','
+                            ORDER BY stname, lhnd, hhnd
                         ) AS addresses
                     FROM datasets_padrecord
                     WHERE bin IS NOT NULL

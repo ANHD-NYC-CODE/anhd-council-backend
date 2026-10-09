@@ -34,7 +34,7 @@ if [ ! -f "$DUMP_FILE" ]; then
 fi
 
 echo "=== Starting Postgres container ==="
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d postgres redis
+docker compose --env-file .env.dev -f docker-compose.yml -f docker-compose.dev.yml up -d postgres redis
 
 echo "=== Waiting for Postgres to be ready ==="
 until docker exec postgres pg_isready -U anhd > /dev/null 2>&1; do
@@ -71,7 +71,7 @@ else
 fi
 
 echo "=== Starting remaining containers ==="
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+docker compose --env-file .env.dev -f docker-compose.yml -f docker-compose.dev.yml up -d
 
 echo "=== Running migrations ==="
 docker exec app python manage.py migrate 2>&1 | tail -5

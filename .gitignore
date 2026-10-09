@@ -91,6 +91,7 @@ gmail_token.pickle
 .env
 .env.docker
 .env.dev
+postgres-data/
 .env.prod
 .venv
 env/
@@ -126,3 +127,9 @@ dap_council_pgvol1.tar
 dap.tar.gz
 dap.gz
 dapprod-logs/
+
+# Local-only tooling (do not commit)
+CLAUDE.md
+.claude/
+scripts/claude-bp.sh
+temp/

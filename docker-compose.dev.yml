@@ -1,4 +1,3 @@
-version: "2"
 services:
   app:
     links:
@@ -29,7 +28,7 @@ services:
       - redis
     volumes:
       - ./:/app
-      - ./data:/app/data
+      - ${DATA_DIR:-./data}:/app/data
       - ./logs:/app/logs
       - ./celery:/app/celery
     env_file:
@@ -53,7 +52,7 @@ services:
       - redis
     volumes:
       - ./:/app
-      - ./data:/app/data
+      - ${DATA_DIR:-./data}:/app/data
       - ./logs:/app/logs
       - ./celery/logs:/app/celery/logs
     links:
@@ -165,12 +164,11 @@ services:
     networks:
       - network1
     volumes:
-      - pg_vol1:/var/lib/postgresql/data
+      # Bind mount (set POSTGRES_DATA_DIR in .env.dev). Default: ./postgres-data in repo root.
+      - ${POSTGRES_DATA_DIR:-./postgres-data}:/var/lib/postgresql/data
     logging:
       options:
         max-size: "10m"
         max-file: "3"
 #nginx:
 #certbot:
-volumes:
-  pg_vol1:

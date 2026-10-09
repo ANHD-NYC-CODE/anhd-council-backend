@@ -14,7 +14,6 @@ class HPDBuildingViewTests(BaseTest, TestCase):
     def tearDown(self):
         self.clean_tests()
 
-    @unittest.skip("FIXME: broken fixture — see 2026-06-15 test sweep")
     def test_list(self):
         self.hpdbuildingrecord_factory(buildingid="1")
         self.hpdbuildingrecord_factory(buildingid="2")
@@ -25,7 +24,6 @@ class HPDBuildingViewTests(BaseTest, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(content), 2)
 
-    @unittest.skip("FIXME: broken fixture — see 2026-06-15 test sweep")
     def test_retrieve(self):
         building = self.building_factory(bin="1")
         self.hpdbuildingrecord_factory(buildingid="1", building=building)

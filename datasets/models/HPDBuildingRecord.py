@@ -73,7 +73,8 @@ class HPDBuildingRecord(BaseDatasetModel, models.Model):
     @classmethod
     def seed_or_update_self(self, **kwargs):
         logger.info("Seeding/Updating %s", self.__name__)
-        self.seed_with_upsert(ignore_conflict=True, **kwargs)
+        # Full upsert: changed rows are updated; rows absent from the NYC export are not auto-deleted.
+        self.seed_with_upsert(**kwargs)
 
     @classmethod
     def annotate_properties(cls, bbl=None):
@@ -101,7 +102,7 @@ class HPDBuildingRecord(BaseDatasetModel, models.Model):
         from django.db import connection
         bbl_filter = " AND bbl = %s" if bbl else ""
         pa_filter = " AND pa.bbl = %s" if bbl else ""
-        params = [bbl, bbl] if bbl else []
+        params = [str(bbl), str(bbl)] if bbl else []  # bbl column is varchar
         if bbl is None:
             logger.info(
                 'annotate_properties: bulk UPDATE PropertyAnnotation.{legalclassa, legalclassb, managementprogram}',
