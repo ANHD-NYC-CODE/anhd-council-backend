@@ -5,6 +5,8 @@ from datasets.utils.validation_filters import is_null
 from datasets import models as ds
 from core.utils.bbl import boro_to_abrv
 from core.utils.address import remove_apartment_letter, match_address_within_string, clean_number_and_streets, get_house_number, get_street, get_borough, remove_building_terms
+import csv
+import io
 import requests
 import json
 import re
@@ -14,6 +16,10 @@ from core.tasks import async_download_and_update
 
 
 logger = logging.getLogger('app')
+
+_EVICTION_CSV_ADDRESS_IDX = 2
+_EVICTION_CSV_LATITUDE_IDX = 12
+_EVICTION_CSV_LONGITUDE_IDX = 13
 
 
 class Eviction(BaseDatasetModel, models.Model):
@@ -101,28 +107,42 @@ class Eviction(BaseDatasetModel, models.Model):
         return csv_reader
 
     @classmethod
-    def clean_evictions_csv(self, gen_rows):
-        for row in gen_rows:
-            row = row.upper()
-            row = row.replace(',JR.', ' JR')
-            row = row.replace(', JR.', ' JR')
+    def _clean_eviction_csv_row(cls, row):
+        row = row.replace(',JR.', ' JR')
+        row = row.replace(', JR.', ' JR')
 
-            row = clean_number_and_streets(row, True, clean_typos=True)
-            temp_row = row.split(',')
+        reader = csv.reader(io.StringIO(row))
+        fields = next(reader)
+
+        is_header = (
+            fields
+            and fields[0].lower().replace('_', '') == 'courtindexnumber'
+        )
+
+        if not is_header:
+            fields = [field.upper() if field else field for field in fields]
+            if len(fields) > _EVICTION_CSV_ADDRESS_IDX and fields[_EVICTION_CSV_ADDRESS_IDX]:
+                fields[_EVICTION_CSV_ADDRESS_IDX] = clean_number_and_streets(
+                    fields[_EVICTION_CSV_ADDRESS_IDX], True, clean_typos=True
+                )
 
             # This only works for newyork lat and long
-            # check and fix latitude
-            if temp_row[12].isdigit():
-                latitude = temp_row[12]
-                temp_row[12] = latitude[:2] + '.' + latitude[2:]
-            # check and fix longitude
-            if temp_row[13].strip('-').isdigit():
-                longitude = temp_row[13]
-                temp_row[13] = longitude[:3] + '.' + longitude[3:]
+            if len(fields) > _EVICTION_CSV_LATITUDE_IDX and fields[_EVICTION_CSV_LATITUDE_IDX].isdigit():
+                latitude = fields[_EVICTION_CSV_LATITUDE_IDX]
+                fields[_EVICTION_CSV_LATITUDE_IDX] = latitude[:2] + '.' + latitude[2:]
+            if len(fields) > _EVICTION_CSV_LONGITUDE_IDX and fields[_EVICTION_CSV_LONGITUDE_IDX].strip('-').isdigit():
+                longitude = fields[_EVICTION_CSV_LONGITUDE_IDX]
+                fields[_EVICTION_CSV_LONGITUDE_IDX] = longitude[:3] + '.' + longitude[3:]
 
-            row = ','.join(temp_row)
+        buffer = io.StringIO()
+        writer = csv.writer(buffer, lineterminator='')
+        writer.writerow(fields)
+        return buffer.getvalue().strip()
 
-            yield row.upper().strip()
+    @classmethod
+    def clean_evictions_csv(self, gen_rows):
+        for row in gen_rows:
+            yield self._clean_eviction_csv_row(row)
 
     @classmethod
     def save_eviction(self, eviction=None, bbl=None, bin=None, cleaned_address=None, geosearch_address=None):

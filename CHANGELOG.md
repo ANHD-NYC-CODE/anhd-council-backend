@@ -1,5 +1,14 @@
 # API CHANGELOG
 
+### 2026-10-15 (Marshal evictions CSV — executed date)
+
+**What changed**
+- **Import / export:** `Eviction.clean_evictions_csv` now runs address normalization only on the eviction address column (via proper CSV parsing), so ISO executed dates like `2017-11-16T00:00:00.000` are no longer corrupted when periods are stripped from the full row.
+- **Tests:** Coverage for millisecond executed dates and street normalization in `datasets/tests/models/test_eviction.py`.
+
+**Ops**
+- After deploy, re-run the Eviction dataset update (or a targeted re-seed) so existing rows with blank `executeddate` backfill from NYC Open Data.
+
 ### 2026-10-09 (Marshal evictions by building)
 
 **What changed**

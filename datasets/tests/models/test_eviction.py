@@ -3,6 +3,7 @@ from django.test import TestCase
 from app.tests.base_test import BaseTest
 from django.db.models import Count, Q
 from datasets import models as ds
+from core.utils.transform import from_csv_file_to_gen
 import httpretty
 import unittest
 # Create your tests here.
@@ -12,6 +13,44 @@ logging.disable(logging.CRITICAL)
 
 
 class EvictionTest(BaseTest, TestCase):
+    def test_clean_evictions_csv_preserves_executed_date_milliseconds(self):
+        header = (
+            '"court_index_number","docket_number","eviction_address","eviction_apt_num",'
+            '"executed_date","marshal_first_name","marshal_last_name","residential_commercial_ind",'
+            '"borough","eviction_zip","ejectment","eviction_possession","latitude","longitude",'
+            '"community_board","council_district","census_tract","bin","bbl","nta"'
+        )
+        data_row = (
+            '"N055677/17","382491","123 Fake St.","a1","2017-11-16T00:00:00.000",'
+            '"Richard","ln1","Residential","MANHATTAN","10031","Not an Ejectment",'
+            '"Possession",,,,,,,,'
+        )
+
+        cleaned = list(ds.Eviction.clean_evictions_csv([header, data_row]))
+        self.assertEqual(len(cleaned), 2)
+
+        rows = list(from_csv_file_to_gen((line for line in cleaned)))
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]['executeddate'], '2017-11-16T00:00:00.000')
+        self.assertEqual(rows[0]['evictionaddress'], '123 Fake Street')
+
+    def test_clean_evictions_csv_still_normalizes_street_address(self):
+        data_row = (
+            '"N055677/18","382491","50 Broad St.","a2","2017-11-14T00:00:00",'
+            '"Richard","ln2","Residential","MANHATTAN","10004","Not an Ejectment",'
+            '"Possession",,,,,,,,'
+        )
+        header = (
+            '"court_index_number","docket_number","eviction_address","eviction_apt_num",'
+            '"executed_date","marshal_first_name","marshal_last_name","residential_commercial_ind",'
+            '"borough","eviction_zip","ejectment","eviction_possession","latitude","longitude",'
+            '"community_board","council_district","census_tract","bin","bbl","nta"'
+        )
+
+        cleaned = list(ds.Eviction.clean_evictions_csv([header, data_row]))
+        rows = list(from_csv_file_to_gen((line for line in cleaned)))
+        self.assertEqual(rows[0]['evictionaddress'], '50 Broad Street')
+        self.assertEqual(rows[0]['executeddate'], '2017-11-14T00:00:00')
     def tearDown(self):
         self.clean_tests()
 
