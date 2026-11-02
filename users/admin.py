@@ -96,6 +96,10 @@ remove_user_to_trusted.short_description = 'Removes user to trusted'
 
 
 class CustomUserAdmin(auth_admin.UserAdmin):
+    show_full_result_count = False
+    list_per_page = 50
+    list_max_show_all = 200
+
     def get_queryset(self, request):
         return (
             super()
@@ -190,12 +194,12 @@ class CustomUserAdmin(auth_admin.UserAdmin):
                    'description': 'If email is BOUNCING, click "Clear Email Bounce" below to remove it from SendGrid suppression list.'}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'request_status'
                                     )}),
-        ('Important dates', {'fields': ('last_login', 'date_joined')}),
+        ('Important dates', {'fields': ('last_login', 'date_joined', 'login_count')}),
     )
     limited_fieldsets = (
         (None, {'fields': ('email', 'username')}),
         ('Personal info', {'fields': ('first_name', 'last_name')}),
-        ('Important dates', {'fields': ('last_login', 'date_joined')}),
+        ('Important dates', {'fields': ('last_login', 'date_joined', 'login_count')}),
     )
     add_fieldsets = (
         (None, {
@@ -208,12 +212,12 @@ class CustomUserAdmin(auth_admin.UserAdmin):
     change_password_form = auth_admin.AdminPasswordChangeForm
     change_form_template = 'admin/users/customuser/change_form.html'
     list_display = ('email', 'username', 'first_name',
-                    'last_name', 'is_superuser', 'request_status',
-                    'group', 'email_status')
+                    'last_name', 'last_login', 'login_count',
+                    'is_superuser', 'request_status', 'group')
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups')
     search_fields = ('first_name', 'last_name', 'email')
     ordering = ('email',)
-    readonly_fields = ('last_login', 'date_joined', 'request_status', 'email_status')
+    readonly_fields = ('last_login', 'date_joined', 'login_count', 'request_status', 'email_status')
     actions = [add_user_to_trusted, remove_user_to_trusted]
 
 
@@ -251,3 +255,6 @@ class UserCustomSearchAdmin(admin.ModelAdmin):
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(UserRequest, UserRequestAdmin)
 admin.site.register(AccessRequest, AccessRequestAdmin)
+
+# Portal user directory (proxy model) — register via import side effect.
+from users import portal_user_directory_admin  # noqa: E402, F401

@@ -24,6 +24,7 @@ class CustomUser(AbstractUser):
     # add additional fields in here
     user_request = models.OneToOneField('UserRequest', db_column='user_request', db_constraint=False,
                                         on_delete=models.SET_NULL, null=True, blank=True)
+    login_count = models.PositiveIntegerField(default=0)
     objects = CustomUserManager()
 
     def is_mfa_required_role(self):
@@ -272,3 +273,12 @@ def create_profile_on_save(sender, instance, created, **kwargs):
 #             async_send_new_user_request_email.delay(instance.id)
 
 #     transaction.on_commit(lambda: on_commit())
+
+
+class PortalUserDirectory(CustomUser):
+    """Proxy for a fast admin list + CSV export of portal (non-staff) accounts."""
+
+    class Meta:
+        proxy = True
+        verbose_name = 'portal user directory'
+        verbose_name_plural = 'portal user directory'

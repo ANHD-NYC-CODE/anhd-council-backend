@@ -1,5 +1,6 @@
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import update_last_login
+from django.db.models import F
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -15,9 +16,15 @@ from users.mfa import totp_service
 from users.mfa.tokens import issue_jwt_pair_for_user
 
 
-def _maybe_update_last_login(user):
+def _record_portal_login(user):
+    """Successful portal sign-in (after password + MFA when required)."""
     if jwt_api_settings.UPDATE_LAST_LOGIN:
         update_last_login(None, user)
+    u.CustomUser.objects.filter(pk=user.pk).update(login_count=F('login_count') + 1)
+
+
+def _maybe_update_last_login(user):
+    _record_portal_login(user)
 
 
 def _staff_mfa_grace_payload(user):

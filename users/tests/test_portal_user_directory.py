@@ -1,0 +1,79 @@
+from django.test import TestCase
+from django.urls import reverse
+
+from app.tests.base_test import BaseTest
+
+
+class PortalUserDirectoryAdminTest(BaseTest, TestCase):
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_portal_login_increments_login_count(self):
+        user = self.user_factory(
+            email='portal@test.com',
+            username='portaluser',
+            password='test1234',
+        )
+        response = self.client.post(
+            '/api/token/',
+            {'username': 'portaluser', 'password': 'test1234'},
+            format='json',
+        )
+        self.assertEqual(response.status_code, 200, response.data)
+        user.refresh_from_db()
+        self.assertEqual(user.login_count, 1)
+        self.assertIsNotNone(user.last_login)
+
+    def test_staff_user_excluded_from_portal_directory(self):
+        staff = self.user_factory(
+            email='staff@test.com',
+            username='staffuser',
+            password='test1234',
+            is_staff=True,
+        )
+        portal = self.user_factory(
+            email='member@test.com',
+            username='memberuser',
+            password='test1234',
+        )
+        admin_user = self.user_factory(
+            email='admin@test.com',
+            username='adminuser',
+            password='test1234',
+            is_staff=True,
+            is_superuser=True,
+        )
+        self.client.force_login(admin_user)
+        url = reverse('admin:users_portaluserdirectory_changelist')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+        self.assertIn(portal.email, content)
+        self.assertNotIn(staff.email, content)
+
+    def test_export_csv_requires_staff(self):
+        url = reverse('admin:users_portaluserdirectory_export_csv')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+
+    def test_export_csv_returns_rows(self):
+        portal = self.user_factory(
+            email='export@test.com',
+            username='exportuser',
+            password='test1234',
+        )
+        admin_user = self.user_factory(
+            email='admin2@test.com',
+            username='admin2',
+            password='test1234',
+            is_staff=True,
+            is_superuser=True,
+        )
+        self.client.force_login(admin_user)
+        url = reverse('admin:users_portaluserdirectory_export_csv')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'text/csv; charset=utf-8')
+        body = response.content.decode()
+        self.assertIn('email', body.splitlines()[0])
+        self.assertIn(portal.email, body)
