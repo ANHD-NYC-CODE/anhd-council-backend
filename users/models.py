@@ -290,4 +290,4 @@ class PortalUserDirectory(CustomUser):
     class Meta:
         proxy = True
         verbose_name = 'portal user directory'
-        verbose_name_plural = 'portal user directory'
+        verbose_name_plural = 'Portal users'

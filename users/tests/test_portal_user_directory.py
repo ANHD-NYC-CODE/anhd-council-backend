@@ -69,6 +69,34 @@ class PortalUserDirectoryAdminTest(BaseTest, TestCase):
         self.assertIn(portal.email, content)
         self.assertNotIn(staff.email, content)
 
+    def test_admin_index_shows_portal_user_shortcuts(self):
+        admin_user = self.user_factory(
+            email='indexadmin@test.com',
+            username='indexadmin',
+            password='test1234',
+            is_staff=True,
+            is_superuser=True,
+        )
+        self.client.force_login(admin_user)
+        response = self.client.get(reverse('admin:index'))
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+        self.assertIn('Download portal users CSV', content)
+        self.assertIn(reverse('admin:users_portaluserdirectory_export_csv'), content)
+
+    def test_staff_without_superuser_can_view_directory(self):
+        staff = self.user_factory(
+            email='staffonly@test.com',
+            username='staffonly',
+            password='test1234',
+            is_staff=True,
+            is_superuser=False,
+        )
+        self.client.force_login(staff)
+        url = reverse('admin:users_portaluserdirectory_changelist')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
     def test_export_csv_requires_staff(self):
         url = reverse('admin:users_portaluserdirectory_export_csv')
         response = self.client.get(url)

@@ -57,6 +57,12 @@ class PortalUserDirectoryAdmin(admin.ModelAdmin):
     def has_change_permission(self, request, obj=None):
         return False
 
+    def has_view_permission(self, request, obj=None):
+        return request.user.is_active and request.user.is_staff
+
+    def has_module_permission(self, request):
+        return self.has_view_permission(request)
+
     def get_queryset(self, request):
         return (
             super()
