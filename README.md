@@ -14,6 +14,7 @@ Django + Celery + PostgreSQL backend for the [Displacement Alert Project (DAP)](
 | Celery tasks (Flower) | `tasks.displacementalert.org` |
 | Admin panel | `api.displacementalert.org/admin/` |
 | Periodic tasks | `api.displacementalert.org/admin/django_celery_beat/periodictask/` |
+| Celery heartbeat (Pingdom) | `https://api.displacementalert.org/health/celery/` |
 
 ## Stack
 
@@ -183,9 +184,58 @@ sh deploy.sh
 
 This SSHs as `root@138.197.79.10`, pulls `master`, and runs `build.prod.sh`.
 
-> **Do not deploy while tasks are running.** Check status at `tasks.displacementalert.org`. Deployment restarts workers and clears the Redis cache.
+### Staging portal
+
+Staging static files live at `staging.portal.displacementalert.org` (nginx serves `../staging-anhd-council-client/build_publish`). The **API is the same** as production (`api.displacementalert.org`).
+
+Staging uses **portal login + MFA** like production — not nginx HTTP basic auth (removed so the SPA and passkeys work). Deploy frontend with `anhd-council-client` → `sh deploy_staging.sh` on branch `staging`.
+
+After backend MFA changes, production deploy must include:
+
+- `migrate` (via `build.prod.sh`) for TOTP/passkey tables
+- Production `.env`: `WEBAUTHN_RP_ID=displacementalert.org` and `WEBAUTHN_ORIGIN=https://portal.displacementalert.org` (staging origin is included automatically when RP ID is `displacementalert.org`; see [Staff two-factor authentication](#staff-two-factor-authentication-mfa))
+
+Reload nginx after `nginx/nginx.conf` changes: `sh deploy_nginx.sh` on the server (or restart the `nginx` container).
+
+> **Do not deploy while tasks are running.** Check status at `tasks.displacementalert.org`. Deployment restarts workers (and may briefly interrupt the Celery heartbeat until workers come back).
 
 If a task was interrupted mid-import, you may need to clear the "API LAST CHECKED" value for that dataset in the admin panel so it re-imports on the next run.
+
+#### After deploy — Celery heartbeat (one-time + smoke test)
+
+1. In [Periodic tasks](https://api.displacementalert.org/admin/django_celery_beat/periodictask/), ensure these exist and are **Enabled** (add manually on prod — do not `loaddata` tasks.yaml over an existing beat DB):
+   - **celery worker heartbeat** → `core.tasks.async_celery_heartbeat` (every 5 minutes)
+   - **database health check** → `core.tasks.async_db_health_check` (every 5 minutes; **email only**, not Pingdom)
+2. On the server (or locally):  
+   `curl -sS https://api.displacementalert.org/health/celery/`  
+   Expect **`"ok": true`** and HTTP **200** within about one heartbeat interval (~5 min) after beat + `celery_default` are up. **503** right after first deploy is normal until the first heartbeat runs.
+3. Configure Pingdom once (see [Celery dead-man (Pingdom)](#celery-dead-man-pingdom) below). Optional: pause the Pingdom check for ~10 minutes during deploy to avoid a alert if workers are slow to restart.
+
+#### What Pingdom alerts on (and what it does not)
+
+Pingdom only watches **`GET /health/celery/`**. It alerts when the response is **not HTTP 200** (usually **503** from our app, or a connection/502 error if the API is unreachable).
+
+| Pingdom **will** alert | Pingdom **will not** alert |
+|---|---|
+| **Celery beat** stopped (nothing schedules the heartbeat) | A single long **dataset import** on the `update` queue (heartbeat uses the `celery` queue / `celery_default` worker) |
+| **`celery_default` workers** down or not consuming the `celery` queue for **> ~15 min** | **Database** down (separate **email** from `async_db_health_check`) |
+| **Redis** unreachable from workers (heartbeat cannot be written) or from the app (cannot read heartbeat) | **Flower** down |
+| Heartbeat task **never enabled** in beat after deploy (503 until fixed) | Portal frontend issues |
+| API/gunicorn **hard down** (Pingdom sees error/502 — not Celery-specific but you still get paged) | “Celery busy” with workers still processing the lightweight heartbeat every 5 minutes |
+
+The endpoint is **read-only**, unauthenticated, and does not enqueue work — safe for external uptime checks.
+
+#### Pingdom setup (click path)
+
+1. Log in to [Pingdom](https://my.pingdom.com/) → **Monitoring** → **Uptime** → **Add new**.
+2. **Name:** `DAP API — Celery heartbeat` (or similar).
+3. **URL:** `https://api.displacementalert.org/health/celery/`
+4. **Check type:** HTTP(S).
+5. **Interval:** **5 minutes** (match the beat schedule).
+6. **Alerting:** attach your usual contact/integration (email/SMS/Slack). Use **alert after 2 consecutive failures** if you want tolerance for a short deploy restart (optional).
+7. **Advanced (optional):** no custom headers or body match required; success = **HTTP 200**. Do not treat JSON body as the primary signal — status code is what matters.
+8. Save. Confirm the check shows **Up** once prod has the heartbeat periodic task enabled and `celery_default` is running.
+9. **Test:** stop `celerybeat` or `celery_default` on prod in a maintenance window — within ~15 minutes the check should go **Down** (503). Restart services and confirm **Up** again.
 
 ### Production Restart (no code changes)
 
@@ -433,6 +483,13 @@ The app checks SendGrid's suppression list on login (cached 24h in Redis). If th
 
 **Tasks not running automatically:**
 Docker-compose now uses `--pidfile=` (empty) to prevent stale PID files. If tasks still don't run, restart celerybeat: `docker compose restart celerybeat`.
+
+**Celery dead-man (Pingdom):**
+
+See [Deployment → After deploy — Celery heartbeat](#after-deploy--celery-heartbeat-one-time--smoke-test) and [What Pingdom alerts on](#what-pingdom-alerts-on-and-what-it-does-not). Summary: beat schedules `core.tasks.async_celery_heartbeat` every 5 minutes; **`celery_default`** must run it and stamp Redis. **`GET /health/celery/`** returns **200** if the stamp is ≤ **15 minutes** old (`CELERY_HEARTBEAT_MAX_AGE_SECONDS`). Nightly **`reset_cache`** preserves that stamp so the 6 AM cache job does not by itself cause a false Pingdom down.
+
+**Database unreachable:**
+The **database health check** beat task (same 5-minute schedule) emails admins when `SELECT 1` fails; it does **not** change the Pingdom URL or status code.
 
 **Build fails with database error:**
 The database may not be ready yet. Wait a moment, then: `docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d`
