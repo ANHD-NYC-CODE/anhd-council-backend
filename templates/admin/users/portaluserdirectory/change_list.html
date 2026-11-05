@@ -12,8 +12,10 @@
 
 {% block content %}
   <p style="margin: 0 0 1em;">
-    Portal accounts only (excludes staff). Last login and login count update on successful sign-in
-    (password and MFA when required), not on token refresh.
+    Portal accounts only (excludes staff). Last login, sign-ins (total), and sign-in days update on
+    successful sign-in (password and MFA when required), not on token refresh. Sign-in days counts
+    at most once per calendar day. Metrics apply from <strong>{{ login_metrics_since }}</strong>
+    (production); earlier sign-ins were not recorded.
     Use <strong>Download CSV</strong> for a full export without loading every row in the browser.
   </p>
   {{ block.super }}

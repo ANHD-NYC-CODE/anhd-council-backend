@@ -194,12 +194,12 @@ class CustomUserAdmin(auth_admin.UserAdmin):
                    'description': 'If email is BOUNCING, click "Clear Email Bounce" below to remove it from SendGrid suppression list.'}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'request_status'
                                     )}),
-        ('Important dates', {'fields': ('last_login', 'date_joined', 'login_count')}),
+        ('Important dates', {'fields': ('last_login', 'date_joined', 'login_count', 'login_days')}),
     )
     limited_fieldsets = (
         (None, {'fields': ('email', 'username')}),
         ('Personal info', {'fields': ('first_name', 'last_name')}),
-        ('Important dates', {'fields': ('last_login', 'date_joined', 'login_count')}),
+        ('Important dates', {'fields': ('last_login', 'date_joined', 'login_count', 'login_days')}),
     )
     add_fieldsets = (
         (None, {
@@ -212,12 +212,15 @@ class CustomUserAdmin(auth_admin.UserAdmin):
     change_password_form = auth_admin.AdminPasswordChangeForm
     change_form_template = 'admin/users/customuser/change_form.html'
     list_display = ('email', 'username', 'first_name',
-                    'last_name', 'last_login', 'login_count',
+                    'last_name', 'last_login', 'login_count', 'login_days',
                     'is_superuser', 'request_status', 'group')
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups')
     search_fields = ('first_name', 'last_name', 'email')
     ordering = ('email',)
-    readonly_fields = ('last_login', 'date_joined', 'login_count', 'request_status', 'email_status')
+    readonly_fields = (
+        'last_login', 'date_joined', 'login_count', 'login_days',
+        'request_status', 'email_status',
+    )
     actions = [add_user_to_trusted, remove_user_to_trusted]
 
 

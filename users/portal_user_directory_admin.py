@@ -7,6 +7,7 @@ from django.http import HttpResponse
 from django.urls import path
 from django.utils.html import format_html
 
+from users.login_metrics import PORTAL_LOGIN_METRICS_START_DATE
 from users.models import PortalUserDirectory
 
 
@@ -34,7 +35,8 @@ class PortalUserDirectoryAdmin(admin.ModelAdmin):
         'last_name',
         'date_joined_display',
         'last_login_display',
-        'login_count',
+        'sign_ins_total',
+        'login_days',
         'is_active',
         'group_names',
         'access_organization',
@@ -64,6 +66,11 @@ class PortalUserDirectoryAdmin(admin.ModelAdmin):
             .prefetch_related('groups')
         )
 
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['login_metrics_since'] = PORTAL_LOGIN_METRICS_START_DATE.isoformat()
+        return super().changelist_view(request, extra_context=extra_context)
+
     def get_urls(self):
         urls = super().get_urls()
         extra = [
@@ -82,6 +89,10 @@ class PortalUserDirectoryAdmin(admin.ModelAdmin):
     @admin.display(description='Last login', ordering='last_login')
     def last_login_display(self, obj):
         return _format_admin_datetime(obj.last_login)
+
+    @admin.display(description='Sign-ins (total)', ordering='login_count')
+    def sign_ins_total(self, obj):
+        return obj.login_count
 
     @admin.display(description='Groups')
     def group_names(self, obj):
@@ -121,6 +132,7 @@ class PortalUserDirectoryAdmin(admin.ModelAdmin):
         response = HttpResponse(content_type='text/csv; charset=utf-8')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
+        metrics_since = PORTAL_LOGIN_METRICS_START_DATE.isoformat()
         writer = csv.writer(response)
         writer.writerow([
             'email',
@@ -129,7 +141,9 @@ class PortalUserDirectoryAdmin(admin.ModelAdmin):
             'last_name',
             'date_joined',
             'last_login',
-            'login_count',
+            'sign_ins_total',
+            'login_days',
+            'login_metrics_since',
             'is_active',
             'groups',
             'access_type',
@@ -158,6 +172,8 @@ class PortalUserDirectoryAdmin(admin.ModelAdmin):
                 _format_admin_datetime(user.date_joined),
                 _format_admin_datetime(user.last_login),
                 user.login_count,
+                user.login_days,
+                metrics_since,
                 user.is_active,
                 ', '.join(g.name for g in user.groups.all()),
                 access_type,

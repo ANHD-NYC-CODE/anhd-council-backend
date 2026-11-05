@@ -22,7 +22,25 @@ class PortalUserDirectoryAdminTest(BaseTest, TestCase):
         self.assertEqual(response.status_code, 200, response.data)
         user.refresh_from_db()
         self.assertEqual(user.login_count, 1)
+        self.assertEqual(user.login_days, 1)
         self.assertIsNotNone(user.last_login)
+
+    def test_second_sign_in_same_day_increments_count_not_days(self):
+        user = self.user_factory(
+            email='twice@test.com',
+            username='twiceuser',
+            password='test1234',
+        )
+        for _ in range(2):
+            response = self.client.post(
+                '/api/token/',
+                {'username': 'twiceuser', 'password': 'test1234'},
+                format='json',
+            )
+            self.assertEqual(response.status_code, 200, response.data)
+        user.refresh_from_db()
+        self.assertEqual(user.login_count, 2)
+        self.assertEqual(user.login_days, 1)
 
     def test_staff_user_excluded_from_portal_directory(self):
         staff = self.user_factory(
@@ -75,5 +93,9 @@ class PortalUserDirectoryAdminTest(BaseTest, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Type'], 'text/csv; charset=utf-8')
         body = response.content.decode()
-        self.assertIn('email', body.splitlines()[0])
+        header = body.splitlines()[0]
+        self.assertIn('email', header)
+        self.assertIn('sign_ins_total', header)
+        self.assertIn('login_days', header)
+        self.assertIn('login_metrics_since', header)
         self.assertIn(portal.email, body)

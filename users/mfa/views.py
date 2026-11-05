@@ -1,6 +1,7 @@
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import update_last_login
 from django.db.models import F
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -18,9 +19,24 @@ from users.mfa.tokens import issue_jwt_pair_for_user
 
 def _record_portal_login(user):
     """Successful portal sign-in (after password + MFA when required)."""
+    today = timezone.localdate()
+    last_login = (
+        u.CustomUser.objects.filter(pk=user.pk)
+        .values_list('last_login', flat=True)
+        .first()
+    )
+    previous_login_day = (
+        timezone.localtime(last_login).date() if last_login else None
+    )
+    new_login_day = previous_login_day != today
+
     if jwt_api_settings.UPDATE_LAST_LOGIN:
         update_last_login(None, user)
-    u.CustomUser.objects.filter(pk=user.pk).update(login_count=F('login_count') + 1)
+
+    updates = {'login_count': F('login_count') + 1}
+    if new_login_day:
+        updates['login_days'] = F('login_days') + 1
+    u.CustomUser.objects.filter(pk=user.pk).update(**updates)
 
 
 def _maybe_update_last_login(user):

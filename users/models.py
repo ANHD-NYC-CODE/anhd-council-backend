@@ -24,7 +24,16 @@ class CustomUser(AbstractUser):
     # add additional fields in here
     user_request = models.OneToOneField('UserRequest', db_column='user_request', db_constraint=False,
                                         on_delete=models.SET_NULL, null=True, blank=True)
-    login_count = models.PositiveIntegerField(default=0)
+    login_count = models.PositiveIntegerField(
+        default=0,
+        verbose_name='Sign-ins (total)',
+        help_text='Each successful portal sign-in (password + MFA when required).',
+    )
+    login_days = models.PositiveIntegerField(
+        default=0,
+        verbose_name='Sign-in days',
+        help_text='Distinct calendar days with at least one portal sign-in.',
+    )
     objects = CustomUserManager()
 
     def is_mfa_required_role(self):
