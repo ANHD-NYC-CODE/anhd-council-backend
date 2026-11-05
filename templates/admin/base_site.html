@@ -20,43 +20,31 @@
 
   div.breadcrumbs {
     background-color: #111;
-    color: lightgray;
+    color: var(--body-quiet-color);
+  }
+
+  div.breadcrumbs a {
+    color: var(--link-fg);
   }
 
   .module caption {
-    background-color: dimgray;
+    background-color: var(--primary);
+    color: var(--header-link-color);
   }
 
-  /* Main content: dark text (Django defaults many filter labels to quiet gray). */
-  #content,
-  #content-main,
-  #content h1,
-  #content label,
-  .module p,
+  /* Prefer primary body text in changelist (Django defaults filter links to quiet gray). */
   #changelist table thead th,
   #changelist table tbody td,
   #changelist-filter h2,
   #changelist-filter h3,
   #changelist-filter details summary,
-  #toolbar,
-  #toolbar label,
-  #searchbar,
-  #searchbar input[type="text"] {
-    color: #333;
-  }
-
   #changelist-filter li a {
-    color: #444;
+    color: var(--body-fg);
   }
 
   #changelist-filter li.selected a {
-    color: #205067;
+    color: var(--link-selected-fg);
     font-weight: 600;
-  }
-
-  #content-main a:link:not(.button),
-  #content-main a:visited:not(.button) {
-    color: cornflowerblue;
   }
 
   #user-tools {
@@ -75,8 +63,8 @@
   .submit-row input,
   a.button,
   #content .object-tools a {
-    background-color: #417690;
-    color: #fff !important;
+    background-color: var(--primary);
+    color: var(--button-fg) !important;
     border: none;
     border-radius: 4px;
     text-decoration: none;
@@ -91,14 +79,14 @@
   #content .object-tools a:visited,
   #content .object-tools a:hover,
   #content .object-tools a:focus {
-    color: #fff !important;
+    color: var(--button-fg) !important;
   }
 
   .submit-row input:hover,
   a.button:hover,
   #content .object-tools a:hover,
   #content .object-tools a:focus {
-    background-color: #205067;
+    filter: brightness(0.88);
   }
 </style>
 {% endblock %}
