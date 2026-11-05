@@ -188,7 +188,12 @@ This SSHs as `root@138.197.79.10`, pulls `master`, and runs `build.prod.sh`.
 
 Staging static files live at `staging.portal.displacementalert.org` (nginx serves `../staging-anhd-council-client/build_publish`). The **API is the same** as production (`api.displacementalert.org`).
 
-Staging uses **portal login + MFA** like production — not nginx HTTP basic auth (removed so the SPA and passkeys work). Deploy frontend with `anhd-council-client` → `sh deploy_staging.sh` on branch `staging`.
+**Two layers (both required for QA):**
+
+1. **Nginx HTTP basic auth** on `staging.portal` only — shared team username/password in `nginx/.htpasswd` (not in git). Keeps the staging UI off the public internet.
+2. **Portal login + MFA** — same backend as production (`POST /api/token/`, TOTP/passkeys). Staging WebAuthn works because `WEBAUTHN_RP_ID=displacementalert.org` allows `https://staging.portal.displacementalert.org`.
+
+Deploy frontend with `anhd-council-client` → `sh deploy_staging.sh` on branch `staging`. After `nginx/nginx.conf` changes, run `sh deploy_nginx.sh` on the server (rebuilds the nginx image).
 
 After backend MFA changes, production deploy must include:
 
