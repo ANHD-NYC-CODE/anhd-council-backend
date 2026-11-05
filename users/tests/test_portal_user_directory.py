@@ -102,6 +102,20 @@ class PortalUserDirectoryAdminTest(BaseTest, TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
 
+    def test_export_csv_without_double_question_mark(self):
+        admin_user = self.user_factory(
+            email='csvadmin@test.com',
+            username='csvadmin',
+            password='test1234',
+            is_staff=True,
+            is_superuser=True,
+        )
+        self.client.force_login(admin_user)
+        url = reverse('admin:users_portaluserdirectory_export_csv')
+        self.assertEqual(self.client.get(url).status_code, 200)
+        # Broken template produced export-csv/?? which Django parsed as field "?".
+        self.assertEqual(self.client.get(url + '?').status_code, 200)
+
     def test_export_csv_returns_rows(self):
         portal = self.user_factory(
             email='export@test.com',
