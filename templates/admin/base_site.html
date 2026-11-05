@@ -27,26 +27,54 @@
     background-color: dimgray;
   }
 
+  /* Main content: dark text (Django defaults many filter labels to quiet gray). */
   #content,
   #content-main,
-  .module p {
+  #content h1,
+  #content label,
+  .module p,
+  #changelist table thead th,
+  #changelist table tbody td,
+  #changelist-filter h2,
+  #changelist-filter h3,
+  #changelist-filter details summary,
+  #toolbar,
+  #toolbar label,
+  #searchbar,
+  #searchbar input[type="text"] {
     color: #333;
   }
 
-  #content a:link,
-  #content a:visited {
+  #changelist-filter li a {
+    color: #444;
+  }
+
+  #changelist-filter li.selected a {
+    color: #205067;
+    font-weight: 600;
+  }
+
+  #content-main a:link:not(.button),
+  #content-main a:visited:not(.button) {
     color: cornflowerblue;
+  }
+
+  #user-tools {
+    color: #f5f5f5;
+  }
+
+  #user-tools a:link,
+  #user-tools a:visited {
+    color: #fff;
   }
 
   th {
     font-size: 16px;
   }
 
-  button,
-  input[type="submit"],
-  input[type="button"],
   .submit-row input,
-  a.button {
+  a.button,
+  #content .object-tools a {
     background-color: #417690;
     color: #fff !important;
     border: none;
@@ -58,28 +86,16 @@
   a.button:link,
   a.button:visited,
   a.button:hover,
-  a.button:focus {
-    color: #fff !important;
-  }
-
-  button:hover,
-  input[type="submit"]:hover,
-  .button:hover,
-  input[type="button"]:hover,
-  .submit-row input:hover,
-  a.button:hover {
-    background-color: #205067;
-  }
-
+  a.button:focus,
   #content .object-tools a:link,
   #content .object-tools a:visited,
   #content .object-tools a:hover,
   #content .object-tools a:focus {
     color: #fff !important;
-    background-color: #417690;
-    text-decoration: none;
   }
 
+  .submit-row input:hover,
+  a.button:hover,
   #content .object-tools a:hover,
   #content .object-tools a:focus {
     background-color: #205067;
