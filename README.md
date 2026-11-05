@@ -195,7 +195,7 @@ After backend MFA changes, production deploy must include:
 - `migrate` (via `build.prod.sh`) for TOTP/passkey tables
 - Production `.env`: `WEBAUTHN_RP_ID=displacementalert.org` and `WEBAUTHN_ORIGIN=https://portal.displacementalert.org` (staging origin is included automatically when RP ID is `displacementalert.org`; see [Staff two-factor authentication](#staff-two-factor-authentication-mfa))
 
-Reload nginx after `nginx/nginx.conf` changes: `sh deploy_nginx.sh` on the server (or restart the `nginx` container).
+Reload nginx after `nginx/nginx.conf` changes: on the server run `sh deploy_nginx.sh` (rebuilds the nginx image — config is baked in at build time, not bind-mounted).
 
 > **Do not deploy while tasks are running.** Check status at `tasks.displacementalert.org`. Deployment restarts workers (and may briefly interrupt the Celery heartbeat until workers come back).
 
