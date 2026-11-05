@@ -27,8 +27,14 @@
     background-color: dimgray;
   }
 
-  a:link,
-  a:visited {
+  #content,
+  #content-main,
+  .module p {
+    color: #333;
+  }
+
+  #content a:link,
+  #content a:visited {
     color: cornflowerblue;
   }
 
@@ -38,11 +44,22 @@
 
   button,
   input[type="submit"],
-  .button,
   input[type="button"],
   .submit-row input,
   a.button {
-    background-color: cornflowerblue;
+    background-color: #417690;
+    color: #fff !important;
+    border: none;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  a.button:link,
+  a.button:visited,
+  a.button:hover,
+  a.button:focus {
+    color: #fff !important;
   }
 
   button:hover,
@@ -51,7 +68,21 @@
   input[type="button"]:hover,
   .submit-row input:hover,
   a.button:hover {
-    background-color: turquoise;
+    background-color: #205067;
+  }
+
+  #content .object-tools a:link,
+  #content .object-tools a:visited,
+  #content .object-tools a:hover,
+  #content .object-tools a:focus {
+    color: #fff !important;
+    background-color: #417690;
+    text-decoration: none;
+  }
+
+  #content .object-tools a:hover,
+  #content .object-tools a:focus {
+    background-color: #205067;
   }
 </style>
 {% endblock %}

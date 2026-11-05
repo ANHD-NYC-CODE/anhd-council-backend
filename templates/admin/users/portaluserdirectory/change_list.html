@@ -1,22 +1,41 @@
 {% extends "admin/change_list.html" %}
 {% load i18n %}
 
+{% block extrastyle %}
+  {{ block.super }}
+  <style>
+    .portal-user-directory-help {
+      clear: both;
+      margin: 0 0 1.25em;
+      padding: 12px 14px;
+      background: #f8f8f8;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      color: #333;
+      line-height: 1.5;
+      max-width: 100%;
+    }
+    .portal-user-directory-help strong {
+      color: #111;
+    }
+  </style>
+{% endblock %}
+
 {% block object-tools-items %}
   <li>
-    <a href="export-csv/{% if cl.get_query_string %}?{{ cl.get_query_string }}{% endif %}" class="addlink">
+    <a href="export-csv/{% if cl.get_query_string %}?{{ cl.get_query_string }}{% endif %}">
       {% translate "Download CSV" %}
     </a>
   </li>
   {{ block.super }}
 {% endblock %}
 
-{% block content %}
-  <p style="margin: 0 0 1em;">
-    Portal accounts only (excludes staff). Last login, sign-ins (total), and sign-in days update on
-    successful sign-in (password and MFA when required), not on token refresh. Sign-in days counts
-    at most once per calendar day. Metrics apply from <strong>{{ login_metrics_since }}</strong>
-    (production); earlier sign-ins were not recorded.
-    Use <strong>Download CSV</strong> for a full export without loading every row in the browser.
-  </p>
+{% block result_list %}
+  <div class="portal-user-directory-help">
+    {% translate "Portal accounts only (excludes staff). Last login, sign-ins (total), and sign-in days update on successful sign-in (password and MFA when required), not on token refresh. Sign-in days counts at most once per calendar day." %}
+    {% translate "Metrics apply from" %}
+    <strong>{{ login_metrics_since }}</strong>
+    {% translate "(production); earlier sign-ins were not recorded. Use Download CSV (top right) for a full export without loading every row in the browser." %}
+  </div>
   {{ block.super }}
 {% endblock %}
