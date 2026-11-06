@@ -206,6 +206,13 @@ After backend MFA changes, production deploy must include:
 
 Reload nginx after `nginx/nginx.conf` changes: on the server run `sh deploy_nginx.sh` (rebuilds the nginx image — config is baked in at build time, not bind-mounted).
 
+#### Let's Encrypt / certificate renewal (portal and related hostnames)
+
+- **Webroot HTTP-01:** nginx serves `/.well-known/acme-challenge/` from `/var/www/certbot` on **port 80** for `portal.displacementalert.org` (and `api`, apex `displacementalert.org` / `www`, `staging.displacementalert.org`). That path must **not** redirect before the challenge file is served — current config keeps the challenge location first, then redirects everything else to HTTPS.
+- **Automatic renew:** the `certbot` service in `docker-compose.prod.yml` runs **`certbot renew`** on a loop (every ~12h). After a successful renew, nginx may need **`nginx -s reload`** inside `nginx_server` if certbot does not reload it (watch renewal logs if a reload hook is needed later).
+- **Cloudflare in front:** HTTP-01 still hits `http://portal…/.well-known/…` via Cloudflare to your origin **:80** — keep **SSL/TLS → Full (strict)** on the origin cert and ensure nothing blocks that path (orange-cloud is fine; avoid page rules that strip `/.well-known` on the portal host).
+- **One cert, several names:** if `staging.displacementalert.org` is added to the **`portal.displacementalert.org`** certificate line (SAN expand via `certbot certonly --expand -d portal… -d staging…`), nginx can keep pointing both server blocks at `…/live/portal.displacementalert.org/{fullchain,privkey}.pem`; renew updates one lineage for all included names.
+
 > **Do not deploy while tasks are running.** Check status at `tasks.displacementalert.org`. Deployment restarts workers (and may briefly interrupt the Celery heartbeat until workers come back).
 
 If a task was interrupted mid-import, you may need to clear the "API LAST CHECKED" value for that dataset in the admin panel so it re-imports on the next run.
