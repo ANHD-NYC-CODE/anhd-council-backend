@@ -184,6 +184,12 @@ sh deploy.sh
 
 This SSHs as `root@138.197.79.10`, pulls `master`, and runs `build.prod.sh`.
 
+### Apex domain → portal
+
+DNS **`displacementalert.org`** / **`www.displacementalert.org`** should point to the same droplet as the portal. Nginx **301-redirects** HTTP and HTTPS to **`https://portal.displacementalert.org`**, preserving path and query.
+
+TLS uses Let's Encrypt at ` /etc/letsencrypt/live/displacementalert.org/ `. If that cert does not exist yet, issue or extend it (e.g. add **`displacementalert.org`** and **`www.displacementalert.org`** to certbot, then reload nginx). `nginx/init-letsencrypt.sh` includes these names for fresh setups.
+
 ### Staging portal
 
 Staging static files live at `staging.portal.displacementalert.org` (nginx serves `../staging-anhd-council-client/build_publish`). The **API is the same** as production (`api.displacementalert.org`).
