@@ -119,7 +119,18 @@ def reset_cache(self, token):
         # delete_pattern("*") which django_redis scopes to the default cache's
         # KEY_PREFIX (DAP:*), so sessions (now on the "sessions" alias with
         # KEY_PREFIX=SESS) survive a dataset cache reset.
+        from core.celery_health import heartbeat_cache_key, record_celery_heartbeat
+        heartbeat_saved = cache.get(heartbeat_cache_key())
         cache.delete_pattern("*")
+        if heartbeat_saved:
+            cache.set(
+                heartbeat_cache_key(),
+                heartbeat_saved,
+                timeout=60 * 60 * 24,
+            )
+        else:
+            # Running on a worker — stamp so Pingdom does not 503 during cache rebuild.
+            record_celery_heartbeat()
         create_async_cache_workers(token)
     except Exception as e:
         logger.error('Error during task: {}'.format(e))
@@ -533,7 +544,7 @@ def check_notifications_custom_search(notification_frequency):
                                     user_custom_search.last_notified_result = serialized_new_result_rows
                                     user_custom_search.save()
 
-                                    root_url = ('https://staging.portal.displacementalert.org/search' 
+                                    root_url = ('https://staging.displacementalert.org/search' 
                                               if settings.DEBUG else 'https://portal.displacementalert.org/search')
                                     full_url = root_url + frontend_url
 

@@ -9,7 +9,7 @@ Django + Celery + PostgreSQL backend for the [Displacement Alert Project (DAP)](
 | Environment | URL |
 |---|---|
 | Production app | `portal.displacementalert.org` |
-| Staging app | `staging.portal.displacementalert.org` |
+| Staging app | `staging.displacementalert.org` |
 | Production API | `api.displacementalert.org` |
 | Celery tasks (Flower) | `tasks.displacementalert.org` |
 | Admin panel | `api.displacementalert.org/admin/` |
@@ -186,25 +186,23 @@ This SSHs as `root@138.197.79.10`, pulls `master`, and runs `build.prod.sh`.
 
 ### Apex domain → portal
 
-DNS **`displacementalert.org`** / **`www.displacementalert.org`** should point to the same droplet as the portal. Nginx **301-redirects** HTTP and HTTPS to **`https://portal.displacementalert.org`**, preserving path and query.
-
-TLS uses Let's Encrypt at ` /etc/letsencrypt/live/displacementalert.org/ `. If that cert does not exist yet, issue or extend it (e.g. add **`displacementalert.org`** and **`www.displacementalert.org`** to certbot, then reload nginx). `nginx/init-letsencrypt.sh` includes these names for fresh setups.
+DNS **`displacementalert.org`** / **`www.displacementalert.org`** should point at Cloudflare (recommended) or the droplet. **HTTPS** for the apex is typically terminated at **Cloudflare** (Universal SSL covers the apex). Nginx serves **HTTP-only** for the apex on port 80: **301** to **`https://portal.displacementalert.org`**, preserving path and query (so direct HTTP hits to the origin still redirect).
 
 ### Staging portal
 
-Staging static files live at `staging.portal.displacementalert.org` (nginx serves `../staging-anhd-council-client/build_publish`). The **API is the same** as production (`api.displacementalert.org`).
+Staging static files live at `staging.displacementalert.org` (nginx serves `../staging-anhd-council-client/build_publish`). The **API is the same** as production (`api.displacementalert.org`).
 
 **Two layers (both required for QA):**
 
-1. **Nginx HTTP basic auth** on `staging.portal` only — shared team username/password in `nginx/.htpasswd` (not in git). Keeps the staging UI off the public internet.
-2. **Portal login + MFA** — same backend as production (`POST /api/token/`, TOTP/passkeys). Staging WebAuthn works because `WEBAUTHN_RP_ID=displacementalert.org` allows `https://staging.portal.displacementalert.org`.
+1. **Nginx HTTP basic auth** on `staging` only — shared team username/password in `nginx/.htpasswd` (not in git). Keeps the staging UI off the public internet.
+2. **Portal login + MFA** — same backend as production (`POST /api/token/`, TOTP/passkeys). Staging WebAuthn works because `WEBAUTHN_RP_ID=displacementalert.org` allows `https://staging.displacementalert.org` (wildcard `*.displacementalert.org` under Cloudflare Universal SSL).
 
 Deploy frontend with `anhd-council-client` → `sh deploy_staging.sh` on branch `staging`. After `nginx/nginx.conf` changes, run `sh deploy_nginx.sh` on the server (rebuilds the nginx image).
 
 After backend MFA changes, production deploy must include:
 
 - `migrate` (via `build.prod.sh`) for TOTP/passkey tables
-- Production `.env`: `WEBAUTHN_RP_ID=displacementalert.org` and `WEBAUTHN_ORIGIN=https://portal.displacementalert.org` (staging origin is included automatically when RP ID is `displacementalert.org`; see [Staff two-factor authentication](#staff-two-factor-authentication-mfa))
+- Production `.env`: `WEBAUTHN_RP_ID=displacementalert.org` and `WEBAUTHN_ORIGIN=https://portal.displacementalert.org` (`https://staging.displacementalert.org` is included automatically when RP ID is `displacementalert.org`; see [Staff two-factor authentication](#staff-two-factor-authentication-mfa))
 
 Reload nginx after `nginx/nginx.conf` changes: on the server run `sh deploy_nginx.sh` (rebuilds the nginx image — config is baked in at build time, not bind-mounted).
 

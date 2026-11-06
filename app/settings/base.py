@@ -183,7 +183,7 @@ def _webauthn_allowed_origins():
     elif os.environ.get('WEBAUTHN_RP_ID') == 'displacementalert.org':
         origins.extend([
             'https://portal.displacementalert.org',
-            'https://staging.portal.displacementalert.org',
+            'https://staging.displacementalert.org',
             'https://api.displacementalert.org',
         ])
     return list(dict.fromkeys(origins))
@@ -237,6 +237,11 @@ WSGI_APPLICATION = 'app.wsgi.application'
 CACHE_TTL = 60 * 60 * 24  # cache for 24 hours
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "sessions"
+
+# Celery dead-man: beat schedules core.tasks.async_celery_heartbeat; a worker
+# must run it. /health/celery/ returns 503 if the cached timestamp is too old.
+CELERY_HEARTBEAT_CACHE_KEY = os.environ.get('CELERY_HEARTBEAT_CACHE_KEY', 'celery_heartbeat')
+CELERY_HEARTBEAT_MAX_AGE_SECONDS = int(os.environ.get('CELERY_HEARTBEAT_MAX_AGE_SECONDS', '900'))
 
 
 # Password validation
