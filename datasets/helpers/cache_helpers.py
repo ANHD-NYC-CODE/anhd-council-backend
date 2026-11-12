@@ -1,5 +1,6 @@
 from django.core.cache import cache
 from django.conf import settings
+from django.http import HttpResponse
 from rest_framework.response import Response
 import gzip
 import json
@@ -140,17 +141,140 @@ def construct_cache_key(request, params):
     return cache_key
 
 
+# ---------------------------------------------------------------------------
+# Columnar response shape (`shape=columnar`) for property summary lists.
+#
+# Row objects repeat ~48 long, date-stamped keys per property
+# ("hpdviolations_last3years__11/12/2023-06/10/2026"), which is ~90% of the
+# JSON. Columnar sends {"columns": [...], "rows": [[...], ...]} instead:
+# citywide `annotation__start=full` drops from ~1.47 GB to ~154 MB raw.
+#
+# `shape` is never part of the cache key, so row and columnar clients share
+# the same pre-warmed entry. The columnar variant is cached next to it
+# (`<key>__columnar`), stored already scrubbed for the unauthenticated key,
+# so hits are served as stored bytes without a JSON parse/render.
+# ---------------------------------------------------------------------------
+SHAPE_PARAM = 'shape'
+COLUMNAR_SHAPE = 'columnar'
+COLUMNAR_KEY_SUFFIX = '__columnar'
+AUTHENTICATED_KEY_SUFFIX = '__authenticated'
+# Same column terms scrub_authenticated removes from row lists.
+PROTECTED_COLUMN_TERMS = ('lispendens', 'foreclosures')
+
+
+def is_columnar_eligible(request):
+    params = request.query_params
+    return (
+        request.path.endswith('properties/')
+        and params.get('summary') == 'true'
+        and params.get('summary-type', '').lower() == 'short-annotated'
+    )
+
+
+def to_columnar(rows):
+    columns = []
+    seen = set()
+    for row in rows:
+        for key in row.keys():
+            if key not in seen:
+                seen.add(key)
+                columns.append(key)
+    return {'columns': columns, 'rows': [[row.get(c) for c in columns] for row in rows]}
+
+
+def scrub_columnar(value):
+    keep = [i for i, c in enumerate(value['columns'])
+            if not (c and any(term in c for term in PROTECTED_COLUMN_TERMS))]
+    if len(keep) == len(value['columns']):
+        return value
+    return {
+        'columns': [value['columns'][i] for i in keep],
+        'rows': [[row[i] for i in keep] for row in value['rows']],
+    }
+
+
+def _columnar_json_bytes(value):
+    return json.dumps(
+        value, separators=(',', ':'),
+        default=lambda o: o.isoformat() if hasattr(o, 'isoformat') else o,
+    ).encode('utf-8')
+
+
+def cache_ttl_for(request):
+    return HEAVY_GEOGRAPHIC_CACHE_TTL if _is_heavy_geographic_url(request) else settings.CACHE_TTL
+
+
+def _unauthenticated_key(cache_key):
+    if cache_key.endswith(AUTHENTICATED_KEY_SUFFIX):
+        return cache_key[:-len(AUTHENTICATED_KEY_SUFFIX)]
+    return cache_key
+
+
+def store_columnar_variants(request, cache_key, rows):
+    """Cache columnar variants of `rows`; return JSON bytes for this request.
+
+    The authenticated key gets the full columns; the unauthenticated key always
+    gets protected columns removed (rows here may be unscrubbed).
+    """
+    if not isinstance(rows, list):
+        return None
+    value = to_columnar(rows)
+    ttl = cache_ttl_for(request)
+    public_bytes = _columnar_json_bytes(scrub_columnar(value))
+    variants = [(_unauthenticated_key(cache_key) + COLUMNAR_KEY_SUFFIX, public_bytes)]
+    own_bytes = public_bytes
+    if cache_key.endswith(AUTHENTICATED_KEY_SUFFIX):
+        own_bytes = _columnar_json_bytes(value)
+        variants.append((cache_key + COLUMNAR_KEY_SUFFIX, own_bytes))
+    for key, raw in variants:
+        compressed = gzip.compress(raw)
+        if len(compressed) > MAX_CACHE_VALUE_BYTES:
+            logger.warning('Refusing to cache %s: compressed size %d bytes', key, len(compressed))
+            continue
+        cache.set(key, compressed, timeout=ttl)
+    return own_bytes
+
+
+def _is_internal_request(request):
+    internal_key = settings.CACHE_REQUEST_KEY
+    return bool(internal_key) and request.headers.get('whoisit') == internal_key
+
+
+def _json_bytes_response(view, request, raw):
+    return view.finalize_response(request, HttpResponse(raw, content_type='application/json'))
+
+
 def cache_request_path():
     def cache_decorator(function):
         @wraps(function)
         def cached_view(*original_args, **original_kwargs):
+            view = original_args[0]
             request = original_args[1]
             params = deepcopy(request.query_params)
+            # `shape` never enters the key (see columnar notes above).
+            wants_columnar = params.pop(SHAPE_PARAM, [None])[-1] == COLUMNAR_SHAPE
             cache_key = construct_cache_key(request, params)
+            columnar = (wants_columnar and is_columnar_eligible(request)
+                        and has_cachable_format(request))
 
             # User must be logged in and trusted to view protected sets
             if not is_authenticated(request) and 'q' in params and ('lispenden' in params['q'] or 'foreclosure' in params['q'] or 'ocahousingcourt' in params['q']):
                 return original_args[0].finalize_response(request, Response({'detail': 'Please login and request access to view results'}, status=status.HTTP_401_UNAUTHORIZED))
+
+            if columnar:
+                cached_columnar = cache.get(cache_key + COLUMNAR_KEY_SUFFIX)
+                if cached_columnar is not None:
+                    logger.debug('Serving columnar cache: {}'.format(cache_key))
+                    return _json_bytes_response(view, request, gzip.decompress(cached_columnar))
+                cached_rows = cache.get(cache_key)
+                if cached_rows is not None:
+                    try:
+                        raw = store_columnar_variants(request, cache_key, decompress_cache(cached_rows))
+                    except Exception as exc:
+                        logger.warning('Columnar variant failed for %s: %s', cache_key, exc)
+                        raw = None
+                    if raw is not None:
+                        return _json_bytes_response(view, request, raw)
 
             # Single Redis GET (was: EXISTS then GET → 2 round-trips per hit).
             # `has_cachable_format` is cheap and gates the GET so we don't
@@ -197,6 +321,21 @@ def cache_request_path():
                                 'Caching scrubbed varient: {}'.format(scrubbed_cache_key))
                             cache.set(scrubbed_cache_key, value_to_cache,
                                       timeout=ttl)
+
+                    # Build the columnar variant eagerly only when it will be
+                    # used: a columnar request, or the internal pre-warm (so
+                    # columnar clients hit a warm entry). Plain row clients
+                    # don't pay for it; it's derived from cached rows on the
+                    # first columnar request instead. Never fail a good 200.
+                    columnar_raw = None
+                    if is_columnar_eligible(request) and (columnar or _is_internal_request(request)):
+                        try:
+                            columnar_raw = store_columnar_variants(
+                                request, cache_key, scrub_pagination(response.data))
+                        except Exception as exc:
+                            logger.warning('Columnar variant failed for %s: %s', cache_key, exc)
+                    if columnar and columnar_raw is not None:
+                        return _json_bytes_response(view, request, columnar_raw)
 
                     logger.debug('Serving response: {}'.format(cache_key))
                     scrubbed_response = scrub_pagination(response.data)

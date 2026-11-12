@@ -1,5 +1,13 @@
 # API CHANGELOG
 
+### 2026-11-12 (columnar shape for dashboard property summaries)
+
+**What changed**
+- `shape=columnar` on `summary-type=short-annotated` property lists returns `{"columns": [...], "rows": [[...], ...]}` instead of row objects. The repeated date-stamped keys were ~90% of the JSON: Manhattan `annotation__start=full` 62.3 MB → 6.6 MB; citywide estimated ~1.47 GB → ~154 MB.
+- `shape` is not part of the cache key, so row and columnar clients share one entry. A columnar variant (`<key>__columnar`) is written next to every fresh dashboard summary (the existing pre-warm covers it) or derived from cached rows on first request. The unauthenticated variant is stored scrubbed (no `lispendens*` / `foreclosures*` columns), so hits are served as stored bytes: Manhattan cache hit 0.89 s → 0.05 s.
+- Every response carries `X-DAP-Shapes: columnar` (exposed via CORS). The portal only sends `shape=columnar` after seeing it, so a new client never asks an older API for a shape it would cache separately.
+- Other endpoints ignore `shape`.
+
 ### 2026-10-15 (Marshal evictions CSV — executed date)
 
 **What changed**
