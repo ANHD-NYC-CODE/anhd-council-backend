@@ -151,8 +151,10 @@ def async_cache_citywide_property_summaries_full(self, token, force=False):
 
 @app.task(bind=True, base=FaultTolerantTask, queue='celery')
 def async_run_custom_search_job(self, job_id):
-    from core.custom_search_jobs import run_custom_search_job
-    run_custom_search_job(job_id)
+    from core.custom_search_jobs import RETRY, SLOT_RETRY_SECONDS, run_custom_search_job
+    if run_custom_search_job(job_id) == RETRY:
+        # No free search slot: re-enqueue instead of sleeping in this worker.
+        async_run_custom_search_job.apply_async((job_id,), countdown=SLOT_RETRY_SECONDS)
 
 
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=30, max_retries=3)

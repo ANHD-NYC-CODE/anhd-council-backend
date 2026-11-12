@@ -111,11 +111,13 @@ def clean_temp_directory(self):
 # clears cache
 
 
-CUSTOM_SEARCH_KEY_PATTERN = 'custom_search:*'
+# Job states only. The slot set is deliberately NOT preserved: any slot leaked
+# by a killed worker gets cleared nightly (slots also self-expire).
+CUSTOM_SEARCH_KEY_PATTERN = 'custom_search:job:*'
 
 
 def preserve_custom_search_state():
-    """Snapshot custom-search job/slot keys with their remaining TTLs."""
+    """Snapshot in-flight custom-search job states with their remaining TTLs."""
     saved = {}
     try:
         for key in cache.keys(CUSTOM_SEARCH_KEY_PATTERN):
@@ -130,7 +132,9 @@ def preserve_custom_search_state():
 def restore_custom_search_state(saved):
     for key, (value, ttl) in saved.items():
         try:
-            cache.set(key, value, timeout=ttl if ttl and ttl > 0 else 3600)
+            # add(): a write made by the job during the reset window wins over
+            # the (older) snapshot.
+            cache.add(key, value, timeout=ttl if ttl and ttl > 0 else 3600)
         except Exception as e:
             logger.warning('reset_cache: could not restore %s: %s', key, e)
 

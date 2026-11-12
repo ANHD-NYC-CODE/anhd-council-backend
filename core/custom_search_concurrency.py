@@ -1,7 +1,14 @@
-"""Limit concurrent in-flight custom-search property list queries."""
+"""Limit concurrent in-flight custom-search property list queries.
+
+Slots are members of a Redis sorted set scored by acquire time. A slot whose
+holder died without releasing (gunicorn worker killed at --timeout, container
+restart mid-search) is reaped once it is older than SLOT_STALE_SECONDS, so a
+leak heals itself instead of 503-ing every search.
+"""
 
 import logging
 import time
+import uuid
 from contextlib import contextmanager
 
 from django.conf import settings
@@ -9,73 +16,73 @@ from django.core.cache import cache
 
 logger = logging.getLogger('app')
 
-SLOT_KEY = 'custom_search:in_flight'
+SLOT_KEY = 'custom_search:slots'
 DEFAULT_MAX = 3
+# Longest a slot can legitimately be held: gunicorn --timeout 600 (and the job
+# worker's 540 s request timeout), plus margin.
+SLOT_STALE_SECONDS = 700
+# Returned when Redis is unavailable: the request runs (fail open) and release
+# is a no-op, so it never frees someone else's slot.
+FAIL_OPEN_TOKEN = 'fail-open'
 
 
 def _max_slots():
     return int(getattr(settings, 'CUSTOM_SEARCH_MAX_CONCURRENT', DEFAULT_MAX))
 
 
-def _redis_client():
-    return cache.client.get_client(write=True)
+def _redis():
+    return cache.client.get_client(write=True), cache.client.make_key(SLOT_KEY)
 
 
 def try_acquire_slot():
-    """Return True if a slot was taken (caller must release_slot()), else False.
-
-    Fails open (returns True, nothing to release) when Redis is unavailable;
-    in that case release_slot() is still safe to call.
-    """
+    """Return a slot token (pass it to release_slot), or None if at capacity."""
     try:
-        client = _redis_client()
-        key = cache.client.make_key(SLOT_KEY)
-        count = client.incr(key)
-        client.expire(key, 3600)
+        client, key = _redis()
+        now = time.time()
+        token = uuid.uuid4().hex
+        pipe = client.pipeline()
+        pipe.zremrangebyscore(key, '-inf', now - SLOT_STALE_SECONDS)
+        pipe.zadd(key, {token: now})
+        pipe.zcard(key)
+        pipe.expire(key, SLOT_STALE_SECONDS)
+        _, _, count, _ = pipe.execute()
     except Exception as exc:
-        logger.warning('custom_search concurrency incr failed: %s', exc)
-        return True
+        logger.warning('custom_search concurrency acquire failed: %s', exc)
+        return FAIL_OPEN_TOKEN
 
     if count > _max_slots():
-        try:
-            client.decr(key)
-        except Exception:
-            pass
-        return False
-    return True
+        release_slot(token)
+        return None
+    return token
 
 
-def release_slot():
+def release_slot(token):
+    if not token or token == FAIL_OPEN_TOKEN:
+        return
     try:
-        client = _redis_client()
-        key = cache.client.make_key(SLOT_KEY)
-        remaining = client.decr(key)
-        if remaining is not None and remaining < 0:
-            client.set(key, 0)
+        client, key = _redis()
+        client.zrem(key, token)
     except Exception as exc:
-        logger.warning('custom_search concurrency decr failed: %s', exc)
+        logger.warning('custom_search concurrency release failed: %s', exc)
 
 
-def acquire_slot_blocking(timeout, poll_interval=2.0, on_wait=None):
-    """Wait up to `timeout` seconds for a slot. Returns True if acquired."""
-    deadline = time.monotonic() + timeout
-    while True:
-        if try_acquire_slot():
-            return True
-        if time.monotonic() >= deadline:
-            return False
-        if on_wait:
-            on_wait()
-        time.sleep(poll_interval)
+def slots_in_use():
+    try:
+        client, key = _redis()
+        client.zremrangebyscore(key, '-inf', time.time() - SLOT_STALE_SECONDS)
+        return client.zcard(key)
+    except Exception:
+        return 0
 
 
 @contextmanager
 def custom_search_concurrency_slot():
-    """Acquire a slot for one custom-search list request; yields False if at capacity."""
-    if not try_acquire_slot():
+    """Yields True while holding a slot, False if at capacity."""
+    token = try_acquire_slot()
+    if token is None:
         yield False
         return
     try:
         yield True
     finally:
-        release_slot()
+        release_slot(token)

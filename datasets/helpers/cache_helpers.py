@@ -124,7 +124,10 @@ def compress_cache(cached_value):
 
 
 def is_authenticated(request):
-    return (request.user.is_authenticated and _has_group_permission(request.user, ['trusted'])) or 'whoisit' in request.headers and request.headers['whoisit'] == settings.CACHE_REQUEST_KEY
+    # An unset CACHE_REQUEST_KEY must never make an empty `whoisit` header trusted.
+    internal_key = settings.CACHE_REQUEST_KEY
+    return (request.user.is_authenticated and _has_group_permission(request.user, ['trusted'])) or (
+        bool(internal_key) and request.headers.get('whoisit') == internal_key)
 
 
 def construct_cache_key(request, params):

@@ -19,10 +19,15 @@ def _query_params(request):
     return getattr(request, 'query_params', request.GET)
 
 
+# CSV export of a search re-runs the same (uncached) query, so it gets the same
+# policy and concurrency limit as JSON.
+GUARDED_FORMATS = ('json', 'csv')
+
+
 def _is_custom_search_summary(qp):
     return (
         qp.get('summary') == 'true'
-        and qp.get('format', 'json') == 'json'
+        and (qp.get('format') or 'json') in GUARDED_FORMATS
         and qp.get('summary-type', '').lower() == 'custom-search'
     )
 
@@ -50,10 +55,14 @@ def q_references_protected_dataset(q):
     return any(term in q for term in PROTECTED_Q_TERMS)
 
 
+# A real dataset filter looks like `filter_0=hpdviolations__count__gte=5`.
+DATASET_FILTER_RE = re.compile(r'filter_\d+=[a-z0-9]+__[a-z0-9_]+')
+
+
 def _q_has_dataset_filters(q):
     if not q or not str(q).strip():
         return False
-    return bool(re.search(r'filter_\d+[_=]', str(q)))
+    return bool(DATASET_FILTER_RE.search(str(q).lower()))
 
 
 def is_citywide_custom_search_list(request):
@@ -79,7 +88,7 @@ def is_blocked_borough_unfiltered_custom_search(request):
     borough = qp.get('borough')
     if not borough:
         return False
-    housing = qp.get('housingtype', 'all')
+    housing = (qp.get('housingtype') or 'all').strip().lower()
     if housing != 'all':
         return False
     if _q_has_dataset_filters(qp.get('q')):

@@ -11,7 +11,7 @@ access is enforced here because the worker queries the origin as trusted.
 from django.http import QueryDict
 from django.test import RequestFactory
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
@@ -23,6 +23,7 @@ from core.custom_search_policy import (
     is_valid_custom_search_path,
     q_references_protected_dataset,
 )
+from core.throttling import CustomSearchJobRateThrottle
 from datasets.helpers.cache_helpers import is_authenticated, scrub_authenticated
 from datasets.views.property_views import (
     BOROUGH_CUSTOM_SEARCH_BLOCKED_DETAIL,
@@ -57,6 +58,7 @@ def _parse_start_body(request):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@throttle_classes([CustomSearchJobRateThrottle])
 def start_custom_search_job(request):
     path, query_params = _parse_start_body(request)
     query_params['format'] = 'json'
