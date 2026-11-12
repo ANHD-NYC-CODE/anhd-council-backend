@@ -23,8 +23,26 @@ import json
 
 from datasets import models as ds
 from core import models as c_models
+from core.custom_search_concurrency import custom_search_concurrency_slot
+from core.custom_search_policy import (
+    is_blocked_borough_unfiltered_custom_search,
+    is_blocked_citywide_custom_search,
+    is_any_custom_search_json_list,
+)
+from core.throttling import is_internal_cache_request
 import logging
 logger = logging.getLogger('app')
+
+CITYWIDE_CUSTOM_SEARCH_BLOCKED_DETAIL = (
+    'Citywide custom search is not available. '
+    'Choose a borough, district, or use the District Dashboard for all of NYC.'
+)
+BOROUGH_CUSTOM_SEARCH_BLOCKED_DETAIL = (
+    'Borough custom search requires a specific housing type or at least one dataset filter.'
+)
+CUSTOM_SEARCH_BUSY_DETAIL = (
+    'Too many custom searches are running. Please wait a moment and try again.'
+)
 
 
 class PropertyViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyModelViewSet):
@@ -50,12 +68,42 @@ class PropertyViewSet(ApplicationViewSet, NestedViewSetMixin, viewsets.ReadOnlyM
 
     @cache_request_path()
     def list(self, request, *args, **kwargs):
-        if 'q' in request.query_params:
-            self.filterset_class = AdvancedPropertyFilter
+        # Policy + concurrency protect public gunicorn workers. Internal callers
+        # (whoisit: saved-search notifications run in Celery via the test
+        # Client, pre-warm, async jobs that already validated at start) are exempt.
+        internal = is_internal_cache_request(request)
 
-        handle_property_summaries(self, request, *args, **kwargs)
+        if not internal and is_blocked_citywide_custom_search(request):
+            return Response(
+                {'detail': CITYWIDE_CUSTOM_SEARCH_BLOCKED_DETAIL},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-        return super().list(request, *args, **kwargs)
+        if not internal and is_blocked_borough_unfiltered_custom_search(request):
+            return Response(
+                {'detail': BOROUGH_CUSTOM_SEARCH_BLOCKED_DETAIL},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        def _execute_list():
+            if 'q' in request.query_params:
+                self.filterset_class = AdvancedPropertyFilter
+
+            handle_property_summaries(self, request, *args, **kwargs)
+
+            return super(PropertyViewSet, self).list(request, *args, **kwargs)
+
+        run_concurrency_limit = is_any_custom_search_json_list(request) and not internal
+        if not run_concurrency_limit:
+            return _execute_list()
+
+        with custom_search_concurrency_slot() as acquired:
+            if not acquired:
+                return Response(
+                    {'detail': CUSTOM_SEARCH_BUSY_DETAIL},
+                    status=status.HTTP_503_SERVICE_UNAVAILABLE,
+                )
+            return _execute_list()
 
     @cache_request_path()
     def retrieve(self, request, *args, **kwargs):

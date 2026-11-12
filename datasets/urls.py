@@ -536,12 +536,24 @@ router.register(r'ocahousingcourts',
                 v.ocahousingcourt_views.OCAHousingCourtViewSet)
 
 
+from datasets.views import custom_search_job_views as cs_job_views
+
 custom_routes = format_suffix_patterns([
     path('councils/<int:pk>/summary/', council_summary, name='council-summary'),
     path('communities/<int:pk>/summary/',
          community_summary, name='community-summary'),
     path('search/buildings/', building_search, name='buildings-search'),
-    path('bbls', property_bbls, name='property-bbls')
+    path('bbls', property_bbls, name='property-bbls'),
+    path(
+        'properties/custom-search/jobs/',
+        cs_job_views.start_custom_search_job,
+        name='custom-search-jobs-start',
+    ),
+    path(
+        'properties/custom-search/jobs/<uuid:job_id>/',
+        cs_job_views.poll_custom_search_job,
+        name='custom-search-jobs-poll',
+    ),
 ])
 
 urlpatterns = [

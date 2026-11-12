@@ -25,8 +25,8 @@ MAX_CACHE_VALUE_BYTES = 100 * 1024 * 1024  # 100 MB compressed
 # Those entries are heavy (5+ min cold for BK), but they change slowly at
 # the borough aggregate level — PLUTO refreshes quarterly, RS annually,
 # the daily-cadence datasets (HPD/DOB/eviction counts) only nudge a small
-# fraction of properties in any given day. 7-day TTL bridges the gap
-# between the weekly Sunday pre-warm runs; if a structural dataset
+# fraction of properties in any given day. The pre-warm refreshes them
+# daily; the 7-day TTL keeps a usable entry if a run fails. If a structural dataset
 # refreshes (PLUTO etc.), the seed-success hook invalidates these keys
 # explicitly so the next user request rebuilds with fresh data.
 HEAVY_GEOGRAPHIC_CACHE_TTL = 7 * 24 * 60 * 60  # 7 days
@@ -182,8 +182,8 @@ def cache_request_path():
                         # change very slowly (PLUTO is quarterly, RS annual,
                         # daily updates only nudge counts) and they're
                         # expensive to recompute (BK 5+ min cold), so give
-                        # them a longer TTL than the default 24h. The weekly
-                        # Sunday pre-warm refreshes them; structural-dataset
+                        # them a longer TTL than the default 24h. The daily
+                        # pre-warm refreshes them; structural-dataset
                         # update hooks invalidate explicitly when needed.
                         if _is_heavy_geographic_url(request):
                             ttl = HEAVY_GEOGRAPHIC_CACHE_TTL

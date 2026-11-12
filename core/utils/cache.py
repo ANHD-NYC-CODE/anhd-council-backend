@@ -4,7 +4,6 @@ import os
 import time
 import requests
 import logging
-import datetime
 import base64
 logger = logging.getLogger('app')
 
@@ -159,34 +158,24 @@ def cache_zipcode_property_summaries_full(token, sleep=1, start=0):
     logger.debug("Authenticated ZipCode month Pre-Caching complete!")
 
 
-# Borough + citywide pre-warm — heavy, slow-changing, weekly-only.
-# Self-gated to Sunday: the daily reset_cache job queues these every
-# morning (no fixture change needed), but they no-op 6 of 7 days. Sunday
-# off-peak is the lowest-traffic window so a 5-15 min cron is safest.
-# Cache TTL for these URLs is 7 days (see HEAVY_GEOGRAPHIC_CACHE_TTL in
-# datasets/helpers/cache_helpers.py) so the prior Sunday's entry stays
-# valid through the entire week — first user of any day gets the cache,
-# even mid-pre-warm. Structural dataset updates (PLUTO etc.) trigger an
-# explicit invalidate hook so a mid-week PLUTO refresh shows fresh data.
-
-def _is_weekly_pre_warm_day():
-    # weekday() returns 0=Monday … 6=Sunday
-    return datetime.datetime.now().weekday() == 6
+# Borough + citywide pre-warm — heavy, slow-changing. Runs DAILY with the
+# reset_cache job (same cadence as councils), so BK/QN keys are never cold
+# for long. Requests go straight to the app container (INTERNAL_API_ORIGIN)
+# rather than the public hostname: citywide takes ~4-5 min and Cloudflare
+# returns 524 after ~100s. Cache TTL for these URLs is 7 days (see
+# HEAVY_GEOGRAPHIC_CACHE_TTL in datasets/helpers/cache_helpers.py), so a
+# failed run still leaves the previous day's entry in place. Structural
+# dataset updates (PLUTO etc.) trigger an explicit invalidate hook.
 
 
 def cache_borough_property_summaries_full(token, sleep=5, force=False):
-    # `force=True` bypasses the Sunday gate. Used by the structural-update
-    # re-cache path (Property/PLUTO etc. just changed; refresh now instead
-    # of waiting for next Sunday's natural pre-warm). The fresh entry
+    # `force` is kept for call-site compatibility (structural-update re-cache
+    # path); the pre-warm now always runs. The fresh entry
     # OVERWRITES the existing cached entry — users continue hitting the
     # stale-but-valid old entry until the new write completes, so they
     # never pay a cold load triggered by a backend update.
-    if not force and not _is_weekly_pre_warm_day():
-        logger.debug("Borough pre-warm: skipping (runs Sundays only; force=False)")
-        return
-
     headers = {"whoisit": token}
-    root_url = 'http://localhost:8000' if settings.DEBUG else 'https://api.displacementalert.org'
+    root_url = settings.INTERNAL_API_ORIGIN.rstrip('/')
 
     for borough in ('MN', 'BK', 'BX', 'QN', 'SI'):
         try:
@@ -203,12 +192,8 @@ def cache_borough_property_summaries_full(token, sleep=5, force=False):
 
 
 def cache_citywide_property_summaries_full(token, force=False):
-    if not force and not _is_weekly_pre_warm_day():
-        logger.debug("Citywide pre-warm: skipping (runs Sundays only; force=False)")
-        return
-
     headers = {"whoisit": token}
-    root_url = 'http://localhost:8000' if settings.DEBUG else 'https://api.displacementalert.org'
+    root_url = settings.INTERNAL_API_ORIGIN.rstrip('/')
     path = ('/properties/?format=json&summary=true&summary-type=short-annotated'
             '&annotation__start=full&unitsres__gte=1')
     try:
@@ -223,7 +208,7 @@ def cache_citywide_property_summaries_full(token, force=False):
 # Invalidate borough + citywide cache entries. Called from the seed-success
 # path for structural datasets (PLUTO/Property, RentStabilizationRecord,
 # HPDRegistration, TaxLot) so the heavy 7-day TTL entries don't show stale
-# property lists until next Sunday's pre-warm.
+# property lists until the next daily pre-warm.
 def invalidate_heavy_geographic_cache(reason='structural update'):
     from django.core.cache import cache
     # Patterns are ANCHORED to keys starting with '/properties/' (no
