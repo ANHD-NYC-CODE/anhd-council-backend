@@ -396,7 +396,7 @@ There are two distinct annotate paths and you should understand which fires when
 
 **Caching layer:**
 
-District dashboard endpoints (`/councils/{pk}/`, `/communities/{pk}/`, etc.) are pre-warmed at 6 AM EDT daily and cached for 24h via `@cache_request_path`. The Property Lookup page is also cached. The advanced custom search is NOT cached — it reads PA directly, so per-row signal updates are visible there intra-day.
+District dashboard endpoints (`/councils/{pk}/`, `/communities/{pk}/`, etc.) are pre-warmed at 6 AM EDT daily and cached for 24h via `@cache_request_path`. The Property Lookup page is also cached. Custom search responses (`summary-type=custom-search`) are cached per exact URL by the same decorator (24h; not pre-warmed). Custom search is guarded: citywide and borough + housing type All + no dataset filter return 400, at most `CUSTOM_SEARCH_MAX_CONCURRENT` (default 3) run at once (503 beyond that), and the portal runs searches through async jobs (`/properties/custom-search/jobs/`) — see CHANGELOG 2026-11-12.
 
 **Adding a new annotation:**
 1. Add fields to `PropertyAnnotation` model (e.g., `newdataset_last30`, `_lastyear`, `_last3years`, `_lastupdated`)

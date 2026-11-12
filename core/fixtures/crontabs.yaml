@@ -214,3 +214,14 @@
     minute: 0
     hour: 12
     timezone: America/New_York
+
+- model: django_celery_beat.crontabschedule
+  pk: 27
+  fields:
+    # Every 5 minutes (celery heartbeat + DB health check)
+    minute: '*/5'
+    hour: '*'
+    day_of_week: '*'
+    day_of_month: '*'
+    month_of_year: '*'
+    timezone: America/New_York

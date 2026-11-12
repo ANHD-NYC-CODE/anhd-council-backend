@@ -1,6 +1,7 @@
 from django.conf import settings
 from rest_framework.throttling import AnonRateThrottle as DRFAnonRateThrottle
 from rest_framework.throttling import UserRateThrottle as DRFUserRateThrottle
+from rest_framework.throttling import SimpleRateThrottle
 
 
 def is_internal_cache_request(request):
@@ -16,6 +17,19 @@ class InternalCacheExemptMixin:
         if is_internal_cache_request(request):
             return True
         return super().allow_request(request, view)
+
+
+class CustomSearchJobRateThrottle(InternalCacheExemptMixin, SimpleRateThrottle):
+    """Per user (or IP) cap on starting custom-search jobs."""
+    scope = 'custom_search_job'
+    rate = '20/minute'
+
+    def get_cache_key(self, request, view):
+        if request.user and request.user.is_authenticated:
+            ident = request.user.pk
+        else:
+            ident = self.get_ident(request)
+        return self.cache_format % {'scope': self.scope, 'ident': ident}
 
 
 class AnonRateThrottle(InternalCacheExemptMixin, DRFAnonRateThrottle):

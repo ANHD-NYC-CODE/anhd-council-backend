@@ -391,3 +391,27 @@
     kwargs: {}
     enabled: true
     date_changed: 2026-09-02
+
+- model: django_celery_beat.periodictask
+  fields:
+    name: celery worker heartbeat
+    description: >-
+      Runs on a Celery worker every 5 minutes; updates Redis so GET /health/celery/
+      stays 200 for Pingdom. Fails closed (503) if beat, workers, or Redis is down.
+    task: core.tasks.async_celery_heartbeat
+    crontab: 27
+    args: []
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-10-09
+
+- model: django_celery_beat.periodictask
+  fields:
+    name: database health check
+    description: SELECT 1 every 5 minutes; emails admins if the database is unreachable.
+    task: core.tasks.async_db_health_check
+    crontab: 27
+    args: []
+    kwargs: {}
+    enabled: true
+    date_changed: 2026-10-09

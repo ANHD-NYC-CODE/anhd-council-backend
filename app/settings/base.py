@@ -26,6 +26,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(
     os.path.dirname(os.path.abspath(__file__))))
 SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY', '')
 CACHE_REQUEST_KEY = os.environ.get('CACHE_REQUEST_KEY', '')
+# Origin that Celery workers use to call the API directly on the Docker network
+# (bypasses nginx/Cloudflare, whose ~100s proxy timeout kills heavy queries).
+INTERNAL_API_ORIGIN = os.environ.get('INTERNAL_API_ORIGIN', 'http://app:8000')
+CUSTOM_SEARCH_MAX_CONCURRENT = int(os.environ.get('CUSTOM_SEARCH_MAX_CONCURRENT', '3'))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 

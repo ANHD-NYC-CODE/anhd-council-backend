@@ -1007,7 +1007,7 @@ class PropertyViewTests(BaseTest, TestCase):
             self.acrisreallegal_factory(property=property2, master=self.acrismaster_factory(
                 documentid='1', docdate="2018-12-01", doctype="DEED", docamount=1))
 
-        query = '/properties/?housingtype=all&q=*condition_0=OR+filter_0=hpdviolations__count__gte=5,hpdviolations__approveddate__gte=2017-01-01+filter_1=acrisreallegals__documentid__count__gte=1,acrisreallegals__documentid__docdate__gte=2018-01-01+filter_2=dobviolations__count__gte=5,dobviolations__issuedate__gte=2018-01-01&summary=true&summary-type=custom-search'
+        query = '/properties/?borough=1&housingtype=all&q=*condition_0=OR+filter_0=hpdviolations__count__gte=5,hpdviolations__approveddate__gte=2017-01-01+filter_1=acrisreallegals__documentid__count__gte=1,acrisreallegals__documentid__docdate__gte=2018-01-01+filter_2=dobviolations__count__gte=5,dobviolations__issuedate__gte=2018-01-01&summary=true&summary-type=custom-search'
         response = self.client.get(query, format="json")
 
         content = response.data

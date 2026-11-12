@@ -137,8 +137,8 @@ def async_cache_zipcode_property_summaries_full(self, token):
 # (5 boroughs + 1 citywide) but each can take 5-10 min. autoretry_for
 # omitted intentionally: if Brooklyn fails once it's almost certainly
 # upstream load, retrying immediately would hammer the API.
-# `force` defaults to False — the function self-gates to Sundays. The
-# structural-update re-cache hook sets force=True to bypass the gate.
+# Runs daily with reset_cache; `force` is accepted for the structural-update
+# re-cache hook but no longer gates anything.
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', max_retries=1, default_retry_delay=600)
 def async_cache_borough_property_summaries_full(self, token, force=False):
     return cache_borough_property_summaries_full(token, force=force)
@@ -147,6 +147,14 @@ def async_cache_borough_property_summaries_full(self, token, force=False):
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', max_retries=1, default_retry_delay=600)
 def async_cache_citywide_property_summaries_full(self, token, force=False):
     return cache_citywide_property_summaries_full(token, force=force)
+
+
+@app.task(bind=True, base=FaultTolerantTask, queue='celery')
+def async_run_custom_search_job(self, job_id):
+    from core.custom_search_jobs import RETRY, SLOT_RETRY_SECONDS, run_custom_search_job
+    if run_custom_search_job(job_id) == RETRY:
+        # No free search slot: re-enqueue instead of sleeping in this worker.
+        async_run_custom_search_job.apply_async((job_id,), countdown=SLOT_RETRY_SECONDS)
 
 
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=30, max_retries=3)
@@ -599,6 +607,18 @@ def async_check_on_updates(self):
     except Exception as e:
         handle_task_error(e)
         raise e
+
+
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', max_retries=0, ignore_result=True)
+def async_celery_heartbeat(self):
+    """Record worker liveness for Pingdom /health/celery/ (must run on a worker, not beat alone)."""
+    from core.celery_health import record_celery_heartbeat
+    try:
+        record_celery_heartbeat()
+        logger.debug('Celery heartbeat recorded')
+    except Exception as e:
+        logger.error('Celery heartbeat failed: %s', e)
+        raise
 
 
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', max_retries=0)
