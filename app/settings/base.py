@@ -79,6 +79,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'core.middleware.ApiShapesHeaderMiddleware',
     'core.middleware.RejectPaginationQueryParamMiddleware',
     'core.middleware.CancelCustomSearchOnDisconnectMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -96,6 +97,8 @@ INTERNAL_IPS = [
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
+# Lets the portal read the capability header (core.middleware.ApiShapesHeaderMiddleware).
+CORS_EXPOSE_HEADERS = ['X-DAP-Shapes']
 
 CORS_ORIGIN_WHITELIST = (
     "localhost:3000",

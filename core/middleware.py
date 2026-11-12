@@ -48,3 +48,23 @@ class CancelCustomSearchOnDisconnectMiddleware:
                 if handle_cancelled_search_exception(exc):
                     return HttpResponse(status=499)
                 raise
+
+
+class ApiShapesHeaderMiddleware:
+    """Advertise optional response shapes (see datasets/helpers/cache_helpers.py).
+
+    The portal only sends `shape=columnar` after seeing this header, so a new
+    client never sends it to an older API (where it would be part of the cache
+    key and miss every pre-warmed entry).
+    """
+
+    HEADER = 'X-DAP-Shapes'
+    VALUE = 'columnar'
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        response[self.HEADER] = self.VALUE
+        return response
