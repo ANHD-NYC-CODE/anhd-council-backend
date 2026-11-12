@@ -111,6 +111,30 @@ def clean_temp_directory(self):
 # clears cache
 
 
+CUSTOM_SEARCH_KEY_PATTERN = 'custom_search:*'
+
+
+def preserve_custom_search_state():
+    """Snapshot custom-search job/slot keys with their remaining TTLs."""
+    saved = {}
+    try:
+        for key in cache.keys(CUSTOM_SEARCH_KEY_PATTERN):
+            value = cache.get(key)
+            if value is not None:
+                saved[key] = (value, cache.ttl(key))
+    except Exception as e:
+        logger.warning('reset_cache: could not snapshot custom search state: %s', e)
+    return saved
+
+
+def restore_custom_search_state(saved):
+    for key, (value, ttl) in saved.items():
+        try:
+            cache.set(key, value, timeout=ttl if ttl and ttl > 0 else 3600)
+        except Exception as e:
+            logger.warning('reset_cache: could not restore %s: %s', key, e)
+
+
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', default_retry_delay=120, max_retries=2)
 def reset_cache(self, token):
     try:
@@ -121,7 +145,11 @@ def reset_cache(self, token):
         # KEY_PREFIX=SESS) survive a dataset cache reset.
         from core.celery_health import heartbeat_cache_key, record_celery_heartbeat
         heartbeat_saved = cache.get(heartbeat_cache_key())
+        # Keep in-flight Custom Search jobs + the concurrency counter, or any
+        # search running at reset time fails with "Job not found".
+        custom_search_saved = preserve_custom_search_state()
         cache.delete_pattern("*")
+        restore_custom_search_state(custom_search_saved)
         if heartbeat_saved:
             cache.set(
                 heartbeat_cache_key(),

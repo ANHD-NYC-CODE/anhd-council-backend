@@ -261,3 +261,23 @@ class HeartbeatPercentTests(TestCase):
         self.assertEqual(values[0], 20)
         self.assertLessEqual(values[-1], 95)
         self.assertLess(heartbeat_percent(60), 90)  # still moving after a minute
+
+
+class ResetCachePreservesJobsTests(TestCase):
+    def tearDown(self):
+        cache.delete_pattern('custom_search:*')
+
+    @mock.patch('app.tasks.create_async_cache_workers')
+    def test_reset_cache_keeps_jobs_and_slots_but_clears_responses(self, rebuild):
+        from app.tasks import reset_cache
+        set_job_state('job-keep', status='running', percent=40)
+        conc.try_acquire_slot()
+        cache.set('/councils/1/properties/?format=json', b'cached-response', timeout=600)
+
+        reset_cache.run('token')
+
+        self.assertEqual(get_job_state('job-keep')['percent'], 40)
+        self.assertEqual(cache.get(conc.SLOT_KEY), 1)
+        self.assertIsNone(cache.get('/councils/1/properties/?format=json'))
+        self.assertGreater(cache.ttl('custom_search:job:job-keep'), 0)
+        rebuild.assert_called_once_with('token')

@@ -7,6 +7,7 @@
 - **Concurrency:** at most `CUSTOM_SEARCH_MAX_CONCURRENT` (env, default 3) custom-search list queries run at once across borough and district routes; extras get **503**. Cache hits and internal `whoisit` requests don't take a slot.
 - **Async jobs:** `POST /properties/custom-search/jobs/` (`{"path": "/councils/1/properties/", "params": {...}}`) → 202 `job_id`; `GET .../jobs/<uuid>/` → `status`/`percent`/`phase`, then `results` (≤ 5 MB inline) or `refetch` + `path` + `query_params`; `DELETE` cancels. The Celery worker waits for a concurrency slot (up to `CUSTOM_SEARCH_JOB_SLOT_WAIT`, default 120 s) instead of getting a 503. Protected-dataset `q` requires a trusted login at job start, and polls scrub protected fields for untrusted callers (the worker queries as trusted).
 - **Pre-warm:** borough + citywide `short-annotated` pre-warm now runs **daily** with `reset_cache` (Sunday-only gate removed). It and the jobs call the app container directly via `INTERNAL_API_ORIGIN` (env, default `http://app:8000`) — the old DEBUG `localhost:8000` was unreachable from the Celery container, and the public hostname hits Cloudflare's 524 on citywide.
+- **Nightly reset:** `reset_cache` keeps `custom_search:*` keys (in-flight jobs + concurrency counter) with their TTLs, so a search running during the 6 AM reset doesn't fail with "Job not found".
 - **Health:** `GET /health/celery/` reports worker liveness from a beat-scheduled heartbeat task.
 
 **Why**
