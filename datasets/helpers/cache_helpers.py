@@ -235,6 +235,11 @@ def store_columnar_variants(request, cache_key, rows):
     return own_bytes
 
 
+def _is_internal_request(request):
+    internal_key = settings.CACHE_REQUEST_KEY
+    return bool(internal_key) and request.headers.get('whoisit') == internal_key
+
+
 def _json_bytes_response(view, request, raw):
     return view.finalize_response(request, HttpResponse(raw, content_type='application/json'))
 
@@ -263,7 +268,11 @@ def cache_request_path():
                     return _json_bytes_response(view, request, gzip.decompress(cached_columnar))
                 cached_rows = cache.get(cache_key)
                 if cached_rows is not None:
-                    raw = store_columnar_variants(request, cache_key, decompress_cache(cached_rows))
+                    try:
+                        raw = store_columnar_variants(request, cache_key, decompress_cache(cached_rows))
+                    except Exception as exc:
+                        logger.warning('Columnar variant failed for %s: %s', cache_key, exc)
+                        raw = None
                     if raw is not None:
                         return _json_bytes_response(view, request, raw)
 
@@ -313,12 +322,18 @@ def cache_request_path():
                             cache.set(scrubbed_cache_key, value_to_cache,
                                       timeout=ttl)
 
-                    # Keep a columnar variant next to every fresh dashboard
-                    # summary so the pre-warm covers columnar clients too.
+                    # Build the columnar variant eagerly only when it will be
+                    # used: a columnar request, or the internal pre-warm (so
+                    # columnar clients hit a warm entry). Plain row clients
+                    # don't pay for it; it's derived from cached rows on the
+                    # first columnar request instead. Never fail a good 200.
                     columnar_raw = None
-                    if is_columnar_eligible(request):
-                        columnar_raw = store_columnar_variants(
-                            request, cache_key, scrub_pagination(response.data))
+                    if is_columnar_eligible(request) and (columnar or _is_internal_request(request)):
+                        try:
+                            columnar_raw = store_columnar_variants(
+                                request, cache_key, scrub_pagination(response.data))
+                        except Exception as exc:
+                            logger.warning('Columnar variant failed for %s: %s', cache_key, exc)
                     if columnar and columnar_raw is not None:
                         return _json_bytes_response(view, request, columnar_raw)
 

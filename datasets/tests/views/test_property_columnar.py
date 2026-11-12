@@ -104,3 +104,29 @@ class ColumnarViewTests(BaseTest, TestCase):
     def test_capability_header(self):
         response = self.client.get(DASHBOARD)
         self.assertEqual(response['X-DAP-Shapes'], 'columnar')
+
+
+@override_settings(CACHE_REQUEST_KEY='internal-key')
+class ColumnarEagerBuildTests(BaseTest, TestCase):
+    def setUp(self):
+        cache.clear()
+        self.create_annotated_datasets()
+        council = self.council_factory(id=1)
+        self.property_factory(bbl='1', council=council)
+
+    def tearDown(self):
+        self.clean_tests()
+
+    def test_plain_row_request_does_not_build_columnar(self):
+        self.client.get(DASHBOARD)
+        self.assertEqual(cache.keys('*' + COLUMNAR_KEY_SUFFIX), [])
+
+    def test_columnar_failure_never_fails_a_good_response(self):
+        from unittest import mock
+        with mock.patch('datasets.helpers.cache_helpers.store_columnar_variants', side_effect=ValueError('boom')):
+            pre = self.client.get(DASHBOARD, HTTP_WHOISIT='internal-key')
+            self.assertEqual(pre.status_code, 200)
+            self.assertIsInstance(json.loads(pre.content), list)
+            # columnar request derived from cached rows falls back to rows, not a 500
+            response = self.client.get(COLUMNAR)
+        self.assertEqual(response.status_code, 200)
