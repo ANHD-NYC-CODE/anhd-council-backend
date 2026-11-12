@@ -601,6 +601,18 @@ def async_check_on_updates(self):
         raise e
 
 
+@app.task(bind=True, base=FaultTolerantTask, queue='celery', max_retries=0, ignore_result=True)
+def async_celery_heartbeat(self):
+    """Record worker liveness for Pingdom /health/celery/ (must run on a worker, not beat alone)."""
+    from core.celery_health import record_celery_heartbeat
+    try:
+        record_celery_heartbeat()
+        logger.debug('Celery heartbeat recorded')
+    except Exception as e:
+        logger.error('Celery heartbeat failed: %s', e)
+        raise
+
+
 @app.task(bind=True, base=FaultTolerantTask, queue='celery', max_retries=0)
 def async_db_health_check(self):
     """Periodic task to verify database connectivity. Sends alert email if DB is unreachable."""
