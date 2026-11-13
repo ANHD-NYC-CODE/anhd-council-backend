@@ -1,5 +1,12 @@
 # API CHANGELOG
 
+### 2026-11-13 (Custom Search: stop 3 extra queries per result row)
+
+**What changed**
+- `AdvancedPropertyFilter` no longer defers `latitude` / `longitude`. Since 2021-02-20 (`6061021`, which switched the short summary fields from `lat`/`lng` to `latitude`/`longitude`) the custom-search serializer has returned both, so each result row loaded them, and its `propertyannotation`, in separate queries: ~3 extra queries per row. The defer list dates from 2020-05-20 (`5de65c3`), when it was harmless.
+- Results are unchanged (verified row for row on 16 saved searches locally). Locally, 4 saved borough searches (3k–7k results) ran 1.8–5× faster; a 112k-result Staten Island search went from 24 min to 19 s.
+- Regression test: the custom-search list's query count doesn't grow with the number of rows.
+
 ### 2026-10-15 (Marshal evictions CSV — executed date)
 
 **What changed**

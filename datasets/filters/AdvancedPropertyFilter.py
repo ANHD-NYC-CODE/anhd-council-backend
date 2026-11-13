@@ -251,9 +251,10 @@ class AdvancedPropertyFilter(django_filters.rest_framework.FilterSet):
                                   "bldgclass",
                                   "original_address",
                                   "dcpedited",
-                                  "notes",
-                                  "latitude",
-                                  "longitude").defer(
+                                  # latitude/longitude are NOT deferred: the
+                                  # custom-search serializer returns them, so
+                                  # deferring cost 2-3 extra queries per row.
+                                  "notes").defer(
             "propertyannotation__hpdviolations_last30",
             "propertyannotation__hpdviolations_lastyear",
             "propertyannotation__hpdviolations_last3years",

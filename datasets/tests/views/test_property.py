@@ -1039,3 +1039,41 @@ class PropertyViewTests(BaseTest, TestCase):
             content[1]['acrisrealmasters__01/01/2018-12/31/2018'], 1)
         self.assertEqual(
             'ecbviolations__01/01/2017-{}'.format(now_date) in content[1], False)
+
+
+class CustomSearchQueryCountTests(BaseTest, TestCase):
+    """The custom-search list must not run extra queries per result row.
+
+    AdvancedPropertyFilter once deferred latitude/longitude, which the
+    custom-search serializer returns, so every row loaded them (and its
+    propertyannotation) in ~3 extra queries: a 112k-row search took 24 min.
+    """
+
+    def tearDown(self):
+        self.clean_tests()
+
+    def _queries_for(self, gte):
+        from django.db import connection
+        from django.test.utils import CaptureQueriesContext
+        query = ('/properties/?format=json&housingtype=all'
+                 '&q=*condition_0=AND+filter_0=hpdviolations__count__gte={}'
+                 '&summary=true&summary-type=custom-search').format(gte)
+        with CaptureQueriesContext(connection) as ctx:
+            response = self.client.get(query)
+        self.assertEqual(response.status_code, 200)
+        return response.data, len(ctx.captured_queries)
+
+    def test_query_count_does_not_grow_with_rows(self):
+        self.create_annotated_datasets()
+        council = self.council_factory(id=1)
+        for i, bbl in enumerate(('1000010001', '1000010002', '1000010003', '1000010004', '1000010005')):
+            prop = self.property_factory(bbl=bbl, council=council, latitude=40.7 + i / 100, longitude=-73.9)
+            for _ in range(i):
+                self.hpdviolation_factory(property=prop)
+
+        few, few_queries = self._queries_for(4)    # 1 property
+        many, many_queries = self._queries_for(0)  # all 5
+        self.assertEqual((len(few), len(many)), (1, 5))
+        self.assertEqual(many_queries, few_queries)
+        # latitude/longitude still come back, from the main query
+        self.assertEqual(sorted(round(float(r['latitude']), 2) for r in many), [40.7, 40.71, 40.72, 40.73, 40.74])
