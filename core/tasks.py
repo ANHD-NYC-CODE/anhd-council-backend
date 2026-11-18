@@ -657,7 +657,7 @@ def async_check_manual_dataset_updates(self):
     """Weekly check: compare manual dataset timestamps against Socrata source data.
     Sends email alert if any source has been updated since our last import."""
     import requests
-    from datetime import datetime
+    from datetime import datetime, timezone as dt_timezone
 
     stale_datasets = []
 
@@ -669,7 +669,7 @@ def async_check_manual_dataset_updates(self):
             if resp.status_code != 200:
                 continue
             socrata_data = resp.json()
-            socrata_updated = datetime.fromtimestamp(socrata_data.get('rowsUpdatedAt', 0), tz=timezone.utc)
+            socrata_updated = datetime.fromtimestamp(socrata_data.get('rowsUpdatedAt', 0), tz=dt_timezone.utc)
 
             # Compare with our last update
             our_last_update = dataset.api_last_updated

@@ -121,7 +121,7 @@ class Dataset(models.Model):
             api_last_updated = getattr(
                 ds, self.model_name).fetch_last_updated()
 
-            if not api_last_updated or api_last_updated.replace(tzinfo=timezone.utc) > self.api_last_updated.replace(tzinfo=timezone.utc):
+            if not api_last_updated or api_last_updated.replace(tzinfo=datetime.timezone.utc) > self.api_last_updated.replace(tzinfo=datetime.timezone.utc):
                 self.model().create_async_update_worker()
             else:
                 logger.debug('Dataset {} is up to date.'.format(self.name))
