@@ -6,6 +6,7 @@ from users.models import CustomUser
 import os
 import logging
 from datetime import datetime
+from django.utils.crypto import get_random_string
 from users import models as us
 logger = logging.getLogger('app')
 
@@ -72,7 +73,8 @@ def send_hello_world_email():
 
 def send_new_user_email(user=None):
     to = user.email
-    new_password = CustomUser.objects.make_random_password()
+    new_password = get_random_string(
+        10, "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789")
     user.set_password(new_password)
     user.save()
     reset_password_link = user.get_password_reset_url()
